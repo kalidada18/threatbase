@@ -459,9 +459,33 @@ def write_stats(stats: dict) -> None:
     log.info("stats.json written")
 
 
-
-
-
+def write_history(stats: dict) -> None:
+    """Maintain a rolling 90-day history of feed metrics."""
+    history_file = "history.json"
+    history = []
+    if os.path.exists(history_file):
+        try:
+            with open(history_file, "r", encoding="utf-8") as f:
+                history = json.load(f)
+        except Exception:
+            pass
+            
+    history.append({
+        "date": stats["last_updated"].split("T")[0],
+        "total_unique_ips": stats["total_unique_ips"],
+        "active_feeds": stats["total_feeds_processed"]
+    })
+    
+    # Deduplicate by date, keeping the latest run for each day
+    deduped = {entry["date"]: entry for entry in history}
+    history = list(deduped.values())
+    
+    # Keep last 90 days
+    history = sorted(history, key=lambda x: x["date"])[-90:]
+    
+    with open(history_file, "w", encoding="utf-8") as f:
+        json.dump(history, f, indent=2)
+    log.info("history.json written (%d records)", len(history))
 def write_all_outputs(
     ip_map: Dict[str, List[str]],
     stats: dict,
@@ -473,6 +497,7 @@ def write_all_outputs(
     write_txt(sorted_ips, stats)
     write_csv(sorted_ips, ip_map)
     write_stats(stats)
+    write_history(stats)
 
 
 # ─────────────────────────────────────────────────────────────────────────────

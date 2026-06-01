@@ -839,6 +839,13 @@
         <div class="chart-wrap"><canvas id="donutChart"></canvas></div>
       </div>
     </div>
+
+    <div class="charts-row" style="margin-top: 24px;">
+      <div class="chart-card" style="width: 100%;">
+        <div class="chart-title"><i data-lucide="trending-up"></i> Threat Landscape Trend (Last 90 Days)</div>
+        <div class="chart-wrap"><canvas id="historyChart"></canvas></div>
+      </div>
+    </div>
   </section>
 
   <hr class="divider">
@@ -1011,11 +1018,57 @@ async function boot() {
 
     renderCharts(d);
     renderTable(d);
+    renderHistoryChart();
   } catch (err) {
     console.warn('stats.json unavailable:', err.message);
     document.getElementById('ms-time').textContent = 'Pending first run';
     document.getElementById('src-tbody').innerHTML =
       '<tr><td colspan="4" style="text-align:center;padding:3rem;color:var(--slate)">Waiting for the first GitHub Actions run to generate stats.json</td></tr>';
+  }
+}
+
+async function renderHistoryChart() {
+  try {
+    const r = await fetch(RAW + 'history.json?_=' + Date.now());
+    if (!r.ok) return;
+    const history = await r.json();
+    
+    if (!history || history.length === 0) return;
+    
+    const labels = history.map(h => h.date);
+    const vals = history.map(h => h.total_unique_ips);
+    
+    new Chart(document.getElementById('historyChart').getContext('2d'), {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Total Malicious IPs',
+          data: vals,
+          borderColor: '#dc2626',
+          backgroundColor: 'rgba(220,38,38,0.1)',
+          borderWidth: 2,
+          pointRadius: 3,
+          pointBackgroundColor: '#dc2626',
+          fill: true,
+          tension: 0.3
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { display: false }, ticks: { maxTicksLimit: 10 } },
+          y: {
+            grid: { color: '#e4e7ed' },
+            ticks: { callback: v => v >= 1e6 ? (v/1e6).toFixed(1)+'M' : v >= 1e3 ? (v/1e3).toFixed(0)+'K' : v }
+          }
+        },
+        interaction: { mode: 'index', intersect: false }
+      }
+    });
+  } catch (e) {
+    console.warn('history.json unavailable', e);
   }
 }
 
@@ -1124,19 +1177,19 @@ function renderTable(d) {
 }
 
 /* ── IP Lookup ──────────────────────────── */
-let ipSet = null, ipLoading = null;
+let csvText = null, csvLoading = null;
 
-async function loadIPs() {
-  if (ipSet) return ipSet;
-  if (!ipLoading) {
-    ipLoading = fetch(RAW + 'malicious_ips.txt?_=' + Date.now())
+async function loadCSV() {
+  if (csvText) return csvText;
+  if (!csvLoading) {
+    csvLoading = fetch(RAW + 'malicious_ips.csv?_=' + Date.now())
       .then(r => r.text())
       .then(txt => {
-        ipSet = new Set(txt.split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('#')));
-        return ipSet;
+        csvText = txt;
+        return csvText;
       });
   }
-  return ipLoading;
+  return csvLoading;
 }
 
 async function checkIP() {
@@ -1156,13 +1209,29 @@ async function checkIP() {
   btn.disabled = true;
 
   try {
-    const set = await loadIPs();
-    if (set.has(ip)) {
-      showLookup('danger', ip, 'This IP is listed in the HimalayaFeed threat database. It has been flagged by one or more OSINT sources for malicious activity.');
+    const txt = await loadCSV();
+    
+    // Check if the IP is at the start of a line in the CSV (e.g. \n1.2.3.4,)
+    let idx = txt.indexOf('\n' + ip + ',');
+    // Edge case for the very first line after header (highly unlikely but possible)
+    if (idx === -1 && txt.startsWith('ip,sources,source_count\n' + ip + ',')) {
+      idx = 'ip,sources,source_count'.length;
+    }
+
+    if (idx !== -1) {
+      const lineEnd = txt.indexOf('\n', idx + 1);
+      const line = txt.substring(idx + 1, lineEnd !== -1 ? lineEnd : undefined);
+      
+      const parts = line.split(',');
+      const count = parts[2];
+      const sources = parts[1].replace(/\|/g, ', ');
+      
+      showLookup('danger', ip, `This IP is listed in the HimalayaFeed database. It was flagged by ${count} OSINT source(s): ${sources}.`);
     } else {
       showLookup('safe', ip, 'This IP was not found in the current dataset. Absence does not guarantee safety — only that it is not in the aggregated feeds at this time.');
     }
-  } catch {
+  } catch (e) {
+    console.error(e);
     showLookup('warn', ip, 'Could not load the feed data. Try again shortly.');
   }
 

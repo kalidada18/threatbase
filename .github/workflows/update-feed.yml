@@ -65,7 +65,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           # Stage all generated output files (including dashboard data)
-          git add malicious_ips.txt malicious_ips.csv stats.json
+          git add malicious_ips.txt malicious_ips.csv stats.json history.json
 
           # Check whether any staged file actually changed
           if git diff --staged --quiet; then
