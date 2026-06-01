@@ -49,6 +49,8 @@ jobs:
 
       # ── 4. Run the aggregator ────────────────────────────────────────────────
       - name: Run feed aggregator
+        env:
+          ABUSEIPDB_API_KEY: ${{ secrets.ABUSEIPDB_API_KEY }}
         run: python update_feed.py
 
       # ── 5. Commit and push ───────────────────────────────────────────────────
