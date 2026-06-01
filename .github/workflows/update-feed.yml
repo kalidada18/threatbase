@@ -47,30 +47,7 @@ jobs:
       - name: Run feed aggregator
         run: python update_feed.py
 
-      # ── 5. Show a quick summary in the Actions log ───────────────────────────
-      - name: Display feed statistics
-        if: success()
-        run: |
-          echo "════════════════════════════════════════"
-          echo "  Feed statistics"
-          echo "════════════════════════════════════════"
-          python - <<'EOF'
-          import json
-          with open("stats.json") as f:
-              s = json.load(f)
-          print(f"  Last updated  : {s['last_updated']}")
-          print(f"  Unique IPs    : {s['total_unique_ips']:,}")
-          print(f"  Feeds OK      : {s['total_feeds_processed']}")
-          print(f"  Feeds failed  : {s['total_feeds_failed']}")
-          if s['failed_feeds']:
-              print(f"  Failed names  : {', '.join(s['failed_feeds'])}")
-          print(f"  Multi-source  : {s['multi_source_ips']:,} IPs seen in 2+ feeds")
-          print()
-          print("  IPs per source:")
-          for src, count in sorted(s['ips_per_source'].items(), key=lambda x: -x[1]):
-              print(f"    {src:<30} {count:>8,}")
-          EOF
-          echo "════════════════════════════════════════"
+
 
       # ── 6. Commit and push only when something changed ───────────────────────
       #
@@ -83,8 +60,8 @@ jobs:
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          # Stage only the four generated output files
-          git add malicious_ips.txt malicious_ips.csv threat_feed.json stats.json
+          # Stage only the two generated output files
+          git add malicious_ips.txt malicious_ips.csv
 
           # Check whether any staged file actually changed
           if git diff --staged --quiet; then

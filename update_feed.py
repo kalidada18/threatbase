@@ -417,36 +417,7 @@ def write_csv(
     log.info("malicious_ips.csv written (%d rows)", len(df))
 
 
-def write_json_feed(
-    sorted_ips: List[str],
-    ip_map: Dict[str, List[str]],
-    stats: dict,
-) -> None:
-    """Write threat_feed.json — metadata block + full IP array."""
-    payload = {
-        "metadata": stats,
-        "ips": [
-            {
-                "ip":           ip,
-                "sources":      ip_map[ip],
-                "source_count": len(ip_map[ip]),
-            }
-            for ip in sorted_ips
-        ],
-    }
-    with open("threat_feed.json", "w", encoding="utf-8") as fh:
-        # Compact JSON — smaller file size for large feeds
-        json.dump(payload, fh, separators=(",", ":"))
-    log.info("threat_feed.json written (%d IP entries)", len(sorted_ips))
 
-
-def write_stats(stats: dict) -> None:
-    """Write stats.json — pretty-printed for human readability."""
-    # Convert any set objects that may have slipped into stats (top_reported_sources)
-    serialisable_stats = json.loads(json.dumps(stats, default=list))
-    with open("stats.json", "w", encoding="utf-8") as fh:
-        json.dump(serialisable_stats, fh, indent=2)
-    log.info("stats.json written")
 
 
 def write_all_outputs(
@@ -459,8 +430,6 @@ def write_all_outputs(
 
     write_txt(sorted_ips, stats)
     write_csv(sorted_ips, ip_map)
-    write_json_feed(sorted_ips, ip_map, stats)
-    write_stats(stats)
 
 
 # ─────────────────────────────────────────────────────────────────────────────

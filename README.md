@@ -49,19 +49,7 @@ https://raw.githubusercontent.com/sujallamichhane18/himalayafeed/main/malicious_
 https://raw.githubusercontent.com/sujallamichhane18/himalayafeed/main/malicious_ips.csv
 ```
 
-### 3. JSON (Best for APIs & Custom Tooling)
-`threat_feed.json` — Compact JSON array with detailed metadata.
-```
-https://raw.githubusercontent.com/sujallamichhane18/himalayafeed/main/threat_feed.json
-```
 
-### 4. Feed Statistics
-`stats.json` — Health metrics and unique IP counts for the latest run.
-```
-https://raw.githubusercontent.com/sujallamichhane18/himalayafeed/main/stats.json
-```
-
----
 
 ## 🚀 How to Run Your Own Instance
 
