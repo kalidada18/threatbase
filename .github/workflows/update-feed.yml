@@ -8,9 +8,6 @@ on:
   # ── Re-enable schedule whenever code is pushed to main ────────────────────
   push:
     branches: [main]
-    paths:
-      - 'update_feed.py'
-      - '.github/workflows/update-feed.yml'
 
   # ── Manual: trigger from the Actions tab any time ─────────────────────────
   workflow_dispatch:
@@ -77,8 +74,23 @@ jobs:
             TIMESTAMP=$(date -u '+%Y-%m-%d %H:%M UTC')
             git commit -m "chore: update threat feed — ${TIMESTAMP} — ${IP_COUNT} IPs"
 
-            # Pull-rebase before push to handle the rare case of a concurrent run
             git pull --rebase --quiet origin "${GITHUB_REF_NAME:-main}" || true
             git push origin "${GITHUB_REF_NAME:-main}"
             echo "✓ Feed pushed successfully (${IP_COUNT} IPs)."
           fi
+
+      # ── 6. Create Daily Archive Release ───────────────────────────────────────
+      - name: Set Archive Date
+        run: echo "ARCHIVE_DATE=$(date -u +'%Y-%m-%d')" >> $GITHUB_ENV
+
+      - name: Create Daily Archive Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: archive-${{ env.ARCHIVE_DATE }}
+          name: Daily Feed Archive - ${{ env.ARCHIVE_DATE }}
+          artifacts: "malicious_ips.txt,malicious_ips.csv,stats.json"
+          allowUpdates: true
+          replacesArtifacts: true
+          body: "Automated daily archive of the HimalayaFeed threat intelligence database."
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
