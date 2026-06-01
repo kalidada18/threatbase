@@ -13,6 +13,7 @@ Requirements: Python 3.11+, requests, pandas
 import ipaddress
 import json
 import logging
+import os
 import re
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -123,6 +124,10 @@ FEEDS: Dict[str, str] = {
         "http://reputation.alienvault.com/reputation.data"
     ),
 }
+
+ABUSEIPDB_API_KEY: Optional[str] = os.environ.get("ABUSEIPDB_API_KEY")
+if ABUSEIPDB_API_KEY:
+    FEEDS["abuseipdb"] = "https://api.abuseipdb.com/api/v2/blacklist?confidenceMinimum=90"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Tuning constants
@@ -265,15 +270,21 @@ def fetch_feed(name: str, url: str) -> Tuple[str, Set[str], Optional[str]]:
     for attempt in range(1, MAX_RETRIES + 1):
         try:
             log.info("[%s] downloading (attempt %d/%d) …", name, attempt, MAX_RETRIES)
+            
+            headers = {
+                "User-Agent": (
+                    "HimalayaFeed/1.0 "
+                    "(github.com/kalidada18/himalayafeed; automated threat-intel collector)"
+                )
+            }
+            if name == "abuseipdb" and ABUSEIPDB_API_KEY:
+                headers["Key"] = ABUSEIPDB_API_KEY
+                headers["Accept"] = "text/plain"
+
             response = requests.get(
                 url,
                 timeout=REQUEST_TIMEOUT,
-                headers={
-                    "User-Agent": (
-                        "HimalayaFeed/1.0 "
-                        "(github.com/kalidada18/himalayafeed; automated threat-intel collector)"
-                    )
-                },
+                headers=headers,
                 allow_redirects=True,
             )
             response.raise_for_status()
