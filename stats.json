@@ -1,20 +1,14 @@
 {
-<<<<<<< HEAD
-  "last_updated": "2026-06-01T13:15:54Z",
-  "total_unique_ips": 1063149,
+  "last_updated": "2026-06-01T13:29:33Z",
+  "total_unique_ips": 1062694,
   "total_feeds_processed": 15,
-=======
-  "last_updated": "2026-06-01T13:20:27Z",
-  "total_unique_ips": 1062945,
-  "total_feeds_processed": 14,
->>>>>>> 9777bf6 (chore: update malicious IP list and statistics for the Greensnow feed)
   "total_feeds_failed": 0,
   "failed_feeds": [],
   "ips_per_source": {
-    "abuseipdb": 9979,
+    "abuseipdb": 9976,
     "alienvault_reputation": 609,
     "binary_defense": 967,
-    "blocklist_de": 23642,
+    "blocklist_de": 23689,
     "charles_haley_malware_ips": 614617,
     "cins_army": 15000,
     "criticalpath_security": 540,
@@ -23,15 +17,11 @@
     "firehol_level1": 547683,
     "firehol_level2": 27786,
     "firehol_level3": 32085,
-    "greensnow": 4905,
+    "greensnow": 4924,
     "ipsum": 118140,
-    "spamhaus_drop": 183642
+    "spamhaus_drop": 181102
   },
-<<<<<<< HEAD
-  "multi_source_ips": 390792,
-=======
-  "multi_source_ips": 389225,
->>>>>>> 9777bf6 (chore: update malicious IP list and statistics for the Greensnow feed)
+  "multi_source_ips": 388690,
   "top_reported_sources": [
     [
       "charles_haley_malware_ips",
@@ -43,7 +33,7 @@
     ],
     [
       "spamhaus_drop",
-      183642
+      181102
     ],
     [
       "ipsum",
