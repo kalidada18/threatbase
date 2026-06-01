@@ -1,6 +1,6 @@
 {
-  "last_updated": "2026-06-01T13:29:33Z",
-  "total_unique_ips": 1062694,
+  "last_updated": "2026-06-01T13:32:17Z",
+  "total_unique_ips": 1063203,
   "total_feeds_processed": 15,
   "total_feeds_failed": 0,
   "failed_feeds": [],
@@ -17,11 +17,11 @@
     "firehol_level1": 547683,
     "firehol_level2": 27786,
     "firehol_level3": 32085,
-    "greensnow": 4924,
+    "greensnow": 4932,
     "ipsum": 118140,
-    "spamhaus_drop": 181102
+    "spamhaus_drop": 183642
   },
-  "multi_source_ips": 388690,
+  "multi_source_ips": 390706,
   "top_reported_sources": [
     [
       "charles_haley_malware_ips",
@@ -33,7 +33,7 @@
     ],
     [
       "spamhaus_drop",
-      181102
+      183642
     ],
     [
       "ipsum",
