@@ -247,7 +247,7 @@ def fetch_feed(name: str, url: str) -> Tuple[str, Set[str], Optional[str]]:
                 headers={
                     "User-Agent": (
                         "HimalayaFeed/1.0 "
-                        "(github.com/sujallamichhane18/himalayafeed; automated threat-intel collector)"
+                        "(github.com/kalidada18/himalayafeed; automated threat-intel collector)"
                     )
                 },
                 allow_redirects=True,
@@ -389,7 +389,7 @@ def write_txt(
         f"# Total unique IPs : {len(sorted_ips)}",
         f"# Sources used     : {stats['total_feeds_processed']}",
         "# Format           : one IPv4 address per line",
-        "# Project          : https://github.com/sujallamichhane18/himalayafeed",
+        "# Project          : https://github.com/kalidada18/himalayafeed",
         "",  # blank separator before data
     ]
     with open("malicious_ips.txt", "w", encoding="utf-8") as fh:

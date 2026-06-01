@@ -4,8 +4,8 @@
   <h1>HimalayaFeed</h1>
   
   <p>
-    <a href="https://github.com/sujallamichhane18/himalayafeed/actions/workflows/update-feed.yml">
-      <img src="https://github.com/sujallamichhane18/himalayafeed/actions/workflows/update-feed.yml/badge.svg" alt="Update Feed">
+    <a href="https://github.com/kalidada18/himalayafeed/actions/workflows/update-feed.yml">
+      <img src="https://github.com/kalidada18/himalayafeed/actions/workflows/update-feed.yml/badge.svg" alt="Update Feed">
     </a>
     <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="Python 3.11+">
     <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
@@ -40,13 +40,13 @@ All files are committed directly to this repository and updated automatically ev
 ### 1. Plain Text (Best for Firewalls & iptables)
 `malicious_ips.txt` — One IPv4 address per line.
 ```
-https://raw.githubusercontent.com/sujallamichhane18/himalayafeed/main/malicious_ips.txt
+https://raw.githubusercontent.com/kalidada18/himalayafeed/main/malicious_ips.txt
 ```
 
 ### 2. CSV (Best for SIEMs & Databases)
 `malicious_ips.csv` — Includes the IP, sources that reported it, and a confidence count.
 ```
-https://raw.githubusercontent.com/sujallamichhane18/himalayafeed/main/malicious_ips.csv
+https://raw.githubusercontent.com/kalidada18/himalayafeed/main/malicious_ips.csv
 ```
 
 
@@ -67,7 +67,7 @@ The GitHub Action will now automatically run every hour, gathering threat data a
 
 ### Linux iptables / ipset
 ```bash
-wget -qO- https://raw.githubusercontent.com/sujallamichhane18/himalayafeed/main/malicious_ips.txt | grep -E '^[0-9]' | while read IP; do
+wget -qO- https://raw.githubusercontent.com/kalidada18/himalayafeed/main/malicious_ips.txt | grep -E '^[0-9]' | while read IP; do
   iptables -I INPUT -s $IP -j DROP
 done
 ```
@@ -75,7 +75,7 @@ done
 
 ### NGINX Blocklist
 ```bash
-curl -fsSL https://raw.githubusercontent.com/sujallamichhane18/himalayafeed/main/malicious_ips.txt \
+curl -fsSL https://raw.githubusercontent.com/kalidada18/himalayafeed/main/malicious_ips.txt \
   | grep -E '^[0-9]' | sed 's/^/deny /; s/$/ ;/' > /etc/nginx/conf.d/himalayafeed-deny.conf
 nginx -s reload
 ```
