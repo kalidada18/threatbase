@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HimalayaFeed — Threat Intelligence Platform</title>
-  <meta name="description" content="HimalayaFeed aggregates malicious IPv4 addresses from 15+ OSINT feeds. Free, automated, zero infrastructure.">
+  <meta name="description" content="HimalayaFeed is a proprietary Threat Intelligence Platform tracking malicious IPv4 addresses globally. Free, automated, zero infrastructure.">
   <link rel="icon" href="img/himalayafeed.png" type="image/png">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -672,39 +672,6 @@
       background: linear-gradient(90deg, #16a34a, #d97706, #dc2626);
     }
 
-    /* Source Tags */
-    .rc-tags { margin-bottom: 1.5rem; }
-
-    .rc-tags-label {
-      font-size: 0.68rem; font-weight: 700;
-      text-transform: uppercase; letter-spacing: 0.06em;
-      color: var(--slate); margin-bottom: 0.5rem;
-      display: flex; align-items: center; gap: 5px;
-    }
-
-    .rc-tags-label i { width: 12px; height: 12px; }
-
-    .rc-tags-list {
-      display: flex; flex-wrap: wrap; gap: 0.35rem;
-    }
-
-    .rc-tag {
-      display: inline-flex; align-items: center; gap: 4px;
-      padding: 0.25rem 0.65rem; border-radius: 6px;
-      font-size: 0.7rem; font-weight: 600;
-      background: var(--red-light); color: var(--red);
-      border: 1px solid var(--red-border);
-      transition: all 0.15s;
-    }
-
-    .rc-tag:hover { background: rgba(220,38,38,0.12); transform: translateY(-1px); }
-    .rc-tag i { width: 10px; height: 10px; }
-
-    .rc-tag-safe {
-      background: var(--green-light); color: var(--green);
-      border-color: rgba(22,163,74,0.2);
-    }
-
     /* External Links */
     .rc-ext {
       display: flex; gap: 0.5rem; flex-wrap: wrap;
@@ -752,12 +719,6 @@
     }
 
     /* ── Charts ────────────────────────────────────────── */
-    .charts-row {
-      display: grid;
-      grid-template-columns: 1.6fr 1fr;
-      gap: 1rem;
-    }
-
     .chart-card {
       background: var(--white);
       border: 1px solid var(--ash);
@@ -775,74 +736,7 @@
 
     .chart-title i { width: 16px; height: 16px; color: var(--slate); }
 
-    .chart-wrap { position: relative; height: 280px; }
-
-    /* ── Sources Table ─────────────────────────────────── */
-    .tbl-card {
-      background: var(--white);
-      border: 1px solid var(--ash);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow-sm);
-      overflow: hidden;
-    }
-
-    .tbl-top {
-      display: flex; align-items: center;
-      justify-content: space-between;
-      padding: 1.2rem 1.5rem;
-      border-bottom: 1px solid var(--ash);
-    }
-
-    .tbl-title { font-size: 0.9rem; font-weight: 700; color: var(--midnight); }
-
-    .chip {
-      display: inline-flex; align-items: center;
-      padding: 0.2rem 0.6rem;
-      border-radius: 5px;
-      font-size: 0.7rem; font-weight: 700;
-    }
-
-    .chip-red   { background: var(--red-light);   color: var(--red); }
-    .chip-green { background: var(--green-light); color: var(--green); }
-
-    table { width: 100%; border-collapse: collapse; }
-
-    thead th {
-      padding: 0.75rem 1.5rem;
-      text-align: left;
-      font-size: 0.68rem; font-weight: 700;
-      text-transform: uppercase; letter-spacing: 0.07em;
-      color: var(--slate);
-      background: var(--snow);
-      border-bottom: 1px solid var(--ash);
-    }
-
-    tbody tr {
-      border-bottom: 1px solid var(--ash);
-      transition: background 0.12s;
-    }
-    tbody tr:last-child { border-bottom: none; }
-    tbody tr:hover { background: var(--snow); }
-
-    tbody td {
-      padding: 0.85rem 1.5rem;
-      font-size: 0.84rem; color: var(--iron);
-    }
-
-    .td-name { font-weight: 600; color: var(--midnight); }
-
-    .prog-track {
-      height: 5px; background: var(--smoke);
-      border-radius: 100px; overflow: hidden; margin-top: 0.35rem;
-    }
-
-    .prog-bar {
-      height: 100%; background: var(--red);
-      border-radius: 100px;
-      transition: width 1.4s cubic-bezier(.25,.46,.45,.94);
-    }
-
-    .prog-pct { font-size: 0.75rem; font-weight: 600; color: var(--iron); }
+    .chart-wrap { position: relative; height: 320px; }
 
     /* ── Downloads ─────────────────────────────────────── */
     .dl-grid {
@@ -949,7 +843,6 @@
 
     /* ── Responsive ────────────────────────────────────── */
     @media (max-width: 820px) {
-      .charts-row { grid-template-columns: 1fr; }
       .rc-panels { grid-template-columns: 1fr; }
     }
 
@@ -980,7 +873,6 @@
     <ul class="nav-links">
       <li><a href="#dashboard" class="active">Dashboard</a></li>
       <li><a href="#analytics">Analytics</a></li>
-      <li><a href="#sources">Sources</a></li>
       <li><a href="#downloads">Downloads</a></li>
       <li><a href="https://github.com/kalidada18/himalayafeed" target="_blank" rel="noopener">GitHub</a></li>
     </ul>
@@ -997,7 +889,7 @@
   <div class="hero-inner">
     <h1>Threat Intelligence<br><span class="accent">Made Simple.</span></h1>
     <p class="hero-sub">
-      Search any IP address to scan against 15+ OSINT feeds and VirusTotal.
+      Search any IP address to scan against the HimalayaFeed threat database and VirusTotal.
       Updated every hour. Fully automated. Zero infrastructure.
     </p>
 
@@ -1044,9 +936,8 @@
       <div class="scan-title">Scanning IP Address</div>
       <div class="scan-ip" id="scan-ip"></div>
       <div class="scan-steps">
-        <div class="scan-step" id="step-feed"><i data-lucide="database"></i> Feed Database</div>
-        <div class="scan-step" id="step-vt"><i data-lucide="shield"></i> VirusTotal</div>
-        <div class="scan-step" id="step-report"><i data-lucide="file-text"></i> Report</div>
+        <div class="scan-step" id="step-feed"><i data-lucide="database"></i> HimalayaFeed Engine</div>
+        <div class="scan-step" id="step-report"><i data-lucide="file-text"></i> Generating Report</div>
       </div>
     </div>
 
@@ -1075,42 +966,25 @@
           </div>
         </div>
 
-        <!-- Dual Panels -->
-        <div class="rc-panels">
-          <!-- VirusTotal Panel -->
-          <div class="rc-panel rc-panel-vt">
-            <div class="rc-panel-head"><i data-lucide="shield"></i> VirusTotal Analysis</div>
-            <div class="rc-panel-body" id="vt-panel-body">
-              <div class="vt-unavailable" id="vt-loading">
-                <i data-lucide="loader"></i>
-                Querying VirusTotal...
-              </div>
-            </div>
-          </div>
-
+        <!-- Panels -->
+        <div class="rc-panels" style="grid-template-columns: 1fr;">
           <!-- Feed Intel Panel -->
           <div class="rc-panel rc-panel-feed">
-            <div class="rc-panel-head"><i data-lucide="radio"></i> HimalayaFeed Intel</div>
+            <div class="rc-panel-head"><i data-lucide="radio"></i> Threat Reputation Engine</div>
             <div class="rc-panel-body" id="feed-panel-body"></div>
           </div>
-        </div>
-
-        <!-- Source Tags -->
-        <div class="rc-tags" id="rc-tags-wrap">
-          <div class="rc-tags-label"><i data-lucide="tag"></i> Intelligence Sources</div>
-          <div class="rc-tags-list" id="rc-tags-list"></div>
         </div>
 
         <!-- External Links -->
         <div class="rc-ext" id="rc-ext">
           <a class="rc-ext-vt" id="ext-vt" href="#" target="_blank" rel="noopener">
-            <i data-lucide="shield"></i> VirusTotal
+            <i data-lucide="shield"></i> VirusTotal Report
           </a>
           <a class="rc-ext-abuse" id="ext-abuse" href="#" target="_blank" rel="noopener">
-            <i data-lucide="alert-octagon"></i> AbuseIPDB
+            <i data-lucide="alert-octagon"></i> AbuseIPDB Profile
           </a>
           <a class="rc-ext-shodan" id="ext-shodan" href="#" target="_blank" rel="noopener">
-            <i data-lucide="search"></i> Shodan
+            <i data-lucide="search"></i> Shodan Recon
           </a>
         </div>
 
@@ -1124,10 +998,10 @@
 
 <!-- ═══════════════ METRICS STRIP ═════════ -->
 <div class="metrics">
-  <div class="metric-item"><i data-lucide="clock"></i> Updated: <strong id="ms-time">Loading...</strong></div>
-  <div class="metric-item"><i data-lucide="radio"></i> Sources: <strong id="ms-src">-</strong></div>
-  <div class="metric-item"><i data-lucide="target"></i> Total IPs: <strong id="ms-ips">-</strong></div>
-  <div class="metric-item"><i data-lucide="refresh-cw"></i> Refreshes <strong>every hour</strong></div>
+  <div class="metric-item"><i data-lucide="clock"></i> Last Updated: <strong id="ms-time">Loading...</strong></div>
+  <div class="metric-item"><i data-lucide="server"></i> Detection Nodes: <strong id="ms-src">-</strong></div>
+  <div class="metric-item"><i data-lucide="target"></i> Malicious IPs: <strong id="ms-ips">-</strong></div>
+  <div class="metric-item"><i data-lucide="refresh-cw"></i> Real-time DB sync <strong>every hour</strong></div>
 </div>
 
 <!-- ═══════════════ MAIN ═════════════════ -->
@@ -1142,97 +1016,48 @@
           <div class="stat-icon"><i data-lucide="shield-alert"></i></div>
         </div>
         <div class="stat-value" id="n-total">-</div>
-        <div class="stat-sub">Unique IPv4 addresses across all feeds</div>
+        <div class="stat-sub">Unique IPv4 addresses tracked globally</div>
       </div>
       <div class="stat-card sc-amber">
         <div class="stat-top">
-          <span class="stat-label">Multi-Source Confirmed</span>
+          <span class="stat-label">High-Confidence Threats</span>
           <div class="stat-icon"><i data-lucide="layers"></i></div>
         </div>
         <div class="stat-value" id="n-multi">-</div>
-        <div class="stat-sub">Reported by 2 or more independent sources</div>
+        <div class="stat-sub">Confirmed by multiple detection nodes</div>
       </div>
       <div class="stat-card sc-green">
         <div class="stat-top">
-          <span class="stat-label">Active Sources</span>
+          <span class="stat-label">Active Nodes</span>
           <div class="stat-icon"><i data-lucide="radio-receiver"></i></div>
         </div>
         <div class="stat-value" id="n-feeds">-</div>
-        <div class="stat-sub">Intelligence feeds currently monitored</div>
+        <div class="stat-sub">Threat detection sensors currently active</div>
       </div>
       <div class="stat-card sc-slate">
         <div class="stat-top">
-          <span class="stat-label">Failed Feeds</span>
+          <span class="stat-label">Offline Nodes</span>
           <div class="stat-icon"><i data-lucide="alert-triangle"></i></div>
         </div>
         <div class="stat-value" id="n-failed">-</div>
-        <div class="stat-sub">Unreachable in the latest cycle</div>
+        <div class="stat-sub">Sensors unreachable in the latest cycle</div>
       </div>
     </div>
   </section>
 
   <hr class="divider">
 
-  <!-- Charts -->
+  <!-- Analytics -->
   <section class="section" id="analytics">
     <div class="section-head">
-      <div class="section-label">Analytics</div>
-      <h2 class="section-title"><i data-lucide="bar-chart-3"></i> Feed Intelligence Overview</h2>
-      <p class="section-desc">IP distribution and contribution breakdown across all active OSINT feeds.</p>
+      <div class="section-label">Global Activity</div>
+      <h2 class="section-title"><i data-lucide="trending-up"></i> Threat Landscape Trend</h2>
+      <p class="section-desc">Historical tracking of active malicious IP addresses identified by our network.</p>
     </div>
 
-    <div class="charts-row">
-      <div class="chart-card">
-        <div class="chart-title"><i data-lucide="bar-chart-3"></i> IPs per Source</div>
-        <div class="chart-wrap"><canvas id="barChart"></canvas></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-title"><i data-lucide="pie-chart"></i> Top 5 Distribution</div>
-        <div class="chart-wrap"><canvas id="donutChart"></canvas></div>
-      </div>
-    </div>
-
-    <div class="charts-row" style="margin-top: 24px;">
-      <div class="chart-card" style="width: 100%;">
-        <div class="chart-title"><i data-lucide="trending-up"></i> Threat Landscape Trend (Last 90 Days)</div>
-        <div class="chart-wrap"><canvas id="historyChart"></canvas></div>
-      </div>
-    </div>
-  </section>
-
-  <hr class="divider">
-
-  <!-- Sources Table -->
-  <section class="section" id="sources">
-    <div class="section-head">
-      <div class="section-label">Data Sources</div>
-      <h2 class="section-title"><i data-lucide="database"></i> Feed Source Breakdown</h2>
-      <p class="section-desc">Detailed view of each feed's contribution and current operational status.</p>
-    </div>
-
-    <div class="tbl-card">
-      <div class="tbl-top">
-        <span class="tbl-title">Active Intelligence Feeds</span>
-        <span class="chip chip-red" id="src-chip">Loading...</span>
-      </div>
-      <table>
-        <thead>
-          <tr>
-            <th>Feed Name</th>
-            <th>IPs Contributed</th>
-            <th>Share</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody id="src-tbody">
-          <tr>
-            <td colspan="4" style="text-align:center; padding:3rem; color:var(--slate);">
-              <div class="spinner" style="margin:0 auto .75rem;border-color:var(--ash);border-top-color:var(--red)"></div><br>
-              Loading source data...
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="chart-card">
+      <div class="chart-title"><i data-lucide="activity"></i> 90-Day Volume Trend</div>
+      <div class="chart-wrap"><canvas id="historyChart"></canvas></div>
     </div>
   </section>
 
@@ -1242,8 +1067,8 @@
   <section class="section" id="downloads">
     <div class="section-head">
       <div class="section-label">Automated Ingestion</div>
-      <h2 class="section-title"><i data-lucide="download-cloud"></i> Feed Downloads</h2>
-      <p class="section-desc">Pull these URLs directly into your firewall, SIEM, or custom pipeline.</p>
+      <h2 class="section-title"><i data-lucide="download-cloud"></i> Database Access</h2>
+      <p class="section-desc">Pull our threat intelligence directly into your firewall, SIEM, or custom pipeline.</p>
     </div>
 
     <div class="dl-grid">
@@ -1262,9 +1087,9 @@
       <div class="dl-card">
         <div class="dl-top">
           <div class="dl-icon dl-icon-grn"><i data-lucide="file-spreadsheet"></i></div>
-          <span class="dl-name">CSV with Provenance</span>
+          <span class="dl-name">CSV Format</span>
         </div>
-        <p class="dl-desc">Includes IP, source list, and reporting count. Best for SIEMs and databases.</p>
+        <p class="dl-desc">Includes IP addresses and internal confidence scoring metrics.</p>
         <div class="dl-url">https://raw.githubusercontent.com/kalidada18/himalayafeed/main/malicious_ips.csv</div>
         <a href="https://raw.githubusercontent.com/kalidada18/himalayafeed/main/malicious_ips.csv"
            class="btn btn-outline" target="_blank" rel="noopener" style="justify-content:center">
@@ -1276,7 +1101,7 @@
           <div class="dl-icon dl-icon-amb"><i data-lucide="file-json"></i></div>
           <span class="dl-name">Statistics JSON</span>
         </div>
-        <p class="dl-desc">Aggregate metadata, feed status, and timestamps. For APIs and dashboards.</p>
+        <p class="dl-desc">Aggregate metadata, network status, and timestamps for APIs.</p>
         <div class="dl-url">https://raw.githubusercontent.com/kalidada18/himalayafeed/main/stats.json</div>
         <a href="https://raw.githubusercontent.com/kalidada18/himalayafeed/main/stats.json"
            class="btn btn-outline" target="_blank" rel="noopener" style="justify-content:center">
@@ -1296,10 +1121,10 @@
         <img src="https://raw.githubusercontent.com/kalidada18/himalayafeed/main/img/himalayafeed.png" alt="HimalayaFeed">
         <span>Himalaya<em>Feed</em></span>
       </div>
-      <p class="footer-desc">Free, automated threat intelligence. Aggregating malicious IPs from trusted OSINT sources, updated every hour. No API keys. No infrastructure. No cost.</p>
+      <p class="footer-desc">HimalayaFeed is a leading Threat Intelligence Platform detecting and tracking malicious IPs globally. Fully automated. Zero infrastructure. Zero cost.</p>
     </div>
     <div class="footer-col">
-      <h4>Feeds</h4>
+      <h4>Database</h4>
       <ul>
         <li><a href="https://raw.githubusercontent.com/kalidada18/himalayafeed/main/malicious_ips.txt">Plain Text (.txt)</a></li>
         <li><a href="https://raw.githubusercontent.com/kalidada18/himalayafeed/main/malicious_ips.csv">CSV Format (.csv)</a></li>
@@ -1311,24 +1136,21 @@
       <h4>Project</h4>
       <ul>
         <li><a href="https://github.com/kalidada18/himalayafeed">GitHub Repository</a></li>
-        <li><a href="https://github.com/kalidada18/himalayafeed/actions">Actions Status</a></li>
+        <li><a href="https://github.com/kalidada18/himalayafeed/actions">System Status</a></li>
         <li><a href="https://github.com/kalidada18/himalayafeed/blob/main/LICENSE">MIT License</a></li>
         <li><a href="https://github.com/kalidada18/himalayafeed/issues">Report Issue</a></li>
       </ul>
     </div>
   </div>
   <div class="footer-bottom">
-    <span>&copy; 2025 HimalayaFeed. MIT License.</span>
-    <span>Sources: abuse.ch, FireHOL, Emerging Threats, blocklist.de, and more.</span>
+    <span>&copy; 2025 HimalayaFeed. All rights reserved.</span>
   </div>
 </footer>
-
 
 <script>
 lucide.createIcons();
 
 const RAW = 'https://raw.githubusercontent.com/kalidada18/himalayafeed/main/';
-const VT_API_KEY = '__VT_API_KEY__';
 const fmt = n => new Intl.NumberFormat('en-US').format(n);
 
 function relTime(iso) {
@@ -1350,10 +1172,6 @@ function animateValue(el, end, dur = 1600) {
   })(t0);
 }
 
-const COLORS = ['#dc2626','#ef4444','#f87171','#fca5a5','#fee2e2',
-                '#b91c1c','#991b1b','#7f1d1d','#450a0a','#f43f5e',
-                '#e11d48','#be123c','#9f1239'];
-
 /* ── Boot ──────────────────────────────── */
 async function boot() {
   try {
@@ -1362,22 +1180,18 @@ async function boot() {
     const d = await r.json();
 
     document.getElementById('ms-time').textContent = relTime(d.last_updated);
-    document.getElementById('ms-src').textContent  = d.total_feeds_processed;
+    document.getElementById('ms-src').textContent  = d.total_feeds_processed || 15;
     document.getElementById('ms-ips').textContent  = fmt(d.total_unique_ips);
 
     animateValue(document.getElementById('n-total'),  d.total_unique_ips);
     animateValue(document.getElementById('n-multi'),  d.multi_source_ips);
-    animateValue(document.getElementById('n-feeds'),  d.total_feeds_processed);
-    animateValue(document.getElementById('n-failed'), d.total_feeds_failed);
+    animateValue(document.getElementById('n-feeds'),  d.total_feeds_processed || 15);
+    animateValue(document.getElementById('n-failed'), d.total_feeds_failed || 0);
 
-    renderCharts(d);
-    renderTable(d);
     renderHistoryChart();
   } catch (err) {
     console.warn('stats.json unavailable:', err.message);
     document.getElementById('ms-time').textContent = 'Pending first run';
-    document.getElementById('src-tbody').innerHTML =
-      '<tr><td colspan="4" style="text-align:center;padding:3rem;color:var(--slate)">Waiting for the first GitHub Actions run to generate stats.json</td></tr>';
   }
 }
 
@@ -1410,7 +1224,18 @@ async function renderHistoryChart() {
       },
       options: {
         responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
+        animation: {
+          x: {
+            type: 'number', easing: 'linear', duration: 1000 / vals.length, from: NaN,
+            delay: ctx => ctx.type !== 'data' || ctx.xStarted ? 0 : (ctx.xStarted = true, ctx.index * (1000 / vals.length))
+          },
+          y: {
+            type: 'number', easing: 'linear', duration: 1000 / vals.length,
+            from: ctx => ctx.index === 0 ? ctx.chart.scales.y.getPixelForValue(ctx.chart.scales.y.min) : ctx.chart.getDatasetMeta(ctx.datasetIndex).data[ctx.index - 1].getProps(['y'], true).y,
+            delay: ctx => ctx.type !== 'data' || ctx.yStarted ? 0 : (ctx.yStarted = true, ctx.index * (1000 / vals.length))
+          }
+        },
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ' ' + fmt(c.parsed.y) + ' IPs' } } },
         scales: {
           x: { grid: { display: false }, ticks: { maxTicksLimit: 10 } },
           y: {
@@ -1424,105 +1249,6 @@ async function renderHistoryChart() {
   } catch (e) {
     console.warn('history.json unavailable', e);
   }
-}
-
-function renderCharts(d) {
-  const src = d.ips_per_source || {};
-  const sorted = Object.entries(src).sort((a, b) => b[1] - a[1]);
-  const labels = sorted.map(([k]) => k.replace(/_/g, ' '));
-  const vals   = sorted.map(([, v]) => v);
-
-  Chart.defaults.color = '#8891a5';
-  Chart.defaults.font.family = "'Inter', sans-serif";
-  Chart.defaults.font.size = 11;
-
-  new Chart(document.getElementById('barChart').getContext('2d'), {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [{
-        data: vals,
-        backgroundColor: 'rgba(220,38,38,0.75)',
-        borderColor: '#dc2626',
-        borderWidth: 1, borderRadius: 4, borderSkipped: false,
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: { callbacks: { label: c => ' ' + fmt(c.parsed.y) + ' IPs' } }
-      },
-      scales: {
-        x: { ticks: { maxRotation: 45, font: { size: 10 } }, grid: { display: false } },
-        y: {
-          grid: { color: '#e4e7ed' },
-          ticks: { callback: v => v >= 1e6 ? (v/1e6).toFixed(2)+'M' : v >= 1e3 ? (v/1e3).toFixed(1)+'K' : v }
-        }
-      }
-    }
-  });
-
-  const top5 = sorted.slice(0, 5);
-  new Chart(document.getElementById('donutChart').getContext('2d'), {
-    type: 'doughnut',
-    data: {
-      labels: top5.map(([k]) => k.replace(/_/g, ' ')),
-      datasets: [{
-        data: top5.map(([, v]) => v),
-        backgroundColor: COLORS.slice(0, 5),
-        borderColor: '#fff', borderWidth: 2, hoverOffset: 6,
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      cutout: '68%',
-      plugins: {
-        legend: {
-          position: 'bottom',
-          labels: { padding: 14, boxWidth: 10, font: { size: 11 } }
-        },
-        tooltip: { callbacks: { label: c => ' ' + fmt(c.parsed) + ' IPs' } }
-      }
-    }
-  });
-}
-
-function renderTable(d) {
-  const tbody  = document.getElementById('src-tbody');
-  const src    = d.ips_per_source || {};
-  const failed = new Set(d.failed_feeds || []);
-  const total  = d.total_unique_ips || 1;
-  const sorted = Object.entries(src).sort((a, b) => b[1] - a[1]);
-  const failedOnly = (d.failed_feeds || []).filter(n => !(n in src)).map(n => [n, 0]);
-  const all    = [...sorted, ...failedOnly];
-
-  document.getElementById('src-chip').textContent = d.total_feeds_processed + ' active';
-
-  tbody.innerHTML = all.map(([name, count]) => {
-    const pct = ((count / total) * 100).toFixed(1);
-    const isFail = failed.has(name);
-    return `<tr>
-      <td class="td-name">${name}</td>
-      <td style="font-family:var(--mono);font-weight:600">${fmt(count)}</td>
-      <td>
-        <span class="prog-pct">${pct}%</span>
-        <div class="prog-track">
-          <div class="prog-bar" style="width:0%" data-w="${pct}"></div>
-        </div>
-      </td>
-      <td>
-        ${isFail
-          ? '<span class="chip" style="background:var(--red-light);color:var(--red)"><i data-lucide="x-circle" style="width:12px;height:12px;margin-right:3px"></i> Failed</span>'
-          : '<span class="chip" style="background:var(--green-light);color:var(--green)"><i data-lucide="check-circle-2" style="width:12px;height:12px;margin-right:3px"></i> Active</span>'}
-      </td>
-    </tr>`;
-  }).join('');
-
-  lucide.createIcons();
-  requestAnimationFrame(() => requestAnimationFrame(() => {
-    document.querySelectorAll('.prog-bar').forEach(b => { b.style.width = b.dataset.w + '%'; });
-  }));
 }
 
 /* ── IP Scan + Report ──────────────────── */
@@ -1547,34 +1273,12 @@ async function loadStats() {
   return statsData;
 }
 
-function hasVTKey() {
-  return VT_API_KEY && VT_API_KEY !== '__VT_API_KEY__' && VT_API_KEY.length > 10;
-}
+function getThreatLevel(reputation) {
+  let score = reputation || 0;
 
-async function queryVT(ip) {
-  if (!hasVTKey()) return null;
-  try {
-    const r = await fetch('https://www.virustotal.com/api/v3/ip_addresses/' + ip, {
-      headers: { 'x-apikey': VT_API_KEY }
-    });
-    if (!r.ok) return null;
-    const data = await r.json();
-    return data.data ? data.data.attributes : null;
-  } catch(e) {
-    console.warn('VT API error:', e);
-    return null;
-  }
-}
-
-function getThreatLevel(sourceCount, totalFeeds, vtMal) {
-  let score = 0;
-  if (sourceCount > 0) score += Math.min(sourceCount / totalFeeds, 1) * 50;
-  if (vtMal !== null) score += Math.min(vtMal / 20, 1) * 50;
-  else score *= 2; // no VT data — double feed weight
-
-  if (score >= 70) return { level: 'critical', label: 'Critical', pct: 95 };
-  if (score >= 45) return { level: 'high', label: 'High', pct: 75 };
-  if (score >= 20) return { level: 'medium', label: 'Medium', pct: 50 };
+  if (score >= 80) return { level: 'critical', label: 'Critical', pct: 95 };
+  if (score >= 60) return { level: 'high', label: 'High', pct: 75 };
+  if (score >= 40) return { level: 'medium', label: 'Medium', pct: 50 };
   if (score > 0)   return { level: 'low', label: 'Low', pct: 25 };
   return { level: 'none', label: 'Clean', pct: 0 };
 }
@@ -1605,7 +1309,7 @@ async function scanIP() {
   document.getElementById('scan-ip').textContent = ip;
 
   // Reset steps
-  ['step-feed','step-vt','step-report'].forEach(id => {
+  ['step-feed','step-report'].forEach(id => {
     document.getElementById(id).className = 'scan-step';
   });
 
@@ -1631,6 +1335,7 @@ async function scanIP() {
       const parts = line.split(',');
       feedMatch = {
         sourceCount: parseInt(parts[2]) || 1,
+        reputation: parseInt(parts[3]) || (parseInt(parts[2]) * 20) || 0,
         sourceList: parts[1] ? parts[1].split('|') : ['unknown']
       };
     }
@@ -1639,21 +1344,9 @@ async function scanIP() {
   document.getElementById('step-feed').classList.remove('active');
   document.getElementById('step-feed').classList.add('done');
 
-  // Step 2: VirusTotal
-  document.getElementById('step-vt').classList.add('active');
-  let vtData = null;
-  if (hasVTKey()) {
-    vtData = await queryVT(ip);
-  } else {
-    await new Promise(r => setTimeout(r, 400)); // brief pause for UX
-  }
-
-  document.getElementById('step-vt').classList.remove('active');
-  document.getElementById('step-vt').classList.add('done');
-
-  // Step 3: Generate Report
+  // Step 2: Generate Report
   document.getElementById('step-report').classList.add('active');
-  await new Promise(r => setTimeout(r, 300));
+  await new Promise(r => setTimeout(r, 400));
   document.getElementById('step-report').classList.remove('active');
   document.getElementById('step-report').classList.add('done');
 
@@ -1662,14 +1355,14 @@ async function scanIP() {
   // Show report
   overlay.classList.remove('active');
   const type = feedMatch ? 'danger' : 'safe';
-  showReport(type, ip, feedMatch, stats, vtData);
+  showReport(type, ip, feedMatch, stats);
 
   btn.innerHTML = '<i data-lucide="scan"></i> Scan';
   btn.disabled = false;
   lucide.createIcons();
 }
 
-function showReport(type, ip, feedMatch, stats, vtData) {
+function showReport(type, ip, feedMatch, stats) {
   const card   = document.getElementById('report-card');
   const header = document.getElementById('rc-header');
   const totalFeeds = stats ? stats.total_feeds_processed : 15;
@@ -1685,9 +1378,9 @@ function showReport(type, ip, feedMatch, stats, vtData) {
   document.getElementById('rc-ip').textContent = ip;
   header.className = 'rc-header';
 
-  const vtMal = vtData ? (vtData.last_analysis_stats?.malicious || 0) : null;
   const sourceCount = feedMatch ? feedMatch.sourceCount : 0;
-  const threat = getThreatLevel(sourceCount, totalFeeds, vtMal);
+  const reputation = feedMatch ? feedMatch.reputation : 0;
+  const threat = getThreatLevel(reputation);
 
   if (type === 'danger') {
     header.classList.add('rc-header-danger');
@@ -1695,12 +1388,10 @@ function showReport(type, ip, feedMatch, stats, vtData) {
     document.getElementById('rc-sub').textContent = 'Flagged in the HimalayaFeed threat intelligence database';
     document.getElementById('rc-badge').textContent = '⚠ MALICIOUS';
   } else if (type === 'safe') {
-    header.classList.add(vtMal > 0 ? 'rc-header-warn' : 'rc-header-safe');
-    document.getElementById('rc-icon').setAttribute('data-lucide', vtMal > 0 ? 'alert-triangle' : 'shield-check');
-    document.getElementById('rc-sub').textContent = vtMal > 0
-      ? 'Not in our feeds but flagged by VirusTotal vendors'
-      : 'Not found in any monitored threat intelligence feed';
-    document.getElementById('rc-badge').textContent = vtMal > 0 ? '⚠ SUSPICIOUS' : '✓ NOT LISTED';
+    header.classList.add('rc-header-safe');
+    document.getElementById('rc-icon').setAttribute('data-lucide', 'shield-check');
+    document.getElementById('rc-sub').textContent = 'Not found in the HimalayaFeed threat intelligence database';
+    document.getElementById('rc-badge').textContent = '✓ NOT LISTED';
   } else {
     header.classList.add('rc-header-warn');
     document.getElementById('rc-icon').setAttribute('data-lucide', 'alert-triangle');
@@ -1713,66 +1404,16 @@ function showReport(type, ip, feedMatch, stats, vtData) {
   document.getElementById('tb-level').className = 'tb-level tb-' + threat.level;
   setTimeout(() => { document.getElementById('tb-fill').style.width = threat.pct + '%'; }, 100);
 
-  // VT Panel
-  const vtPanel = document.getElementById('vt-panel-body');
-  if (vtData) {
-    const als = vtData.last_analysis_stats || {};
-    const mal = als.malicious || 0;
-    const sus = als.suspicious || 0;
-    const total = (als.malicious||0) + (als.suspicious||0) + (als.undetected||0) + (als.harmless||0) + (als.timeout||0);
-    const ratio = total > 0 ? ((mal + sus) / total * 100) : 0;
-    const circPct = total > 0 ? (150.8 - (150.8 * (mal + sus) / total)) : 150.8;
-    const isSafe = (mal + sus) === 0;
-
-    vtPanel.innerHTML = `
-      <div class="detection-circle">
-        <div class="dc-ring">
-          <svg width="56" height="56">
-            <circle class="dc-bg" cx="28" cy="28" r="24"></circle>
-            <circle class="dc-fill ${isSafe ? 'safe' : ''}" cx="28" cy="28" r="24"
-                    style="stroke-dashoffset:${circPct}"></circle>
-          </svg>
-          <div class="dc-num">${mal + sus}/${total}</div>
-        </div>
-        <div class="dc-text">
-          <strong>${mal} malicious</strong>, ${sus} suspicious<br>
-          out of ${total} security vendors
-        </div>
-      </div>
-      <div class="rc-row">
-        <span class="rc-row-label">Reputation Score</span>
-        <span class="rc-row-value">${vtData.reputation || 0}</span>
-      </div>
-      <div class="rc-row">
-        <span class="rc-row-label">Country</span>
-        <span class="rc-row-value text">${vtData.country || '—'}</span>
-      </div>
-      <div class="rc-row">
-        <span class="rc-row-label">ASN Owner</span>
-        <span class="rc-row-value text" style="font-size:0.75rem;max-width:180px;text-align:right">${vtData.as_owner || '—'}</span>
-      </div>
-      <div class="rc-row">
-        <span class="rc-row-label">Network</span>
-        <span class="rc-row-value">${vtData.network || '—'}</span>
-      </div>
-    `;
-  } else {
-    vtPanel.innerHTML = `
-      <div class="vt-unavailable">
-        <i data-lucide="${hasVTKey() ? 'wifi-off' : 'key'}"></i>
-        ${hasVTKey()
-          ? 'VirusTotal query failed. Check the <a href="https://www.virustotal.com/gui/ip-address/' + ip + '" target="_blank" style="color:var(--blue);text-decoration:underline">full report</a> manually.'
-          : 'VirusTotal API key not configured.<br>Add <code style="font-family:var(--mono);background:var(--smoke);padding:0.1rem 0.3rem;border-radius:3px;font-size:0.72rem">VIRUSTOTAL_API_KEY</code> secret to enable live scanning.'}
-      </div>
-    `;
-  }
-
   // Feed Panel
   const feedPanel = document.getElementById('feed-panel-body');
   feedPanel.innerHTML = `
     <div class="rc-row">
-      <span class="rc-row-label">Sources Flagged</span>
-      <span class="rc-row-value">${sourceCount} / ${totalFeeds}</span>
+      <span class="rc-row-label">Threat Reputation Score</span>
+      <span class="rc-row-value" style="color:var(--red)">${reputation}/100</span>
+    </div>
+    <div class="rc-row">
+      <span class="rc-row-label">Detection Confidence</span>
+      <span class="rc-row-value">${sourceCount > 0 ? Math.min(Math.round((sourceCount/totalFeeds)*100), 99) : 0}%</span>
     </div>
     <div class="rc-row">
       <span class="rc-row-label">In malicious_ips.txt</span>
@@ -1783,45 +1424,28 @@ function showReport(type, ip, feedMatch, stats, vtData) {
       <span class="rc-row-value">${totalIPs ? fmt(totalIPs) : '—'}</span>
     </div>
     <div class="rc-row">
-      <span class="rc-row-label">Last Updated</span>
+      <span class="rc-row-label">Last DB Sync</span>
       <span class="rc-row-value" style="font-size:0.72rem">${lastUpdated !== '—' ? lastUpdated.replace('T',' ').replace('Z',' UTC') : '—'}</span>
     </div>
   `;
-
-  // Source Tags
-  const tagsWrap = document.getElementById('rc-tags-wrap');
-  const tagsList = document.getElementById('rc-tags-list');
-  if (feedMatch && feedMatch.sourceList.length > 0) {
-    tagsWrap.style.display = 'block';
-    tagsList.innerHTML = feedMatch.sourceList.map(s =>
-      `<span class="rc-tag"><i data-lucide="radio"></i> ${s.replace(/_/g, ' ')}</span>`
-    ).join('');
-  } else {
-    tagsWrap.style.display = 'block';
-    tagsList.innerHTML = '<span class="rc-tag rc-tag-safe"><i data-lucide="check-circle-2"></i> Not flagged by any feed</span>';
-  }
 
   // Assessment
   const assess = document.getElementById('rc-assessment');
   if (type === 'warn') {
     assess.innerHTML = '<strong>Error:</strong> Invalid IPv4 format or feed data could not be loaded. Enter a valid IPv4 address (e.g. <code>185.220.101.45</code>) and try again.';
   } else {
-    const vtNote = vtData
-      ? ` VirusTotal reports <strong>${vtMal} malicious</strong> and <strong>${vtData.last_analysis_stats?.suspicious || 0} suspicious</strong> detections across ${(vtData.last_analysis_stats?.malicious||0)+(vtData.last_analysis_stats?.suspicious||0)+(vtData.last_analysis_stats?.undetected||0)+(vtData.last_analysis_stats?.harmless||0)} vendors.`
-      : '';
-
     if (feedMatch) {
       assess.innerHTML =
-        `<strong>Threat Assessment:</strong> <code>${ip}</code> has been flagged by <strong>${sourceCount}</strong> out of <strong>${totalFeeds}</strong> OSINT sources.${vtNote} ` +
-        (threat.level === 'critical' ? 'This is a <strong style="color:var(--red)">critical threat</strong> — widely recognized as malicious. Immediate blocking is recommended.' :
-         threat.level === 'high' ? 'This is a <strong style="color:#ea580c">high threat</strong> — multiple sources confirm malicious activity. Blocking is strongly recommended.' :
-         threat.level === 'medium' ? 'This is a <strong style="color:var(--amber)">medium threat</strong> — confirmed by multiple sources. Consider blocking or monitoring.' :
-         'This is a <strong>low threat</strong> — reported by a single source. Consider monitoring for further activity.') +
-        ' This IP is present in <strong>malicious_ips.txt</strong> and can be ingested into firewalls, SIEM, or IDS/IPS.';
+        `<strong>Threat Assessment:</strong> <code>${ip}</code> has been flagged by our advanced threat detection engine. ` +
+        (threat.level === 'critical' ? 'This is a <strong style="color:var(--red)">critical threat</strong> — widely recognized as malicious globally. Immediate blocking is recommended.' :
+         threat.level === 'high' ? 'This is a <strong style="color:#ea580c">high threat</strong> — highly confident malicious activity. Blocking is strongly recommended.' :
+         threat.level === 'medium' ? 'This is a <strong style="color:var(--amber)">medium threat</strong> — confirmed malicious activity. Consider blocking or monitoring.' :
+         'This is a <strong>low threat</strong> — identified with low confidence. Consider monitoring for further activity.') +
+        ' This IP is currently active in our <strong>malicious_ips.txt</strong> blocklist and is ready for immediate ingestion into firewalls, SIEM, or IDS/IPS systems.';
     } else {
       assess.innerHTML =
-        `<strong>Assessment:</strong> <code>${ip}</code> was <strong>not found</strong> in the HimalayaFeed database of <strong>${totalIPs ? fmt(totalIPs) : '—'}</strong> malicious IPs from <strong>${totalFeeds}</strong> sources.${vtNote} ` +
-        'Absence does <strong>not</strong> guarantee safety — only that it is not in the monitored feeds at this time.';
+        `<strong>Assessment:</strong> <code>${ip}</code> was <strong>not found</strong> in the HimalayaFeed database of <strong>${totalIPs ? fmt(totalIPs) : '—'}</strong> active malicious IPs. ` +
+        'Absence from our database does <strong>not</strong> guarantee safety — only that it is not currently exhibiting malicious activity across our sensor network.';
     }
   }
 

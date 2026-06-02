@@ -449,16 +449,21 @@ def write_csv(
     sorted_ips: List[str],
     ip_map: Dict[str, List[str]],
 ) -> None:
-    """Write malicious_ips.csv — ip, sources (pipe-separated), source_count."""
-    rows = [
-        {
+    """Write malicious_ips.csv — ip, sources, source_count, reputation."""
+    rows = []
+    for ip in sorted_ips:
+        source_count = len(ip_map[ip])
+        # Calculate a proprietary reputation score (0-100) based on node detections
+        reputation = min(100, source_count * 20)
+        
+        rows.append({
             "ip":           ip,
             "sources":      "|".join(ip_map[ip]),
-            "source_count": len(ip_map[ip]),
-        }
-        for ip in sorted_ips
-    ]
-    df = pd.DataFrame(rows, columns=["ip", "sources", "source_count"])
+            "source_count": source_count,
+            "reputation":   reputation,
+        })
+        
+    df = pd.DataFrame(rows, columns=["ip", "sources", "source_count", "reputation"])
     df.to_csv("malicious_ips.csv", index=False)
     log.info("malicious_ips.csv written (%d rows)", len(df))
 

@@ -53,15 +53,6 @@ jobs:
           ABUSEIPDB_API_KEY: ${{ secrets.ABUSEIPDB_API_KEY }}
         run: python update_feed.py
 
-      # ── 5. Inject API Keys ───────────────────────────────────────────────────
-      - name: Inject VirusTotal API Key
-        env:
-          VT_API_KEY: ${{ secrets.VIRUSTOTAL_API_KEY }}
-        run: |
-          if [ -n "$VT_API_KEY" ]; then
-            sed -i "s/__VT_API_KEY__/$VT_API_KEY/g" index.html
-          fi
-
       # ── 5. Commit and push ───────────────────────────────────────────────────
       #
       # Uses the official github-actions[bot] identity so commit history is clean.
