@@ -1,17 +1,23 @@
 {
+<<<<<<< Updated upstream
   "last_updated": "2026-06-02T06:29:53Z",
   "total_unique_ips": 1076201,
   "total_unique_domains": 759,
+=======
+  "last_updated": "2026-06-02T06:32:18Z",
+  "total_unique_ips": 1076201,
+  "total_unique_domains": 131095,
+>>>>>>> Stashed changes
   "total_feeds_processed": 14,
-  "total_feeds_failed": 3,
-  "multi_source_ips": 385300,
+  "total_feeds_failed": 2,
+  "multi_source_ips": 385301,
   "failed_feeds": [
     "cins_army",
-    "alienvault_reputation",
-    "abuseipdb"
+    "alienvault_reputation"
   ],
   "ips_per_source": {
     "feodo_tracker": 5,
+<<<<<<< Updated upstream
     "bbcan177_ms1": 8842,
     "feodo_tracker_aggressive": 7607,
     "firehol_level2": 27786,
@@ -23,6 +29,19 @@
     "greensnow": 5942,
     "ipsum": 115309,
     "spamhaus_drop": 183642,
+=======
+    "firehol_level3": 32085,
+    "ipsum": 115309,
+    "feodo_tracker_aggressive": 7607,
+    "bbcan177_ms1": 8842,
+    "firehol_level2": 27786,
+    "emerging_threats": 531,
+    "binary_defense": 1359,
+    "greensnow": 5942,
+    "spamhaus_drop": 183642,
+    "criticalpath_security": 531,
+    "blocklist_de": 24067,
+>>>>>>> Stashed changes
     "firehol_level1": 547683,
     "charles_haley_malware_ips": 614601
   }
