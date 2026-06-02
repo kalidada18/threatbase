@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-06-02T08:52:06Z",
+  "last_updated": "2026-06-02T08:54:47Z",
   "total_unique_ips": 1076467,
   "total_unique_domains": 131098,
   "total_feeds_processed": 14,
@@ -12,16 +12,16 @@
   ],
   "ips_per_source": {
     "feodo_tracker": 5,
+    "firehol_level2": 27786,
     "bbcan177_ms1": 8842,
     "feodo_tracker_aggressive": 7607,
     "emerging_threats": 531,
-    "binary_defense": 1359,
-    "firehol_level2": 27786,
     "firehol_level3": 32085,
-    "ipsum": 115309,
+    "binary_defense": 1359,
     "criticalpath_security": 531,
-    "blocklist_de": 24027,
+    "ipsum": 115309,
     "greensnow": 5964,
+    "blocklist_de": 24027,
     "spamhaus_drop": 183642,
     "firehol_level1": 547683,
     "charles_haley_malware_ips": 614601
