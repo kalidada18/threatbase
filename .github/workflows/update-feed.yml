@@ -76,9 +76,16 @@ jobs:
             TIMESTAMP=$(date -u '+%Y-%m-%d %H:%M UTC')
             git commit -m "chore: update threat feed — ${TIMESTAMP} — ${IP_COUNT} IPs"
 
-            git pull --rebase --quiet origin "${GITHUB_REF_NAME:-main}" || true
-            git push origin "${GITHUB_REF_NAME:-main}"
-            echo "✓ Feed pushed successfully (${IP_COUNT} IPs)."
+            if git pull --rebase -X ours --quiet origin "${GITHUB_REF_NAME:-main}"; then
+              if git push origin "${GITHUB_REF_NAME:-main}"; then
+                echo "✓ Feed pushed successfully (${IP_COUNT} IPs)."
+              else
+                echo "⚠ Push failed (branch moved during run). Skipping push for this run."
+              fi
+            else
+              git rebase --abort || true
+              echo "⚠ Rebase failed on generated files. Skipping push for this run."
+            fi
           fi
 
       # ── 6. Create Daily Archive Release ───────────────────────────────────────
