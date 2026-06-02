@@ -52,6 +52,7 @@ FEEDS: Dict[str, str] = {
     "criticalpath_security": "https://raw.githubusercontent.com/CriticalPathSecurity/Public-Intelligence-Feeds/master/compromised-ips.txt",
     "alienvault_reputation": "https://reputation.alienvault.com/reputation.data",
     "bruteforceblocker": "https://danger.rulez.sk/projects/bruteforceblocker/blist.php",
+    "botvrij": "https://www.botvrij.eu/data/misp.text_ip-dst.ADMIN.txt",
 }
 
 FEED_CATEGORIES: Dict[str, str] = {
@@ -73,6 +74,7 @@ FEED_CATEGORIES: Dict[str, str] = {
     "alienvault_reputation": "Mixed",
     "abuseipdb": "Malicious",
     "bruteforceblocker": "Brute-Force",
+    "botvrij": "Mixed",
 }
 
 DOMAIN_FEEDS: Dict[str, str] = {
