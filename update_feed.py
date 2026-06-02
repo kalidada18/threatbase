@@ -79,6 +79,7 @@ DOMAIN_FEEDS: Dict[str, str] = {
     "openphish": "https://raw.githubusercontent.com/openphish/public_feed/refs/heads/main/feed.txt",
     "urlhaus": "https://urlhaus.abuse.ch/downloads/text_online/",
     "romainmarcoux": "https://raw.githubusercontent.com/romainmarcoux/malicious-domains/refs/heads/main/full-domains-aa.txt",
+    "hagezi_ultimate": "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/domains/ultimate.txt",
 }
 
 HASH_FEEDS: Dict[str, str] = {
