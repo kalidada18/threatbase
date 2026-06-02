@@ -1,17 +1,17 @@
 [
   {
     "date": "2026-06-02",
-    "total_unique_ips": 711222,
-    "total_unique_domains": 802120,
-    "total_unique_hashes": 653,
-    "total_unique_urls": 30923,
+    "total_unique_ips": 711428,
+    "total_unique_domains": 802277,
+    "total_unique_hashes": 626,
+    "total_unique_urls": 30957,
     "active_feeds": 16,
     "category_counts": {
       "Mixed": 673148,
-      "Brute-Force": 28380,
+      "Brute-Force": 28722,
       "Malware": 8871,
       "C2": 7607,
-      "Compromised": 531,
+      "Compromised": 551,
       "Spam": 182118
     },
     "top_sources": {
