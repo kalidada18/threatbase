@@ -1240,10 +1240,13 @@ async function boot() {
     if (localStorage.getItem('theme') === 'dark') {
       document.documentElement.classList.add('dark');
     }
-    document.getElementById('theme-toggle').addEventListener('click', () => {
-      document.documentElement.classList.toggle('dark');
-      localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
-    });
+    const themeBtn = document.getElementById('theme-toggle');
+    if (themeBtn) {
+      themeBtn.addEventListener('click', () => {
+        document.documentElement.classList.toggle('dark');
+        localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+      });
+    }
 
     const r = await fetch(RAW + 'stats.json?_=' + Date.now());
     if (!r.ok) throw new Error('HTTP ' + r.status);
