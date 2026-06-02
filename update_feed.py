@@ -43,6 +43,17 @@ FEEDS: Dict[str, str] = {
     "feodo_tracker": (
         "https://feodotracker.abuse.ch/downloads/ipblocklist.txt"
     ),
+    # Feodo Tracker (aggressive) — broader C2 coverage incl. older/unconfirmed
+    "feodo_tracker_aggressive": (
+        "https://feodotracker.abuse.ch/downloads/ipblocklist_aggressive.txt"
+    ),
+
+    # ── BBcan177 (GitHub Gist) ───────────────────────────────────────────────
+    # MS-1 curated malware IP list — Dridex, Zeus, Emotet, Regin, Cridex, etc.
+    "bbcan177_ms1": (
+        "https://gist.githubusercontent.com/BBcan177/"
+        "bf29d47ea04391cb3eb0/raw/"
+    ),
 
     # ── stamparm (GitHub) ─────────────────────────────────────────────────────
     # ipsum — aggregated threat score feed; first column = IP, second = score
