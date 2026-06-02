@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HimalayaFeed — Threat Intelligence Platform</title>
-  <meta name="description" content="HimalayaFeed aggregates malicious IPv4 addresses from 13+ OSINT feeds. Free, automated, zero infrastructure.">
+  <meta name="description" content="HimalayaFeed aggregates malicious IPv4 addresses from 15+ OSINT feeds. Free, automated, zero infrastructure.">
   <link rel="icon" href="img/himalayafeed.png" type="image/png">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -36,6 +36,8 @@
       --green-light: #f0fdf4;
       --amber: #d97706;
       --amber-light: #fffbeb;
+      --blue: #2563eb;
+      --blue-light: #eff6ff;
 
       --font: 'Inter', system-ui, -apple-system, sans-serif;
       --mono: 'JetBrains Mono', 'Fira Code', monospace;
@@ -82,17 +84,9 @@
       text-decoration: none; color: var(--ink);
     }
 
-    .nav-brand img {
-      width: 30px; height: 30px; border-radius: 7px;
-    }
-
-    .nav-brand span {
-      font-weight: 800; font-size: 1.05rem; letter-spacing: -0.02em;
-    }
-
-    .nav-brand em {
-      color: var(--red); font-style: normal;
-    }
+    .nav-brand img { width: 30px; height: 30px; border-radius: 7px; }
+    .nav-brand span { font-weight: 800; font-size: 1.05rem; letter-spacing: -0.02em; }
+    .nav-brand em { color: var(--red); font-style: normal; }
 
     .nav-links {
       display: flex; align-items: center; gap: 0.25rem;
@@ -100,28 +94,18 @@
     }
 
     .nav-links a {
-      text-decoration: none;
-      color: var(--iron);
+      text-decoration: none; color: var(--iron);
       font-size: 0.84rem; font-weight: 500;
-      padding: 0.4rem 0.85rem;
-      border-radius: 7px;
+      padding: 0.4rem 0.85rem; border-radius: 7px;
       transition: all 0.15s;
     }
 
-    .nav-links a:hover {
-      color: var(--ink);
-      background: var(--smoke);
-    }
-
-    .nav-links a.active {
-      color: var(--red);
-      background: var(--red-light);
-    }
+    .nav-links a:hover { color: var(--ink); background: var(--smoke); }
+    .nav-links a.active { color: var(--red); background: var(--red-light); }
 
     .nav-status {
       display: flex; align-items: center; gap: 6px;
-      font-size: 0.76rem; font-weight: 600;
-      color: var(--green);
+      font-size: 0.76rem; font-weight: 600; color: var(--green);
       padding: 0.3rem 0.7rem;
       background: var(--green-light);
       border: 1px solid rgba(22, 163, 74, 0.15);
@@ -129,19 +113,16 @@
     }
 
     .nav-dot {
-      width: 6px; height: 6px;
-      background: var(--green);
-      border-radius: 50%;
-      animation: blink 2s ease-in-out infinite;
+      width: 6px; height: 6px; background: var(--green);
+      border-radius: 50%; animation: blink 2s ease-in-out infinite;
     }
 
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
 
-    /* ── Hero ───────────────────────────────────────────── */
+    /* ── Hero + Search ─────────────────────────────────── */
     .hero {
-      background: var(--white);
-      border-bottom: 1px solid var(--ash);
-      padding: 5rem 2rem 4rem;
+      background: linear-gradient(180deg, var(--midnight) 0%, #0f111a 100%);
+      padding: 4rem 2rem 3.5rem;
       text-align: center;
       position: relative;
       overflow: hidden;
@@ -150,62 +131,116 @@
     .hero::before {
       content: '';
       position: absolute;
-      top: -200px; left: 50%;
-      transform: translateX(-50%);
-      width: 800px; height: 800px;
-      background: radial-gradient(circle, var(--red-glow) 0%, transparent 70%);
+      top: -300px; left: 50%; transform: translateX(-50%);
+      width: 1000px; height: 1000px;
+      background: radial-gradient(circle, rgba(220,38,38,0.08) 0%, transparent 60%);
       pointer-events: none;
     }
 
-    .hero-inner { position: relative; }
-
-    .hero-badge {
-      display: inline-flex; align-items: center; gap: 6px;
-      background: var(--red-light);
-      border: 1px solid var(--red-border);
-      color: var(--red);
-      font-size: 0.72rem; font-weight: 700;
-      letter-spacing: 0.06em; text-transform: uppercase;
-      padding: 0.35rem 1rem;
-      border-radius: 100px;
-      margin-bottom: 1.8rem;
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(220,38,38,0.3), transparent);
     }
 
+    .hero-inner { position: relative; max-width: 720px; margin: 0 auto; }
+
     .hero h1 {
-      font-size: clamp(2rem, 5vw, 3.2rem);
-      font-weight: 900;
-      letter-spacing: -0.04em;
-      line-height: 1.1;
-      color: var(--midnight);
-      margin-bottom: 1rem;
+      font-size: clamp(1.8rem, 4.5vw, 2.8rem);
+      font-weight: 900; letter-spacing: -0.04em;
+      line-height: 1.15; color: #fff;
+      margin-bottom: 0.8rem;
     }
 
     .hero h1 .accent { color: var(--red); }
 
     .hero-sub {
-      max-width: 520px; margin: 0 auto 2.5rem;
-      font-size: 1rem; color: var(--iron);
+      max-width: 520px; margin: 0 auto 2rem;
+      font-size: 0.92rem; color: rgba(255,255,255,0.5);
       line-height: 1.7;
     }
 
+    /* Search Bar */
+    .hero-search {
+      max-width: 600px; margin: 0 auto 1.8rem;
+      position: relative;
+    }
+
+    .hero-search-row {
+      display: flex; gap: 0;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      overflow: hidden;
+      transition: border-color 0.25s, box-shadow 0.25s;
+    }
+
+    .hero-search-row:focus-within {
+      border-color: rgba(220,38,38,0.5);
+      box-shadow: 0 0 0 4px rgba(220,38,38,0.1), 0 8px 32px rgba(0,0,0,0.3);
+    }
+
+    .hero-search-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      padding: 1rem 1.4rem;
+      font-family: var(--mono);
+      font-size: 1rem;
+      color: #fff;
+      outline: none;
+    }
+
+    .hero-search-input::placeholder { color: rgba(255,255,255,0.3); }
+
+    .hero-search-btn {
+      display: flex; align-items: center; gap: 7px;
+      padding: 0 1.5rem;
+      background: var(--red);
+      color: white;
+      border: none;
+      font-family: var(--font);
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.18s;
+      white-space: nowrap;
+    }
+
+    .hero-search-btn:hover { background: var(--red-hover); }
+    .hero-search-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+    .hero-search-btn i { width: 18px; height: 18px; }
+
     .hero-actions {
       display: flex; align-items: center;
-      justify-content: center; gap: 0.75rem;
+      justify-content: center; gap: 0.6rem;
       flex-wrap: wrap;
     }
 
     /* ── Buttons ────────────────────────────────────────── */
     .btn {
       display: inline-flex; align-items: center; gap: 7px;
-      padding: 0.65rem 1.35rem;
+      padding: 0.55rem 1.1rem;
       border-radius: 8px;
-      font-size: 0.875rem; font-weight: 600;
+      font-size: 0.8rem; font-weight: 600;
       text-decoration: none; border: none;
       cursor: pointer; font-family: var(--font);
       transition: all 0.18s;
     }
 
-    .btn svg, .btn i { width: 16px; height: 16px; }
+    .btn svg, .btn i { width: 15px; height: 15px; }
+
+    .btn-ghost {
+      background: rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.6);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .btn-ghost:hover {
+      background: rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.85);
+      transform: translateY(-1px);
+    }
 
     .btn-red {
       background: var(--red); color: white;
@@ -218,21 +253,18 @@
     }
 
     .btn-outline {
-      background: var(--white);
-      color: var(--ink);
+      background: var(--white); color: var(--ink);
       border: 1px solid var(--ash);
       box-shadow: var(--shadow-sm);
     }
     .btn-outline:hover {
-      background: var(--smoke);
-      border-color: var(--silver);
+      background: var(--smoke); border-color: var(--silver);
       transform: translateY(-1px);
     }
 
     /* ── Container ─────────────────────────────────────── */
     .container {
-      max-width: 1280px;
-      margin: 0 auto;
+      max-width: 1280px; margin: 0 auto;
       padding: 0 clamp(1rem, 4vw, 3rem);
     }
 
@@ -241,8 +273,7 @@
     .section-label {
       font-size: 0.7rem; font-weight: 700;
       text-transform: uppercase; letter-spacing: 0.08em;
-      color: var(--red);
-      margin-bottom: 0.35rem;
+      color: var(--red); margin-bottom: 0.35rem;
     }
 
     .section-title {
@@ -254,17 +285,12 @@
     .section-title i { color: var(--slate); width: 20px; height: 20px; }
 
     .section-desc {
-      font-size: 0.875rem; color: var(--iron);
-      margin-top: 0.3rem;
+      font-size: 0.875rem; color: var(--iron); margin-top: 0.3rem;
     }
 
     .section-head { margin-bottom: 1.5rem; }
 
-    .divider {
-      border: none;
-      border-top: 1px solid var(--ash);
-      margin: 0;
-    }
+    .divider { border: none; border-top: 1px solid var(--ash); margin: 0; }
 
     /* ── Metric Strip ──────────────────────────────────── */
     .metrics {
@@ -278,8 +304,7 @@
     }
 
     .metric-item {
-      display: flex; align-items: center; gap: 5px;
-      color: var(--iron);
+      display: flex; align-items: center; gap: 5px; color: var(--iron);
     }
 
     .metric-item i { width: 14px; height: 14px; color: var(--slate); }
@@ -299,20 +324,14 @@
       padding: 1.5rem;
       box-shadow: var(--shadow-sm);
       transition: box-shadow 0.2s, transform 0.2s;
-      position: relative;
-      overflow: hidden;
+      position: relative; overflow: hidden;
     }
 
-    .stat-card:hover {
-      box-shadow: var(--shadow);
-      transform: translateY(-2px);
-    }
+    .stat-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
 
     .stat-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 3px;
+      content: ''; position: absolute;
+      top: 0; left: 0; right: 0; height: 3px;
     }
 
     .sc-red::before    { background: var(--red); }
@@ -322,17 +341,13 @@
 
     .stat-top {
       display: flex; align-items: center;
-      justify-content: space-between;
-      margin-bottom: 0.75rem;
+      justify-content: space-between; margin-bottom: 0.75rem;
     }
 
-    .stat-label {
-      font-size: 0.78rem; color: var(--iron); font-weight: 500;
-    }
+    .stat-label { font-size: 0.78rem; color: var(--iron); font-weight: 500; }
 
     .stat-icon {
-      width: 36px; height: 36px;
-      border-radius: 9px;
+      width: 36px; height: 36px; border-radius: 9px;
       display: flex; align-items: center; justify-content: center;
     }
 
@@ -346,374 +361,394 @@
     .stat-value {
       font-size: 2rem; font-weight: 900;
       letter-spacing: -0.04em; line-height: 1;
-      color: var(--midnight);
-      font-variant-numeric: tabular-nums;
+      color: var(--midnight); font-variant-numeric: tabular-nums;
     }
 
-    .stat-sub {
-      font-size: 0.72rem; color: var(--slate);
-      margin-top: 0.4rem;
-    }
+    .stat-sub { font-size: 0.72rem; color: var(--slate); margin-top: 0.4rem; }
 
-    /* ── IP Report ──────────────────────────────────────── */
-    .lookup-card {
+    /* ── Report Section ────────────────────────────────── */
+    .report-section {
+      display: none;
       background: var(--white);
-      border: 1px solid var(--ash);
-      border-radius: var(--radius);
-      padding: 2rem;
-      box-shadow: var(--shadow-sm);
-      max-width: 780px;
+      border-bottom: 1px solid var(--ash);
+    }
+
+    .report-section.show { display: block; }
+
+    .report-container {
+      max-width: 960px;
       margin: 0 auto;
+      padding: 2rem clamp(1rem, 4vw, 3rem);
     }
 
-    .lookup-row {
-      display: flex; gap: 0.7rem;
+    /* Scanning Animation */
+    .scan-overlay {
+      display: none;
+      padding: 3rem 1rem;
+      text-align: center;
     }
 
-    .lookup-input {
-      flex: 1;
-      background: var(--snow);
-      border: 1px solid var(--ash);
-      border-radius: 8px;
-      padding: 0.75rem 1rem;
-      font-family: var(--mono);
-      font-size: 0.9rem;
-      color: var(--ink);
-      outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
+    .scan-overlay.active { display: block; }
+
+    .scan-radar {
+      width: 80px; height: 80px;
+      margin: 0 auto 1.5rem;
+      position: relative;
     }
 
-    .lookup-input::placeholder { color: var(--silver); }
-
-    .lookup-input:focus {
-      border-color: var(--red);
-      box-shadow: 0 0 0 3px var(--red-glow);
+    .scan-radar-ring {
+      position: absolute; inset: 0;
+      border: 2px solid rgba(220,38,38,0.15);
+      border-radius: 50%;
     }
 
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateY(8px); }
-      to   { opacity: 1; transform: translateY(0); }
+    .scan-radar-ring:nth-child(2) {
+      inset: 10px;
+      border-color: rgba(220,38,38,0.25);
     }
 
-    .badge {
-      display: inline-flex; align-items: center; gap: 4px;
-      font-size: 0.65rem; font-weight: 800;
-      text-transform: uppercase; letter-spacing: 0.05em;
-      padding: 0.2rem 0.6rem;
-      border-radius: 4px;
+    .scan-radar-ring:nth-child(3) {
+      inset: 20px;
+      border-color: rgba(220,38,38,0.4);
     }
 
-    .badge-red   { background: var(--red);   color: white; }
-    .badge-green { background: var(--green); color: white; }
-    .badge-amber { background: var(--amber); color: white; }
+    .scan-radar-sweep {
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 50%; height: 2px;
+      background: linear-gradient(90deg, var(--red), transparent);
+      transform-origin: left center;
+      animation: radarSweep 1.5s linear infinite;
+    }
+
+    .scan-radar-dot {
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 6px; height: 6px;
+      margin: -3px 0 0 -3px;
+      background: var(--red);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--red);
+    }
+
+    @keyframes radarSweep { to { transform: rotate(360deg); } }
+
+    .scan-title {
+      font-size: 1.1rem; font-weight: 700;
+      color: var(--midnight); margin-bottom: 0.5rem;
+    }
+
+    .scan-ip {
+      font-family: var(--mono); font-size: 0.9rem;
+      color: var(--slate); margin-bottom: 1.5rem;
+    }
+
+    .scan-steps {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .scan-step {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 0.78rem; font-weight: 600;
+      color: var(--silver);
+      transition: color 0.3s;
+    }
+
+    .scan-step.done { color: var(--green); }
+    .scan-step.active { color: var(--red); }
+    .scan-step i { width: 14px; height: 14px; }
 
     /* Report Card */
     .report-card {
-      margin-top: 1.5rem;
-      border: 1px solid var(--ash);
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: var(--shadow);
-      animation: slideUp 0.3s ease;
       display: none;
+      animation: reportSlide 0.4s ease;
     }
 
     .report-card.show { display: block; }
 
-    .report-header {
-      padding: 1.5rem 1.8rem;
+    @keyframes reportSlide {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .rc-header {
+      padding: 1.5rem 2rem;
+      border-radius: 14px 14px 0 0;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 1rem;
-    }
-
-    .report-header-danger {
-      background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
       color: white;
     }
 
-    .report-header-safe {
-      background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
-      color: white;
-    }
+    .rc-header-danger { background: linear-gradient(135deg, #dc2626, #991b1b); }
+    .rc-header-safe   { background: linear-gradient(135deg, #16a34a, #15803d); }
+    .rc-header-warn   { background: linear-gradient(135deg, #d97706, #b45309); }
 
-    .report-header-warn {
-      background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
-      color: white;
-    }
+    .rc-h-left { display: flex; align-items: center; gap: 16px; }
 
-    .rh-left { display: flex; align-items: center; gap: 14px; }
-
-    .rh-icon {
-      width: 48px; height: 48px;
-      background: rgba(255,255,255,0.18);
-      border-radius: 12px;
+    .rc-h-icon {
+      width: 52px; height: 52px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 14px;
       display: flex; align-items: center; justify-content: center;
+      backdrop-filter: blur(8px);
     }
 
-    .rh-icon i { width: 24px; height: 24px; }
+    .rc-h-icon i { width: 26px; height: 26px; }
 
-    .rh-ip {
+    .rc-h-ip {
       font-family: var(--mono);
-      font-size: 1.25rem;
-      font-weight: 700;
-      letter-spacing: -0.01em;
+      font-size: 1.4rem; font-weight: 700;
     }
 
-    .rh-verdict {
-      font-size: 0.82rem;
-      opacity: 0.85;
-      margin-top: 2px;
-    }
+    .rc-h-sub { font-size: 0.82rem; opacity: 0.8; margin-top: 2px; }
 
-    .rh-badge {
-      font-size: 0.7rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      padding: 0.35rem 1rem;
+    .rc-h-badge {
+      font-size: 0.72rem; font-weight: 800;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      padding: 0.4rem 1.1rem;
       border-radius: 100px;
-      background: rgba(255,255,255,0.2);
-      border: 1px solid rgba(255,255,255,0.3);
+      background: rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.25);
       backdrop-filter: blur(4px);
+      white-space: nowrap;
     }
 
-    .report-body {
-      padding: 1.5rem 1.8rem;
+    .rc-body {
       background: var(--white);
+      border: 1px solid var(--ash);
+      border-top: none;
+      border-radius: 0 0 14px 14px;
+      padding: 2rem;
     }
 
-    /* Threat Meter */
-    .threat-meter {
+    /* Two-Panel Layout */
+    .rc-panels {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.2rem;
       margin-bottom: 1.5rem;
     }
 
-    .tm-label {
+    .rc-panel {
+      border: 1px solid var(--ash);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .rc-panel-head {
+      padding: 0.8rem 1.2rem;
+      font-size: 0.72rem; font-weight: 800;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      display: flex; align-items: center; gap: 6px;
+      border-bottom: 1px solid var(--ash);
+    }
+
+    .rc-panel-head i { width: 14px; height: 14px; }
+
+    .rc-panel-vt .rc-panel-head {
+      background: #eff6ff;
+      color: #1d4ed8;
+    }
+
+    .rc-panel-feed .rc-panel-head {
+      background: var(--red-light);
+      color: var(--red);
+    }
+
+    .rc-panel-body { padding: 1.2rem; }
+
+    .rc-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 0.5rem;
+      padding: 0.55rem 0;
+      border-bottom: 1px solid var(--smoke);
     }
 
-    .tm-label-text {
-      font-size: 0.78rem;
-      font-weight: 600;
+    .rc-row:last-child { border-bottom: none; }
+
+    .rc-row-label {
+      font-size: 0.78rem; color: var(--slate); font-weight: 500;
+    }
+
+    .rc-row-value {
+      font-size: 0.82rem; font-weight: 700; color: var(--midnight);
+      font-family: var(--mono);
+    }
+
+    .rc-row-value.text { font-family: var(--font); }
+
+    /* Detection Ratio Circle */
+    .detection-circle {
+      display: flex; align-items: center; gap: 14px;
+      padding: 1rem 0 0.5rem;
+    }
+
+    .dc-ring {
+      width: 56px; height: 56px; position: relative;
+    }
+
+    .dc-ring svg { transform: rotate(-90deg); }
+
+    .dc-ring circle {
+      fill: none; stroke-width: 5;
+      cx: 28; cy: 28; r: 24;
+    }
+
+    .dc-bg { stroke: var(--smoke); }
+
+    .dc-fill {
+      stroke: var(--red);
+      stroke-dasharray: 150.8;
+      stroke-dashoffset: 150.8;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 1.2s ease;
+    }
+
+    .dc-fill.safe { stroke: var(--green); }
+
+    .dc-num {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.72rem; font-weight: 800; color: var(--midnight);
+    }
+
+    .dc-text {
+      font-size: 0.82rem; color: var(--iron); line-height: 1.5;
+    }
+
+    .dc-text strong { color: var(--midnight); }
+
+    .vt-unavailable {
+      padding: 1.2rem 0;
+      font-size: 0.82rem; color: var(--slate);
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    .vt-unavailable i { width: 28px; height: 28px; margin-bottom: 0.4rem; display: block; margin: 0 auto 0.5rem; color: var(--silver); }
+
+    /* Threat Bar */
+    .threat-bar {
+      margin-bottom: 1.5rem;
+    }
+
+    .tb-top {
+      display: flex; justify-content: space-between;
+      align-items: center; margin-bottom: 0.4rem;
+    }
+
+    .tb-label {
+      font-size: 0.72rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.05em;
       color: var(--iron);
     }
 
-    .tm-level {
-      font-size: 0.72rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      padding: 0.15rem 0.5rem;
-      border-radius: 4px;
+    .tb-level {
+      font-size: 0.68rem; font-weight: 800;
+      text-transform: uppercase; letter-spacing: 0.05em;
+      padding: 0.12rem 0.5rem; border-radius: 4px;
     }
 
-    .tm-level-critical { background: #fef2f2; color: #dc2626; }
-    .tm-level-high     { background: #fff7ed; color: #ea580c; }
-    .tm-level-medium   { background: #fffbeb; color: #d97706; }
-    .tm-level-low      { background: #f0fdf4; color: #16a34a; }
-    .tm-level-none     { background: #f0fdf4; color: #16a34a; }
+    .tb-critical { background: #fef2f2; color: #dc2626; }
+    .tb-high     { background: #fff7ed; color: #ea580c; }
+    .tb-medium   { background: #fffbeb; color: #d97706; }
+    .tb-low      { background: #f0fdf4; color: #16a34a; }
+    .tb-none     { background: #f0fdf4; color: #16a34a; }
 
-    .tm-track {
-      height: 8px;
-      background: var(--smoke);
-      border-radius: 100px;
-      overflow: hidden;
-      position: relative;
+    .tb-track {
+      height: 6px; background: var(--smoke);
+      border-radius: 100px; overflow: hidden;
     }
 
-    .tm-bar {
-      height: 100%;
-      border-radius: 100px;
+    .tb-fill {
+      height: 100%; border-radius: 100px;
       transition: width 1s cubic-bezier(.25,.46,.45,.94);
       background: linear-gradient(90deg, #16a34a, #d97706, #dc2626);
     }
 
-    .tm-ticks {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 4px;
-      font-size: 0.6rem;
-      color: var(--silver);
-      font-weight: 600;
-    }
-
-    /* Report Grid */
-    .report-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .rg-item {
-      padding: 1rem;
-      background: var(--snow);
-      border: 1px solid var(--ash);
-      border-radius: 8px;
-    }
-
-    .rg-label {
-      font-size: 0.68rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--slate);
-      margin-bottom: 0.4rem;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .rg-label i { width: 12px; height: 12px; }
-
-    .rg-value {
-      font-size: 0.88rem;
-      font-weight: 600;
-      color: var(--midnight);
-    }
-
-    .rg-value.mono { font-family: var(--mono); font-size: 0.82rem; }
-
     /* Source Tags */
-    .source-tags {
-      margin-bottom: 1.5rem;
+    .rc-tags { margin-bottom: 1.5rem; }
+
+    .rc-tags-label {
+      font-size: 0.68rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--slate); margin-bottom: 0.5rem;
+      display: flex; align-items: center; gap: 5px;
     }
 
-    .st-label {
-      font-size: 0.68rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--slate);
-      margin-bottom: 0.6rem;
-      display: flex;
-      align-items: center;
-      gap: 5px;
+    .rc-tags-label i { width: 12px; height: 12px; }
+
+    .rc-tags-list {
+      display: flex; flex-wrap: wrap; gap: 0.35rem;
     }
 
-    .st-label i { width: 12px; height: 12px; }
-
-    .st-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.4rem;
-    }
-
-    .st-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 0.3rem 0.7rem;
-      border-radius: 6px;
-      font-size: 0.72rem;
-      font-weight: 600;
-      background: var(--red-light);
-      color: var(--red);
+    .rc-tag {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 0.25rem 0.65rem; border-radius: 6px;
+      font-size: 0.7rem; font-weight: 600;
+      background: var(--red-light); color: var(--red);
       border: 1px solid var(--red-border);
       transition: all 0.15s;
     }
 
-    .st-tag:hover {
-      background: rgba(220,38,38,0.12);
-      transform: translateY(-1px);
-    }
+    .rc-tag:hover { background: rgba(220,38,38,0.12); transform: translateY(-1px); }
+    .rc-tag i { width: 10px; height: 10px; }
 
-    .st-tag i { width: 11px; height: 11px; }
-
-    .st-none {
-      background: var(--green-light);
-      color: var(--green);
+    .rc-tag-safe {
+      background: var(--green-light); color: var(--green);
       border-color: rgba(22,163,74,0.2);
     }
 
-    /* External Links Row */
-    .ext-links {
-      display: flex;
-      gap: 0.6rem;
-      flex-wrap: wrap;
+    /* External Links */
+    .rc-ext {
+      display: flex; gap: 0.5rem; flex-wrap: wrap;
       margin-bottom: 1.5rem;
     }
 
-    .ext-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 0.55rem 1rem;
-      border-radius: 8px;
-      font-size: 0.78rem;
-      font-weight: 600;
+    .rc-ext a {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 0.5rem 0.9rem; border-radius: 8px;
+      font-size: 0.76rem; font-weight: 600;
       text-decoration: none;
-      transition: all 0.18s;
       border: 1px solid var(--ash);
-      background: var(--white);
-      color: var(--ink);
+      background: var(--white); color: var(--ink);
       box-shadow: var(--shadow-sm);
+      transition: all 0.18s;
     }
 
-    .ext-link:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow);
-    }
+    .rc-ext a:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+    .rc-ext a i { width: 14px; height: 14px; }
 
-    .ext-link i { width: 14px; height: 14px; }
+    .rc-ext-vt { border-color: rgba(37,99,235,0.2) !important; color: #2563eb !important; }
+    .rc-ext-vt:hover { background: #eff6ff !important; }
+    .rc-ext-abuse { border-color: var(--red-border) !important; color: var(--red) !important; }
+    .rc-ext-abuse:hover { background: var(--red-light) !important; }
+    .rc-ext-shodan { border-color: rgba(161,16,16,0.2) !important; color: #a11010 !important; }
+    .rc-ext-shodan:hover { background: #fef7f7 !important; }
 
-    .ext-link-vt {
-      border-color: rgba(0, 108, 190, 0.25);
-      color: #006cbe;
-    }
-    .ext-link-vt:hover { background: #f0f7ff; }
-
-    .ext-link-abuseipdb {
-      border-color: rgba(220, 38, 38, 0.2);
-      color: var(--red);
-    }
-    .ext-link-abuseipdb:hover { background: var(--red-light); }
-
-    .ext-link-shodan {
-      border-color: rgba(161, 16, 16, 0.2);
-      color: #a11010;
-    }
-    .ext-link-shodan:hover { background: #fef7f7; }
-
-    /* Report Detail Text */
-    .report-detail {
-      padding: 1rem 1.2rem;
+    /* Assessment Box */
+    .rc-assessment {
+      padding: 1.2rem 1.4rem;
       background: var(--snow);
       border: 1px solid var(--ash);
-      border-radius: 8px;
-      font-size: 0.82rem;
-      color: var(--iron);
-      line-height: 1.7;
+      border-radius: 10px;
+      font-size: 0.82rem; color: var(--iron);
+      line-height: 1.75;
     }
 
-    .report-detail strong { color: var(--midnight); }
-
-    /* TXT indicator */
-    .txt-indicator {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      padding: 0.25rem 0.65rem;
-      border-radius: 5px;
-      margin-top: 0.3rem;
-    }
-
-    .txt-indicator i { width: 12px; height: 12px; }
-
-    .txt-yes { background: var(--red-light); color: var(--red); }
-    .txt-no  { background: var(--green-light); color: var(--green); }
-
-    @media (max-width: 640px) {
-      .report-grid { grid-template-columns: 1fr; }
-      .report-header { flex-direction: column; align-items: flex-start; }
-      .ext-links { flex-direction: column; }
-      .ext-link { justify-content: center; }
+    .rc-assessment strong { color: var(--midnight); }
+    .rc-assessment code {
+      font-family: var(--mono);
+      background: var(--smoke);
+      padding: 0.1rem 0.4rem;
+      border-radius: 3px;
+      font-size: 0.78rem;
     }
 
     /* ── Charts ────────────────────────────────────────── */
@@ -758,9 +793,7 @@
       border-bottom: 1px solid var(--ash);
     }
 
-    .tbl-title {
-      font-size: 0.9rem; font-weight: 700; color: var(--midnight);
-    }
+    .tbl-title { font-size: 0.9rem; font-weight: 700; color: var(--midnight); }
 
     .chip {
       display: inline-flex; align-items: center;
@@ -796,28 +829,20 @@
       font-size: 0.84rem; color: var(--iron);
     }
 
-    .td-name {
-      font-weight: 600; color: var(--midnight);
-    }
+    .td-name { font-weight: 600; color: var(--midnight); }
 
     .prog-track {
-      height: 5px;
-      background: var(--smoke);
-      border-radius: 100px;
-      overflow: hidden;
-      margin-top: 0.35rem;
+      height: 5px; background: var(--smoke);
+      border-radius: 100px; overflow: hidden; margin-top: 0.35rem;
     }
 
     .prog-bar {
-      height: 100%;
-      background: var(--red);
+      height: 100%; background: var(--red);
       border-radius: 100px;
       transition: width 1.4s cubic-bezier(.25,.46,.45,.94);
     }
 
-    .prog-pct {
-      font-size: 0.75rem; font-weight: 600; color: var(--iron);
-    }
+    .prog-pct { font-size: 0.75rem; font-weight: 600; color: var(--iron); }
 
     /* ── Downloads ─────────────────────────────────────── */
     .dl-grid {
@@ -836,19 +861,12 @@
       transition: box-shadow 0.2s, transform 0.2s;
     }
 
-    .dl-card:hover {
-      box-shadow: var(--shadow);
-      transform: translateY(-2px);
-    }
+    .dl-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
 
-    .dl-top {
-      display: flex; align-items: center; gap: 10px;
-      margin-bottom: 0.6rem;
-    }
+    .dl-top { display: flex; align-items: center; gap: 10px; margin-bottom: 0.6rem; }
 
     .dl-icon {
-      width: 36px; height: 36px;
-      border-radius: 8px;
+      width: 36px; height: 36px; border-radius: 8px;
       display: flex; align-items: center; justify-content: center;
     }
 
@@ -858,9 +876,7 @@
     .dl-icon-grn  { background: var(--green-light); color: var(--green); }
     .dl-icon-amb  { background: var(--amber-light); color: var(--amber); }
 
-    .dl-name {
-      font-weight: 700; font-size: 0.9rem; color: var(--midnight);
-    }
+    .dl-name { font-weight: 700; font-size: 0.9rem; color: var(--midnight); }
 
     .dl-desc {
       font-size: 0.82rem; color: var(--iron);
@@ -868,23 +884,18 @@
     }
 
     .dl-url {
-      font-family: var(--mono);
-      font-size: 0.7rem;
+      font-family: var(--mono); font-size: 0.7rem;
       color: var(--red);
-      background: var(--snow);
-      border: 1px solid var(--ash);
-      padding: 0.6rem 0.8rem;
-      border-radius: 6px;
-      word-break: break-all;
-      margin-bottom: 0.8rem;
+      background: var(--snow); border: 1px solid var(--ash);
+      padding: 0.6rem 0.8rem; border-radius: 6px;
+      word-break: break-all; margin-bottom: 0.8rem;
     }
 
     /* ── Footer ────────────────────────────────────────── */
     footer {
       background: var(--white);
       border-top: 1px solid var(--ash);
-      padding: 3rem 2rem 2rem;
-      margin-top: 3rem;
+      padding: 3rem 2rem 2rem; margin-top: 3rem;
     }
 
     .footer-inner {
@@ -894,26 +905,11 @@
       gap: 2rem;
     }
 
-    .footer-brand {
-      display: flex; align-items: center; gap: 8px;
-      margin-bottom: 0.8rem;
-    }
-
-    .footer-brand img {
-      width: 24px; height: 24px; border-radius: 5px;
-    }
-
-    .footer-brand span {
-      font-weight: 800; font-size: 0.95rem; color: var(--midnight);
-    }
-
-    .footer-brand em {
-      color: var(--red); font-style: normal;
-    }
-
-    .footer-desc {
-      font-size: 0.82rem; color: var(--iron); line-height: 1.7;
-    }
+    .footer-brand { display: flex; align-items: center; gap: 8px; margin-bottom: 0.8rem; }
+    .footer-brand img { width: 24px; height: 24px; border-radius: 5px; }
+    .footer-brand span { font-weight: 800; font-size: 0.95rem; color: var(--midnight); }
+    .footer-brand em { color: var(--red); font-style: normal; }
+    .footer-desc { font-size: 0.82rem; color: var(--iron); line-height: 1.7; }
 
     .footer-col h4 {
       font-size: 0.7rem; font-weight: 800;
@@ -942,8 +938,8 @@
     /* ── Spinner ────────────────────────────────────────── */
     .spinner {
       width: 16px; height: 16px;
-      border: 2px solid var(--ash);
-      border-top-color: var(--red);
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
       border-radius: 50%;
       animation: spin 0.5s linear infinite;
       display: inline-block;
@@ -954,15 +950,20 @@
     /* ── Responsive ────────────────────────────────────── */
     @media (max-width: 820px) {
       .charts-row { grid-template-columns: 1fr; }
+      .rc-panels { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 640px) {
       .nav-links { display: none; }
-      .hero { padding: 3rem 1rem 2.5rem; }
+      .hero { padding: 2.5rem 1rem 2rem; }
+      .hero-search-row { flex-direction: column; }
+      .hero-search-btn { padding: 0.9rem; justify-content: center; }
       .hero-actions { flex-direction: column; align-items: stretch; }
-      .lookup-row { flex-direction: column; }
       .metrics { gap: 1rem; }
       .footer-inner { grid-template-columns: 1fr; }
+      .rc-header { flex-direction: column; align-items: flex-start; }
+      .rc-ext { flex-direction: column; }
+      .rc-ext a { justify-content: center; }
     }
   </style>
 </head>
@@ -978,7 +979,6 @@
 
     <ul class="nav-links">
       <li><a href="#dashboard" class="active">Dashboard</a></li>
-      <li><a href="#lookup">IP Report</a></li>
       <li><a href="#analytics">Analytics</a></li>
       <li><a href="#sources">Sources</a></li>
       <li><a href="#downloads">Downloads</a></li>
@@ -992,30 +992,135 @@
   </div>
 </nav>
 
-<!-- ═══════════════ HERO ═════════════════ -->
+<!-- ═══════════════ HERO + SEARCH ════════ -->
 <header class="hero" id="dashboard">
   <div class="hero-inner">
-
     <h1>Threat Intelligence<br><span class="accent">Made Simple.</span></h1>
     <p class="hero-sub">
-      HimalayaFeed aggregates malicious IPv4 addresses from 15+ reputable OSINT sources.
-      Fully automated. Updated every hour. Zero infrastructure.
+      Search any IP address to scan against 15+ OSINT feeds and VirusTotal.
+      Updated every hour. Fully automated. Zero infrastructure.
     </p>
+
+    <div class="hero-search" id="lookup">
+      <div class="hero-search-row">
+        <input type="text" class="hero-search-input" id="ip-input"
+               placeholder="Search IP address — e.g. 185.220.101.45"
+               autocomplete="off" spellcheck="false">
+        <button class="hero-search-btn" onclick="scanIP()" id="scan-btn">
+          <i data-lucide="scan"></i> Scan
+        </button>
+      </div>
+    </div>
+
     <div class="hero-actions">
       <a href="https://raw.githubusercontent.com/kalidada18/himalayafeed/main/malicious_ips.txt"
-         class="btn btn-red" target="_blank" rel="noopener" id="btn-dl-txt">
+         class="btn btn-ghost" target="_blank" rel="noopener" id="btn-dl-txt">
         <i data-lucide="download"></i> Download Feed
       </a>
       <a href="https://raw.githubusercontent.com/kalidada18/himalayafeed/main/malicious_ips.csv"
-         class="btn btn-outline" target="_blank" rel="noopener" id="btn-dl-csv">
+         class="btn btn-ghost" target="_blank" rel="noopener" id="btn-dl-csv">
         <i data-lucide="file-spreadsheet"></i> CSV Format
       </a>
-      <a href="https://github.com/kalidada18/himalayafeed" class="btn btn-outline" target="_blank" rel="noopener">
-        <i data-lucide="github"></i> View on GitHub
+      <a href="https://github.com/kalidada18/himalayafeed" class="btn btn-ghost" target="_blank" rel="noopener">
+        <i data-lucide="github"></i> GitHub
       </a>
     </div>
   </div>
 </header>
+
+<!-- ═══════════════ REPORT SECTION ═══════ -->
+<section class="report-section" id="report-section">
+  <div class="report-container">
+
+    <!-- Scanning Animation -->
+    <div class="scan-overlay" id="scan-overlay">
+      <div class="scan-radar">
+        <div class="scan-radar-ring"></div>
+        <div class="scan-radar-ring"></div>
+        <div class="scan-radar-ring"></div>
+        <div class="scan-radar-sweep"></div>
+        <div class="scan-radar-dot"></div>
+      </div>
+      <div class="scan-title">Scanning IP Address</div>
+      <div class="scan-ip" id="scan-ip"></div>
+      <div class="scan-steps">
+        <div class="scan-step" id="step-feed"><i data-lucide="database"></i> Feed Database</div>
+        <div class="scan-step" id="step-vt"><i data-lucide="shield"></i> VirusTotal</div>
+        <div class="scan-step" id="step-report"><i data-lucide="file-text"></i> Report</div>
+      </div>
+    </div>
+
+    <!-- Report Card -->
+    <div class="report-card" id="report-card">
+      <div class="rc-header" id="rc-header">
+        <div class="rc-h-left">
+          <div class="rc-h-icon"><i id="rc-icon" data-lucide="shield-alert"></i></div>
+          <div>
+            <div class="rc-h-ip" id="rc-ip"></div>
+            <div class="rc-h-sub" id="rc-sub"></div>
+          </div>
+        </div>
+        <div class="rc-h-badge" id="rc-badge"></div>
+      </div>
+
+      <div class="rc-body">
+        <!-- Threat Bar -->
+        <div class="threat-bar">
+          <div class="tb-top">
+            <span class="tb-label">Combined Threat Level</span>
+            <span class="tb-level" id="tb-level">—</span>
+          </div>
+          <div class="tb-track">
+            <div class="tb-fill" id="tb-fill" style="width:0%"></div>
+          </div>
+        </div>
+
+        <!-- Dual Panels -->
+        <div class="rc-panels">
+          <!-- VirusTotal Panel -->
+          <div class="rc-panel rc-panel-vt">
+            <div class="rc-panel-head"><i data-lucide="shield"></i> VirusTotal Analysis</div>
+            <div class="rc-panel-body" id="vt-panel-body">
+              <div class="vt-unavailable" id="vt-loading">
+                <i data-lucide="loader"></i>
+                Querying VirusTotal...
+              </div>
+            </div>
+          </div>
+
+          <!-- Feed Intel Panel -->
+          <div class="rc-panel rc-panel-feed">
+            <div class="rc-panel-head"><i data-lucide="radio"></i> HimalayaFeed Intel</div>
+            <div class="rc-panel-body" id="feed-panel-body"></div>
+          </div>
+        </div>
+
+        <!-- Source Tags -->
+        <div class="rc-tags" id="rc-tags-wrap">
+          <div class="rc-tags-label"><i data-lucide="tag"></i> Intelligence Sources</div>
+          <div class="rc-tags-list" id="rc-tags-list"></div>
+        </div>
+
+        <!-- External Links -->
+        <div class="rc-ext" id="rc-ext">
+          <a class="rc-ext-vt" id="ext-vt" href="#" target="_blank" rel="noopener">
+            <i data-lucide="shield"></i> VirusTotal
+          </a>
+          <a class="rc-ext-abuse" id="ext-abuse" href="#" target="_blank" rel="noopener">
+            <i data-lucide="alert-octagon"></i> AbuseIPDB
+          </a>
+          <a class="rc-ext-shodan" id="ext-shodan" href="#" target="_blank" rel="noopener">
+            <i data-lucide="search"></i> Shodan
+          </a>
+        </div>
+
+        <!-- Assessment -->
+        <div class="rc-assessment" id="rc-assessment"></div>
+      </div>
+    </div>
+
+  </div>
+</section>
 
 <!-- ═══════════════ METRICS STRIP ═════════ -->
 <div class="metrics">
@@ -1062,100 +1167,6 @@
         </div>
         <div class="stat-value" id="n-failed">-</div>
         <div class="stat-sub">Unreachable in the latest cycle</div>
-      </div>
-    </div>
-  </section>
-
-  <hr class="divider">
-
-  <!-- IP Report -->
-  <section class="section" id="lookup">
-    <div class="section-head">
-      <div class="section-label">Threat Report</div>
-      <h2 class="section-title"><i data-lucide="file-search"></i> IP Address Report</h2>
-      <p class="section-desc">Generate a detailed threat intelligence report for any IPv4 address. Cross-references against all active OSINT feeds with external reputation links.</p>
-    </div>
-
-    <div class="lookup-card">
-      <div class="lookup-row">
-        <input type="text" class="lookup-input" id="ip-input"
-               placeholder="Enter IPv4 address (e.g. 185.220.101.45)"
-               autocomplete="off" spellcheck="false">
-        <button class="btn btn-red" onclick="checkIP()" id="lookup-btn">
-          <i data-lucide="file-search"></i> Report
-        </button>
-      </div>
-
-      <!-- Report Card -->
-      <div class="report-card" id="report-card">
-        <div class="report-header" id="report-header">
-          <div class="rh-left">
-            <div class="rh-icon"><i id="rh-icon-i" data-lucide="shield-alert"></i></div>
-            <div>
-              <div class="rh-ip" id="rh-ip"></div>
-              <div class="rh-verdict" id="rh-verdict"></div>
-            </div>
-          </div>
-          <div class="rh-badge" id="rh-badge"></div>
-        </div>
-
-        <div class="report-body">
-          <!-- Threat Meter -->
-          <div class="threat-meter" id="threat-meter">
-            <div class="tm-label">
-              <span class="tm-label-text">Threat Confidence Level</span>
-              <span class="tm-level" id="tm-level">—</span>
-            </div>
-            <div class="tm-track">
-              <div class="tm-bar" id="tm-bar" style="width:0%"></div>
-            </div>
-            <div class="tm-ticks">
-              <span>Clean</span><span>Low</span><span>Medium</span><span>High</span><span>Critical</span>
-            </div>
-          </div>
-
-          <!-- Info Grid -->
-          <div class="report-grid" id="report-grid">
-            <div class="rg-item">
-              <div class="rg-label"><i data-lucide="radio"></i> Sources Reporting</div>
-              <div class="rg-value" id="rg-sources">0 / 0</div>
-            </div>
-            <div class="rg-item">
-              <div class="rg-label"><i data-lucide="file-text"></i> In Feed TXT</div>
-              <div id="rg-txt"></div>
-            </div>
-            <div class="rg-item">
-              <div class="rg-label"><i data-lucide="calendar"></i> Last Updated</div>
-              <div class="rg-value mono" id="rg-updated">—</div>
-            </div>
-            <div class="rg-item">
-              <div class="rg-label"><i data-lucide="hash"></i> Database Total</div>
-              <div class="rg-value mono" id="rg-dbtotal">—</div>
-            </div>
-          </div>
-
-          <!-- Source Tags -->
-          <div class="source-tags" id="source-tags-wrap">
-            <div class="st-label"><i data-lucide="tag"></i> Flagged By Sources</div>
-            <div class="st-list" id="st-list"></div>
-          </div>
-
-          <!-- External Reputation Links -->
-          <div class="ext-links" id="ext-links">
-            <a class="ext-link ext-link-vt" id="ext-vt" href="#" target="_blank" rel="noopener">
-              <i data-lucide="shield"></i> VirusTotal Report
-            </a>
-            <a class="ext-link ext-link-abuseipdb" id="ext-abuseipdb" href="#" target="_blank" rel="noopener">
-              <i data-lucide="alert-octagon"></i> AbuseIPDB
-            </a>
-            <a class="ext-link ext-link-shodan" id="ext-shodan" href="#" target="_blank" rel="noopener">
-              <i data-lucide="search"></i> Shodan
-            </a>
-          </div>
-
-          <!-- Assessment -->
-          <div class="report-detail" id="report-detail"></div>
-        </div>
       </div>
     </div>
   </section>
@@ -1216,7 +1227,7 @@
         <tbody id="src-tbody">
           <tr>
             <td colspan="4" style="text-align:center; padding:3rem; color:var(--slate);">
-              <div class="spinner" style="margin:0 auto .75rem"></div><br>
+              <div class="spinner" style="margin:0 auto .75rem;border-color:var(--ash);border-top-color:var(--red)"></div><br>
               Loading source data...
             </td>
           </tr>
@@ -1317,6 +1328,7 @@
 lucide.createIcons();
 
 const RAW = 'https://raw.githubusercontent.com/kalidada18/himalayafeed/main/';
+const VT_API_KEY = '__VT_API_KEY__';
 const fmt = n => new Intl.NumberFormat('en-US').format(n);
 
 function relTime(iso) {
@@ -1342,6 +1354,7 @@ const COLORS = ['#dc2626','#ef4444','#f87171','#fca5a5','#fee2e2',
                 '#b91c1c','#991b1b','#7f1d1d','#450a0a','#f43f5e',
                 '#e11d48','#be123c','#9f1239'];
 
+/* ── Boot ──────────────────────────────── */
 async function boot() {
   try {
     const r = await fetch(RAW + 'stats.json?_=' + Date.now());
@@ -1373,12 +1386,12 @@ async function renderHistoryChart() {
     const r = await fetch(RAW + 'history.json?_=' + Date.now());
     if (!r.ok) return;
     const history = await r.json();
-    
+
     if (!history || history.length === 0) return;
-    
+
     const labels = history.map(h => h.date);
     const vals = history.map(h => h.total_unique_ips);
-    
+
     new Chart(document.getElementById('historyChart').getContext('2d'), {
       type: 'line',
       data: {
@@ -1431,9 +1444,7 @@ function renderCharts(d) {
         data: vals,
         backgroundColor: 'rgba(220,38,38,0.75)',
         borderColor: '#dc2626',
-        borderWidth: 1,
-        borderRadius: 4,
-        borderSkipped: false,
+        borderWidth: 1, borderRadius: 4, borderSkipped: false,
       }]
     },
     options: {
@@ -1460,9 +1471,7 @@ function renderCharts(d) {
       datasets: [{
         data: top5.map(([, v]) => v),
         backgroundColor: COLORS.slice(0, 5),
-        borderColor: '#fff',
-        borderWidth: 2,
-        hoverOffset: 6,
+        borderColor: '#fff', borderWidth: 2, hoverOffset: 6,
       }]
     },
     options: {
@@ -1485,7 +1494,6 @@ function renderTable(d) {
   const failed = new Set(d.failed_feeds || []);
   const total  = d.total_unique_ips || 1;
   const sorted = Object.entries(src).sort((a, b) => b[1] - a[1]);
-  // Add failed feeds that aren't already in ips_per_source
   const failedOnly = (d.failed_feeds || []).filter(n => !(n in src)).map(n => [n, 0]);
   const all    = [...sorted, ...failedOnly];
 
@@ -1517,9 +1525,8 @@ function renderTable(d) {
   }));
 }
 
-/* ── IP Report ──────────────────────────── */
-let csvText = null, csvLoading = null;
-let statsData = null;
+/* ── IP Scan + Report ──────────────────── */
+let csvText = null, csvLoading = null, statsData = null;
 
 async function loadCSV() {
   if (csvText) return csvText;
@@ -1540,35 +1547,79 @@ async function loadStats() {
   return statsData;
 }
 
-function getThreatLevel(sourceCount, totalFeeds) {
-  if (sourceCount === 0) return { level: 'none', label: 'Not Listed', pct: 0 };
-  const ratio = sourceCount / totalFeeds;
-  if (ratio >= 0.4 || sourceCount >= 6) return { level: 'critical', label: 'Critical', pct: 95 };
-  if (ratio >= 0.25 || sourceCount >= 4) return { level: 'high', label: 'High', pct: 75 };
-  if (ratio >= 0.15 || sourceCount >= 2) return { level: 'medium', label: 'Medium', pct: 50 };
-  return { level: 'low', label: 'Low', pct: 25 };
+function hasVTKey() {
+  return VT_API_KEY && VT_API_KEY !== '__VT_API_KEY__' && VT_API_KEY.length > 10;
 }
 
-async function checkIP() {
+async function queryVT(ip) {
+  if (!hasVTKey()) return null;
+  try {
+    const r = await fetch('https://www.virustotal.com/api/v3/ip_addresses/' + ip, {
+      headers: { 'x-apikey': VT_API_KEY }
+    });
+    if (!r.ok) return null;
+    const data = await r.json();
+    return data.data ? data.data.attributes : null;
+  } catch(e) {
+    console.warn('VT API error:', e);
+    return null;
+  }
+}
+
+function getThreatLevel(sourceCount, totalFeeds, vtMal) {
+  let score = 0;
+  if (sourceCount > 0) score += Math.min(sourceCount / totalFeeds, 1) * 50;
+  if (vtMal !== null) score += Math.min(vtMal / 20, 1) * 50;
+  else score *= 2; // no VT data — double feed weight
+
+  if (score >= 70) return { level: 'critical', label: 'Critical', pct: 95 };
+  if (score >= 45) return { level: 'high', label: 'High', pct: 75 };
+  if (score >= 20) return { level: 'medium', label: 'Medium', pct: 50 };
+  if (score > 0)   return { level: 'low', label: 'Low', pct: 25 };
+  return { level: 'none', label: 'Clean', pct: 0 };
+}
+
+async function scanIP() {
   const input = document.getElementById('ip-input');
-  const btn   = document.getElementById('lookup-btn');
-  const card  = document.getElementById('report-card');
+  const btn   = document.getElementById('scan-btn');
   const ip    = input.value.trim();
 
   if (!ip) { input.focus(); return; }
 
   if (!/^(\d{1,3}\.){3}\d{1,3}$/.test(ip)) {
-    showReport('warn', ip, null, null);
+    showReport('warn', ip, null, null, null);
     return;
   }
 
-  btn.innerHTML = '<span class="spinner"></span> Analyzing';
+  // Show scanning UI
+  btn.innerHTML = '<span class="spinner"></span> Scanning';
   btn.disabled = true;
 
-  try {
-    const [txt, stats] = await Promise.all([loadCSV(), loadStats()]);
+  const section = document.getElementById('report-section');
+  const overlay = document.getElementById('scan-overlay');
+  const card    = document.getElementById('report-card');
 
-    // Search CSV
+  section.classList.add('show');
+  overlay.classList.add('active');
+  card.classList.remove('show');
+  document.getElementById('scan-ip').textContent = ip;
+
+  // Reset steps
+  ['step-feed','step-vt','step-report'].forEach(id => {
+    document.getElementById(id).className = 'scan-step';
+  });
+
+  section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  // Step 1: Feed database
+  document.getElementById('step-feed').classList.add('active');
+
+  let feedMatch = null;
+  let stats = null;
+  try {
+    const [txt, s] = await Promise.all([loadCSV(), loadStats()]);
+    stats = s;
+
     let idx = txt.indexOf('\n' + ip + ',');
     if (idx === -1 && txt.startsWith('ip,sources,source_count\n' + ip + ',')) {
       idx = 'ip,sources,source_count'.length;
@@ -1578,139 +1629,208 @@ async function checkIP() {
       const lineEnd = txt.indexOf('\n', idx + 1);
       const line = txt.substring(idx + 1, lineEnd !== -1 ? lineEnd : undefined);
       const parts = line.split(',');
-      const sourceCount = parseInt(parts[2]) || 1;
-      const sourceList = parts[1] ? parts[1].split('|') : ['unknown'];
-
-      showReport('danger', ip, { sourceCount, sourceList }, stats);
-    } else {
-      showReport('safe', ip, null, stats);
+      feedMatch = {
+        sourceCount: parseInt(parts[2]) || 1,
+        sourceList: parts[1] ? parts[1].split('|') : ['unknown']
+      };
     }
-  } catch (e) {
-    console.error(e);
-    showReport('warn', ip, null, null);
+  } catch(e) { console.error(e); }
+
+  document.getElementById('step-feed').classList.remove('active');
+  document.getElementById('step-feed').classList.add('done');
+
+  // Step 2: VirusTotal
+  document.getElementById('step-vt').classList.add('active');
+  let vtData = null;
+  if (hasVTKey()) {
+    vtData = await queryVT(ip);
+  } else {
+    await new Promise(r => setTimeout(r, 400)); // brief pause for UX
   }
 
-  btn.innerHTML = '<i data-lucide="file-search"></i> Report';
+  document.getElementById('step-vt').classList.remove('active');
+  document.getElementById('step-vt').classList.add('done');
+
+  // Step 3: Generate Report
+  document.getElementById('step-report').classList.add('active');
+  await new Promise(r => setTimeout(r, 300));
+  document.getElementById('step-report').classList.remove('active');
+  document.getElementById('step-report').classList.add('done');
+
+  await new Promise(r => setTimeout(r, 200));
+
+  // Show report
+  overlay.classList.remove('active');
+  const type = feedMatch ? 'danger' : 'safe';
+  showReport(type, ip, feedMatch, stats, vtData);
+
+  btn.innerHTML = '<i data-lucide="scan"></i> Scan';
   btn.disabled = false;
   lucide.createIcons();
 }
 
-function showReport(type, ip, matchData, stats) {
+function showReport(type, ip, feedMatch, stats, vtData) {
   const card   = document.getElementById('report-card');
-  const header = document.getElementById('report-header');
+  const header = document.getElementById('rc-header');
   const totalFeeds = stats ? stats.total_feeds_processed : 15;
   const totalIPs   = stats ? stats.total_unique_ips : 0;
   const lastUpdated = stats ? stats.last_updated : '—';
 
-  // Set external links
+  // External links
   document.getElementById('ext-vt').href = 'https://www.virustotal.com/gui/ip-address/' + ip;
-  document.getElementById('ext-abuseipdb').href = 'https://www.abuseipdb.com/check/' + ip;
+  document.getElementById('ext-abuse').href = 'https://www.abuseipdb.com/check/' + ip;
   document.getElementById('ext-shodan').href = 'https://www.shodan.io/host/' + ip;
 
   // Header
-  const rhIcon = document.getElementById('rh-icon-i');
-  const rhIp   = document.getElementById('rh-ip');
-  const rhVerdict = document.getElementById('rh-verdict');
-  const rhBadge   = document.getElementById('rh-badge');
+  document.getElementById('rc-ip').textContent = ip;
+  header.className = 'rc-header';
 
-  rhIp.textContent = ip;
-
-  header.className = 'report-header';
+  const vtMal = vtData ? (vtData.last_analysis_stats?.malicious || 0) : null;
+  const sourceCount = feedMatch ? feedMatch.sourceCount : 0;
+  const threat = getThreatLevel(sourceCount, totalFeeds, vtMal);
 
   if (type === 'danger') {
-    header.classList.add('report-header-danger');
-    rhIcon.setAttribute('data-lucide', 'shield-alert');
-    rhVerdict.textContent = 'This IP is flagged in the HimalayaFeed threat database';
-    rhBadge.textContent = '⚠ MALICIOUS';
-
-    const sourceCount = matchData.sourceCount;
-    const sourceList  = matchData.sourceList;
-    const threat = getThreatLevel(sourceCount, totalFeeds);
-
-    // Threat Meter
-    document.getElementById('tm-level').textContent = threat.label;
-    document.getElementById('tm-level').className = 'tm-level tm-level-' + threat.level;
-    setTimeout(() => { document.getElementById('tm-bar').style.width = threat.pct + '%'; }, 100);
-
-    // Grid
-    document.getElementById('rg-sources').textContent = sourceCount + ' / ' + totalFeeds + ' feeds';
-    document.getElementById('rg-txt').innerHTML = '<span class="txt-indicator txt-yes"><i data-lucide="check-circle-2"></i> Present in malicious_ips.txt</span>';
-    document.getElementById('rg-updated').textContent = lastUpdated !== '—' ? lastUpdated.replace('T',' ').replace('Z',' UTC') : '—';
-    document.getElementById('rg-dbtotal').textContent = totalIPs ? fmt(totalIPs) + ' IPs' : '—';
-
-    // Source Tags
-    document.getElementById('source-tags-wrap').style.display = 'block';
-    document.getElementById('st-list').innerHTML = sourceList.map(s =>
-      `<span class="st-tag"><i data-lucide="radio"></i> ${s.replace(/_/g, ' ')}</span>`
-    ).join('');
-
-    // Detail
-    document.getElementById('report-detail').innerHTML =
-      `<strong>Threat Assessment:</strong> This IP address (<code style="font-family:var(--mono);background:var(--smoke);padding:0.1rem 0.4rem;border-radius:3px;font-size:0.8rem">${ip}</code>) ` +
-      `has been flagged by <strong>${sourceCount}</strong> out of <strong>${totalFeeds}</strong> active OSINT sources in the HimalayaFeed database. ` +
-      (threat.level === 'critical' ? 'This represents a <strong style="color:var(--red)">critical threat level</strong> — this IP is widely recognized as malicious across multiple independent intelligence feeds. Immediate blocking is recommended.' :
-       threat.level === 'high' ? 'This represents a <strong style="color:#ea580c">high threat level</strong> — multiple independent sources confirm malicious activity. Blocking is strongly recommended.' :
-       threat.level === 'medium' ? 'This represents a <strong style="color:var(--amber)">medium threat level</strong> — confirmed by multiple sources. Consider blocking or monitoring closely.' :
-       'This represents a <strong>low threat level</strong> — reported by a single source. Consider monitoring this IP for further activity.') +
-      ' This IP is saved in the <strong>malicious_ips.txt</strong> blocklist file and can be ingested directly into firewalls, SIEM, or IDS/IPS systems.' +
-      ' Check the external reputation links above for additional context from VirusTotal, AbuseIPDB, and Shodan.';
-
+    header.classList.add('rc-header-danger');
+    document.getElementById('rc-icon').setAttribute('data-lucide', 'shield-alert');
+    document.getElementById('rc-sub').textContent = 'Flagged in the HimalayaFeed threat intelligence database';
+    document.getElementById('rc-badge').textContent = '⚠ MALICIOUS';
   } else if (type === 'safe') {
-    header.classList.add('report-header-safe');
-    rhIcon.setAttribute('data-lucide', 'shield-check');
-    rhVerdict.textContent = 'This IP is not present in any monitored threat feed';
-    rhBadge.textContent = '✓ NOT LISTED';
-
-    // Threat Meter
-    document.getElementById('tm-level').textContent = 'Not Listed';
-    document.getElementById('tm-level').className = 'tm-level tm-level-none';
-    setTimeout(() => { document.getElementById('tm-bar').style.width = '0%'; }, 100);
-
-    // Grid
-    document.getElementById('rg-sources').textContent = '0 / ' + totalFeeds + ' feeds';
-    document.getElementById('rg-txt').innerHTML = '<span class="txt-indicator txt-no"><i data-lucide="x-circle"></i> Not in malicious_ips.txt</span>';
-    document.getElementById('rg-updated').textContent = lastUpdated !== '—' ? lastUpdated.replace('T',' ').replace('Z',' UTC') : '—';
-    document.getElementById('rg-dbtotal').textContent = totalIPs ? fmt(totalIPs) + ' IPs' : '—';
-
-    // Source Tags
-    document.getElementById('source-tags-wrap').style.display = 'block';
-    document.getElementById('st-list').innerHTML = '<span class="st-tag st-none"><i data-lucide="check-circle-2"></i> No feeds flagged this IP</span>';
-
-    // Detail
-    document.getElementById('report-detail').innerHTML =
-      `<strong>Assessment:</strong> The IP address <code style="font-family:var(--mono);background:var(--smoke);padding:0.1rem 0.4rem;border-radius:3px;font-size:0.8rem">${ip}</code> ` +
-      `was <strong>not found</strong> in the current HimalayaFeed database of <strong>${totalIPs ? fmt(totalIPs) : '—'}</strong> malicious IPs aggregated from <strong>${totalFeeds}</strong> OSINT sources. ` +
-      'This does <strong>not</strong> guarantee the IP is safe — only that it has not been reported by any of the monitored threat intelligence feeds at this time. ' +
-      'Check the external reputation links above for additional context from VirusTotal, AbuseIPDB, and Shodan.';
-
+    header.classList.add(vtMal > 0 ? 'rc-header-warn' : 'rc-header-safe');
+    document.getElementById('rc-icon').setAttribute('data-lucide', vtMal > 0 ? 'alert-triangle' : 'shield-check');
+    document.getElementById('rc-sub').textContent = vtMal > 0
+      ? 'Not in our feeds but flagged by VirusTotal vendors'
+      : 'Not found in any monitored threat intelligence feed';
+    document.getElementById('rc-badge').textContent = vtMal > 0 ? '⚠ SUSPICIOUS' : '✓ NOT LISTED';
   } else {
-    header.classList.add('report-header-warn');
-    rhIcon.setAttribute('data-lucide', 'alert-triangle');
-    rhVerdict.textContent = 'Unable to process this request';
-    rhBadge.textContent = '! WARNING';
+    header.classList.add('rc-header-warn');
+    document.getElementById('rc-icon').setAttribute('data-lucide', 'alert-triangle');
+    document.getElementById('rc-sub').textContent = 'Invalid format or data unavailable';
+    document.getElementById('rc-badge').textContent = '! WARNING';
+  }
 
-    document.getElementById('tm-level').textContent = '—';
-    document.getElementById('tm-level').className = 'tm-level';
-    document.getElementById('tm-bar').style.width = '0%';
+  // Threat bar
+  document.getElementById('tb-level').textContent = threat.label;
+  document.getElementById('tb-level').className = 'tb-level tb-' + threat.level;
+  setTimeout(() => { document.getElementById('tb-fill').style.width = threat.pct + '%'; }, 100);
 
-    document.getElementById('rg-sources').textContent = '—';
-    document.getElementById('rg-txt').innerHTML = '<span class="rg-value">—</span>';
-    document.getElementById('rg-updated').textContent = '—';
-    document.getElementById('rg-dbtotal').textContent = '—';
+  // VT Panel
+  const vtPanel = document.getElementById('vt-panel-body');
+  if (vtData) {
+    const als = vtData.last_analysis_stats || {};
+    const mal = als.malicious || 0;
+    const sus = als.suspicious || 0;
+    const total = (als.malicious||0) + (als.suspicious||0) + (als.undetected||0) + (als.harmless||0) + (als.timeout||0);
+    const ratio = total > 0 ? ((mal + sus) / total * 100) : 0;
+    const circPct = total > 0 ? (150.8 - (150.8 * (mal + sus) / total)) : 150.8;
+    const isSafe = (mal + sus) === 0;
 
-    document.getElementById('source-tags-wrap').style.display = 'none';
+    vtPanel.innerHTML = `
+      <div class="detection-circle">
+        <div class="dc-ring">
+          <svg width="56" height="56">
+            <circle class="dc-bg" cx="28" cy="28" r="24"></circle>
+            <circle class="dc-fill ${isSafe ? 'safe' : ''}" cx="28" cy="28" r="24"
+                    style="stroke-dashoffset:${circPct}"></circle>
+          </svg>
+          <div class="dc-num">${mal + sus}/${total}</div>
+        </div>
+        <div class="dc-text">
+          <strong>${mal} malicious</strong>, ${sus} suspicious<br>
+          out of ${total} security vendors
+        </div>
+      </div>
+      <div class="rc-row">
+        <span class="rc-row-label">Reputation Score</span>
+        <span class="rc-row-value">${vtData.reputation || 0}</span>
+      </div>
+      <div class="rc-row">
+        <span class="rc-row-label">Country</span>
+        <span class="rc-row-value text">${vtData.country || '—'}</span>
+      </div>
+      <div class="rc-row">
+        <span class="rc-row-label">ASN Owner</span>
+        <span class="rc-row-value text" style="font-size:0.75rem;max-width:180px;text-align:right">${vtData.as_owner || '—'}</span>
+      </div>
+      <div class="rc-row">
+        <span class="rc-row-label">Network</span>
+        <span class="rc-row-value">${vtData.network || '—'}</span>
+      </div>
+    `;
+  } else {
+    vtPanel.innerHTML = `
+      <div class="vt-unavailable">
+        <i data-lucide="${hasVTKey() ? 'wifi-off' : 'key'}"></i>
+        ${hasVTKey()
+          ? 'VirusTotal query failed. Check the <a href="https://www.virustotal.com/gui/ip-address/' + ip + '" target="_blank" style="color:var(--blue);text-decoration:underline">full report</a> manually.'
+          : 'VirusTotal API key not configured.<br>Add <code style="font-family:var(--mono);background:var(--smoke);padding:0.1rem 0.3rem;border-radius:3px;font-size:0.72rem">VIRUSTOTAL_API_KEY</code> secret to enable live scanning.'}
+      </div>
+    `;
+  }
 
-    document.getElementById('report-detail').innerHTML =
-      '<strong>Error:</strong> Invalid IPv4 format or feed data could not be loaded. Please enter a valid IPv4 address (e.g. <code style="font-family:var(--mono);background:var(--smoke);padding:0.1rem 0.4rem;border-radius:3px;font-size:0.8rem">185.220.101.45</code>) and try again.';
+  // Feed Panel
+  const feedPanel = document.getElementById('feed-panel-body');
+  feedPanel.innerHTML = `
+    <div class="rc-row">
+      <span class="rc-row-label">Sources Flagged</span>
+      <span class="rc-row-value">${sourceCount} / ${totalFeeds}</span>
+    </div>
+    <div class="rc-row">
+      <span class="rc-row-label">In malicious_ips.txt</span>
+      <span class="rc-row-value text" style="color:${feedMatch ? 'var(--red)' : 'var(--green)'}">${feedMatch ? '✓ Yes' : '✗ No'}</span>
+    </div>
+    <div class="rc-row">
+      <span class="rc-row-label">Database Total</span>
+      <span class="rc-row-value">${totalIPs ? fmt(totalIPs) : '—'}</span>
+    </div>
+    <div class="rc-row">
+      <span class="rc-row-label">Last Updated</span>
+      <span class="rc-row-value" style="font-size:0.72rem">${lastUpdated !== '—' ? lastUpdated.replace('T',' ').replace('Z',' UTC') : '—'}</span>
+    </div>
+  `;
+
+  // Source Tags
+  const tagsWrap = document.getElementById('rc-tags-wrap');
+  const tagsList = document.getElementById('rc-tags-list');
+  if (feedMatch && feedMatch.sourceList.length > 0) {
+    tagsWrap.style.display = 'block';
+    tagsList.innerHTML = feedMatch.sourceList.map(s =>
+      `<span class="rc-tag"><i data-lucide="radio"></i> ${s.replace(/_/g, ' ')}</span>`
+    ).join('');
+  } else {
+    tagsWrap.style.display = 'block';
+    tagsList.innerHTML = '<span class="rc-tag rc-tag-safe"><i data-lucide="check-circle-2"></i> Not flagged by any feed</span>';
+  }
+
+  // Assessment
+  const assess = document.getElementById('rc-assessment');
+  if (type === 'warn') {
+    assess.innerHTML = '<strong>Error:</strong> Invalid IPv4 format or feed data could not be loaded. Enter a valid IPv4 address (e.g. <code>185.220.101.45</code>) and try again.';
+  } else {
+    const vtNote = vtData
+      ? ` VirusTotal reports <strong>${vtMal} malicious</strong> and <strong>${vtData.last_analysis_stats?.suspicious || 0} suspicious</strong> detections across ${(vtData.last_analysis_stats?.malicious||0)+(vtData.last_analysis_stats?.suspicious||0)+(vtData.last_analysis_stats?.undetected||0)+(vtData.last_analysis_stats?.harmless||0)} vendors.`
+      : '';
+
+    if (feedMatch) {
+      assess.innerHTML =
+        `<strong>Threat Assessment:</strong> <code>${ip}</code> has been flagged by <strong>${sourceCount}</strong> out of <strong>${totalFeeds}</strong> OSINT sources.${vtNote} ` +
+        (threat.level === 'critical' ? 'This is a <strong style="color:var(--red)">critical threat</strong> — widely recognized as malicious. Immediate blocking is recommended.' :
+         threat.level === 'high' ? 'This is a <strong style="color:#ea580c">high threat</strong> — multiple sources confirm malicious activity. Blocking is strongly recommended.' :
+         threat.level === 'medium' ? 'This is a <strong style="color:var(--amber)">medium threat</strong> — confirmed by multiple sources. Consider blocking or monitoring.' :
+         'This is a <strong>low threat</strong> — reported by a single source. Consider monitoring for further activity.') +
+        ' This IP is present in <strong>malicious_ips.txt</strong> and can be ingested into firewalls, SIEM, or IDS/IPS.';
+    } else {
+      assess.innerHTML =
+        `<strong>Assessment:</strong> <code>${ip}</code> was <strong>not found</strong> in the HimalayaFeed database of <strong>${totalIPs ? fmt(totalIPs) : '—'}</strong> malicious IPs from <strong>${totalFeeds}</strong> sources.${vtNote} ` +
+        'Absence does <strong>not</strong> guarantee safety — only that it is not in the monitored feeds at this time.';
+    }
   }
 
   card.classList.add('show');
-  card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   lucide.createIcons();
 }
 
 document.getElementById('ip-input').addEventListener('keydown', e => {
-  if (e.key === 'Enter') checkIP();
+  if (e.key === 'Enter') scanIP();
 });
 
 boot();
