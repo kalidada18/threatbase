@@ -1,50 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HimalayaFeed — Threat Intelligence Platform</title>
-  <meta name="description" content="HimalayaFeed is a proprietary Threat Intelligence Platform tracking malicious IPv4 addresses globally. Free, automated, zero infrastructure.">
+  <meta name="description"
+    content="HimalayaFeed is a proprietary Threat Intelligence Platform tracking malicious IPv4 addresses globally. Free, automated, zero infrastructure.">
   <link rel="icon" href="img/himalayafeed.png" type="image/png">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <style>
     :root {
       --white: #ffffff;
-      --snow: #f8f9fb;
+      --snow: #F0F4F8;
+      /* Icy Snow White */
       --smoke: #f1f3f7;
       --ash: #e4e7ed;
       --silver: #c5cad4;
       --slate: #8891a5;
       --iron: #5f6980;
       --ink: #2d3142;
-      --midnight: #1a1d2e;
+      --midnight: #003893;
+      /* Nepali Deep Blue */
       --black: #0f111a;
 
-      --red: #dc2626;
-      --red-hover: #b91c1c;
-      --red-light: #fef2f2;
-      --red-glow: rgba(220, 38, 38, 0.12);
-      --red-border: rgba(220, 38, 38, 0.2);
+      --red: #DC143C;
+      /* Nepali Crimson Red */
+      --red-hover: #B20A2B;
+      --red-light: rgba(220, 20, 60, 0.08);
+      --red-glow: rgba(220, 20, 60, 0.12);
+      --red-border: rgba(220, 20, 60, 0.2);
 
       --green: #16a34a;
       --green-light: #f0fdf4;
       --amber: #d97706;
       --amber-light: #fffbeb;
-      --blue: #2563eb;
+      --blue: #003893;
       --blue-light: #eff6ff;
 
       --font: 'Inter', system-ui, -apple-system, sans-serif;
       --mono: 'JetBrains Mono', 'Fira Code', monospace;
       --radius: 10px;
-      --shadow-sm: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03);
-      --shadow: 0 4px 16px rgba(0,0,0,0.06);
-      --shadow-lg: 0 12px 40px rgba(0,0,0,0.08);
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.03);
+      --shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.08);
     }
 
     :root.dark {
@@ -64,8 +71,17 @@
       --blue-light: rgba(37, 99, 235, 0.15);
     }
 
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
 
     body {
       font-family: var(--font);
@@ -75,55 +91,115 @@
       line-height: 1.6;
     }
 
-    ::selection { background: var(--red); color: white; }
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: var(--snow); }
-    ::-webkit-scrollbar-thumb { background: var(--silver); border-radius: 3px; }
+    ::selection {
+      background: var(--red);
+      color: white;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--snow);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--silver);
+      border-radius: 3px;
+    }
 
     /* ── Navbar ─────────────────────────────────────────── */
     .nav {
-      position: sticky; top: 0; z-index: 100;
-      background: rgba(255,255,255,0.92);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255, 255, 255, 0.92);
       backdrop-filter: blur(20px) saturate(180%);
       border-bottom: 1px solid var(--ash);
       height: 64px;
-      display: flex; align-items: center;
+      display: flex;
+      align-items: center;
       padding: 0 clamp(1rem, 4vw, 3rem);
     }
 
     .nav-inner {
-      width: 100%; max-width: 1280px; margin: 0 auto;
-      display: flex; align-items: center; justify-content: space-between;
+      width: 100%;
+      max-width: 1280px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
 
     .nav-brand {
-      display: flex; align-items: center; gap: 10px;
-      text-decoration: none; color: var(--ink);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--ink);
     }
 
-    .nav-brand img { width: 30px; height: 30px; border-radius: 7px; }
-    .nav-brand span { font-weight: 800; font-size: 1.05rem; letter-spacing: -0.02em; }
-    .nav-brand em { color: var(--red); font-style: normal; }
+    .nav-brand img {
+      width: 30px;
+      height: 30px;
+      border-radius: 7px;
+    }
+
+    .nav-brand span {
+      font-weight: 800;
+      font-size: 1.05rem;
+      letter-spacing: -0.02em;
+    }
+
+    .nav-brand em {
+      color: var(--red);
+      font-style: normal;
+    }
 
     .nav-links {
-      display: flex; align-items: center; gap: 0.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
       list-style: none;
     }
 
     .nav-links a {
-      text-decoration: none; color: var(--iron);
-      font-size: 0.84rem; font-weight: 500;
-      padding: 0.4rem 0.85rem; border-radius: 7px;
+      text-decoration: none;
+      color: var(--iron);
+      font-size: 0.84rem;
+      font-weight: 500;
+      padding: 0.4rem 0.85rem;
+      border-radius: 7px;
       transition: all 0.15s;
     }
 
-    .nav-links a.active { color: var(--red); background: var(--red-light); }
-    .theme-toggle { padding: 0.4rem; margin-left: 0.5rem; cursor: pointer; color: var(--iron); border: none; background: transparent; transition: 0.2s; }
-    .theme-toggle:hover { color: var(--red); }
+    .nav-links a.active {
+      color: var(--red);
+      background: var(--red-light);
+    }
+
+    .theme-toggle {
+      padding: 0.4rem;
+      margin-left: 0.5rem;
+      cursor: pointer;
+      color: var(--iron);
+      border: none;
+      background: transparent;
+      transition: 0.2s;
+    }
+
+    .theme-toggle:hover {
+      color: var(--red);
+    }
 
     .nav-status {
-      display: flex; align-items: center; gap: 6px;
-      font-size: 0.76rem; font-weight: 600; color: var(--green);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      color: var(--green);
       padding: 0.3rem 0.7rem;
       background: var(--green-light);
       border: 1px solid rgba(22, 163, 74, 0.15);
@@ -131,72 +207,116 @@
     }
 
     .nav-dot {
-      width: 6px; height: 6px; background: var(--green);
-      border-radius: 50%; animation: blink 2s ease-in-out infinite;
+      width: 6px;
+      height: 6px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: blink 2s ease-in-out infinite;
     }
 
-    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .3
+      }
+    }
 
     /* ── Hero + Search ─────────────────────────────────── */
     .hero {
-      background: linear-gradient(180deg, var(--midnight) 0%, #0f111a 100%);
+      background: linear-gradient(180deg, var(--midnight) 0%, #081121 100%);
       padding: 4rem 2rem 3.5rem;
       text-align: center;
       position: relative;
       overflow: hidden;
     }
 
+    .hero-mountains {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 250px;
+      background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 100 L0 70 L15 45 L30 80 L45 35 L60 75 L80 20 L100 65 L100 100 Z" fill="rgba(255,255,255,0.04)"/><path d="M0 100 L0 85 L20 60 L40 90 L65 50 L85 80 L100 55 L100 100 Z" fill="rgba(255,255,255,0.06)"/></svg>') no-repeat bottom center;
+      background-size: 100% 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
     .hero::before {
       content: '';
       position: absolute;
-      top: -300px; left: 50%; transform: translateX(-50%);
-      width: 1000px; height: 1000px;
-      background: radial-gradient(circle, rgba(220,38,38,0.08) 0%, transparent 60%);
+      top: -300px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 1000px;
+      height: 1000px;
+      background: radial-gradient(circle, rgba(220, 20, 60, 0.15) 0%, transparent 60%);
       pointer-events: none;
+      z-index: 0;
     }
 
     .hero::after {
       content: '';
       position: absolute;
-      bottom: 0; left: 0; right: 0; height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(220,38,38,0.3), transparent);
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(220, 20, 60, 0.4), transparent);
     }
 
-    .hero-inner { position: relative; max-width: 720px; margin: 0 auto; }
+    .hero-inner {
+      position: relative;
+      max-width: 720px;
+      margin: 0 auto;
+    }
 
     .hero h1 {
       font-size: clamp(1.8rem, 4.5vw, 2.8rem);
-      font-weight: 900; letter-spacing: -0.04em;
-      line-height: 1.15; color: #fff;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      line-height: 1.15;
+      color: #fff;
       margin-bottom: 0.8rem;
     }
 
-    .hero h1 .accent { color: var(--red); }
+    .hero h1 .accent {
+      color: var(--red);
+    }
 
     .hero-sub {
-      max-width: 520px; margin: 0 auto 2rem;
-      font-size: 0.92rem; color: rgba(255,255,255,0.5);
+      max-width: 520px;
+      margin: 0 auto 2rem;
+      font-size: 0.92rem;
+      color: rgba(255, 255, 255, 0.5);
       line-height: 1.7;
     }
 
     /* Search Bar */
     .hero-search {
-      max-width: 600px; margin: 0 auto 1.8rem;
+      max-width: 600px;
+      margin: 0 auto 1.8rem;
       position: relative;
     }
 
     .hero-search-row {
-      display: flex; gap: 0;
-      background: rgba(255,255,255,0.07);
-      border: 1px solid rgba(255,255,255,0.12);
+      display: flex;
+      gap: 0;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 14px;
       overflow: hidden;
       transition: border-color 0.25s, box-shadow 0.25s;
     }
 
     .hero-search-row:focus-within {
-      border-color: rgba(220,38,38,0.5);
-      box-shadow: 0 0 0 4px rgba(220,38,38,0.1), 0 8px 32px rgba(0,0,0,0.3);
+      border-color: rgba(220, 38, 38, 0.5);
+      box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.1), 0 8px 32px rgba(0, 0, 0, 0.3);
     }
 
     .hero-search-input {
@@ -210,10 +330,14 @@
       outline: none;
     }
 
-    .hero-search-input::placeholder { color: rgba(255,255,255,0.3); }
+    .hero-search-input::placeholder {
+      color: rgba(255, 255, 255, 0.3);
+    }
 
     .hero-search-btn {
-      display: flex; align-items: center; gap: 7px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
       padding: 0 1.5rem;
       background: var(--red);
       color: white;
@@ -226,107 +350,169 @@
       white-space: nowrap;
     }
 
-    .hero-search-btn:hover { background: var(--red-hover); }
-    .hero-search-btn:disabled { opacity: 0.7; cursor: not-allowed; }
-    .hero-search-btn i { width: 18px; height: 18px; }
+    .hero-search-btn:hover {
+      background: var(--red-hover);
+    }
+
+    .hero-search-btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    .hero-search-btn i {
+      width: 18px;
+      height: 18px;
+    }
 
     .hero-actions {
-      display: flex; align-items: center;
-      justify-content: center; gap: 0.6rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
       flex-wrap: wrap;
     }
 
     /* ── Buttons ────────────────────────────────────────── */
     .btn {
-      display: inline-flex; align-items: center; gap: 7px;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
       padding: 0.55rem 1.1rem;
       border-radius: 8px;
-      font-size: 0.8rem; font-weight: 600;
-      text-decoration: none; border: none;
-      cursor: pointer; font-family: var(--font);
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      font-family: var(--font);
       transition: all 0.18s;
     }
 
-    .btn svg, .btn i { width: 15px; height: 15px; }
+    .btn svg,
+    .btn i {
+      width: 15px;
+      height: 15px;
+    }
 
     .btn-ghost {
-      background: rgba(255,255,255,0.06);
-      color: rgba(255,255,255,0.6);
-      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255, 255, 255, 0.06);
+      color: rgba(255, 255, 255, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
+
     .btn-ghost:hover {
-      background: rgba(255,255,255,0.1);
-      color: rgba(255,255,255,0.85);
+      background: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.85);
       transform: translateY(-1px);
     }
 
     .btn-red {
-      background: var(--red); color: white;
+      background: var(--red);
+      color: white;
       box-shadow: 0 2px 8px var(--red-glow);
     }
+
     .btn-red:hover {
       background: var(--red-hover);
-      box-shadow: 0 4px 18px rgba(220,38,38,0.22);
+      box-shadow: 0 4px 18px rgba(220, 38, 38, 0.22);
       transform: translateY(-1px);
     }
 
     .btn-outline {
-      background: var(--white); color: var(--ink);
+      background: var(--white);
+      color: var(--ink);
       border: 1px solid var(--ash);
       box-shadow: var(--shadow-sm);
     }
+
     .btn-outline:hover {
-      background: var(--smoke); border-color: var(--silver);
+      background: var(--smoke);
+      border-color: var(--silver);
       transform: translateY(-1px);
     }
 
     /* ── Container ─────────────────────────────────────── */
     .container {
-      max-width: 1280px; margin: 0 auto;
+      max-width: 1280px;
+      margin: 0 auto;
       padding: 0 clamp(1rem, 4vw, 3rem);
     }
 
-    .section { padding: 3rem 0; }
+    .section {
+      padding: 3rem 0;
+    }
 
     .section-label {
-      font-size: 0.7rem; font-weight: 700;
-      text-transform: uppercase; letter-spacing: 0.08em;
-      color: var(--red); margin-bottom: 0.35rem;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--red);
+      margin-bottom: 0.35rem;
     }
 
     .section-title {
-      font-size: 1.35rem; font-weight: 800;
-      letter-spacing: -0.03em; color: var(--midnight);
-      display: flex; align-items: center; gap: 8px;
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--midnight);
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
-    .section-title i { color: var(--slate); width: 20px; height: 20px; }
+    .section-title i {
+      color: var(--slate);
+      width: 20px;
+      height: 20px;
+    }
 
     .section-desc {
-      font-size: 0.875rem; color: var(--iron); margin-top: 0.3rem;
+      font-size: 0.875rem;
+      color: var(--iron);
+      margin-top: 0.3rem;
     }
 
-    .section-head { margin-bottom: 1.5rem; }
+    .section-head {
+      margin-bottom: 1.5rem;
+    }
 
-    .divider { border: none; border-top: 1px solid var(--ash); margin: 0; }
+    .divider {
+      border: none;
+      border-top: 1px solid var(--ash);
+      margin: 0;
+    }
 
     /* ── Metric Strip ──────────────────────────────────── */
     .metrics {
       background: var(--white);
       border-bottom: 1px solid var(--ash);
       padding: 0.65rem 2rem;
-      display: flex; align-items: center;
+      display: flex;
+      align-items: center;
       justify-content: center;
-      gap: 2.5rem; flex-wrap: wrap;
+      gap: 2.5rem;
+      flex-wrap: wrap;
       font-size: 0.8rem;
     }
 
     .metric-item {
-      display: flex; align-items: center; gap: 5px; color: var(--iron);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--iron);
     }
 
-    .metric-item i { width: 14px; height: 14px; color: var(--slate); }
-    .metric-item strong { color: var(--ink); font-weight: 700; }
+    .metric-item i {
+      width: 14px;
+      height: 14px;
+      color: var(--slate);
+    }
+
+    .metric-item strong {
+      color: var(--ink);
+      font-weight: 700;
+    }
 
     /* ── Stat Cards ────────────────────────────────────── */
     .stats-grid {
@@ -342,47 +528,101 @@
       padding: 1.5rem;
       box-shadow: var(--shadow-sm);
       transition: box-shadow 0.2s, transform 0.2s;
-      position: relative; overflow: hidden;
+      position: relative;
+      overflow: hidden;
     }
 
-    .stat-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
+    .stat-card:hover {
+      box-shadow: var(--shadow);
+      transform: translateY(-2px);
+    }
 
     .stat-card::before {
-      content: ''; position: absolute;
-      top: 0; left: 0; right: 0; height: 3px;
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
     }
 
-    .sc-red::before    { background: var(--red); }
-    .sc-green::before  { background: var(--green); }
-    .sc-amber::before  { background: var(--amber); }
-    .sc-slate::before  { background: var(--slate); }
+    .sc-red::before {
+      background: var(--red);
+    }
+
+    .sc-green::before {
+      background: var(--green);
+    }
+
+    .sc-amber::before {
+      background: var(--amber);
+    }
+
+    .sc-slate::before {
+      background: var(--slate);
+    }
 
     .stat-top {
-      display: flex; align-items: center;
-      justify-content: space-between; margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
     }
 
-    .stat-label { font-size: 0.78rem; color: var(--iron); font-weight: 500; }
+    .stat-label {
+      font-size: 0.78rem;
+      color: var(--iron);
+      font-weight: 500;
+    }
 
     .stat-icon {
-      width: 36px; height: 36px; border-radius: 9px;
-      display: flex; align-items: center; justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    .stat-icon i { width: 18px; height: 18px; }
+    .stat-icon i {
+      width: 18px;
+      height: 18px;
+    }
 
-    .sc-red   .stat-icon { background: var(--red-light);   color: var(--red); }
-    .sc-green .stat-icon { background: var(--green-light); color: var(--green); }
-    .sc-amber .stat-icon { background: var(--amber-light); color: var(--amber); }
-    .sc-slate .stat-icon { background: var(--smoke);       color: var(--slate); }
+    .sc-red .stat-icon {
+      background: var(--red-light);
+      color: var(--red);
+    }
+
+    .sc-green .stat-icon {
+      background: var(--green-light);
+      color: var(--green);
+    }
+
+    .sc-amber .stat-icon {
+      background: var(--amber-light);
+      color: var(--amber);
+    }
+
+    .sc-slate .stat-icon {
+      background: var(--smoke);
+      color: var(--slate);
+    }
 
     .stat-value {
-      font-size: 2rem; font-weight: 900;
-      letter-spacing: -0.04em; line-height: 1;
-      color: var(--midnight); font-variant-numeric: tabular-nums;
+      font-size: 2rem;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      color: var(--midnight);
+      font-variant-numeric: tabular-nums;
     }
 
-    .stat-sub { font-size: 0.72rem; color: var(--slate); margin-top: 0.4rem; }
+    .stat-sub {
+      font-size: 0.72rem;
+      color: var(--slate);
+      margin-top: 0.4rem;
+    }
 
     /* ── Report Section ────────────────────────────────── */
     .report-section {
@@ -391,7 +631,9 @@
       border-bottom: 1px solid var(--ash);
     }
 
-    .report-section.show { display: block; }
+    .report-section.show {
+      display: block;
+    }
 
     .report-container {
       max-width: 960px;
@@ -406,34 +648,40 @@
       text-align: center;
     }
 
-    .scan-overlay.active { display: block; }
+    .scan-overlay.active {
+      display: block;
+    }
 
     .scan-radar {
-      width: 80px; height: 80px;
+      width: 80px;
+      height: 80px;
       margin: 0 auto 1.5rem;
       position: relative;
     }
 
     .scan-radar-ring {
-      position: absolute; inset: 0;
-      border: 2px solid rgba(220,38,38,0.15);
+      position: absolute;
+      inset: 0;
+      border: 2px solid rgba(220, 38, 38, 0.15);
       border-radius: 50%;
     }
 
     .scan-radar-ring:nth-child(2) {
       inset: 10px;
-      border-color: rgba(220,38,38,0.25);
+      border-color: rgba(220, 38, 38, 0.25);
     }
 
     .scan-radar-ring:nth-child(3) {
       inset: 20px;
-      border-color: rgba(220,38,38,0.4);
+      border-color: rgba(220, 38, 38, 0.4);
     }
 
     .scan-radar-sweep {
       position: absolute;
-      top: 50%; left: 50%;
-      width: 50%; height: 2px;
+      top: 50%;
+      left: 50%;
+      width: 50%;
+      height: 2px;
       background: linear-gradient(90deg, var(--red), transparent);
       transform-origin: left center;
       animation: radarSweep 1.5s linear infinite;
@@ -441,24 +689,34 @@
 
     .scan-radar-dot {
       position: absolute;
-      top: 50%; left: 50%;
-      width: 6px; height: 6px;
+      top: 50%;
+      left: 50%;
+      width: 6px;
+      height: 6px;
       margin: -3px 0 0 -3px;
       background: var(--red);
       border-radius: 50%;
       box-shadow: 0 0 8px var(--red);
     }
 
-    @keyframes radarSweep { to { transform: rotate(360deg); } }
+    @keyframes radarSweep {
+      to {
+        transform: rotate(360deg);
+      }
+    }
 
     .scan-title {
-      font-size: 1.1rem; font-weight: 700;
-      color: var(--midnight); margin-bottom: 0.5rem;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--midnight);
+      margin-bottom: 0.5rem;
     }
 
     .scan-ip {
-      font-family: var(--mono); font-size: 0.9rem;
-      color: var(--slate); margin-bottom: 1.5rem;
+      font-family: var(--mono);
+      font-size: 0.9rem;
+      color: var(--slate);
+      margin-bottom: 1.5rem;
     }
 
     .scan-steps {
@@ -469,15 +727,27 @@
     }
 
     .scan-step {
-      display: flex; align-items: center; gap: 6px;
-      font-size: 0.78rem; font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
       color: var(--silver);
       transition: color 0.3s;
     }
 
-    .scan-step.done { color: var(--green); }
-    .scan-step.active { color: var(--red); }
-    .scan-step i { width: 14px; height: 14px; }
+    .scan-step.done {
+      color: var(--green);
+    }
+
+    .scan-step.active {
+      color: var(--red);
+    }
+
+    .scan-step i {
+      width: 14px;
+      height: 14px;
+    }
 
     /* Report Card */
     .report-card {
@@ -485,11 +755,20 @@
       animation: reportSlide 0.4s ease;
     }
 
-    .report-card.show { display: block; }
+    .report-card.show {
+      display: block;
+    }
 
     @keyframes reportSlide {
-      from { opacity: 0; transform: translateY(12px); }
-      to   { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .rc-header {
@@ -502,36 +781,61 @@
       color: white;
     }
 
-    .rc-header-danger { background: linear-gradient(135deg, #dc2626, #991b1b); }
-    .rc-header-safe   { background: linear-gradient(135deg, #16a34a, #15803d); }
-    .rc-header-warn   { background: linear-gradient(135deg, #d97706, #b45309); }
+    .rc-header-danger {
+      background: linear-gradient(135deg, #dc2626, #991b1b);
+    }
 
-    .rc-h-left { display: flex; align-items: center; gap: 16px; }
+    .rc-header-safe {
+      background: linear-gradient(135deg, #16a34a, #15803d);
+    }
+
+    .rc-header-warn {
+      background: linear-gradient(135deg, #d97706, #b45309);
+    }
+
+    .rc-h-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
 
     .rc-h-icon {
-      width: 52px; height: 52px;
-      background: rgba(255,255,255,0.15);
+      width: 52px;
+      height: 52px;
+      background: rgba(255, 255, 255, 0.15);
       border-radius: 14px;
-      display: flex; align-items: center; justify-content: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       backdrop-filter: blur(8px);
     }
 
-    .rc-h-icon i { width: 26px; height: 26px; }
+    .rc-h-icon i {
+      width: 26px;
+      height: 26px;
+    }
 
     .rc-h-ip {
       font-family: var(--mono);
-      font-size: 1.4rem; font-weight: 700;
+      font-size: 1.4rem;
+      font-weight: 700;
     }
 
-    .rc-h-sub { font-size: 0.82rem; opacity: 0.8; margin-top: 2px; }
+    .rc-h-sub {
+      font-size: 0.82rem;
+      opacity: 0.8;
+      margin-top: 2px;
+    }
 
     .rc-h-badge {
-      font-size: 0.72rem; font-weight: 800;
-      text-transform: uppercase; letter-spacing: 0.06em;
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
       padding: 0.4rem 1.1rem;
       border-radius: 100px;
-      background: rgba(255,255,255,0.18);
-      border: 1px solid rgba(255,255,255,0.25);
+      background: rgba(255, 255, 255, 0.18);
+      border: 1px solid rgba(255, 255, 255, 0.25);
       backdrop-filter: blur(4px);
       white-space: nowrap;
     }
@@ -560,13 +864,20 @@
 
     .rc-panel-head {
       padding: 0.8rem 1.2rem;
-      font-size: 0.72rem; font-weight: 800;
-      text-transform: uppercase; letter-spacing: 0.06em;
-      display: flex; align-items: center; gap: 6px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      display: flex;
+      align-items: center;
+      gap: 6px;
       border-bottom: 1px solid var(--ash);
     }
 
-    .rc-panel-head i { width: 14px; height: 14px; }
+    .rc-panel-head i {
+      width: 14px;
+      height: 14px;
+    }
 
     .rc-panel-vt .rc-panel-head {
       background: #eff6ff;
@@ -578,7 +889,9 @@
       color: var(--red);
     }
 
-    .rc-panel-body { padding: 1.2rem; }
+    .rc-panel-body {
+      padding: 1.2rem;
+    }
 
     .rc-row {
       display: flex;
@@ -588,37 +901,56 @@
       border-bottom: 1px solid var(--smoke);
     }
 
-    .rc-row:last-child { border-bottom: none; }
+    .rc-row:last-child {
+      border-bottom: none;
+    }
 
     .rc-row-label {
-      font-size: 0.78rem; color: var(--slate); font-weight: 500;
+      font-size: 0.78rem;
+      color: var(--slate);
+      font-weight: 500;
     }
 
     .rc-row-value {
-      font-size: 0.82rem; font-weight: 700; color: var(--midnight);
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--midnight);
       font-family: var(--mono);
     }
 
-    .rc-row-value.text { font-family: var(--font); }
+    .rc-row-value.text {
+      font-family: var(--font);
+    }
 
     /* Detection Ratio Circle */
     .detection-circle {
-      display: flex; align-items: center; gap: 14px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
       padding: 1rem 0 0.5rem;
     }
 
     .dc-ring {
-      width: 56px; height: 56px; position: relative;
+      width: 56px;
+      height: 56px;
+      position: relative;
     }
 
-    .dc-ring svg { transform: rotate(-90deg); }
+    .dc-ring svg {
+      transform: rotate(-90deg);
+    }
 
     .dc-ring circle {
-      fill: none; stroke-width: 5;
-      cx: 28; cy: 28; r: 24;
+      fill: none;
+      stroke-width: 5;
+      cx: 28;
+      cy: 28;
+      r: 24;
     }
 
-    .dc-bg { stroke: var(--smoke); }
+    .dc-bg {
+      stroke: var(--smoke);
+    }
 
     .dc-fill {
       stroke: var(--red);
@@ -628,28 +960,47 @@
       transition: stroke-dashoffset 1.2s ease;
     }
 
-    .dc-fill.safe { stroke: var(--green); }
+    .dc-fill.safe {
+      stroke: var(--green);
+    }
 
     .dc-num {
-      position: absolute; inset: 0;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.72rem; font-weight: 800; color: var(--midnight);
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: var(--midnight);
     }
 
     .dc-text {
-      font-size: 0.82rem; color: var(--iron); line-height: 1.5;
+      font-size: 0.82rem;
+      color: var(--iron);
+      line-height: 1.5;
     }
 
-    .dc-text strong { color: var(--midnight); }
+    .dc-text strong {
+      color: var(--midnight);
+    }
 
     .vt-unavailable {
       padding: 1.2rem 0;
-      font-size: 0.82rem; color: var(--slate);
+      font-size: 0.82rem;
+      color: var(--slate);
       text-align: center;
       line-height: 1.6;
     }
 
-    .vt-unavailable i { width: 28px; height: 28px; margin-bottom: 0.4rem; display: block; margin: 0 auto 0.5rem; color: var(--silver); }
+    .vt-unavailable i {
+      width: 28px;
+      height: 28px;
+      margin-bottom: 0.4rem;
+      display: block;
+      margin: 0 auto 0.5rem;
+      color: var(--silver);
+    }
 
     /* Threat Bar */
     .threat-bar {
@@ -657,65 +1008,128 @@
     }
 
     .tb-top {
-      display: flex; justify-content: space-between;
-      align-items: center; margin-bottom: 0.4rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.4rem;
     }
 
     .tb-label {
-      font-size: 0.72rem; font-weight: 700;
-      text-transform: uppercase; letter-spacing: 0.05em;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
       color: var(--iron);
     }
 
     .tb-level {
-      font-size: 0.68rem; font-weight: 800;
-      text-transform: uppercase; letter-spacing: 0.05em;
-      padding: 0.12rem 0.5rem; border-radius: 4px;
+      font-size: 0.68rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.12rem 0.5rem;
+      border-radius: 4px;
     }
 
-    .tb-critical { background: #fef2f2; color: #dc2626; }
-    .tb-high     { background: #fff7ed; color: #ea580c; }
-    .tb-medium   { background: #fffbeb; color: #d97706; }
-    .tb-low      { background: #f0fdf4; color: #16a34a; }
-    .tb-none     { background: #f0fdf4; color: #16a34a; }
+    .tb-critical {
+      background: #fef2f2;
+      color: #dc2626;
+    }
+
+    .tb-high {
+      background: #fff7ed;
+      color: #ea580c;
+    }
+
+    .tb-medium {
+      background: #fffbeb;
+      color: #d97706;
+    }
+
+    .tb-low {
+      background: #f0fdf4;
+      color: #16a34a;
+    }
+
+    .tb-none {
+      background: #f0fdf4;
+      color: #16a34a;
+    }
 
     .tb-track {
-      height: 6px; background: var(--smoke);
-      border-radius: 100px; overflow: hidden;
+      height: 6px;
+      background: var(--smoke);
+      border-radius: 100px;
+      overflow: hidden;
     }
 
     .tb-fill {
-      height: 100%; border-radius: 100px;
-      transition: width 1s cubic-bezier(.25,.46,.45,.94);
+      height: 100%;
+      border-radius: 100px;
+      transition: width 1s cubic-bezier(.25, .46, .45, .94);
       background: linear-gradient(90deg, #16a34a, #d97706, #dc2626);
     }
 
     /* External Links */
     .rc-ext {
-      display: flex; gap: 0.5rem; flex-wrap: wrap;
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
       margin-bottom: 1.5rem;
     }
 
     .rc-ext a {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 0.5rem 0.9rem; border-radius: 8px;
-      font-size: 0.76rem; font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0.5rem 0.9rem;
+      border-radius: 8px;
+      font-size: 0.76rem;
+      font-weight: 600;
       text-decoration: none;
       border: 1px solid var(--ash);
-      background: var(--white); color: var(--ink);
+      background: var(--white);
+      color: var(--ink);
       box-shadow: var(--shadow-sm);
       transition: all 0.18s;
     }
 
-    .rc-ext a:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
-    .rc-ext a i { width: 14px; height: 14px; }
+    .rc-ext a:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+    }
 
-    .rc-ext-vt { border-color: rgba(37,99,235,0.2) !important; color: #2563eb !important; }
-    .rc-ext-vt:hover { background: #eff6ff !important; }
-    .rc-ext-abuse { border-color: var(--red-border) !important; color: var(--red) !important; }
-    .rc-ext-abuse:hover { background: var(--red-light) !important; }
-    .rc-ext-shodan { border-color: rgba(161,16,16,0.2) !important; color: #a11010 !important; }
-    .rc-ext-shodan:hover { background: #fef7f7 !important; }
+    .rc-ext a i {
+      width: 14px;
+      height: 14px;
+    }
+
+    .rc-ext-vt {
+      border-color: rgba(37, 99, 235, 0.2) !important;
+      color: #2563eb !important;
+    }
+
+    .rc-ext-vt:hover {
+      background: #eff6ff !important;
+    }
+
+    .rc-ext-abuse {
+      border-color: var(--red-border) !important;
+      color: var(--red) !important;
+    }
+
+    .rc-ext-abuse:hover {
+      background: var(--red-light) !important;
+    }
+
+    .rc-ext-shodan {
+      border-color: rgba(161, 16, 16, 0.2) !important;
+      color: #a11010 !important;
+    }
+
+    .rc-ext-shodan:hover {
+      background: #fef7f7 !important;
+    }
 
     /* Assessment Box */
     .rc-assessment {
@@ -723,11 +1137,15 @@
       background: var(--snow);
       border: 1px solid var(--ash);
       border-radius: 10px;
-      font-size: 0.82rem; color: var(--iron);
+      font-size: 0.82rem;
+      color: var(--iron);
       line-height: 1.75;
     }
 
-    .rc-assessment strong { color: var(--midnight); }
+    .rc-assessment strong {
+      color: var(--midnight);
+    }
+
     .rc-assessment code {
       font-family: var(--mono);
       background: var(--smoke);
@@ -746,25 +1164,68 @@
     }
 
     .chart-title {
-      font-size: 0.875rem; font-weight: 700;
+      font-size: 0.875rem;
+      font-weight: 700;
       color: var(--midnight);
-      display: flex; align-items: center; gap: 7px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
       margin-bottom: 1rem;
     }
 
-    .chart-title i { width: 16px; height: 16px; color: var(--slate); }
+    .chart-title i {
+      width: 16px;
+      height: 16px;
+      color: var(--slate);
+    }
 
-    .chart-wrap { position: relative; height: 320px; }
+    .chart-wrap {
+      position: relative;
+      height: 320px;
+    }
 
     /* ── Tables ────────────────────────────────────────── */
-    .top100-table { width: 100%; text-align: left; border-collapse: collapse; font-size: 0.85rem; }
-    .top100-table th { padding: 1rem; font-weight: 700; color: var(--midnight); background: var(--smoke); border-bottom: 1px solid var(--ash); }
-    .top100-table td { padding: 0.8rem 1rem; border-bottom: 1px solid var(--ash); color: var(--iron); }
-    .top100-table tr:hover td { background: var(--snow); color: var(--ink); }
-    .top100-table tr:last-child td { border-bottom: none; }
+    .top100-table {
+      width: 100%;
+      text-align: left;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+
+    .top100-table th {
+      padding: 1rem;
+      font-weight: 700;
+      color: var(--midnight);
+      background: var(--smoke);
+      border-bottom: 1px solid var(--ash);
+    }
+
+    .top100-table td {
+      padding: 0.8rem 1rem;
+      border-bottom: 1px solid var(--ash);
+      color: var(--iron);
+    }
+
+    .top100-table tr:hover td {
+      background: var(--snow);
+      color: var(--ink);
+    }
+
+    .top100-table tr:last-child td {
+      border-bottom: none;
+    }
+
     .top100-table .cat-tag {
-      display: inline-block; padding: 0.15rem 0.4rem; background: var(--smoke);
-      border-radius: 4px; font-size: 0.7rem; font-weight: 600; margin-right: 4px; margin-bottom: 2px; border: 1px solid var(--ash); color: var(--ink);
+      display: inline-block;
+      padding: 0.15rem 0.4rem;
+      background: var(--smoke);
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      margin-right: 4px;
+      margin-bottom: 2px;
+      border: 1px solid var(--ash);
+      color: var(--ink);
     }
 
     /* ── Downloads ─────────────────────────────────────── */
@@ -780,514 +1241,708 @@
       border-radius: var(--radius);
       padding: 1.5rem;
       box-shadow: var(--shadow-sm);
-      display: flex; flex-direction: column;
+      display: flex;
+      flex-direction: column;
       transition: box-shadow 0.2s, transform 0.2s;
     }
 
-    .dl-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
-
-    .dl-top { display: flex; align-items: center; gap: 10px; margin-bottom: 0.6rem; }
-
-    .dl-icon {
-      width: 36px; height: 36px; border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
+    .dl-card:hover {
+      box-shadow: var(--shadow);
+      transform: translateY(-2px);
     }
 
-    .dl-icon i { width: 18px; height: 18px; }
+    .dl-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 0.6rem;
+    }
 
-    .dl-icon-red  { background: var(--red-light);  color: var(--red); }
-    .dl-icon-grn  { background: var(--green-light); color: var(--green); }
-    .dl-icon-amb  { background: var(--amber-light); color: var(--amber); }
+    .dl-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-    .dl-name { font-weight: 700; font-size: 0.9rem; color: var(--midnight); }
+    .dl-icon i {
+      width: 18px;
+      height: 18px;
+    }
+
+    .dl-icon-red {
+      background: var(--red-light);
+      color: var(--red);
+    }
+
+    .dl-icon-grn {
+      background: var(--green-light);
+      color: var(--green);
+    }
+
+    .dl-icon-amb {
+      background: var(--amber-light);
+      color: var(--amber);
+    }
+
+    .dl-name {
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--midnight);
+    }
 
     .dl-desc {
-      font-size: 0.82rem; color: var(--iron);
-      margin-bottom: 1rem; flex: 1;
+      font-size: 0.82rem;
+      color: var(--iron);
+      margin-bottom: 1rem;
+      flex: 1;
     }
 
     .dl-url {
-      font-family: var(--mono); font-size: 0.7rem;
+      font-family: var(--mono);
+      font-size: 0.7rem;
       color: var(--red);
-      background: var(--snow); border: 1px solid var(--ash);
-      padding: 0.6rem 0.8rem; border-radius: 6px;
-      word-break: break-all; margin-bottom: 0.8rem;
+      background: var(--snow);
+      border: 1px solid var(--ash);
+      padding: 0.6rem 0.8rem;
+      border-radius: 6px;
+      word-break: break-all;
+      margin-bottom: 0.8rem;
     }
 
     /* ── Footer ────────────────────────────────────────── */
     footer {
       background: var(--white);
       border-top: 1px solid var(--ash);
-      padding: 3rem 2rem 2rem; margin-top: 3rem;
+      padding: 3rem 2rem 2rem;
+      margin-top: 3rem;
     }
 
     .footer-inner {
-      max-width: 1280px; margin: 0 auto;
+      max-width: 1280px;
+      margin: 0 auto;
       display: grid;
       grid-template-columns: 1.8fr 1fr 1fr;
       gap: 2rem;
     }
 
-    .footer-brand { display: flex; align-items: center; gap: 8px; margin-bottom: 0.8rem; }
-    .footer-brand img { width: 24px; height: 24px; border-radius: 5px; }
-    .footer-brand span { font-weight: 800; font-size: 0.95rem; color: var(--midnight); }
-    .footer-brand em { color: var(--red); font-style: normal; }
-    .footer-desc { font-size: 0.82rem; color: var(--iron); line-height: 1.7; }
+    .footer-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 0.8rem;
+    }
+
+    .footer-brand img {
+      width: 24px;
+      height: 24px;
+      border-radius: 5px;
+    }
+
+    .footer-brand span {
+      font-weight: 800;
+      font-size: 0.95rem;
+      color: var(--midnight);
+    }
+
+    .footer-brand em {
+      color: var(--red);
+      font-style: normal;
+    }
+
+    .footer-desc {
+      font-size: 0.82rem;
+      color: var(--iron);
+      line-height: 1.7;
+    }
 
     .footer-col h4 {
-      font-size: 0.7rem; font-weight: 800;
-      text-transform: uppercase; letter-spacing: 0.07em;
-      color: var(--midnight); margin-bottom: 0.85rem;
+      font-size: 0.7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--midnight);
+      margin-bottom: 0.85rem;
     }
 
-    .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+    .footer-col ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
 
     .footer-col a {
-      font-size: 0.82rem; color: var(--iron);
-      text-decoration: none; transition: color 0.15s;
+      font-size: 0.82rem;
+      color: var(--iron);
+      text-decoration: none;
+      transition: color 0.15s;
     }
-    .footer-col a:hover { color: var(--red); }
+
+    .footer-col a:hover {
+      color: var(--red);
+    }
 
     .footer-bottom {
-      max-width: 1280px; margin: 1.5rem auto 0;
+      max-width: 1280px;
+      margin: 1.5rem auto 0;
       padding-top: 1.5rem;
       border-top: 1px solid var(--ash);
-      display: flex; align-items: center;
+      display: flex;
+      align-items: center;
       justify-content: space-between;
-      font-size: 0.76rem; color: var(--slate);
-      flex-wrap: wrap; gap: 0.5rem;
+      font-size: 0.76rem;
+      color: var(--slate);
+      flex-wrap: wrap;
+      gap: 0.5rem;
     }
 
     /* ── Spinner ────────────────────────────────────────── */
     .spinner {
-      width: 16px; height: 16px;
-      border: 2px solid rgba(255,255,255,0.3);
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
       border-top-color: white;
       border-radius: 50%;
       animation: spin 0.5s linear infinite;
       display: inline-block;
     }
 
-    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
 
     /* ── Responsive ────────────────────────────────────── */
     @media (max-width: 820px) {
-      .rc-panels { grid-template-columns: 1fr; }
+      .rc-panels {
+        grid-template-columns: 1fr;
+      }
     }
 
     @media (max-width: 640px) {
-      .nav-links { display: none; }
-      .hero { padding: 2.5rem 1rem 2rem; }
-      .hero-search-row { flex-direction: column; }
-      .hero-search-btn { padding: 0.9rem; justify-content: center; }
-      .hero-actions { flex-direction: column; align-items: stretch; }
-      .metrics { gap: 1rem; }
-      .footer-inner { grid-template-columns: 1fr; }
-      .rc-header { flex-direction: column; align-items: flex-start; }
-      .rc-ext { flex-direction: column; }
-      .rc-ext a { justify-content: center; }
+      .nav-links {
+        display: none;
+      }
+
+      .hero {
+        padding: 2.5rem 1rem 2rem;
+      }
+
+      .hero-search-row {
+        flex-direction: column;
+      }
+
+      .hero-search-btn {
+        padding: 0.9rem;
+        justify-content: center;
+      }
+
+      .hero-actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .metrics {
+        gap: 1rem;
+      }
+
+      .footer-inner {
+        grid-template-columns: 1fr;
+      }
+
+      .rc-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .rc-ext {
+        flex-direction: column;
+      }
+
+      .rc-ext a {
+        justify-content: center;
+      }
     }
   </style>
 </head>
+
 <body>
 
-<!-- ═══════════════ NAVBAR ════════════════ -->
-<nav class="nav">
-  <div class="nav-inner">
-    <a href="#" class="nav-brand">
-      <img src="https://raw.githubusercontent.com/kalidada18/himalayafeed/main/img/himalayafeed.png" alt="HimalayaFeed">
-      <span>Himalaya<em>Feed</em></span>
-    </a>
-
-    <ul class="nav-links">
-      <li><a href="#dashboard" class="active">Dashboard</a></li>
-      <li><a href="#analytics">Analytics</a></li>
-      <li><a href="#downloads">Downloads</a></li>
-      <li><a href="https://github.com/kalidada18/himalayafeed" target="_blank" rel="noopener">GitHub</a></li>
-    </ul>
-
-    <div class="nav-status">
-      <div class="nav-dot"></div>
-      Operational
-    </div>
-  </div>
-</nav>
-
-<!-- ═══════════════ HERO + SEARCH ════════ -->
-<header class="hero" id="dashboard">
-  <div class="hero-inner">
-    <h1>Threat Intelligence<br><span class="accent">Made Simple.</span></h1>
-    <p class="hero-sub">
-      Search any IP address or Domain to scan against the HimalayaFeed threat database and VirusTotal.
-      Updated every hour. Fully automated. Zero infrastructure.
-    </p>
-
-    <div class="hero-search" id="lookup">
-      <div class="hero-search-row">
-        <input type="text" class="hero-search-input" id="ip-input"
-               placeholder="Search IP or Domain — e.g. 185.220.101.45 or evil.com"
-               autocomplete="off" spellcheck="false">
-        <button class="hero-search-btn" onclick="scanIP()" id="scan-btn">
-          <i data-lucide="scan"></i> Scan
-        </button>
-      </div>
-    </div>
-
-    <div class="hero-actions">
-      <a href="./malicious_ips.txt"
-         class="btn btn-ghost" target="_blank" rel="noopener" id="btn-dl-txt">
-        <i data-lucide="download"></i> Download Feed
-      </a>
-      <a href="./malicious_ips.csv"
-         class="btn btn-ghost" target="_blank" rel="noopener" id="btn-dl-csv">
-        <i data-lucide="file-spreadsheet"></i> CSV Format
-      </a>
-      <a href="https://github.com/kalidada18/himalayafeed" class="btn btn-ghost" target="_blank" rel="noopener">
-        <i data-lucide="github"></i> GitHub
-      </a>
-    </div>
-  </div>
-</header>
-
-<!-- ═══════════════ REPORT SECTION ═══════ -->
-<section class="report-section" id="report-section">
-  <div class="report-container">
-
-    <!-- Scanning Animation -->
-    <div class="scan-overlay" id="scan-overlay">
-      <div class="scan-radar">
-        <div class="scan-radar-ring"></div>
-        <div class="scan-radar-ring"></div>
-        <div class="scan-radar-ring"></div>
-        <div class="scan-radar-sweep"></div>
-        <div class="scan-radar-dot"></div>
-      </div>
-      <div class="scan-title">Scanning IP Address</div>
-      <div class="scan-ip" id="scan-ip"></div>
-      <div class="scan-steps">
-        <div class="scan-step" id="step-feed"><i data-lucide="database"></i> HimalayaFeed Engine</div>
-        <div class="scan-step" id="step-report"><i data-lucide="file-text"></i> Generating Report</div>
-      </div>
-    </div>
-
-    <!-- Report Card -->
-    <div class="report-card" id="report-card">
-      <div class="rc-header" id="rc-header">
-        <div class="rc-h-left">
-          <div class="rc-h-icon"><i id="rc-icon" data-lucide="shield-alert"></i></div>
-          <div>
-            <div class="rc-h-ip" id="rc-ip"></div>
-            <div class="rc-h-sub" id="rc-sub"></div>
-          </div>
-        </div>
-        <div class="rc-h-badge" id="rc-badge"></div>
-      </div>
-
-      <div class="rc-body">
-        <!-- Threat Bar -->
-        <div class="threat-bar">
-          <div class="tb-top">
-            <span class="tb-label">Combined Threat Level</span>
-            <span class="tb-level" id="tb-level">—</span>
-          </div>
-          <div class="tb-track">
-            <div class="tb-fill" id="tb-fill" style="width:0%"></div>
-          </div>
-        </div>
-
-        <!-- Panels -->
-        <div class="rc-panels" style="grid-template-columns: 1fr;">
-          <!-- Feed Intel Panel -->
-          <div class="rc-panel rc-panel-feed">
-            <div class="rc-panel-head"><i data-lucide="radio"></i> Threat Reputation Engine</div>
-            <div class="rc-panel-body" id="feed-panel-body"></div>
-          </div>
-        </div>
-
-        <!-- External Links -->
-        <div class="rc-ext" id="rc-ext">
-          <a class="rc-ext-vt" id="ext-vt" href="#" target="_blank" rel="noopener">
-            <i data-lucide="shield"></i> VirusTotal Report
-          </a>
-          <a class="rc-ext-abuse" id="ext-abuse" href="#" target="_blank" rel="noopener">
-            <i data-lucide="alert-octagon"></i> AbuseIPDB Profile
-          </a>
-          <a class="rc-ext-shodan" id="ext-shodan" href="#" target="_blank" rel="noopener">
-            <i data-lucide="search"></i> Shodan Recon
-          </a>
-        </div>
-
-        <!-- Assessment -->
-        <div class="rc-assessment" id="rc-assessment"></div>
-      </div>
-    </div>
-
-  </div>
-</section>
-
-<!-- ═══════════════ METRICS STRIP ═════════ -->
-<div class="metrics">
-  <div class="metric-item"><i data-lucide="clock"></i> Last Updated: <strong id="ms-time">Loading...</strong></div>
-  <div class="metric-item"><i data-lucide="server"></i> Detection Nodes: <strong id="ms-src">-</strong></div>
-  <div class="metric-item"><i data-lucide="target"></i> Malicious IPs: <strong id="ms-ips">-</strong></div>
-  <div class="metric-item"><i data-lucide="refresh-cw"></i> Real-time DB sync <strong>every hour</strong></div>
-</div>
-
-<!-- ═══════════════ MAIN ═════════════════ -->
-<main class="container">
-
-  <!-- Stat Cards -->
-  <section class="section">
-    <div class="stats-grid">
-      <div class="stat-card sc-red">
-        <div class="stat-top">
-          <span class="stat-label">Total Malicious IPs</span>
-          <div class="stat-icon"><i data-lucide="shield-alert"></i></div>
-        </div>
-        <div class="stat-value" id="n-total">-</div>
-        <div class="stat-sub">Unique IPv4 addresses tracked globally</div>
-      </div>
-      <div class="stat-card sc-amber">
-        <div class="stat-top">
-          <span class="stat-label">High-Confidence Threats</span>
-          <div class="stat-icon"><i data-lucide="layers"></i></div>
-        </div>
-        <div class="stat-value" id="n-multi">-</div>
-        <div class="stat-sub">Confirmed by multiple detection nodes</div>
-      </div>
-      <div class="stat-card sc-green">
-        <div class="stat-top">
-          <span class="stat-label">Active Nodes</span>
-          <div class="stat-icon"><i data-lucide="radio-receiver"></i></div>
-        </div>
-        <div class="stat-value" id="n-feeds">-</div>
-        <div class="stat-sub">Threat detection sensors currently active</div>
-      </div>
-      <div class="stat-card sc-slate">
-        <div class="stat-top">
-          <span class="stat-label">Offline Nodes</span>
-          <div class="stat-icon"><i data-lucide="alert-triangle"></i></div>
-        </div>
-        <div class="stat-value" id="n-failed">-</div>
-        <div class="stat-sub">Sensors unreachable in the latest cycle</div>
-      </div>
-    </div>
-  </section>
-
-  <hr class="divider">
-
-  <!-- Top 100 Leaderboard -->
-  <section class="section" id="top100">
-    <div class="section-head">
-      <div class="section-label">High-Confidence</div>
-      <h2 class="section-title"><i data-lucide="list"></i> Top 100 Critical Threats</h2>
-      <p class="section-desc">The most globally active malicious IPs, confirmed by multiple detection nodes.</p>
-    </div>
-
-    <div class="chart-card" style="padding:0; overflow-x:auto;">
-      <table class="top100-table">
-        <thead>
-          <tr>
-            <th>IP Address</th>
-            <th>Location / ASN</th>
-            <th>Threat Score</th>
-            <th>Categories</th>
-          </tr>
-        </thead>
-        <tbody id="top100-body">
-          <tr><td colspan="4" style="text-align:center; padding:3rem;"><span class="spinner" style="border-color:var(--ash); border-top-color:var(--red);"></span> Loading top threats...</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
-
-  <hr class="divider">
-
-  <!-- Analytics -->
-  <section class="section" id="analytics">
-    <div class="section-head">
-      <div class="section-label">Global Activity</div>
-      <h2 class="section-title"><i data-lucide="trending-up"></i> Threat Landscape Trend</h2>
-      <p class="section-desc">Historical tracking of active malicious IP addresses identified by our network.</p>
-    </div>
-
-    <div class="chart-card">
-      <div class="chart-title"><i data-lucide="activity"></i> 90-Day Volume Trend</div>
-      <div class="chart-wrap"><canvas id="historyChart"></canvas></div>
-    </div>
-  </section>
-
-  <hr class="divider">
-
-  <!-- Downloads -->
-  <section class="section" id="downloads">
-    <div class="section-head">
-      <div class="section-label">Automated Ingestion</div>
-      <h2 class="section-title"><i data-lucide="download-cloud"></i> Database Access</h2>
-      <p class="section-desc">Pull our threat intelligence directly into your firewall, SIEM, or custom pipeline.</p>
-    </div>
-
-    <div class="dl-grid">
-      <div class="dl-card">
-        <div class="dl-top">
-          <div class="dl-icon dl-icon-red"><i data-lucide="file-text"></i></div>
-          <span class="dl-name">Plain Text Feed</span>
-        </div>
-        <p class="dl-desc">One IPv4 per line. Ideal for iptables, ipset, and firewall blocklists.</p>
-        <div class="dl-url">https://raw.githubusercontent.com/kalidada18/himalayafeed/main/malicious_ips.txt</div>
-        <a href="https://raw.githubusercontent.com/kalidada18/himalayafeed/main/malicious_ips.txt"
-           class="btn btn-outline" target="_blank" rel="noopener" style="justify-content:center">
-          <i data-lucide="external-link"></i> Open Feed
-        </a>
-      </div>
-      <div class="dl-card">
-        <div class="dl-top">
-          <div class="dl-icon dl-icon-grn"><i data-lucide="file-spreadsheet"></i></div>
-          <span class="dl-name">CSV Format</span>
-        </div>
-        <p class="dl-desc">Includes IP addresses and internal confidence scoring metrics.</p>
-        <div class="dl-url">https://raw.githubusercontent.com/kalidada18/himalayafeed/main/malicious_ips.csv</div>
-        <a href="https://raw.githubusercontent.com/kalidada18/himalayafeed/main/malicious_ips.csv"
-           class="btn btn-outline" target="_blank" rel="noopener" style="justify-content:center">
-          <i data-lucide="external-link"></i> Open Feed
-        </a>
-      </div>
-      <div class="dl-card">
-        <div class="dl-top">
-          <div class="dl-icon dl-icon-amb"><i data-lucide="file-json"></i></div>
-          <span class="dl-name">Statistics JSON</span>
-        </div>
-        <p class="dl-desc">Aggregate metadata, network status, and timestamps for APIs.</p>
-        <div class="dl-url">https://raw.githubusercontent.com/kalidada18/himalayafeed/main/stats.json</div>
-        <a href="https://raw.githubusercontent.com/kalidada18/himalayafeed/main/stats.json"
-           class="btn btn-outline" target="_blank" rel="noopener" style="justify-content:center">
-          <i data-lucide="external-link"></i> Open Feed
-        </a>
-      </div>
-    </div>
-  </section>
-
-</main>
-
-<!-- ═══════════════ FOOTER ═══════════════ -->
-<footer>
-  <div class="footer-inner">
-    <div>
-      <div class="footer-brand">
-        <img src="./img/himalayafeed.png" alt="HimalayaFeed">
+  <!-- ═══════════════ NAVBAR ════════════════ -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="#" class="nav-brand">
+        <img src="https://raw.githubusercontent.com/kalidada18/himalayafeed/main/img/himalayafeed.png"
+          alt="HimalayaFeed">
         <span>Himalaya<em>Feed</em></span>
+      </a>
+
+      <div class="nav-right" style="display: flex; align-items: center; gap: 1rem;">
+        <ul class="nav-links" id="nav-links">
+          <li><a href="#dashboard" class="active">Dashboard</a></li>
+          <li><a href="#analytics">Analytics</a></li>
+          <li><a href="#downloads">Downloads</a></li>
+          <li><a href="https://github.com/kalidada18/himalayafeed" target="_blank" rel="noopener">GitHub</a></li>
+        </ul>
+
+        <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">
+          <i data-lucide="moon" id="theme-icon"></i>
+        </button>
+
+        <button id="mobile-menu-btn" class="theme-toggle" style="display: none;" aria-label="Toggle Mobile Menu">
+          <i data-lucide="menu"></i>
+        </button>
+
+        <div class="nav-status">
+          <div class="nav-dot"></div>
+          Operational
+        </div>
       </div>
-      <p class="footer-desc">HimalayaFeed is a leading Threat Intelligence Platform detecting and tracking malicious IPs globally. Fully automated. Zero infrastructure. Zero cost.</p>
     </div>
-    <div class="footer-col">
-      <h4>Database</h4>
-      <ul>
-        <li><a href="./malicious_ips.txt">Malicious IPs (.txt)</a></li>
-        <li><a href="./malicious_ips.csv">Malicious IPs (.csv)</a></li>
-        <li><a href="./malicious_domains.txt">Malicious Domains (.txt)</a></li>
-        <li><a href="./stats.json">Stats JSON</a></li>
-        <li><a href="https://github.com/kalidada18/himalayafeed/releases">Daily Archives</a></li>
-      </ul>
+  </nav>
+
+  <style>
+    @media (max-width: 640px) {
+      #mobile-menu-btn {
+        display: block !important;
+      }
+
+      .nav-links {
+        position: absolute;
+        top: 64px;
+        left: 0;
+        width: 100%;
+        background: var(--white);
+        flex-direction: column;
+        padding: 1rem 0;
+        border-bottom: 1px solid var(--ash);
+        box-shadow: var(--shadow-lg);
+        display: none;
+        z-index: 99;
+      }
+
+      .nav-links li {
+        width: 100%;
+        text-align: center;
+      }
+
+      .nav-links a {
+        display: block;
+        padding: 0.8rem;
+        margin: 0 1rem;
+      }
+
+      .nav-links.show {
+        display: flex;
+      }
+    }
+
+    .top100-table thead th {
+      position: sticky;
+      top: 0;
+      background: var(--white);
+      z-index: 10;
+      box-shadow: 0 1px 0 var(--ash);
+    }
+
+    .dark .top100-table thead th {
+      background: var(--snow);
+    }
+  </style>
+
+  <!-- ═══════════════ HERO + SEARCH ════════ -->
+  <header class="hero" id="dashboard">
+    <div class="hero-mountains"></div>
+    <div class="hero-inner">
+      <h1>Threat Intelligence<br><span class="accent">Land of the Himalayas.</span></h1>
+      <p class="hero-sub">
+        Search any IP address or Domain to scan against the HimalayaFeed threat database and VirusTotal.
+        Updated every hour. Fully automated. Zero infrastructure.
+      </p>
+
+      <div class="hero-search" id="lookup">
+        <div class="hero-search-row">
+          <input type="text" class="hero-search-input" id="ip-input"
+            placeholder="Search IP or Domain — e.g. 185.220.101.45 or evil.com" autocomplete="off" spellcheck="false">
+          <button class="hero-search-btn" onclick="scanIP()" id="scan-btn">
+            <i data-lucide="scan"></i> Scan
+          </button>
+        </div>
+      </div>
+
+      <div class="hero-actions">
+        <a href="./malicious_ips.txt" class="btn btn-ghost" target="_blank" rel="noopener" id="btn-dl-txt">
+          <i data-lucide="download"></i> Download Feed
+        </a>
+        <a href="./malicious_ips.csv" class="btn btn-ghost" target="_blank" rel="noopener" id="btn-dl-csv">
+          <i data-lucide="file-spreadsheet"></i> CSV Format
+        </a>
+        <a href="https://github.com/kalidada18/himalayafeed" class="btn btn-ghost" target="_blank" rel="noopener">
+          <i data-lucide="github"></i> GitHub
+        </a>
+      </div>
     </div>
-    <div class="footer-col">
-      <h4>Project</h4>
-      <ul>
-        <li><a href="https://github.com/kalidada18/himalayafeed">GitHub Repository</a></li>
-        <li><a href="https://github.com/kalidada18/himalayafeed/actions">System Status</a></li>
-        <li><a href="https://github.com/kalidada18/himalayafeed/blob/main/LICENSE">MIT License</a></li>
-        <li><a href="https://github.com/kalidada18/himalayafeed/issues">Report Issue</a></li>
-      </ul>
+  </header>
+
+  <!-- ═══════════════ REPORT SECTION ═══════ -->
+  <section class="report-section" id="report-section">
+    <div class="report-container">
+
+      <!-- Scanning Animation -->
+      <div class="scan-overlay" id="scan-overlay">
+        <div class="scan-radar">
+          <div class="scan-radar-ring"></div>
+          <div class="scan-radar-ring"></div>
+          <div class="scan-radar-ring"></div>
+          <div class="scan-radar-sweep"></div>
+          <div class="scan-radar-dot"></div>
+        </div>
+        <div class="scan-title">Scanning IP Address</div>
+        <div class="scan-ip" id="scan-ip"></div>
+        <div class="scan-steps">
+          <div class="scan-step" id="step-feed"><i data-lucide="database"></i> HimalayaFeed Engine</div>
+          <div class="scan-step" id="step-report"><i data-lucide="file-text"></i> Generating Report</div>
+        </div>
+      </div>
+
+      <!-- Report Card -->
+      <div class="report-card" id="report-card">
+        <div class="rc-header" id="rc-header">
+          <div class="rc-h-left">
+            <div class="rc-h-icon"><i id="rc-icon" data-lucide="shield-alert"></i></div>
+            <div>
+              <div class="rc-h-ip" id="rc-ip"></div>
+              <div class="rc-h-sub" id="rc-sub"></div>
+            </div>
+          </div>
+          <div class="rc-h-badge" id="rc-badge"></div>
+        </div>
+
+        <div class="rc-body">
+          <!-- Threat Bar -->
+          <div class="threat-bar">
+            <div class="tb-top">
+              <span class="tb-label">Combined Threat Level</span>
+              <span class="tb-level" id="tb-level">—</span>
+            </div>
+            <div class="tb-track">
+              <div class="tb-fill" id="tb-fill" style="width:0%"></div>
+            </div>
+          </div>
+
+          <!-- Panels -->
+          <div class="rc-panels" style="grid-template-columns: 1fr;">
+            <!-- Feed Intel Panel -->
+            <div class="rc-panel rc-panel-feed">
+              <div class="rc-panel-head"><i data-lucide="radio"></i> Threat Reputation Engine</div>
+              <div class="rc-panel-body" id="feed-panel-body"></div>
+            </div>
+          </div>
+
+          <!-- External Links -->
+          <div class="rc-ext" id="rc-ext">
+            <a class="rc-ext-vt" id="ext-vt" href="#" target="_blank" rel="noopener">
+              <i data-lucide="shield"></i> VirusTotal Report
+            </a>
+            <a class="rc-ext-abuse" id="ext-abuse" href="#" target="_blank" rel="noopener">
+              <i data-lucide="alert-octagon"></i> AbuseIPDB Profile
+            </a>
+            <a class="rc-ext-shodan" id="ext-shodan" href="#" target="_blank" rel="noopener">
+              <i data-lucide="search"></i> Shodan Recon
+            </a>
+          </div>
+
+          <!-- Assessment -->
+          <div class="rc-assessment" id="rc-assessment"></div>
+        </div>
+      </div>
+
     </div>
+  </section>
+
+  <!-- ═══════════════ METRICS STRIP ═════════ -->
+  <div class="metrics">
+    <div class="metric-item"><i data-lucide="clock"></i> Last Updated: <strong id="ms-time">Loading...</strong></div>
+    <div class="metric-item"><i data-lucide="server"></i> Detection Nodes: <strong id="ms-src">-</strong></div>
+    <div class="metric-item"><i data-lucide="target"></i> Malicious IPs: <strong id="ms-ips">-</strong></div>
+    <div class="metric-item"><i data-lucide="refresh-cw"></i> Real-time DB sync <strong>every hour</strong></div>
   </div>
-  <div class="footer-bottom">
-    <span>&copy; 2025 HimalayaFeed. All rights reserved.</span>
-  </div>
-</footer>
 
-<script>
-lucide.createIcons();
+  <!-- ═══════════════ MAIN ═════════════════ -->
+  <main class="container">
 
-let RAW = './';
-if (window.location.hostname === 'kalidada18.github.io') {
-  RAW = 'https://kalidada18.github.io/himalayafeed/';
-} else if (window.location.protocol === 'file:') {
-  RAW = 'https://raw.githubusercontent.com/kalidada18/himalayafeed/main/';
-}
-const fmt = n => new Intl.NumberFormat('en-US').format(n);
+    <!-- Stat Cards -->
+    <section class="section">
+      <div class="stats-grid">
+        <div class="stat-card sc-red">
+          <div class="stat-top">
+            <span class="stat-label">Total Malicious IPs</span>
+            <div class="stat-icon"><i data-lucide="shield-alert"></i></div>
+          </div>
+          <div class="stat-value" id="n-total">-</div>
+          <div class="stat-sub">Unique IPv4 addresses tracked globally</div>
+        </div>
+        <div class="stat-card sc-amber">
+          <div class="stat-top">
+            <span class="stat-label">High-Confidence Threats</span>
+            <div class="stat-icon"><i data-lucide="layers"></i></div>
+          </div>
+          <div class="stat-value" id="n-multi">-</div>
+          <div class="stat-sub">Confirmed by multiple detection nodes</div>
+        </div>
+        <div class="stat-card sc-green">
+          <div class="stat-top">
+            <span class="stat-label">Active Nodes</span>
+            <div class="stat-icon"><i data-lucide="radio-receiver"></i></div>
+          </div>
+          <div class="stat-value" id="n-feeds">-</div>
+          <div class="stat-sub">Threat detection sensors currently active</div>
+        </div>
+        <div class="stat-card sc-slate">
+          <div class="stat-top">
+            <span class="stat-label">Offline Nodes</span>
+            <div class="stat-icon"><i data-lucide="alert-triangle"></i></div>
+          </div>
+          <div class="stat-value" id="n-failed">-</div>
+          <div class="stat-sub">Sensors unreachable in the latest cycle</div>
+        </div>
+      </div>
+    </section>
 
-function relTime(iso) {
-  const m = Math.floor((Date.now() - new Date(iso)) / 60000);
-  if (m < 1)  return 'just now';
-  if (m < 60) return m + ' min ago';
-  const h = Math.floor(m / 60);
-  if (h < 24) return h + 'h ago';
-  return Math.floor(h / 24) + 'd ago';
-}
+    <hr class="divider">
 
-function animateValue(el, end, dur = 1600) {
-  const t0 = performance.now();
-  (function frame(now) {
-    const p = Math.min((now - t0) / dur, 1);
-    const ease = 1 - Math.pow(1 - p, 3);
-    el.textContent = fmt(Math.round(end * ease));
-    if (p < 1) requestAnimationFrame(frame);
-  })(t0);
-}
+    <!-- Top 100 Leaderboard -->
+    <section class="section" id="top100">
+      <div class="section-head">
+        <div class="section-label">High-Confidence</div>
+        <h2 class="section-title"><i data-lucide="list"></i> Top 100 Critical Threats</h2>
+        <p class="section-desc">The most globally active malicious IPs, confirmed by multiple detection nodes.</p>
+      </div>
 
-/* ── Boot ──────────────────────────────── */
-async function boot() {
-  try {
-    // Check dark mode preference
-    if (localStorage.getItem('theme') === 'dark') {
-      document.documentElement.classList.add('dark');
+      <div class="chart-card"
+        style="padding:0; overflow-x:auto; max-height:400px; overflow-y:auto; border-radius:10px;">
+        <table class="top100-table">
+          <thead>
+            <tr>
+              <th>IP Address</th>
+              <th>Location / ASN</th>
+              <th>Threat Score</th>
+              <th>Categories</th>
+            </tr>
+          </thead>
+          <tbody id="top100-body">
+            <tr>
+              <td colspan="4" style="text-align:center; padding:3rem;"><span class="spinner"
+                  style="border-color:var(--ash); border-top-color:var(--red);"></span> Loading top threats...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <hr class="divider">
+
+    <!-- Analytics -->
+    <section class="section" id="analytics">
+      <div class="section-head">
+        <div class="section-label">Global Activity</div>
+        <h2 class="section-title"><i data-lucide="trending-up"></i> Threat Landscape Trend</h2>
+        <p class="section-desc">Historical tracking of active malicious IP addresses identified by our network.</p>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-title"><i data-lucide="activity"></i> 90-Day Volume Trend</div>
+        <div class="chart-wrap"><canvas id="historyChart"></canvas></div>
+      </div>
+    </section>
+
+    <hr class="divider">
+
+    <!-- Downloads -->
+    <section class="section" id="downloads">
+      <div class="section-head">
+        <div class="section-label">Automated Ingestion</div>
+        <h2 class="section-title"><i data-lucide="download-cloud"></i> Database Access</h2>
+        <p class="section-desc">Pull our threat intelligence directly into your firewall, SIEM, or custom pipeline.</p>
+      </div>
+
+      <div class="dl-grid">
+        <div class="dl-card">
+          <div class="dl-top">
+            <div class="dl-icon dl-icon-red"><i data-lucide="file-text"></i></div>
+            <span class="dl-name">Plain Text Feed</span>
+          </div>
+          <p class="dl-desc">One IPv4 per line. Ideal for iptables, ipset, and firewall blocklists.</p>
+          <div class="dl-url">https://raw.githubusercontent.com/kalidada18/himalayafeed/main/malicious_ips.txt</div>
+          <a href="https://raw.githubusercontent.com/kalidada18/himalayafeed/main/malicious_ips.txt"
+            class="btn btn-outline" target="_blank" rel="noopener" style="justify-content:center">
+            <i data-lucide="external-link"></i> Open Feed
+          </a>
+        </div>
+        <div class="dl-card">
+          <div class="dl-top">
+            <div class="dl-icon dl-icon-grn"><i data-lucide="file-spreadsheet"></i></div>
+            <span class="dl-name">CSV Format</span>
+          </div>
+          <p class="dl-desc">Includes IP addresses and internal confidence scoring metrics.</p>
+          <div class="dl-url">https://raw.githubusercontent.com/kalidada18/himalayafeed/main/malicious_ips.csv</div>
+          <a href="https://raw.githubusercontent.com/kalidada18/himalayafeed/main/malicious_ips.csv"
+            class="btn btn-outline" target="_blank" rel="noopener" style="justify-content:center">
+            <i data-lucide="external-link"></i> Open Feed
+          </a>
+        </div>
+        <div class="dl-card">
+          <div class="dl-top">
+            <div class="dl-icon dl-icon-amb"><i data-lucide="file-json"></i></div>
+            <span class="dl-name">Statistics JSON</span>
+          </div>
+          <p class="dl-desc">Aggregate metadata, network status, and timestamps for APIs.</p>
+          <div class="dl-url">https://raw.githubusercontent.com/kalidada18/himalayafeed/main/stats.json</div>
+          <a href="https://raw.githubusercontent.com/kalidada18/himalayafeed/main/stats.json" class="btn btn-outline"
+            target="_blank" rel="noopener" style="justify-content:center">
+            <i data-lucide="external-link"></i> Open Feed
+          </a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ═══════════════ FOOTER ═══════════════ -->
+  <footer>
+    <div class="footer-inner">
+      <div>
+        <div class="footer-brand">
+          <img src="./img/himalayafeed.png" alt="HimalayaFeed">
+          <span>Himalaya<em>Feed</em></span>
+        </div>
+        <p class="footer-desc">HimalayaFeed is a leading Threat Intelligence Platform detecting and tracking malicious
+          IPs globally. Fully automated. Zero infrastructure. Zero cost.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Database</h4>
+        <ul>
+          <li><a href="./malicious_ips.txt">Malicious IPs (.txt)</a></li>
+          <li><a href="./malicious_ips.csv">Malicious IPs (.csv)</a></li>
+          <li><a href="./malicious_domains.txt">Malicious Domains (.txt)</a></li>
+          <li><a href="./stats.json">Stats JSON</a></li>
+          <li><a href="https://github.com/kalidada18/himalayafeed/releases">Daily Archives</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Project</h4>
+        <ul>
+          <li><a href="https://github.com/kalidada18/himalayafeed">GitHub Repository</a></li>
+          <li><a href="https://github.com/kalidada18/himalayafeed/actions">System Status</a></li>
+          <li><a href="https://github.com/kalidada18/himalayafeed/blob/main/LICENSE">MIT License</a></li>
+          <li><a href="https://github.com/kalidada18/himalayafeed/issues">Report Issue</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; 2025 HimalayaFeed. All rights reserved.</span>
+    </div>
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    let RAW = './';
+    if (window.location.hostname === 'kalidada18.github.io') {
+      RAW = 'https://kalidada18.github.io/himalayafeed/';
+    } else if (window.location.protocol === 'file:') {
+      RAW = 'https://raw.githubusercontent.com/kalidada18/himalayafeed/main/';
     }
-    const themeBtn = document.getElementById('theme-toggle');
-    if (themeBtn) {
-      themeBtn.addEventListener('click', () => {
-        document.documentElement.classList.toggle('dark');
-        localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
-      });
+    const fmt = n => new Intl.NumberFormat('en-US').format(n);
+
+    function relTime(iso) {
+      const m = Math.floor((Date.now() - new Date(iso)) / 60000);
+      if (m < 1) return 'just now';
+      if (m < 60) return m + ' min ago';
+      const h = Math.floor(m / 60);
+      if (h < 24) return h + 'h ago';
+      return Math.floor(h / 24) + 'd ago';
     }
 
-    const r = await fetch(RAW + 'stats.json?_=' + Date.now());
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    const d = await r.json();
-
-    document.getElementById('ms-time').textContent = relTime(d.last_updated);
-    document.getElementById('ms-src').textContent  = d.total_feeds_processed || 15;
-    document.getElementById('ms-ips').textContent  = fmt(d.total_unique_ips);
-
-    animateValue(document.getElementById('n-total'),  d.total_unique_ips);
-    animateValue(document.getElementById('n-multi'),  d.multi_source_ips);
-    animateValue(document.getElementById('n-feeds'),  d.total_feeds_processed || 15);
-    animateValue(document.getElementById('n-failed'), d.total_feeds_failed || 0);
-
-  } catch (err) {
-    console.warn('stats.json unavailable:', err.message);
-    document.getElementById('ms-time').textContent = 'Pending first run';
-  }
-
-  // Load these independently so they don't break if stats fails
-  renderHistoryChart();
-  renderTop100();
-}
-
-async function renderTop100() {
-  try {
-    const r = await fetch(RAW + 'top_100.json?_=' + Date.now());
-    if (!r.ok) return;
-    const top100 = await r.json();
-    const tbody = document.getElementById('top100-body');
-    if (!top100 || top100.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No data available yet.</td></tr>';
-      return;
+    function animateValue(el, end, dur = 1600) {
+      const t0 = performance.now();
+      (function frame(now) {
+        const p = Math.min((now - t0) / dur, 1);
+        const ease = 1 - Math.pow(1 - p, 3);
+        el.textContent = fmt(Math.round(end * ease));
+        if (p < 1) requestAnimationFrame(frame);
+      })(t0);
     }
-    
-    tbody.innerHTML = '';
-    top100.forEach(item => {
-      const tr = document.createElement('tr');
-      const cats = (item.categories || 'Mixed').split('|').map(c => `<span class="cat-tag">${c}</span>`).join('');
-      tr.innerHTML = `
+
+    /* ── Boot ──────────────────────────────── */
+    async function boot() {
+      try {
+        // Check dark mode preference
+        if (localStorage.getItem('theme') === 'dark') {
+          document.documentElement.classList.add('dark');
+          document.getElementById('theme-icon')?.setAttribute('data-lucide', 'sun');
+        }
+        const themeBtn = document.getElementById('theme-toggle');
+        if (themeBtn) {
+          themeBtn.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            document.getElementById('theme-icon')?.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
+            lucide.createIcons();
+          });
+        }
+
+        const mobileBtn = document.getElementById('mobile-menu-btn');
+        if (mobileBtn) {
+          mobileBtn.addEventListener('click', () => {
+            document.getElementById('nav-links')?.classList.toggle('show');
+          });
+        }
+
+        const r = await fetch(RAW + 'stats.json?_=' + Date.now());
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const d = await r.json();
+
+        document.getElementById('ms-time').textContent = relTime(d.last_updated);
+        document.getElementById('ms-src').textContent = d.total_feeds_processed || 15;
+        document.getElementById('ms-ips').textContent = fmt(d.total_unique_ips);
+
+        animateValue(document.getElementById('n-total'), d.total_unique_ips);
+        animateValue(document.getElementById('n-multi'), d.multi_source_ips);
+        animateValue(document.getElementById('n-feeds'), d.total_feeds_processed || 15);
+        animateValue(document.getElementById('n-failed'), d.total_feeds_failed || 0);
+
+      } catch (err) {
+        console.warn('stats.json unavailable:', err.message);
+        document.getElementById('ms-time').textContent = 'Pending first run';
+      }
+
+      // Load these independently so they don't break if stats fails
+      renderHistoryChart();
+      renderTop100();
+    }
+
+    async function renderTop100() {
+      try {
+        const r = await fetch(RAW + 'top_100.json?_=' + Date.now());
+        if (!r.ok) return;
+        const top100 = await r.json();
+        const tbody = document.getElementById('top100-body');
+        if (!top100 || top100.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No data available yet.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = '';
+        top100.forEach(item => {
+          const tr = document.createElement('tr');
+          const cats = (item.categories || 'Mixed').split('|').map(c => `<span class="cat-tag">${c}</span>`).join('');
+          tr.innerHTML = `
         <td style="font-family:var(--mono); font-weight:600; color:var(--red)">${item.ip}</td>
         <td>
           <div style="font-weight:600; color:var(--midnight)">${item.country || 'Unknown'}</div>
@@ -1299,287 +1954,295 @@ async function renderTop100() {
         </td>
         <td>${cats}</td>
       `;
-      tbody.appendChild(tr);
-    });
-  } catch(e) {
-    console.warn('top_100.json unavailable', e);
-  }
-}
+          tbody.appendChild(tr);
+        });
+      } catch (e) {
+        console.warn('top_100.json unavailable', e);
+      }
+    }
 
-async function renderHistoryChart() {
-  try {
-    const r = await fetch(RAW + 'history.json?_=' + Date.now());
-    if (!r.ok) return;
-    const history = await r.json();
+    async function renderHistoryChart() {
+      try {
+        const r = await fetch(RAW + 'history.json?_=' + Date.now());
+        if (!r.ok) return;
+        const history = await r.json();
 
-    if (!history || history.length === 0) return;
+        if (!history || history.length === 0) return;
 
-    const labels = history.map(h => h.date);
-    const vals = history.map(h => h.total_unique_ips);
+        const labels = history.map(h => h.date);
+        const vals = history.map(h => h.total_unique_ips);
 
-    new Chart(document.getElementById('historyChart').getContext('2d'), {
-      type: 'line',
-      data: {
-        labels,
-        datasets: [{
-          label: 'Total Malicious IPs',
-          data: vals,
-          borderColor: '#dc2626',
-          backgroundColor: 'rgba(220,38,38,0.1)',
-          borderWidth: 2,
-          pointRadius: 3,
-          pointBackgroundColor: '#dc2626',
-          fill: true,
-          tension: 0.3
-        }]
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        animation: {
-          x: {
-            type: 'number', easing: 'linear', duration: 1000 / vals.length, from: NaN,
-            delay: ctx => ctx.type !== 'data' || ctx.xStarted ? 0 : (ctx.xStarted = true, ctx.index * (1000 / vals.length))
+        new Chart(document.getElementById('historyChart').getContext('2d'), {
+          type: 'line',
+          data: {
+            labels,
+            datasets: [{
+              label: 'Total Malicious IPs',
+              data: vals,
+              borderColor: '#dc2626',
+              backgroundColor: 'rgba(220,38,38,0.1)',
+              borderWidth: 2,
+              pointRadius: 3,
+              pointBackgroundColor: '#dc2626',
+              fill: true,
+              tension: 0.3
+            }]
           },
-          y: {
-            type: 'number', easing: 'linear', duration: 1000 / vals.length,
-            from: ctx => ctx.index === 0 ? ctx.chart.scales.y.getPixelForValue(ctx.chart.scales.y.min) : ctx.chart.getDatasetMeta(ctx.datasetIndex).data[ctx.index - 1].getProps(['y'], true).y,
-            delay: ctx => ctx.type !== 'data' || ctx.yStarted ? 0 : (ctx.yStarted = true, ctx.index * (1000 / vals.length))
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            animation: {
+              x: {
+                type: 'number', easing: 'linear', duration: 1000 / vals.length, from: NaN,
+                delay: ctx => ctx.type !== 'data' || ctx.xStarted ? 0 : (ctx.xStarted = true, ctx.index * (1000 / vals.length))
+              },
+              y: {
+                type: 'number', easing: 'linear', duration: 1000 / vals.length,
+                from: ctx => ctx.index === 0 ? ctx.chart.scales.y.getPixelForValue(ctx.chart.scales.y.min) : ctx.chart.getDatasetMeta(ctx.datasetIndex).data[ctx.index - 1].getProps(['y'], true).y,
+                delay: ctx => ctx.type !== 'data' || ctx.yStarted ? 0 : (ctx.yStarted = true, ctx.index * (1000 / vals.length))
+              }
+            },
+            plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ' ' + fmt(c.parsed.y) + ' IPs' } } },
+            scales: {
+              x: { grid: { display: false }, ticks: { maxTicksLimit: 10 } },
+              y: {
+                grid: { color: '#e4e7ed' },
+                ticks: { callback: v => v >= 1e6 ? (v / 1e6).toFixed(2) + 'M' : v >= 1e3 ? (v / 1e3).toFixed(1) + 'K' : v }
+              }
+            },
+            interaction: { mode: 'index', intersect: false }
           }
-        },
-        plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ' ' + fmt(c.parsed.y) + ' IPs' } } },
-        scales: {
-          x: { grid: { display: false }, ticks: { maxTicksLimit: 10 } },
-          y: {
-            grid: { color: '#e4e7ed' },
-            ticks: { callback: v => v >= 1e6 ? (v/1e6).toFixed(2)+'M' : v >= 1e3 ? (v/1e3).toFixed(1)+'K' : v }
+        });
+      } catch (e) {
+        console.warn('history.json unavailable', e);
+      }
+    }
+
+    /* ── Threat Scan + Report ──────────────────── */
+    let csvText = null, csvLoading = null, statsData = null, bloomData = null, domainData = null;
+
+    async function loadDomains() {
+      if (domainData) return domainData;
+      try {
+        const r = await fetch(RAW + 'malicious_domains.txt?_=' + Date.now());
+        if (r.ok) {
+          const txt = await r.text();
+          domainData = new Set(txt.split('\n').map(d => d.trim()).filter(Boolean));
+        }
+      } catch (e) { }
+      return domainData;
+    }
+
+    async function loadBloom() {
+      if (bloomData) return bloomData;
+      try {
+        const r = await fetch(RAW + 'bloom.json?_=' + Date.now());
+        if (r.ok) {
+          const arr = await r.json();
+          bloomData = new Set(arr);
+        }
+      } catch (e) { }
+      return bloomData;
+    }
+
+    async function loadCSV() {
+      if (csvText) return csvText;
+      if (!csvLoading) {
+        csvLoading = fetch(RAW + 'malicious_ips.csv?_=' + Date.now())
+          .then(r => r.text())
+          .then(txt => { csvText = txt; return csvText; });
+      }
+      return csvLoading;
+    }
+
+    async function loadStats() {
+      if (statsData) return statsData;
+      try {
+        const r = await fetch(RAW + 'stats.json?_=' + Date.now());
+        if (r.ok) statsData = await r.json();
+      } catch (e) { }
+      return statsData;
+    }
+
+    function getThreatLevel(reputation) {
+      let score = reputation || 0;
+
+      if (score >= 80) return { level: 'critical', label: 'Critical', pct: 95 };
+      if (score >= 60) return { level: 'high', label: 'High', pct: 75 };
+      if (score >= 40) return { level: 'medium', label: 'Medium', pct: 50 };
+      if (score > 0) return { level: 'low', label: 'Low', pct: 25 };
+      return { level: 'none', label: 'Clean', pct: 0 };
+    }
+
+    async function scanIP() {
+      const input = document.getElementById('ip-input');
+      const btn = document.getElementById('scan-btn');
+      const ip = input.value.trim().toLowerCase();
+
+      if (!ip) { input.focus(); return; }
+
+      const isIP = /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(ip);
+      const isDomain = /^(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\.(?!-)[A-Za-z0-9-]{1,63}(?<!-))*\.[A-Za-z]{2,}$/.test(ip);
+
+      if (!isIP && !isDomain) {
+        showReport('warn', ip, null, null);
+        return;
+      }
+
+      // Show scanning UI
+      btn.innerHTML = '<span class="spinner"></span> Scanning';
+      btn.disabled = true;
+
+      const section = document.getElementById('report-section');
+      const overlay = document.getElementById('scan-overlay');
+      const card = document.getElementById('report-card');
+
+      section.classList.add('show');
+      overlay.classList.add('active');
+      card.classList.remove('show');
+      document.getElementById('scan-ip').textContent = ip;
+
+      // Reset steps
+      ['step-feed', 'step-report'].forEach(id => {
+        document.getElementById(id).className = 'scan-step';
+      });
+
+      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      // Step 1: Feed database
+      document.getElementById('step-feed').classList.add('active');
+
+      let feedMatch = null;
+      let stats = null;
+      try {
+        stats = await loadStats();
+        if (isIP) {
+          const bloom = await loadBloom();
+          const prefix = ip.split('.').slice(0, 2).join('.');
+
+          // Instant Bloom Filter Check (avoids downloading 90MB CSV if definitely safe)
+          let mightBeMalicious = true;
+          if (bloom && bloom.size > 0 && !bloom.has(prefix)) mightBeMalicious = false;
+
+          if (mightBeMalicious) {
+            const txt = await loadCSV();
+
+            // More robust parsing: find line starting with ip, or \n + ip,
+            let idx = txt.indexOf('\n' + ip + ',');
+            if (idx === -1 && txt.startsWith(ip + ',')) {
+              idx = 0; // Handle case where it's the very first line
+            } else if (idx === -1 && txt.startsWith('ip,sources,source_count\n' + ip + ',')) {
+              idx = 'ip,sources,source_count'.length;
+            }
+
+            if (idx !== -1) {
+              const lineStart = (idx === 0) ? 0 : idx + 1;
+              const lineEnd = txt.indexOf('\n', lineStart);
+              const line = txt.substring(lineStart, lineEnd !== -1 ? lineEnd : undefined);
+              const parts = line.split(',');
+              if (parts.length >= 4) {
+                feedMatch = {
+                  sourceCount: parseInt(parts[2]) || 1,
+                  reputation: parseInt(parts[3]) || (parseInt(parts[2]) * 20) || 0,
+                  sourceList: parts[1] ? parts[1].split('|') : ['unknown']
+                };
+              }
+            }
           }
-        },
-        interaction: { mode: 'index', intersect: false }
-      }
-    });
-  } catch (e) {
-    console.warn('history.json unavailable', e);
-  }
-}
-
-/* ── Threat Scan + Report ──────────────────── */
-let csvText = null, csvLoading = null, statsData = null, bloomData = null, domainData = null;
-
-async function loadDomains() {
-  if (domainData) return domainData;
-  try {
-    const r = await fetch(RAW + 'malicious_domains.txt?_=' + Date.now());
-    if (r.ok) {
-      const txt = await r.text();
-      domainData = new Set(txt.split('\n').map(d => d.trim()).filter(Boolean));
-    }
-  } catch(e) {}
-  return domainData;
-}
-
-async function loadBloom() {
-  if (bloomData) return bloomData;
-  try {
-    const r = await fetch(RAW + 'bloom.json?_=' + Date.now());
-    if (r.ok) {
-      const arr = await r.json();
-      bloomData = new Set(arr);
-    }
-  } catch(e) {}
-  return bloomData;
-}
-
-async function loadCSV() {
-  if (csvText) return csvText;
-  if (!csvLoading) {
-    csvLoading = fetch(RAW + 'malicious_ips.csv?_=' + Date.now())
-      .then(r => r.text())
-      .then(txt => { csvText = txt; return csvText; });
-  }
-  return csvLoading;
-}
-
-async function loadStats() {
-  if (statsData) return statsData;
-  try {
-    const r = await fetch(RAW + 'stats.json?_=' + Date.now());
-    if (r.ok) statsData = await r.json();
-  } catch(e) {}
-  return statsData;
-}
-
-function getThreatLevel(reputation) {
-  let score = reputation || 0;
-
-  if (score >= 80) return { level: 'critical', label: 'Critical', pct: 95 };
-  if (score >= 60) return { level: 'high', label: 'High', pct: 75 };
-  if (score >= 40) return { level: 'medium', label: 'Medium', pct: 50 };
-  if (score > 0)   return { level: 'low', label: 'Low', pct: 25 };
-  return { level: 'none', label: 'Clean', pct: 0 };
-}
-
-async function scanIP() {
-  const input = document.getElementById('ip-input');
-  const btn   = document.getElementById('scan-btn');
-  const ip    = input.value.trim().toLowerCase();
-
-  if (!ip) { input.focus(); return; }
-
-  const isIP = /^(\d{1,3}\.){3}\d{1,3}$/.test(ip);
-  const isDomain = /^[a-z0-9.-]+\.[a-z]{2,}$/i.test(ip);
-
-  if (!isIP && !isDomain) {
-    showReport('warn', ip, null, null);
-    return;
-  }
-
-  // Show scanning UI
-  btn.innerHTML = '<span class="spinner"></span> Scanning';
-  btn.disabled = true;
-
-  const section = document.getElementById('report-section');
-  const overlay = document.getElementById('scan-overlay');
-  const card    = document.getElementById('report-card');
-
-  section.classList.add('show');
-  overlay.classList.add('active');
-  card.classList.remove('show');
-  document.getElementById('scan-ip').textContent = ip;
-
-  // Reset steps
-  ['step-feed','step-report'].forEach(id => {
-    document.getElementById(id).className = 'scan-step';
-  });
-
-  section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-  // Step 1: Feed database
-  document.getElementById('step-feed').classList.add('active');
-
-  let feedMatch = null;
-  let stats = null;
-  try {
-    stats = await loadStats();
-    if (isIP) {
-      const bloom = await loadBloom();
-      const prefix = ip.split('.').slice(0, 2).join('.');
-      
-      // Instant Bloom Filter Check (avoids downloading 90MB CSV if definitely safe)
-      let mightBeMalicious = true;
-      if (bloom && bloom.size > 0 && !bloom.has(prefix)) mightBeMalicious = false;
-
-      if (mightBeMalicious) {
-        const txt = await loadCSV();
-        let idx = txt.indexOf('\n' + ip + ',');
-        if (idx === -1 && txt.startsWith('ip,sources,source_count\n' + ip + ',')) {
-          idx = 'ip,sources,source_count'.length;
+        } else if (isDomain) {
+          const domains = await loadDomains();
+          if (domains && domains.has(ip)) {
+            feedMatch = {
+              sourceCount: 1,
+              reputation: 100,
+              sourceList: ['malicious_domains.txt']
+            };
+          }
         }
-        if (idx !== -1) {
-          const lineEnd = txt.indexOf('\n', idx + 1);
-          const line = txt.substring(idx + 1, lineEnd !== -1 ? lineEnd : undefined);
-          const parts = line.split(',');
-          feedMatch = {
-            sourceCount: parseInt(parts[2]) || 1,
-            reputation: parseInt(parts[3]) || (parseInt(parts[2]) * 20) || 0,
-            sourceList: parts[1] ? parts[1].split('|') : ['unknown']
-          };
-        }
-      }
-    } else if (isDomain) {
-      const domains = await loadDomains();
-      if (domains && domains.has(ip)) {
-        feedMatch = {
-          sourceCount: 1,
-          reputation: 100,
-          sourceList: ['malicious_domains.txt']
-        };
-      }
+      } catch (e) { console.error(e); }
+
+      document.getElementById('step-feed').classList.remove('active');
+      document.getElementById('step-feed').classList.add('done');
+
+      // Step 2: Generate Report
+      document.getElementById('step-report').classList.add('active');
+      await new Promise(r => setTimeout(r, 400));
+      document.getElementById('step-report').classList.remove('active');
+      document.getElementById('step-report').classList.add('done');
+
+      await new Promise(r => setTimeout(r, 200));
+
+      // Show report
+      overlay.classList.remove('active');
+      const type = feedMatch ? 'danger' : 'safe';
+      showReport(type, ip, feedMatch, stats);
+
+      btn.innerHTML = '<i data-lucide="scan"></i> Scan';
+      btn.disabled = false;
+      lucide.createIcons();
     }
-  } catch(e) { console.error(e); }
 
-  document.getElementById('step-feed').classList.remove('active');
-  document.getElementById('step-feed').classList.add('done');
+    function showReport(type, ip, feedMatch, stats) {
+      const card = document.getElementById('report-card');
+      const header = document.getElementById('rc-header');
+      const totalFeeds = stats ? stats.total_feeds_processed : 15;
+      const totalIPs = stats ? stats.total_unique_ips : 0;
+      const lastUpdated = stats ? stats.last_updated : '—';
 
-  // Step 2: Generate Report
-  document.getElementById('step-report').classList.add('active');
-  await new Promise(r => setTimeout(r, 400));
-  document.getElementById('step-report').classList.remove('active');
-  document.getElementById('step-report').classList.add('done');
+      const isIP = /^(\d{1,3}\.){3}\d{1,3}$/.test(ip);
 
-  await new Promise(r => setTimeout(r, 200));
+      // External links
+      if (isIP) {
+        document.getElementById('ext-vt').href = 'https://www.virustotal.com/gui/ip-address/' + ip;
+        document.getElementById('ext-abuse').href = 'https://www.abuseipdb.com/check/' + ip;
+        document.getElementById('ext-abuse').style.display = 'flex';
+        document.getElementById('ext-shodan').href = 'https://www.shodan.io/host/' + ip;
+        document.getElementById('ext-shodan').style.display = 'flex';
+      } else {
+        document.getElementById('ext-vt').href = 'https://www.virustotal.com/gui/domain/' + ip;
+        document.getElementById('ext-abuse').style.display = 'none';
+        document.getElementById('ext-shodan').style.display = 'none';
+      }
 
-  // Show report
-  overlay.classList.remove('active');
-  const type = feedMatch ? 'danger' : 'safe';
-  showReport(type, ip, feedMatch, stats);
+      // Header
+      document.getElementById('rc-ip').textContent = ip;
+      header.className = 'rc-header';
 
-  btn.innerHTML = '<i data-lucide="scan"></i> Scan';
-  btn.disabled = false;
-  lucide.createIcons();
-}
+      const sourceCount = feedMatch ? feedMatch.sourceCount : 0;
+      const reputation = feedMatch ? feedMatch.reputation : 0;
+      const threat = getThreatLevel(reputation);
 
-function showReport(type, ip, feedMatch, stats) {
-  const card   = document.getElementById('report-card');
-  const header = document.getElementById('rc-header');
-  const totalFeeds = stats ? stats.total_feeds_processed : 15;
-  const totalIPs   = stats ? stats.total_unique_ips : 0;
-  const lastUpdated = stats ? stats.last_updated : '—';
+      if (type === 'danger') {
+        header.classList.add('rc-header-danger');
+        document.getElementById('rc-icon').setAttribute('data-lucide', 'shield-alert');
+        document.getElementById('rc-sub').textContent = 'Flagged in the HimalayaFeed threat intelligence database';
+        document.getElementById('rc-badge').textContent = '⚠ MALICIOUS';
+      } else if (type === 'safe') {
+        header.classList.add('rc-header-safe');
+        document.getElementById('rc-icon').setAttribute('data-lucide', 'shield-check');
+        document.getElementById('rc-sub').textContent = 'Not found in the HimalayaFeed threat intelligence database';
+        document.getElementById('rc-badge').textContent = '✓ NOT LISTED';
+      } else {
+        header.classList.add('rc-header-warn');
+        document.getElementById('rc-icon').setAttribute('data-lucide', 'alert-triangle');
+        document.getElementById('rc-sub').textContent = 'Invalid format or data unavailable';
+        document.getElementById('rc-badge').textContent = '! WARNING';
+      }
 
-  const isIP = /^(\d{1,3}\.){3}\d{1,3}$/.test(ip);
+      // Threat bar
+      document.getElementById('tb-level').textContent = threat.label;
+      document.getElementById('tb-level').className = 'tb-level tb-' + threat.level;
+      setTimeout(() => { document.getElementById('tb-fill').style.width = threat.pct + '%'; }, 100);
 
-  // External links
-  if (isIP) {
-    document.getElementById('ext-vt').href = 'https://www.virustotal.com/gui/ip-address/' + ip;
-    document.getElementById('ext-abuse').href = 'https://www.abuseipdb.com/check/' + ip;
-    document.getElementById('ext-abuse').style.display = 'flex';
-    document.getElementById('ext-shodan').href = 'https://www.shodan.io/host/' + ip;
-    document.getElementById('ext-shodan').style.display = 'flex';
-  } else {
-    document.getElementById('ext-vt').href = 'https://www.virustotal.com/gui/domain/' + ip;
-    document.getElementById('ext-abuse').style.display = 'none';
-    document.getElementById('ext-shodan').style.display = 'none';
-  }
-
-  // Header
-  document.getElementById('rc-ip').textContent = ip;
-  header.className = 'rc-header';
-
-  const sourceCount = feedMatch ? feedMatch.sourceCount : 0;
-  const reputation = feedMatch ? feedMatch.reputation : 0;
-  const threat = getThreatLevel(reputation);
-
-  if (type === 'danger') {
-    header.classList.add('rc-header-danger');
-    document.getElementById('rc-icon').setAttribute('data-lucide', 'shield-alert');
-    document.getElementById('rc-sub').textContent = 'Flagged in the HimalayaFeed threat intelligence database';
-    document.getElementById('rc-badge').textContent = '⚠ MALICIOUS';
-  } else if (type === 'safe') {
-    header.classList.add('rc-header-safe');
-    document.getElementById('rc-icon').setAttribute('data-lucide', 'shield-check');
-    document.getElementById('rc-sub').textContent = 'Not found in the HimalayaFeed threat intelligence database';
-    document.getElementById('rc-badge').textContent = '✓ NOT LISTED';
-  } else {
-    header.classList.add('rc-header-warn');
-    document.getElementById('rc-icon').setAttribute('data-lucide', 'alert-triangle');
-    document.getElementById('rc-sub').textContent = 'Invalid format or data unavailable';
-    document.getElementById('rc-badge').textContent = '! WARNING';
-  }
-
-  // Threat bar
-  document.getElementById('tb-level').textContent = threat.label;
-  document.getElementById('tb-level').className = 'tb-level tb-' + threat.level;
-  setTimeout(() => { document.getElementById('tb-fill').style.width = threat.pct + '%'; }, 100);
-
-  // Feed Panel
-  const feedPanel = document.getElementById('feed-panel-body');
-  feedPanel.innerHTML = `
+      // Feed Panel
+      const feedPanel = document.getElementById('feed-panel-body');
+      feedPanel.innerHTML = `
     <div class="rc-row">
       <span class="rc-row-label">Threat Reputation Score</span>
       <span class="rc-row-value" style="color:var(--red)">${reputation}/100</span>
     </div>
     <div class="rc-row">
       <span class="rc-row-label">Detection Confidence</span>
-      <span class="rc-row-value">${sourceCount > 0 ? Math.min(Math.round((sourceCount/totalFeeds)*100), 99) : 0}%</span>
+      <span class="rc-row-value">${sourceCount > 0 ? Math.min(Math.round((sourceCount / totalFeeds) * 100), 99) : 0}%</span>
     </div>
     <div class="rc-row">
       <span class="rc-row-label">In Blocklist</span>
@@ -1591,39 +2254,40 @@ function showReport(type, ip, feedMatch, stats) {
     </div>
     <div class="rc-row">
       <span class="rc-row-label">Last DB Sync</span>
-      <span class="rc-row-value" style="font-size:0.72rem">${lastUpdated !== '—' ? lastUpdated.replace('T',' ').replace('Z',' UTC') : '—'}</span>
+      <span class="rc-row-value" style="font-size:0.72rem">${lastUpdated !== '—' ? lastUpdated.replace('T', ' ').replace('Z', ' UTC') : '—'}</span>
     </div>
   `;
 
-  // Assessment
-  const assess = document.getElementById('rc-assessment');
-  if (type === 'warn') {
-    assess.innerHTML = '<strong>Error:</strong> Invalid format. Enter a valid IPv4 address or Domain (e.g. <code>185.220.101.45</code> or <code>evil.com</code>) and try again.';
-  } else {
-    if (feedMatch) {
-      assess.innerHTML =
-        `<strong>Threat Assessment:</strong> <code>${ip}</code> has been flagged by our advanced threat detection engine. ` +
-        (threat.level === 'critical' ? 'This is a <strong style="color:var(--red)">critical threat</strong> — widely recognized as malicious globally. Immediate blocking is recommended.' :
-         threat.level === 'high' ? 'This is a <strong style="color:#ea580c">high threat</strong> — highly confident malicious activity. Blocking is strongly recommended.' :
-         threat.level === 'medium' ? 'This is a <strong style="color:var(--amber)">medium threat</strong> — confirmed malicious activity. Consider blocking or monitoring.' :
-         'This is a <strong>low threat</strong> — identified with low confidence. Consider monitoring for further activity.') +
-        ` This ${isIP ? 'IP' : 'Domain'} is currently active in our blocklist and is ready for immediate ingestion into firewalls, SIEM, or IDS/IPS systems.`;
-    } else {
-      assess.innerHTML =
-        `<strong>Assessment:</strong> <code>${ip}</code> was <strong>not found</strong> in the HimalayaFeed database. ` +
-        'Absence from our database does <strong>not</strong> guarantee safety — only that it is not currently exhibiting malicious activity across our sensor network.';
+      // Assessment
+      const assess = document.getElementById('rc-assessment');
+      if (type === 'warn') {
+        assess.innerHTML = '<strong>Error:</strong> Invalid format. Enter a valid IPv4 address or Domain (e.g. <code>185.220.101.45</code> or <code>evil.com</code>) and try again.';
+      } else {
+        if (feedMatch) {
+          assess.innerHTML =
+            `<strong>Threat Assessment:</strong> <code>${ip}</code> has been flagged by our advanced threat detection engine. ` +
+            (threat.level === 'critical' ? 'This is a <strong style="color:var(--red)">critical threat</strong> — widely recognized as malicious globally. Immediate blocking is recommended.' :
+              threat.level === 'high' ? 'This is a <strong style="color:#ea580c">high threat</strong> — highly confident malicious activity. Blocking is strongly recommended.' :
+                threat.level === 'medium' ? 'This is a <strong style="color:var(--amber)">medium threat</strong> — confirmed malicious activity. Consider blocking or monitoring.' :
+                  'This is a <strong>low threat</strong> — identified with low confidence. Consider monitoring for further activity.') +
+            ` This ${isIP ? 'IP' : 'Domain'} is currently active in our blocklist and is ready for immediate ingestion into firewalls, SIEM, or IDS/IPS systems.`;
+        } else {
+          assess.innerHTML =
+            `<strong>Assessment:</strong> <code>${ip}</code> was <strong>not found</strong> in the HimalayaFeed database. ` +
+            'Absence from our database does <strong>not</strong> guarantee safety — only that it is not currently exhibiting malicious activity across our sensor network.';
+        }
+      }
+
+      card.classList.add('show');
+      lucide.createIcons();
     }
-  }
 
-  card.classList.add('show');
-  lucide.createIcons();
-}
+    document.getElementById('ip-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') scanIP();
+    });
 
-document.getElementById('ip-input').addEventListener('keydown', e => {
-  if (e.key === 'Enter') scanIP();
-});
-
-boot();
-</script>
+    boot();
+  </script>
 </body>
+
 </html>
