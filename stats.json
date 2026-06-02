@@ -1,28 +1,28 @@
 {
-  "last_updated": "2026-06-02T08:44:45Z",
-  "total_unique_ips": 1075942,
-  "total_unique_domains": 775,
+  "last_updated": "2026-06-02T08:47:50Z",
+  "total_unique_ips": 1076466,
+  "total_unique_domains": 131099,
   "total_feeds_processed": 14,
   "total_feeds_failed": 3,
-  "multi_source_ips": 383385,
+  "multi_source_ips": 385415,
   "failed_feeds": [
     "cins_army",
     "alienvault_reputation",
     "abuseipdb"
   ],
   "ips_per_source": {
-    "feodo_tracker": 5,
     "firehol_level2": 27786,
     "bbcan177_ms1": 8842,
+    "feodo_tracker": 5,
+    "firehol_level3": 32085,
+    "feodo_tracker_aggressive": 7607,
     "emerging_threats": 531,
     "binary_defense": 1359,
-    "feodo_tracker_aggressive": 7607,
-    "firehol_level3": 32085,
     "criticalpath_security": 531,
     "ipsum": 115309,
-    "blocklist_de": 24086,
-    "greensnow": 5963,
-    "spamhaus_drop": 181102,
+    "blocklist_de": 24027,
+    "greensnow": 5964,
+    "spamhaus_drop": 183642,
     "firehol_level1": 547683,
     "charles_haley_malware_ips": 614601
   }

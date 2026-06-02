@@ -1,28 +1,28 @@
 [
   {
     "ip": "80.94.92.168",
-    "sources": "firehol_level2|emerging_threats|binary_defense|firehol_level3|criticalpath_security|ipsum|blocklist_de|spamhaus_drop|charles_haley_malware_ips",
+    "sources": "firehol_level2|firehol_level3|emerging_threats|binary_defense|criticalpath_security|ipsum|blocklist_de|spamhaus_drop|charles_haley_malware_ips",
     "source_count": 9,
     "reputation": 100,
-    "categories": "Malware|Brute-Force|Spam|Mixed|Compromised",
+    "categories": "Malware|Mixed|Spam|Compromised|Brute-Force",
     "country": "GB",
     "asn": "47890"
   },
   {
     "ip": "77.90.185.229",
-    "sources": "firehol_level2|binary_defense|firehol_level3|ipsum|blocklist_de|greensnow|spamhaus_drop|firehol_level1|charles_haley_malware_ips",
+    "sources": "firehol_level2|firehol_level3|binary_defense|ipsum|blocklist_de|greensnow|spamhaus_drop|firehol_level1|charles_haley_malware_ips",
     "source_count": 9,
     "reputation": 100,
-    "categories": "Malware|Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam|Malware",
     "country": "GB",
     "asn": "213790"
   },
   {
     "ip": "213.209.159.56",
-    "sources": "firehol_level2|emerging_threats|binary_defense|firehol_level3|criticalpath_security|ipsum|blocklist_de|spamhaus_drop|firehol_level1",
+    "sources": "firehol_level2|firehol_level3|emerging_threats|binary_defense|criticalpath_security|ipsum|blocklist_de|spamhaus_drop|firehol_level1",
     "source_count": 9,
     "reputation": 100,
-    "categories": "Spam|Mixed|Compromised|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam|Compromised",
     "country": "RO",
     "asn": "208137"
   },
@@ -31,7 +31,7 @@
     "sources": "firehol_level2|firehol_level3|ipsum|blocklist_de|greensnow|spamhaus_drop|firehol_level1|charles_haley_malware_ips",
     "source_count": 8,
     "reputation": 100,
-    "categories": "Malware|Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam|Malware",
     "country": "LT",
     "asn": "209605"
   },
@@ -40,34 +40,34 @@
     "sources": "firehol_level2|firehol_level3|ipsum|blocklist_de|greensnow|spamhaus_drop|firehol_level1|charles_haley_malware_ips",
     "source_count": 8,
     "reputation": 100,
-    "categories": "Malware|Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam|Malware",
     "country": "GB",
     "asn": "213790"
   },
   {
     "ip": "77.90.185.16",
-    "sources": "firehol_level2|binary_defense|firehol_level3|ipsum|blocklist_de|spamhaus_drop|firehol_level1|charles_haley_malware_ips",
+    "sources": "firehol_level2|firehol_level3|binary_defense|ipsum|blocklist_de|spamhaus_drop|firehol_level1|charles_haley_malware_ips",
     "source_count": 8,
     "reputation": 100,
-    "categories": "Malware|Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam|Malware",
     "country": "GB",
     "asn": "213790"
   },
   {
     "ip": "45.148.10.121",
-    "sources": "firehol_level2|binary_defense|firehol_level3|ipsum|blocklist_de|greensnow|spamhaus_drop|firehol_level1",
+    "sources": "firehol_level2|firehol_level3|binary_defense|ipsum|blocklist_de|greensnow|spamhaus_drop|firehol_level1",
     "source_count": 8,
     "reputation": 100,
-    "categories": "Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam",
     "country": "GB",
     "asn": "48090"
   },
   {
     "ip": "213.209.159.158",
-    "sources": "firehol_level2|binary_defense|firehol_level3|ipsum|blocklist_de|greensnow|spamhaus_drop|firehol_level1",
+    "sources": "firehol_level2|firehol_level3|binary_defense|ipsum|blocklist_de|greensnow|spamhaus_drop|firehol_level1",
     "source_count": 8,
     "reputation": 100,
-    "categories": "Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam",
     "country": "RO",
     "asn": "208137"
   },
@@ -76,7 +76,7 @@
     "sources": "firehol_level2|binary_defense|ipsum|blocklist_de|greensnow|spamhaus_drop|firehol_level1|charles_haley_malware_ips",
     "source_count": 8,
     "reputation": 100,
-    "categories": "Malware|Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam|Malware",
     "country": "GB",
     "asn": "47890"
   },
@@ -85,16 +85,16 @@
     "sources": "firehol_level2|binary_defense|ipsum|blocklist_de|greensnow|spamhaus_drop|firehol_level1|charles_haley_malware_ips",
     "source_count": 8,
     "reputation": 100,
-    "categories": "Malware|Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam|Malware",
     "country": "UA",
     "asn": "211736"
   },
   {
     "ip": "107.189.24.77",
-    "sources": "firehol_level2|emerging_threats|binary_defense|firehol_level3|criticalpath_security|ipsum|blocklist_de|greensnow",
+    "sources": "firehol_level2|firehol_level3|emerging_threats|binary_defense|criticalpath_security|ipsum|blocklist_de|greensnow",
     "source_count": 8,
     "reputation": 100,
-    "categories": "Mixed|Compromised|Brute-Force",
+    "categories": "Mixed|Brute-Force|Compromised",
     "country": "US",
     "asn": "14956"
   },
@@ -103,7 +103,7 @@
     "sources": "firehol_level2|binary_defense|ipsum|blocklist_de|spamhaus_drop|firehol_level1|charles_haley_malware_ips",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Malware|Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam|Malware",
     "country": "GB",
     "asn": "47890"
   },
@@ -112,7 +112,7 @@
     "sources": "firehol_level2|ipsum|blocklist_de|greensnow|spamhaus_drop|firehol_level1|charles_haley_malware_ips",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Malware|Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam|Malware",
     "country": "GB",
     "asn": "47890"
   },
@@ -121,7 +121,7 @@
     "sources": "firehol_level2|ipsum|blocklist_de|greensnow|spamhaus_drop|firehol_level1|charles_haley_malware_ips",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Malware|Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam|Malware",
     "country": "GB",
     "asn": "47890"
   },
@@ -130,7 +130,7 @@
     "sources": "firehol_level2|ipsum|blocklist_de|greensnow|spamhaus_drop|firehol_level1|charles_haley_malware_ips",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Malware|Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam|Malware",
     "country": "GB",
     "asn": "47890"
   },
@@ -139,7 +139,7 @@
     "sources": "firehol_level2|ipsum|blocklist_de|greensnow|spamhaus_drop|firehol_level1|charles_haley_malware_ips",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Malware|Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam|Malware",
     "country": "GB",
     "asn": "47890"
   },
@@ -148,7 +148,7 @@
     "sources": "firehol_level2|ipsum|blocklist_de|greensnow|spamhaus_drop|firehol_level1|charles_haley_malware_ips",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Malware|Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam|Malware",
     "country": "GB",
     "asn": "47890"
   },
@@ -157,7 +157,7 @@
     "sources": "firehol_level2|ipsum|blocklist_de|greensnow|spamhaus_drop|firehol_level1|charles_haley_malware_ips",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Malware|Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam|Malware",
     "country": "GB",
     "asn": "47890"
   },
@@ -166,7 +166,7 @@
     "sources": "firehol_level2|ipsum|blocklist_de|greensnow|spamhaus_drop|firehol_level1|charles_haley_malware_ips",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Malware|Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam|Malware",
     "country": "GB",
     "asn": "47890"
   },
@@ -175,7 +175,7 @@
     "sources": "firehol_level2|ipsum|blocklist_de|greensnow|spamhaus_drop|firehol_level1|charles_haley_malware_ips",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Malware|Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam|Malware",
     "country": "GB",
     "asn": "47890"
   },
@@ -184,7 +184,7 @@
     "sources": "firehol_level2|ipsum|blocklist_de|greensnow|spamhaus_drop|firehol_level1|charles_haley_malware_ips",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Malware|Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam|Malware",
     "country": "GB",
     "asn": "47890"
   },
@@ -193,7 +193,7 @@
     "sources": "firehol_level2|ipsum|blocklist_de|greensnow|spamhaus_drop|firehol_level1|charles_haley_malware_ips",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Malware|Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam|Malware",
     "country": "GB",
     "asn": "47890"
   },
@@ -202,7 +202,7 @@
     "sources": "firehol_level2|ipsum|blocklist_de|greensnow|spamhaus_drop|firehol_level1|charles_haley_malware_ips",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Malware|Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam|Malware",
     "country": "GB",
     "asn": "47890"
   },
@@ -211,7 +211,7 @@
     "sources": "firehol_level2|ipsum|blocklist_de|greensnow|spamhaus_drop|firehol_level1|charles_haley_malware_ips",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Malware|Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam|Malware",
     "country": "GB",
     "asn": "47890"
   },
@@ -220,7 +220,7 @@
     "sources": "firehol_level2|ipsum|blocklist_de|greensnow|spamhaus_drop|firehol_level1|charles_haley_malware_ips",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Malware|Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam|Malware",
     "country": "GB",
     "asn": "47890"
   },
@@ -229,7 +229,7 @@
     "sources": "firehol_level2|firehol_level3|ipsum|blocklist_de|spamhaus_drop|firehol_level1|charles_haley_malware_ips",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Malware|Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam|Malware",
     "country": "LT",
     "asn": "209605"
   },
@@ -238,7 +238,7 @@
     "sources": "firehol_level2|firehol_level3|ipsum|blocklist_de|spamhaus_drop|firehol_level1|charles_haley_malware_ips",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Malware|Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam|Malware",
     "country": "LT",
     "asn": "209605"
   },
@@ -247,7 +247,7 @@
     "sources": "firehol_level2|ipsum|blocklist_de|greensnow|spamhaus_drop|firehol_level1|charles_haley_malware_ips",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Malware|Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam|Malware",
     "country": "NL",
     "asn": "49870"
   },
@@ -256,16 +256,16 @@
     "sources": "firehol_level2|ipsum|blocklist_de|greensnow|spamhaus_drop|firehol_level1|charles_haley_malware_ips",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Malware|Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam|Malware",
     "country": "NL",
     "asn": "49870"
   },
   {
     "ip": "85.239.151.41",
-    "sources": "firehol_level2|emerging_threats|firehol_level3|criticalpath_security|ipsum|blocklist_de|greensnow",
+    "sources": "firehol_level2|firehol_level3|emerging_threats|criticalpath_security|ipsum|blocklist_de|greensnow",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Mixed|Compromised|Brute-Force",
+    "categories": "Mixed|Brute-Force|Compromised",
     "country": "US",
     "asn": "19318"
   },
@@ -274,7 +274,7 @@
     "sources": "firehol_level2|firehol_level3|ipsum|blocklist_de|greensnow|spamhaus_drop|firehol_level1",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam",
     "country": "UA",
     "asn": "209630"
   },
@@ -283,7 +283,7 @@
     "sources": "firehol_level2|binary_defense|ipsum|blocklist_de|greensnow|spamhaus_drop|charles_haley_malware_ips",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Malware|Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam|Malware",
     "country": "BG",
     "asn": "204428"
   },
@@ -292,7 +292,7 @@
     "sources": "firehol_level2|binary_defense|ipsum|blocklist_de|greensnow|spamhaus_drop|charles_haley_malware_ips",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Malware|Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam|Malware",
     "country": "BG",
     "asn": "204428"
   },
@@ -301,16 +301,16 @@
     "sources": "firehol_level2|binary_defense|ipsum|blocklist_de|greensnow|spamhaus_drop|charles_haley_malware_ips",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Malware|Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam|Malware",
     "country": "GB",
     "asn": "47890"
   },
   {
     "ip": "77.90.185.238",
-    "sources": "binary_defense|firehol_level3|ipsum|blocklist_de|spamhaus_drop|firehol_level1|charles_haley_malware_ips",
+    "sources": "firehol_level3|binary_defense|ipsum|blocklist_de|spamhaus_drop|firehol_level1|charles_haley_malware_ips",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Malware|Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam|Malware",
     "country": "GB",
     "asn": "213790"
   },
@@ -319,22 +319,22 @@
     "sources": "firehol_level2|firehol_level3|ipsum|greensnow|spamhaus_drop|firehol_level1|charles_haley_malware_ips",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Malware|Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam|Malware",
     "country": "GB",
     "asn": "213790"
   },
   {
     "ip": "77.22.211.47",
-    "sources": "firehol_level2|emerging_threats|firehol_level3|criticalpath_security|ipsum|blocklist_de|greensnow",
+    "sources": "firehol_level2|firehol_level3|emerging_threats|criticalpath_security|ipsum|blocklist_de|greensnow",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Mixed|Compromised|Brute-Force",
+    "categories": "Mixed|Brute-Force|Compromised",
     "country": "DE",
     "asn": "3209"
   },
   {
     "ip": "66.132.224.238",
-    "sources": "firehol_level2|binary_defense|firehol_level3|ipsum|blocklist_de|greensnow|firehol_level1",
+    "sources": "firehol_level2|firehol_level3|binary_defense|ipsum|blocklist_de|greensnow|firehol_level1",
     "source_count": 7,
     "reputation": 100,
     "categories": "Mixed|Brute-Force",
@@ -343,7 +343,7 @@
   },
   {
     "ip": "66.132.224.235",
-    "sources": "firehol_level2|binary_defense|firehol_level3|ipsum|blocklist_de|greensnow|firehol_level1",
+    "sources": "firehol_level2|firehol_level3|binary_defense|ipsum|blocklist_de|greensnow|firehol_level1",
     "source_count": 7,
     "reputation": 100,
     "categories": "Mixed|Brute-Force",
@@ -352,7 +352,7 @@
   },
   {
     "ip": "66.132.172.181",
-    "sources": "firehol_level2|binary_defense|firehol_level3|ipsum|blocklist_de|greensnow|firehol_level1",
+    "sources": "firehol_level2|firehol_level3|binary_defense|ipsum|blocklist_de|greensnow|firehol_level1",
     "source_count": 7,
     "reputation": 100,
     "categories": "Mixed|Brute-Force",
@@ -361,7 +361,7 @@
   },
   {
     "ip": "66.132.172.142",
-    "sources": "firehol_level2|binary_defense|firehol_level3|ipsum|blocklist_de|greensnow|firehol_level1",
+    "sources": "firehol_level2|firehol_level3|binary_defense|ipsum|blocklist_de|greensnow|firehol_level1",
     "source_count": 7,
     "reputation": 100,
     "categories": "Mixed|Brute-Force",
@@ -370,46 +370,46 @@
   },
   {
     "ip": "64.62.197.32",
-    "sources": "firehol_level2|binary_defense|firehol_level3|ipsum|blocklist_de|firehol_level1|charles_haley_malware_ips",
+    "sources": "firehol_level2|firehol_level3|binary_defense|ipsum|blocklist_de|firehol_level1|charles_haley_malware_ips",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Malware|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Malware",
     "country": "US",
     "asn": "6939"
   },
   {
     "ip": "64.62.197.137",
-    "sources": "firehol_level2|binary_defense|firehol_level3|ipsum|blocklist_de|firehol_level1|charles_haley_malware_ips",
+    "sources": "firehol_level2|firehol_level3|binary_defense|ipsum|blocklist_de|firehol_level1|charles_haley_malware_ips",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Malware|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Malware",
     "country": "US",
     "asn": "6939"
   },
   {
     "ip": "58.226.230.112",
-    "sources": "firehol_level2|emerging_threats|firehol_level3|criticalpath_security|ipsum|blocklist_de|greensnow",
+    "sources": "firehol_level2|firehol_level3|emerging_threats|criticalpath_security|ipsum|blocklist_de|greensnow",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Mixed|Compromised|Brute-Force",
+    "categories": "Mixed|Brute-Force|Compromised",
     "country": "KR",
     "asn": "9318"
   },
   {
     "ip": "54.187.39.50",
-    "sources": "firehol_level2|emerging_threats|binary_defense|firehol_level3|criticalpath_security|ipsum|blocklist_de",
+    "sources": "firehol_level2|firehol_level3|emerging_threats|binary_defense|criticalpath_security|ipsum|blocklist_de",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Mixed|Compromised|Brute-Force",
+    "categories": "Mixed|Brute-Force|Compromised",
     "country": "US",
     "asn": "16509"
   },
   {
     "ip": "50.255.62.89",
-    "sources": "firehol_level2|emerging_threats|firehol_level3|criticalpath_security|ipsum|blocklist_de|greensnow",
+    "sources": "firehol_level2|firehol_level3|emerging_threats|criticalpath_security|ipsum|blocklist_de|greensnow",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Mixed|Compromised|Brute-Force",
+    "categories": "Mixed|Brute-Force|Compromised",
     "country": "US",
     "asn": "7922"
   },
@@ -418,7 +418,7 @@
     "sources": "firehol_level2|binary_defense|ipsum|blocklist_de|greensnow|spamhaus_drop|firehol_level1",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam",
     "country": "DE",
     "asn": "51396"
   },
@@ -427,7 +427,7 @@
     "sources": "firehol_level2|binary_defense|ipsum|blocklist_de|greensnow|spamhaus_drop|firehol_level1",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam",
     "country": "DE",
     "asn": "51396"
   },
@@ -436,7 +436,7 @@
     "sources": "firehol_level2|firehol_level3|ipsum|blocklist_de|greensnow|spamhaus_drop|firehol_level1",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam",
     "country": "GB",
     "asn": "48090"
   },
@@ -445,7 +445,7 @@
     "sources": "firehol_level2|firehol_level3|ipsum|blocklist_de|greensnow|spamhaus_drop|firehol_level1",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam",
     "country": "GB",
     "asn": "48090"
   },
@@ -454,7 +454,7 @@
     "sources": "firehol_level2|firehol_level3|ipsum|blocklist_de|greensnow|spamhaus_drop|firehol_level1",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam",
     "country": "GB",
     "asn": "48090"
   },
@@ -463,52 +463,52 @@
     "sources": "firehol_level2|firehol_level3|ipsum|blocklist_de|greensnow|spamhaus_drop|firehol_level1",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam",
     "country": "GB",
     "asn": "48090"
   },
   {
     "ip": "45.148.10.157",
-    "sources": "firehol_level2|binary_defense|firehol_level3|ipsum|blocklist_de|spamhaus_drop|firehol_level1",
+    "sources": "firehol_level2|firehol_level3|binary_defense|ipsum|blocklist_de|spamhaus_drop|firehol_level1",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam",
     "country": "GB",
     "asn": "48090"
   },
   {
     "ip": "45.148.10.152",
-    "sources": "firehol_level2|binary_defense|firehol_level3|ipsum|blocklist_de|spamhaus_drop|firehol_level1",
+    "sources": "firehol_level2|firehol_level3|binary_defense|ipsum|blocklist_de|spamhaus_drop|firehol_level1",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam",
     "country": "GB",
     "asn": "48090"
   },
   {
     "ip": "45.148.10.151",
-    "sources": "firehol_level2|binary_defense|firehol_level3|ipsum|blocklist_de|spamhaus_drop|firehol_level1",
+    "sources": "firehol_level2|firehol_level3|binary_defense|ipsum|blocklist_de|spamhaus_drop|firehol_level1",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam",
     "country": "GB",
     "asn": "48090"
   },
   {
     "ip": "45.148.10.147",
-    "sources": "firehol_level2|binary_defense|firehol_level3|ipsum|blocklist_de|spamhaus_drop|firehol_level1",
+    "sources": "firehol_level2|firehol_level3|binary_defense|ipsum|blocklist_de|spamhaus_drop|firehol_level1",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam",
     "country": "GB",
     "asn": "48090"
   },
   {
     "ip": "45.148.10.141",
-    "sources": "firehol_level2|binary_defense|firehol_level3|ipsum|blocklist_de|spamhaus_drop|firehol_level1",
+    "sources": "firehol_level2|firehol_level3|binary_defense|ipsum|blocklist_de|spamhaus_drop|firehol_level1",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam",
     "country": "GB",
     "asn": "48090"
   },
@@ -517,7 +517,7 @@
     "sources": "firehol_level2|firehol_level3|ipsum|blocklist_de|greensnow|spamhaus_drop|firehol_level1",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam",
     "country": "GB",
     "asn": "48090"
   },
@@ -526,43 +526,43 @@
     "sources": "firehol_level2|firehol_level3|ipsum|blocklist_de|greensnow|spamhaus_drop|firehol_level1",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam",
     "country": "RO",
     "asn": "208137"
   },
   {
     "ip": "211.63.214.90",
-    "sources": "firehol_level2|emerging_threats|firehol_level3|criticalpath_security|ipsum|blocklist_de|greensnow",
+    "sources": "firehol_level2|firehol_level3|emerging_threats|criticalpath_security|ipsum|blocklist_de|greensnow",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Mixed|Compromised|Brute-Force",
+    "categories": "Mixed|Brute-Force|Compromised",
     "country": "KR",
     "asn": "4766"
   },
   {
     "ip": "204.76.203.233",
-    "sources": "firehol_level2|binary_defense|firehol_level3|ipsum|spamhaus_drop|firehol_level1|charles_haley_malware_ips",
+    "sources": "firehol_level2|firehol_level3|binary_defense|ipsum|spamhaus_drop|firehol_level1|charles_haley_malware_ips",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Malware|Spam|Mixed",
+    "categories": "Mixed|Spam|Malware",
     "country": "DE",
     "asn": "51396"
   },
   {
     "ip": "202.29.236.76",
-    "sources": "firehol_level2|emerging_threats|firehol_level3|criticalpath_security|ipsum|blocklist_de|greensnow",
+    "sources": "firehol_level2|firehol_level3|emerging_threats|criticalpath_security|ipsum|blocklist_de|greensnow",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Mixed|Compromised|Brute-Force",
+    "categories": "Mixed|Brute-Force|Compromised",
     "country": "TH",
     "asn": "4621"
   },
   {
     "ip": "200.76.169.34",
-    "sources": "firehol_level2|emerging_threats|firehol_level3|criticalpath_security|ipsum|blocklist_de|greensnow",
+    "sources": "firehol_level2|firehol_level3|emerging_threats|criticalpath_security|ipsum|blocklist_de|greensnow",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Mixed|Compromised|Brute-Force",
+    "categories": "Mixed|Brute-Force|Compromised",
     "country": "MX",
     "asn": "11172"
   },
@@ -571,7 +571,7 @@
     "sources": "firehol_level2|firehol_level3|ipsum|blocklist_de|greensnow|spamhaus_drop|firehol_level1",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam",
     "country": "GB",
     "asn": "48090"
   },
@@ -580,7 +580,7 @@
     "sources": "firehol_level2|firehol_level3|ipsum|blocklist_de|greensnow|spamhaus_drop|firehol_level1",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam",
     "country": "GB",
     "asn": "48090"
   },
@@ -589,34 +589,34 @@
     "sources": "firehol_level2|ipsum|blocklist_de|greensnow|spamhaus_drop|firehol_level1|charles_haley_malware_ips",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Malware|Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam|Malware",
     "country": "GB",
     "asn": "47890"
   },
   {
     "ip": "185.227.153.56",
-    "sources": "firehol_level2|emerging_threats|firehol_level3|criticalpath_security|ipsum|blocklist_de|greensnow",
+    "sources": "firehol_level2|firehol_level3|emerging_threats|criticalpath_security|ipsum|blocklist_de|greensnow",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Mixed|Compromised|Brute-Force",
+    "categories": "Mixed|Brute-Force|Compromised",
     "country": "HK",
     "asn": "55933"
   },
   {
     "ip": "185.100.212.141",
-    "sources": "firehol_level2|emerging_threats|firehol_level3|criticalpath_security|ipsum|blocklist_de|greensnow",
+    "sources": "firehol_level2|firehol_level3|emerging_threats|criticalpath_security|ipsum|blocklist_de|greensnow",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Mixed|Compromised|Brute-Force",
+    "categories": "Mixed|Brute-Force|Compromised",
     "country": "IN",
     "asn": "140641"
   },
   {
     "ip": "179.48.4.14",
-    "sources": "firehol_level2|emerging_threats|firehol_level3|criticalpath_security|ipsum|blocklist_de|greensnow",
+    "sources": "firehol_level2|firehol_level3|emerging_threats|criticalpath_security|ipsum|blocklist_de|greensnow",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Mixed|Compromised|Brute-Force",
+    "categories": "Mixed|Brute-Force|Compromised",
     "country": "BR",
     "asn": "271062"
   },
@@ -625,13 +625,13 @@
     "sources": "firehol_level2|binary_defense|ipsum|blocklist_de|greensnow|spamhaus_drop|firehol_level1",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam",
     "country": "GB",
     "asn": "213790"
   },
   {
     "ip": "167.94.146.54",
-    "sources": "firehol_level2|binary_defense|firehol_level3|ipsum|blocklist_de|greensnow|firehol_level1",
+    "sources": "firehol_level2|firehol_level3|binary_defense|ipsum|blocklist_de|greensnow|firehol_level1",
     "source_count": 7,
     "reputation": 100,
     "categories": "Mixed|Brute-Force",
@@ -640,73 +640,73 @@
   },
   {
     "ip": "161.132.38.88",
-    "sources": "firehol_level2|emerging_threats|firehol_level3|criticalpath_security|ipsum|blocklist_de|greensnow",
+    "sources": "firehol_level2|firehol_level3|emerging_threats|criticalpath_security|ipsum|blocklist_de|greensnow",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Mixed|Compromised|Brute-Force",
+    "categories": "Mixed|Brute-Force|Compromised",
     "country": "PE",
     "asn": "3132"
   },
   {
     "ip": "157.20.215.123",
-    "sources": "firehol_level2|emerging_threats|firehol_level3|criticalpath_security|ipsum|blocklist_de|greensnow",
+    "sources": "firehol_level2|firehol_level3|emerging_threats|criticalpath_security|ipsum|blocklist_de|greensnow",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Mixed|Compromised|Brute-Force",
+    "categories": "Mixed|Brute-Force|Compromised",
     "country": "IN",
     "asn": "134926"
   },
   {
     "ip": "152.32.226.205",
-    "sources": "firehol_level2|emerging_threats|firehol_level3|criticalpath_security|ipsum|blocklist_de|greensnow",
+    "sources": "firehol_level2|firehol_level3|emerging_threats|criticalpath_security|ipsum|blocklist_de|greensnow",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Mixed|Compromised|Brute-Force",
+    "categories": "Mixed|Brute-Force|Compromised",
     "country": "HK",
     "asn": "135377"
   },
   {
     "ip": "152.32.162.42",
-    "sources": "firehol_level2|emerging_threats|firehol_level3|criticalpath_security|ipsum|blocklist_de|greensnow",
+    "sources": "firehol_level2|firehol_level3|emerging_threats|criticalpath_security|ipsum|blocklist_de|greensnow",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Mixed|Compromised|Brute-Force",
+    "categories": "Mixed|Brute-Force|Compromised",
     "country": "HK",
     "asn": "135377"
   },
   {
     "ip": "116.99.175.167",
-    "sources": "firehol_level2|emerging_threats|firehol_level3|criticalpath_security|ipsum|blocklist_de|greensnow",
+    "sources": "firehol_level2|firehol_level3|emerging_threats|criticalpath_security|ipsum|blocklist_de|greensnow",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Mixed|Compromised|Brute-Force",
+    "categories": "Mixed|Brute-Force|Compromised",
     "country": "VN",
     "asn": "24086"
   },
   {
     "ip": "103.24.212.42",
-    "sources": "firehol_level2|emerging_threats|firehol_level3|criticalpath_security|ipsum|blocklist_de|greensnow",
+    "sources": "firehol_level2|firehol_level3|emerging_threats|criticalpath_security|ipsum|blocklist_de|greensnow",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Mixed|Compromised|Brute-Force",
+    "categories": "Mixed|Brute-Force|Compromised",
     "country": "ID",
     "asn": "132649"
   },
   {
     "ip": "101.96.200.56",
-    "sources": "firehol_level2|emerging_threats|firehol_level3|criticalpath_security|ipsum|blocklist_de|greensnow",
+    "sources": "firehol_level2|firehol_level3|emerging_threats|criticalpath_security|ipsum|blocklist_de|greensnow",
     "source_count": 7,
     "reputation": 100,
-    "categories": "Mixed|Compromised|Brute-Force",
+    "categories": "Mixed|Brute-Force|Compromised",
     "country": "CN",
     "asn": "137718"
   },
   {
     "ip": "95.47.246.223",
-    "sources": "firehol_level2|emerging_threats|firehol_level3|criticalpath_security|ipsum|blocklist_de",
+    "sources": "firehol_level2|firehol_level3|emerging_threats|criticalpath_security|ipsum|blocklist_de",
     "source_count": 6,
     "reputation": 100,
-    "categories": "Mixed|Compromised|Brute-Force",
+    "categories": "Mixed|Brute-Force|Compromised",
     "country": "RU",
     "asn": "47845"
   },
@@ -715,7 +715,7 @@
     "sources": "firehol_level2|ipsum|blocklist_de|greensnow|spamhaus_drop|firehol_level1",
     "source_count": 6,
     "reputation": 100,
-    "categories": "Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam",
     "country": "DE",
     "asn": "215607"
   },
@@ -724,7 +724,7 @@
     "sources": "firehol_level2|ipsum|blocklist_de|greensnow|spamhaus_drop|firehol_level1",
     "source_count": 6,
     "reputation": 100,
-    "categories": "Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam",
     "country": "DE",
     "asn": "215607"
   },
@@ -733,7 +733,7 @@
     "sources": "firehol_level2|ipsum|blocklist_de|greensnow|spamhaus_drop|firehol_level1",
     "source_count": 6,
     "reputation": 100,
-    "categories": "Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam",
     "country": "DE",
     "asn": "215607"
   },
@@ -742,13 +742,13 @@
     "sources": "firehol_level2|ipsum|blocklist_de|greensnow|spamhaus_drop|firehol_level1",
     "source_count": 6,
     "reputation": 100,
-    "categories": "Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam",
     "country": "DE",
     "asn": "215607"
   },
   {
     "ip": "94.102.49.125",
-    "sources": "firehol_level2|binary_defense|firehol_level3|ipsum|blocklist_de|greensnow",
+    "sources": "firehol_level2|firehol_level3|binary_defense|ipsum|blocklist_de|greensnow",
     "source_count": 6,
     "reputation": 100,
     "categories": "Mixed|Brute-Force",
@@ -760,16 +760,16 @@
     "sources": "firehol_level2|ipsum|blocklist_de|greensnow|spamhaus_drop|firehol_level1",
     "source_count": 6,
     "reputation": 100,
-    "categories": "Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam",
     "country": "GB",
     "asn": "48090"
   },
   {
     "ip": "92.253.214.224",
-    "sources": "firehol_level2|emerging_threats|firehol_level3|criticalpath_security|ipsum|blocklist_de",
+    "sources": "firehol_level2|firehol_level3|emerging_threats|criticalpath_security|ipsum|blocklist_de",
     "source_count": 6,
     "reputation": 100,
-    "categories": "Mixed|Compromised|Brute-Force",
+    "categories": "Mixed|Brute-Force|Compromised",
     "country": "UA",
     "asn": "59577"
   },
@@ -778,7 +778,7 @@
     "sources": "firehol_level2|ipsum|blocklist_de|spamhaus_drop|firehol_level1|charles_haley_malware_ips",
     "source_count": 6,
     "reputation": 100,
-    "categories": "Malware|Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam|Malware",
     "country": "GB",
     "asn": "47890"
   },
@@ -787,7 +787,7 @@
     "sources": "firehol_level2|ipsum|blocklist_de|spamhaus_drop|firehol_level1|charles_haley_malware_ips",
     "source_count": 6,
     "reputation": 100,
-    "categories": "Malware|Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam|Malware",
     "country": "GB",
     "asn": "47890"
   },
@@ -796,7 +796,7 @@
     "sources": "firehol_level2|ipsum|blocklist_de|spamhaus_drop|firehol_level1|charles_haley_malware_ips",
     "source_count": 6,
     "reputation": 100,
-    "categories": "Malware|Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam|Malware",
     "country": "GB",
     "asn": "47890"
   },
@@ -805,7 +805,7 @@
     "sources": "firehol_level2|ipsum|blocklist_de|spamhaus_drop|firehol_level1|charles_haley_malware_ips",
     "source_count": 6,
     "reputation": 100,
-    "categories": "Malware|Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam|Malware",
     "country": "GB",
     "asn": "47890"
   },
@@ -814,7 +814,7 @@
     "sources": "firehol_level2|ipsum|greensnow|spamhaus_drop|firehol_level1|charles_haley_malware_ips",
     "source_count": 6,
     "reputation": 100,
-    "categories": "Malware|Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam|Malware",
     "country": "GB",
     "asn": "47890"
   },
@@ -823,7 +823,7 @@
     "sources": "firehol_level2|ipsum|greensnow|spamhaus_drop|firehol_level1|charles_haley_malware_ips",
     "source_count": 6,
     "reputation": 100,
-    "categories": "Malware|Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam|Malware",
     "country": "GB",
     "asn": "47890"
   },
@@ -832,7 +832,7 @@
     "sources": "firehol_level2|ipsum|greensnow|spamhaus_drop|firehol_level1|charles_haley_malware_ips",
     "source_count": 6,
     "reputation": 100,
-    "categories": "Malware|Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam|Malware",
     "country": "GB",
     "asn": "47890"
   },
@@ -841,7 +841,7 @@
     "sources": "firehol_level2|ipsum|greensnow|spamhaus_drop|firehol_level1|charles_haley_malware_ips",
     "source_count": 6,
     "reputation": 100,
-    "categories": "Malware|Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam|Malware",
     "country": "GB",
     "asn": "47890"
   },
@@ -850,7 +850,7 @@
     "sources": "firehol_level2|ipsum|blocklist_de|spamhaus_drop|firehol_level1|charles_haley_malware_ips",
     "source_count": 6,
     "reputation": 100,
-    "categories": "Malware|Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam|Malware",
     "country": "GB",
     "asn": "47890"
   },
@@ -859,7 +859,7 @@
     "sources": "firehol_level2|ipsum|greensnow|spamhaus_drop|firehol_level1|charles_haley_malware_ips",
     "source_count": 6,
     "reputation": 100,
-    "categories": "Malware|Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam|Malware",
     "country": "GB",
     "asn": "47890"
   },
@@ -868,7 +868,7 @@
     "sources": "firehol_level2|ipsum|greensnow|spamhaus_drop|firehol_level1|charles_haley_malware_ips",
     "source_count": 6,
     "reputation": 100,
-    "categories": "Malware|Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam|Malware",
     "country": "GB",
     "asn": "47890"
   },
@@ -877,7 +877,7 @@
     "sources": "firehol_level2|ipsum|greensnow|spamhaus_drop|firehol_level1|charles_haley_malware_ips",
     "source_count": 6,
     "reputation": 100,
-    "categories": "Malware|Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam|Malware",
     "country": "GB",
     "asn": "47890"
   },
@@ -886,7 +886,7 @@
     "sources": "firehol_level2|ipsum|greensnow|spamhaus_drop|firehol_level1|charles_haley_malware_ips",
     "source_count": 6,
     "reputation": 100,
-    "categories": "Malware|Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam|Malware",
     "country": "GB",
     "asn": "47890"
   },
@@ -895,7 +895,7 @@
     "sources": "firehol_level2|ipsum|greensnow|spamhaus_drop|firehol_level1|charles_haley_malware_ips",
     "source_count": 6,
     "reputation": 100,
-    "categories": "Malware|Spam|Mixed|Brute-Force",
+    "categories": "Mixed|Brute-Force|Spam|Malware",
     "country": "GB",
     "asn": "47890"
   }
