@@ -355,14 +355,14 @@
       margin-top: 0.4rem;
     }
 
-    /* ── IP Lookup ─────────────────────────────────────── */
+    /* ── IP Report ──────────────────────────────────────── */
     .lookup-card {
       background: var(--white);
       border: 1px solid var(--ash);
       border-radius: var(--radius);
       padding: 2rem;
       box-shadow: var(--shadow-sm);
-      max-width: 700px;
+      max-width: 780px;
       margin: 0 auto;
     }
 
@@ -390,50 +390,330 @@
       box-shadow: 0 0 0 3px var(--red-glow);
     }
 
-    .lookup-result {
-      margin-top: 1.2rem;
-      padding: 1.2rem 1.4rem;
-      border-radius: 8px;
-      display: none;
-      animation: slideUp 0.2s ease;
-    }
-
     @keyframes slideUp {
-      from { opacity: 0; transform: translateY(6px); }
+      from { opacity: 0; transform: translateY(8px); }
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    .lr-danger  { background: var(--red-light);   border: 1px solid var(--red-border); }
-    .lr-safe    { background: var(--green-light);  border: 1px solid rgba(22,163,74,0.2); }
-    .lr-warn    { background: var(--amber-light);  border: 1px solid rgba(217,119,6,0.2); }
-    .lr-loading { background: var(--smoke);        border: 1px solid var(--ash); }
-
-    .lr-head {
-      display: flex; align-items: center; gap: 8px;
-      font-weight: 700; font-size: 0.95rem;
-      margin-bottom: 0.3rem;
-    }
-
-    .lr-head i { width: 18px; height: 18px; }
-
-    .lr-ip {
-      font-family: var(--mono);
-      font-weight: 600;
-    }
-
     .badge {
-      display: inline-block;
+      display: inline-flex; align-items: center; gap: 4px;
       font-size: 0.65rem; font-weight: 800;
       text-transform: uppercase; letter-spacing: 0.05em;
-      padding: 0.15rem 0.5rem;
+      padding: 0.2rem 0.6rem;
       border-radius: 4px;
     }
 
     .badge-red   { background: var(--red);   color: white; }
     .badge-green { background: var(--green); color: white; }
+    .badge-amber { background: var(--amber); color: white; }
 
-    .lr-detail {
-      font-size: 0.82rem; color: var(--iron); line-height: 1.65;
+    /* Report Card */
+    .report-card {
+      margin-top: 1.5rem;
+      border: 1px solid var(--ash);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      animation: slideUp 0.3s ease;
+      display: none;
+    }
+
+    .report-card.show { display: block; }
+
+    .report-header {
+      padding: 1.5rem 1.8rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .report-header-danger {
+      background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+      color: white;
+    }
+
+    .report-header-safe {
+      background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+      color: white;
+    }
+
+    .report-header-warn {
+      background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+      color: white;
+    }
+
+    .rh-left { display: flex; align-items: center; gap: 14px; }
+
+    .rh-icon {
+      width: 48px; height: 48px;
+      background: rgba(255,255,255,0.18);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .rh-icon i { width: 24px; height: 24px; }
+
+    .rh-ip {
+      font-family: var(--mono);
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .rh-verdict {
+      font-size: 0.82rem;
+      opacity: 0.85;
+      margin-top: 2px;
+    }
+
+    .rh-badge {
+      font-size: 0.7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 0.35rem 1rem;
+      border-radius: 100px;
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.3);
+      backdrop-filter: blur(4px);
+    }
+
+    .report-body {
+      padding: 1.5rem 1.8rem;
+      background: var(--white);
+    }
+
+    /* Threat Meter */
+    .threat-meter {
+      margin-bottom: 1.5rem;
+    }
+
+    .tm-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .tm-label-text {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--iron);
+    }
+
+    .tm-level {
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+    }
+
+    .tm-level-critical { background: #fef2f2; color: #dc2626; }
+    .tm-level-high     { background: #fff7ed; color: #ea580c; }
+    .tm-level-medium   { background: #fffbeb; color: #d97706; }
+    .tm-level-low      { background: #f0fdf4; color: #16a34a; }
+    .tm-level-none     { background: #f0fdf4; color: #16a34a; }
+
+    .tm-track {
+      height: 8px;
+      background: var(--smoke);
+      border-radius: 100px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .tm-bar {
+      height: 100%;
+      border-radius: 100px;
+      transition: width 1s cubic-bezier(.25,.46,.45,.94);
+      background: linear-gradient(90deg, #16a34a, #d97706, #dc2626);
+    }
+
+    .tm-ticks {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 4px;
+      font-size: 0.6rem;
+      color: var(--silver);
+      font-weight: 600;
+    }
+
+    /* Report Grid */
+    .report-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .rg-item {
+      padding: 1rem;
+      background: var(--snow);
+      border: 1px solid var(--ash);
+      border-radius: 8px;
+    }
+
+    .rg-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--slate);
+      margin-bottom: 0.4rem;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .rg-label i { width: 12px; height: 12px; }
+
+    .rg-value {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--midnight);
+    }
+
+    .rg-value.mono { font-family: var(--mono); font-size: 0.82rem; }
+
+    /* Source Tags */
+    .source-tags {
+      margin-bottom: 1.5rem;
+    }
+
+    .st-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--slate);
+      margin-bottom: 0.6rem;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .st-label i { width: 12px; height: 12px; }
+
+    .st-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+
+    .st-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 0.3rem 0.7rem;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      background: var(--red-light);
+      color: var(--red);
+      border: 1px solid var(--red-border);
+      transition: all 0.15s;
+    }
+
+    .st-tag:hover {
+      background: rgba(220,38,38,0.12);
+      transform: translateY(-1px);
+    }
+
+    .st-tag i { width: 11px; height: 11px; }
+
+    .st-none {
+      background: var(--green-light);
+      color: var(--green);
+      border-color: rgba(22,163,74,0.2);
+    }
+
+    /* External Links Row */
+    .ext-links {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+
+    .ext-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0.55rem 1rem;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.18s;
+      border: 1px solid var(--ash);
+      background: var(--white);
+      color: var(--ink);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .ext-link:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+    }
+
+    .ext-link i { width: 14px; height: 14px; }
+
+    .ext-link-vt {
+      border-color: rgba(0, 108, 190, 0.25);
+      color: #006cbe;
+    }
+    .ext-link-vt:hover { background: #f0f7ff; }
+
+    .ext-link-abuseipdb {
+      border-color: rgba(220, 38, 38, 0.2);
+      color: var(--red);
+    }
+    .ext-link-abuseipdb:hover { background: var(--red-light); }
+
+    .ext-link-shodan {
+      border-color: rgba(161, 16, 16, 0.2);
+      color: #a11010;
+    }
+    .ext-link-shodan:hover { background: #fef7f7; }
+
+    /* Report Detail Text */
+    .report-detail {
+      padding: 1rem 1.2rem;
+      background: var(--snow);
+      border: 1px solid var(--ash);
+      border-radius: 8px;
+      font-size: 0.82rem;
+      color: var(--iron);
+      line-height: 1.7;
+    }
+
+    .report-detail strong { color: var(--midnight); }
+
+    /* TXT indicator */
+    .txt-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.25rem 0.65rem;
+      border-radius: 5px;
+      margin-top: 0.3rem;
+    }
+
+    .txt-indicator i { width: 12px; height: 12px; }
+
+    .txt-yes { background: var(--red-light); color: var(--red); }
+    .txt-no  { background: var(--green-light); color: var(--green); }
+
+    @media (max-width: 640px) {
+      .report-grid { grid-template-columns: 1fr; }
+      .report-header { flex-direction: column; align-items: flex-start; }
+      .ext-links { flex-direction: column; }
+      .ext-link { justify-content: center; }
     }
 
     /* ── Charts ────────────────────────────────────────── */
@@ -698,7 +978,7 @@
 
     <ul class="nav-links">
       <li><a href="#dashboard" class="active">Dashboard</a></li>
-      <li><a href="#lookup">IP Lookup</a></li>
+      <li><a href="#lookup">IP Report</a></li>
       <li><a href="#analytics">Analytics</a></li>
       <li><a href="#sources">Sources</a></li>
       <li><a href="#downloads">Downloads</a></li>
@@ -715,10 +995,7 @@
 <!-- ═══════════════ HERO ═════════════════ -->
 <header class="hero" id="dashboard">
   <div class="hero-inner">
-    <div class="hero-badge">
-      <i data-lucide="shield" style="width:12px;height:12px"></i>
-      Open-Source Threat Intelligence
-    </div>
+
     <h1>Threat Intelligence<br><span class="accent">Made Simple.</span></h1>
     <p class="hero-sub">
       HimalayaFeed aggregates malicious IPv4 addresses from 15+ reputable OSINT sources.
@@ -791,12 +1068,12 @@
 
   <hr class="divider">
 
-  <!-- IP Lookup -->
+  <!-- IP Report -->
   <section class="section" id="lookup">
     <div class="section-head">
-      <div class="section-label">Reputation Check</div>
-      <h2 class="section-title"><i data-lucide="search"></i> IP Address Lookup</h2>
-      <p class="section-desc">Check if an IPv4 address is listed in the current threat intelligence database.</p>
+      <div class="section-label">Threat Report</div>
+      <h2 class="section-title"><i data-lucide="file-search"></i> IP Address Report</h2>
+      <p class="section-desc">Generate a detailed threat intelligence report for any IPv4 address. Cross-references against all active OSINT feeds with external reputation links.</p>
     </div>
 
     <div class="lookup-card">
@@ -805,16 +1082,80 @@
                placeholder="Enter IPv4 address (e.g. 185.220.101.45)"
                autocomplete="off" spellcheck="false">
         <button class="btn btn-red" onclick="checkIP()" id="lookup-btn">
-          <i data-lucide="search"></i> Check
+          <i data-lucide="file-search"></i> Report
         </button>
       </div>
-      <div class="lookup-result" id="lookup-result">
-        <div class="lr-head">
-          <i id="lr-icon" data-lucide="info"></i>
-          <span class="lr-ip" id="lr-ip"></span>
-          <span id="lr-badge" class="badge"></span>
+
+      <!-- Report Card -->
+      <div class="report-card" id="report-card">
+        <div class="report-header" id="report-header">
+          <div class="rh-left">
+            <div class="rh-icon"><i id="rh-icon-i" data-lucide="shield-alert"></i></div>
+            <div>
+              <div class="rh-ip" id="rh-ip"></div>
+              <div class="rh-verdict" id="rh-verdict"></div>
+            </div>
+          </div>
+          <div class="rh-badge" id="rh-badge"></div>
         </div>
-        <div class="lr-detail" id="lr-detail"></div>
+
+        <div class="report-body">
+          <!-- Threat Meter -->
+          <div class="threat-meter" id="threat-meter">
+            <div class="tm-label">
+              <span class="tm-label-text">Threat Confidence Level</span>
+              <span class="tm-level" id="tm-level">—</span>
+            </div>
+            <div class="tm-track">
+              <div class="tm-bar" id="tm-bar" style="width:0%"></div>
+            </div>
+            <div class="tm-ticks">
+              <span>Clean</span><span>Low</span><span>Medium</span><span>High</span><span>Critical</span>
+            </div>
+          </div>
+
+          <!-- Info Grid -->
+          <div class="report-grid" id="report-grid">
+            <div class="rg-item">
+              <div class="rg-label"><i data-lucide="radio"></i> Sources Reporting</div>
+              <div class="rg-value" id="rg-sources">0 / 0</div>
+            </div>
+            <div class="rg-item">
+              <div class="rg-label"><i data-lucide="file-text"></i> In Feed TXT</div>
+              <div id="rg-txt"></div>
+            </div>
+            <div class="rg-item">
+              <div class="rg-label"><i data-lucide="calendar"></i> Last Updated</div>
+              <div class="rg-value mono" id="rg-updated">—</div>
+            </div>
+            <div class="rg-item">
+              <div class="rg-label"><i data-lucide="hash"></i> Database Total</div>
+              <div class="rg-value mono" id="rg-dbtotal">—</div>
+            </div>
+          </div>
+
+          <!-- Source Tags -->
+          <div class="source-tags" id="source-tags-wrap">
+            <div class="st-label"><i data-lucide="tag"></i> Flagged By Sources</div>
+            <div class="st-list" id="st-list"></div>
+          </div>
+
+          <!-- External Reputation Links -->
+          <div class="ext-links" id="ext-links">
+            <a class="ext-link ext-link-vt" id="ext-vt" href="#" target="_blank" rel="noopener">
+              <i data-lucide="shield"></i> VirusTotal Report
+            </a>
+            <a class="ext-link ext-link-abuseipdb" id="ext-abuseipdb" href="#" target="_blank" rel="noopener">
+              <i data-lucide="alert-octagon"></i> AbuseIPDB
+            </a>
+            <a class="ext-link ext-link-shodan" id="ext-shodan" href="#" target="_blank" rel="noopener">
+              <i data-lucide="search"></i> Shodan
+            </a>
+          </div>
+
+          <!-- Assessment -->
+          <div class="report-detail" id="report-detail"></div>
+        </div>
       </div>
     </div>
   </section>
@@ -1176,44 +1517,59 @@ function renderTable(d) {
   }));
 }
 
-/* ── IP Lookup ──────────────────────────── */
+/* ── IP Report ──────────────────────────── */
 let csvText = null, csvLoading = null;
+let statsData = null;
 
 async function loadCSV() {
   if (csvText) return csvText;
   if (!csvLoading) {
     csvLoading = fetch(RAW + 'malicious_ips.csv?_=' + Date.now())
       .then(r => r.text())
-      .then(txt => {
-        csvText = txt;
-        return csvText;
-      });
+      .then(txt => { csvText = txt; return csvText; });
   }
   return csvLoading;
 }
 
+async function loadStats() {
+  if (statsData) return statsData;
+  try {
+    const r = await fetch(RAW + 'stats.json?_=' + Date.now());
+    if (r.ok) statsData = await r.json();
+  } catch(e) {}
+  return statsData;
+}
+
+function getThreatLevel(sourceCount, totalFeeds) {
+  if (sourceCount === 0) return { level: 'none', label: 'Not Listed', pct: 0 };
+  const ratio = sourceCount / totalFeeds;
+  if (ratio >= 0.4 || sourceCount >= 6) return { level: 'critical', label: 'Critical', pct: 95 };
+  if (ratio >= 0.25 || sourceCount >= 4) return { level: 'high', label: 'High', pct: 75 };
+  if (ratio >= 0.15 || sourceCount >= 2) return { level: 'medium', label: 'Medium', pct: 50 };
+  return { level: 'low', label: 'Low', pct: 25 };
+}
+
 async function checkIP() {
-  const input  = document.getElementById('ip-input');
-  const result = document.getElementById('lookup-result');
-  const btn    = document.getElementById('lookup-btn');
-  const ip     = input.value.trim();
+  const input = document.getElementById('ip-input');
+  const btn   = document.getElementById('lookup-btn');
+  const card  = document.getElementById('report-card');
+  const ip    = input.value.trim();
 
   if (!ip) { input.focus(); return; }
 
   if (!/^(\d{1,3}\.){3}\d{1,3}$/.test(ip)) {
-    showLookup('warn', ip, 'Invalid format. Enter a valid IPv4 address.');
+    showReport('warn', ip, null, null);
     return;
   }
 
-  btn.innerHTML = '<span class="spinner"></span> Checking';
+  btn.innerHTML = '<span class="spinner"></span> Analyzing';
   btn.disabled = true;
 
   try {
-    const txt = await loadCSV();
-    
-    // Check if the IP is at the start of a line in the CSV (e.g. \n1.2.3.4,)
+    const [txt, stats] = await Promise.all([loadCSV(), loadStats()]);
+
+    // Search CSV
     let idx = txt.indexOf('\n' + ip + ',');
-    // Edge case for the very first line after header (highly unlikely but possible)
     if (idx === -1 && txt.startsWith('ip,sources,source_count\n' + ip + ',')) {
       idx = 'ip,sources,source_count'.length;
     }
@@ -1221,48 +1577,135 @@ async function checkIP() {
     if (idx !== -1) {
       const lineEnd = txt.indexOf('\n', idx + 1);
       const line = txt.substring(idx + 1, lineEnd !== -1 ? lineEnd : undefined);
-      
       const parts = line.split(',');
-      const count = parts[2];
-      const sources = parts[1].replace(/\|/g, ', ');
-      
-      showLookup('danger', ip, `This IP is listed in the HimalayaFeed database. It was flagged by ${count} OSINT source(s): ${sources}.`);
+      const sourceCount = parseInt(parts[2]) || 1;
+      const sourceList = parts[1] ? parts[1].split('|') : ['unknown'];
+
+      showReport('danger', ip, { sourceCount, sourceList }, stats);
     } else {
-      showLookup('safe', ip, 'This IP was not found in the current dataset. Absence does not guarantee safety — only that it is not in the aggregated feeds at this time.');
+      showReport('safe', ip, null, stats);
     }
   } catch (e) {
     console.error(e);
-    showLookup('warn', ip, 'Could not load the feed data. Try again shortly.');
+    showReport('warn', ip, null, null);
   }
 
-  btn.innerHTML = '<i data-lucide="search"></i> Check';
+  btn.innerHTML = '<i data-lucide="file-search"></i> Report';
   btn.disabled = false;
   lucide.createIcons();
 }
 
-function showLookup(type, ip, detail) {
-  const el = document.getElementById('lookup-result');
-  const icon = document.getElementById('lr-icon');
-  const badge = document.getElementById('lr-badge');
+function showReport(type, ip, matchData, stats) {
+  const card   = document.getElementById('report-card');
+  const header = document.getElementById('report-header');
+  const totalFeeds = stats ? stats.total_feeds_processed : 15;
+  const totalIPs   = stats ? stats.total_unique_ips : 0;
+  const lastUpdated = stats ? stats.last_updated : '—';
 
-  el.className = 'lookup-result lr-' + type;
-  el.style.display = 'block';
+  // Set external links
+  document.getElementById('ext-vt').href = 'https://www.virustotal.com/gui/ip-address/' + ip;
+  document.getElementById('ext-abuseipdb').href = 'https://www.abuseipdb.com/check/' + ip;
+  document.getElementById('ext-shodan').href = 'https://www.shodan.io/host/' + ip;
 
-  document.getElementById('lr-ip').textContent = ip;
-  document.getElementById('lr-detail').textContent = detail;
+  // Header
+  const rhIcon = document.getElementById('rh-icon-i');
+  const rhIp   = document.getElementById('rh-ip');
+  const rhVerdict = document.getElementById('rh-verdict');
+  const rhBadge   = document.getElementById('rh-badge');
+
+  rhIp.textContent = ip;
+
+  header.className = 'report-header';
 
   if (type === 'danger') {
-    icon.setAttribute('data-lucide', 'shield-alert');
-    badge.className = 'badge badge-red'; badge.textContent = 'MALICIOUS';
+    header.classList.add('report-header-danger');
+    rhIcon.setAttribute('data-lucide', 'shield-alert');
+    rhVerdict.textContent = 'This IP is flagged in the HimalayaFeed threat database';
+    rhBadge.textContent = '⚠ MALICIOUS';
+
+    const sourceCount = matchData.sourceCount;
+    const sourceList  = matchData.sourceList;
+    const threat = getThreatLevel(sourceCount, totalFeeds);
+
+    // Threat Meter
+    document.getElementById('tm-level').textContent = threat.label;
+    document.getElementById('tm-level').className = 'tm-level tm-level-' + threat.level;
+    setTimeout(() => { document.getElementById('tm-bar').style.width = threat.pct + '%'; }, 100);
+
+    // Grid
+    document.getElementById('rg-sources').textContent = sourceCount + ' / ' + totalFeeds + ' feeds';
+    document.getElementById('rg-txt').innerHTML = '<span class="txt-indicator txt-yes"><i data-lucide="check-circle-2"></i> Present in malicious_ips.txt</span>';
+    document.getElementById('rg-updated').textContent = lastUpdated !== '—' ? lastUpdated.replace('T',' ').replace('Z',' UTC') : '—';
+    document.getElementById('rg-dbtotal').textContent = totalIPs ? fmt(totalIPs) + ' IPs' : '—';
+
+    // Source Tags
+    document.getElementById('source-tags-wrap').style.display = 'block';
+    document.getElementById('st-list').innerHTML = sourceList.map(s =>
+      `<span class="st-tag"><i data-lucide="radio"></i> ${s.replace(/_/g, ' ')}</span>`
+    ).join('');
+
+    // Detail
+    document.getElementById('report-detail').innerHTML =
+      `<strong>Threat Assessment:</strong> This IP address (<code style="font-family:var(--mono);background:var(--smoke);padding:0.1rem 0.4rem;border-radius:3px;font-size:0.8rem">${ip}</code>) ` +
+      `has been flagged by <strong>${sourceCount}</strong> out of <strong>${totalFeeds}</strong> active OSINT sources in the HimalayaFeed database. ` +
+      (threat.level === 'critical' ? 'This represents a <strong style="color:var(--red)">critical threat level</strong> — this IP is widely recognized as malicious across multiple independent intelligence feeds. Immediate blocking is recommended.' :
+       threat.level === 'high' ? 'This represents a <strong style="color:#ea580c">high threat level</strong> — multiple independent sources confirm malicious activity. Blocking is strongly recommended.' :
+       threat.level === 'medium' ? 'This represents a <strong style="color:var(--amber)">medium threat level</strong> — confirmed by multiple sources. Consider blocking or monitoring closely.' :
+       'This represents a <strong>low threat level</strong> — reported by a single source. Consider monitoring this IP for further activity.') +
+      ' This IP is saved in the <strong>malicious_ips.txt</strong> blocklist file and can be ingested directly into firewalls, SIEM, or IDS/IPS systems.' +
+      ' Check the external reputation links above for additional context from VirusTotal, AbuseIPDB, and Shodan.';
+
   } else if (type === 'safe') {
-    icon.setAttribute('data-lucide', 'shield-check');
-    badge.className = 'badge badge-green'; badge.textContent = 'NOT LISTED';
+    header.classList.add('report-header-safe');
+    rhIcon.setAttribute('data-lucide', 'shield-check');
+    rhVerdict.textContent = 'This IP is not present in any monitored threat feed';
+    rhBadge.textContent = '✓ NOT LISTED';
+
+    // Threat Meter
+    document.getElementById('tm-level').textContent = 'Not Listed';
+    document.getElementById('tm-level').className = 'tm-level tm-level-none';
+    setTimeout(() => { document.getElementById('tm-bar').style.width = '0%'; }, 100);
+
+    // Grid
+    document.getElementById('rg-sources').textContent = '0 / ' + totalFeeds + ' feeds';
+    document.getElementById('rg-txt').innerHTML = '<span class="txt-indicator txt-no"><i data-lucide="x-circle"></i> Not in malicious_ips.txt</span>';
+    document.getElementById('rg-updated').textContent = lastUpdated !== '—' ? lastUpdated.replace('T',' ').replace('Z',' UTC') : '—';
+    document.getElementById('rg-dbtotal').textContent = totalIPs ? fmt(totalIPs) + ' IPs' : '—';
+
+    // Source Tags
+    document.getElementById('source-tags-wrap').style.display = 'block';
+    document.getElementById('st-list').innerHTML = '<span class="st-tag st-none"><i data-lucide="check-circle-2"></i> No feeds flagged this IP</span>';
+
+    // Detail
+    document.getElementById('report-detail').innerHTML =
+      `<strong>Assessment:</strong> The IP address <code style="font-family:var(--mono);background:var(--smoke);padding:0.1rem 0.4rem;border-radius:3px;font-size:0.8rem">${ip}</code> ` +
+      `was <strong>not found</strong> in the current HimalayaFeed database of <strong>${totalIPs ? fmt(totalIPs) : '—'}</strong> malicious IPs aggregated from <strong>${totalFeeds}</strong> OSINT sources. ` +
+      'This does <strong>not</strong> guarantee the IP is safe — only that it has not been reported by any of the monitored threat intelligence feeds at this time. ' +
+      'Check the external reputation links above for additional context from VirusTotal, AbuseIPDB, and Shodan.';
+
   } else {
-    icon.setAttribute('data-lucide', 'alert-triangle');
-    badge.className = 'badge'; badge.textContent = 'WARNING';
-    badge.style.background = 'var(--amber)'; badge.style.color = 'white';
+    header.classList.add('report-header-warn');
+    rhIcon.setAttribute('data-lucide', 'alert-triangle');
+    rhVerdict.textContent = 'Unable to process this request';
+    rhBadge.textContent = '! WARNING';
+
+    document.getElementById('tm-level').textContent = '—';
+    document.getElementById('tm-level').className = 'tm-level';
+    document.getElementById('tm-bar').style.width = '0%';
+
+    document.getElementById('rg-sources').textContent = '—';
+    document.getElementById('rg-txt').innerHTML = '<span class="rg-value">—</span>';
+    document.getElementById('rg-updated').textContent = '—';
+    document.getElementById('rg-dbtotal').textContent = '—';
+
+    document.getElementById('source-tags-wrap').style.display = 'none';
+
+    document.getElementById('report-detail').innerHTML =
+      '<strong>Error:</strong> Invalid IPv4 format or feed data could not be loaded. Please enter a valid IPv4 address (e.g. <code style="font-family:var(--mono);background:var(--smoke);padding:0.1rem 0.4rem;border-radius:3px;font-size:0.8rem">185.220.101.45</code>) and try again.';
   }
 
+  card.classList.add('show');
+  card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   lucide.createIcons();
 }
 
