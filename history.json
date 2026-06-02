@@ -6,18 +6,18 @@
   },
   {
     "date": "2026-06-02",
-    "total_unique_ips": 708069,
-    "total_unique_domains": 131162,
+    "total_unique_ips": 708112,
+    "total_unique_domains": 131164,
     "total_unique_hashes": 695,
-    "total_unique_urls": 28779,
-    "active_feeds": 13,
+    "total_unique_urls": 28790,
+    "active_feeds": 14,
     "category_counts": {
-      "C2": 7607,
       "Mixed": 670895,
-      "Malware": 8842,
+      "C2": 7607,
+      "Malware": 8862,
       "Spam": 182118,
-      "Brute-Force": 26240,
-      "Compromised": 531
+      "Compromised": 531,
+      "Brute-Force": 26252
     },
     "top_sources": {
       "firehol_level1": 547683,
