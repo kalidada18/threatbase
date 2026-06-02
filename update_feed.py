@@ -20,7 +20,8 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from typing import Dict, List, Optional, Set, Tuple
 
-import pandas as pd
+import csv
+import heapq
 import requests
 
 logging.basicConfig(
@@ -118,16 +119,25 @@ class GeoIPEngine:
         self.isps = []
 
     def load(self, url="https://iptoasn.com/data/ip2asn-v4.tsv.gz"):
+        db_file = "ip2asn-v4.tsv.gz"
+        download_needed = True
+        if os.path.exists(db_file):
+            file_age = time.time() - os.path.getmtime(db_file)
+            if file_age < 86400:
+                download_needed = False
+                log.info(f"Using cached GeoIP database (age: {int(file_age/3600)}h)")
+                
         try:
-            log.info("Downloading GeoIP database...")
-            resp = requests.get(url, stream=True, timeout=60)
-            resp.raise_for_status()
-            with open("ip2asn-v4.tsv.gz", "wb") as f:
-                for chunk in resp.iter_content(chunk_size=8192):
-                    f.write(chunk)
+            if download_needed:
+                log.info("Downloading GeoIP database...")
+                resp = requests.get(url, stream=True, timeout=60)
+                resp.raise_for_status()
+                with open(db_file, "wb") as f:
+                    for chunk in resp.iter_content(chunk_size=8192):
+                        f.write(chunk)
             
             log.info("Parsing GeoIP database...")
-            with gzip.open("ip2asn-v4.tsv.gz", 'rt', encoding='utf-8') as f:
+            with gzip.open(db_file, 'rt', encoding='utf-8') as f:
                 for line in f:
                     parts = line.strip().split('\t')
                     if len(parts) >= 5:
@@ -176,15 +186,19 @@ def fetch_feed(name: str, url: str) -> Set[str]:
 
     for attempt in range(1, MAX_RETRIES + 1):
         try:
-            r = requests.get(url, headers=headers, timeout=REQUEST_TIMEOUT)
+            r = requests.get(url, headers=headers, timeout=REQUEST_TIMEOUT, stream=True)
             r.raise_for_status()
             
             if name == "abuseipdb":
                 data = r.json()
                 return {d["ipAddress"] for d in data.get("data", []) if is_public_ipv4(d["ipAddress"])}
             
+            if r.encoding is None:
+                r.encoding = 'utf-8'
+                
             ips = set()
-            for line in r.text.splitlines():
+            for line in r.iter_lines(decode_unicode=True):
+                if not line: continue
                 line = line.strip()
                 if not line or line.startswith(("#", "//", "!", "/*")): continue
                 token = line.split()[0].split(",")[0].strip('"\';')
@@ -211,10 +225,14 @@ def fetch_feed(name: str, url: str) -> Set[str]:
 def fetch_domain_feed(name: str, url: str) -> Set[str]:
     for attempt in range(1, MAX_RETRIES + 1):
         try:
-            r = requests.get(url, timeout=REQUEST_TIMEOUT)
+            r = requests.get(url, timeout=REQUEST_TIMEOUT, stream=True)
             r.raise_for_status()
+            if r.encoding is None:
+                r.encoding = 'utf-8'
+                
             domains = set()
-            for line in r.text.splitlines():
+            for line in r.iter_lines(decode_unicode=True):
+                if not line: continue
                 line = line.strip()
                 if not line or line.startswith(("#", "//")): continue
                 # For URLhaus, CSV style
@@ -256,31 +274,43 @@ def numerical_ip_key(ip: str) -> tuple:
     return tuple(int(octet) for octet in ip.split("."))
 
 def write_csv(sorted_ips: List[str], ip_map: Dict[str, List[str]], geoip: GeoIPEngine) -> None:
-    rows = []
-    for ip in sorted_ips:
-        sources = ip_map[ip]
-        source_count = len(sources)
-        reputation = min(100, source_count * 20)
-        categories = list(set([FEED_CATEGORIES.get(s, "Mixed") for s in sources]))
-        country, asn, isp = geoip.lookup(ip)
-        
-        rows.append({
-            "ip": ip,
-            "sources": "|".join(sources),
-            "source_count": source_count,
-            "reputation": reputation,
-            "categories": "|".join(categories),
-            "country": country,
-            "asn": asn
-        })
-        
-    df = pd.DataFrame(rows)
-    df.to_csv("malicious_ips.csv", index=False)
+    top_100 = []
     
-    # Extract Top 100
-    top_df = df.sort_values(by=["reputation", "source_count"], ascending=[False, False]).head(100)
-    top_df.to_json("top_100.json", orient="records", indent=2)
+    with open("malicious_ips.csv", "w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow(["ip", "sources", "source_count", "reputation", "categories", "country", "asn"])
+        
+        for ip in sorted_ips:
+            sources = ip_map[ip]
+            source_count = len(sources)
+            reputation = min(100, source_count * 20)
+            categories = list(set([FEED_CATEGORIES.get(s, "Mixed") for s in sources]))
+            country, asn, isp = geoip.lookup(ip)
+            
+            row = [ip, "|".join(sources), source_count, reputation, "|".join(categories), country, asn]
+            writer.writerow(row)
+            
+            heap_key = (reputation, source_count, ip)
+            row_dict = {
+                "ip": ip,
+                "sources": row[1],
+                "source_count": source_count,
+                "reputation": reputation,
+                "categories": row[4],
+                "country": country,
+                "asn": asn
+            }
+            if len(top_100) < 100:
+                heapq.heappush(top_100, (heap_key, row_dict))
+            else:
+                heapq.heappushpop(top_100, (heap_key, row_dict))
+                
+    top_100.sort(key=lambda x: x[0], reverse=True)
+    top_100_records = [item[1] for item in top_100]
     
+    with open("top_100.json", "w", encoding="utf-8") as f:
+        json.dump(top_100_records, f, indent=2)
+        
     log.info("Wrote malicious_ips.csv and top_100.json")
 
 def write_stix(sorted_ips: List[str], ip_map: Dict[str, List[str]]):

@@ -4,5 +4,4 @@
 # HTTP client — feed downloads, retries, timeout handling
 requests>=2.32.0
 
-# Data manipulation — CSV output with correct quoting and encoding
-pandas>=2.2.0
+
