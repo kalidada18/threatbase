@@ -1206,8 +1206,10 @@
 <script>
 lucide.createIcons();
 
-let RAW = 'https://kalidada18.github.io/himalayafeed/';
-if (window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+let RAW = './';
+if (window.location.hostname === 'kalidada18.github.io') {
+  RAW = 'https://kalidada18.github.io/himalayafeed/';
+} else if (window.location.protocol === 'file:') {
   RAW = 'https://raw.githubusercontent.com/kalidada18/himalayafeed/main/';
 }
 const fmt = n => new Intl.NumberFormat('en-US').format(n);
