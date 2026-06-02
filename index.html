@@ -1402,7 +1402,7 @@ async function renderHistoryChart() {
           x: { grid: { display: false }, ticks: { maxTicksLimit: 10 } },
           y: {
             grid: { color: '#e4e7ed' },
-            ticks: { callback: v => v >= 1e6 ? (v/1e6).toFixed(1)+'M' : v >= 1e3 ? (v/1e3).toFixed(0)+'K' : v }
+            ticks: { callback: v => v >= 1e6 ? (v/1e6).toFixed(2)+'M' : v >= 1e3 ? (v/1e3).toFixed(1)+'K' : v }
           }
         },
         interaction: { mode: 'index', intersect: false }
@@ -1446,7 +1446,7 @@ function renderCharts(d) {
         x: { ticks: { maxRotation: 45, font: { size: 10 } }, grid: { display: false } },
         y: {
           grid: { color: '#e4e7ed' },
-          ticks: { callback: v => v >= 1e6 ? (v/1e6).toFixed(1)+'M' : v >= 1e3 ? (v/1e3).toFixed(0)+'K' : v }
+          ticks: { callback: v => v >= 1e6 ? (v/1e6).toFixed(2)+'M' : v >= 1e3 ? (v/1e3).toFixed(1)+'K' : v }
         }
       }
     }
