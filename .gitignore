@@ -16,42 +16,18 @@ env/
 .vscode/
 .idea/
 *.swp
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.egg-info/
-dist/
-build/
-*.egg
-
-# Virtual environments
-venv/
-.venv/
-env/
-
-# IDE
-.vscode/
-.idea/
-*.swp
 *.swo
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Generated output files (committed by GitHub Actions, not locally)
-# Uncomment below if you don't want these tracked locally:
-# malicious_ips.txt
-# malicious_ips.csv
-# malicious_domains.txt
-# malicious_hashes.txt
-# malicious_hashes.csv
-# malicious_urls.txt
-# stats.json
-# history.json
-# ip_prefixes.json
-# top_100.json
-# top_100_hashes.json
-# stix2_feed.json
+# One-off debug scripts (removed from repo)
+backup_csv.csv
+bloom.json
+brace_matcher.py
+check_braces.py
+find_canvas.py
+
+# GeoIP database (downloaded at runtime)
 ip2asn-v4.tsv.gz

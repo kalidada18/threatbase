@@ -22,7 +22,7 @@ jobs:
   update-feed:
     name: Fetch, Aggregate & Publish
     runs-on: ubuntu-latest
-    timeout-minutes: 45  # Hard kill-switch — dataset has grown to ~2M+ IOCs, allow enough time
+    timeout-minutes: 10  # Optimized script completes in ~90s; 10min buffer for slow networks
 
     # Required so the built-in GITHUB_TOKEN can push commits back to the repo.
     # No PAT or extra secrets are needed.
