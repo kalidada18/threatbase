@@ -351,52 +351,74 @@
 
     .hero-search-row {
       display: flex; gap: 0;
-      background: rgba(15, 23, 42, 0.4);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 999px; /* Pill shape is very modern */
       overflow: hidden;
-      transition: border-color 0.25s, box-shadow 0.25s;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .hero-search-row:focus-within {
-      border-color: rgba(220, 38, 38, 0.5);
-      box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.1), 0 8px 32px rgba(0, 0, 0, 0.3);
+      border-color: var(--red);
+      box-shadow: 0 0 0 4px var(--red-light), 0 10px 40px rgba(255, 0, 51, 0.15);
+      transform: translateY(-2px);
+    }
+
+    .hero-search-icon {
+      margin-left: 1.5rem;
+      color: var(--slate);
+      align-self: center;
+      width: 20px;
+      height: 20px;
     }
 
     .hero-search-input {
       flex: 1;
       background: transparent;
       border: none;
-      padding: 1rem 1.4rem;
-      font-family: var(--mono);
-      font-size: 1rem;
-      color: #fff;
+      padding: 1.2rem 1rem;
+      font-family: var(--font);
+      font-size: 1.05rem;
+      font-weight: 500;
+      color: var(--ink);
       outline: none;
     }
 
     .hero-search-input::placeholder {
-      color: rgba(255, 255, 255, 0.3);
+      color: var(--slate);
+      font-weight: 400;
     }
 
     .hero-search-btn {
       display: flex;
       align-items: center;
       gap: 7px;
-      padding: 0 1.5rem;
+      padding: 0 2rem;
       background: var(--red);
       color: white;
       border: none;
       font-family: var(--font);
-      font-size: 0.88rem;
+      font-size: 1rem;
       font-weight: 700;
       cursor: pointer;
       transition: background 0.18s;
       white-space: nowrap;
     }
 
-    .hero-search-btn:hover {
+    .hero-search-btn.btn-ghost {
+      background: transparent;
+      color: var(--slate);
+      padding: 0 1.2rem;
+      border-left: 1px solid var(--border);
+    }
+    
+    .hero-search-btn.btn-ghost:hover {
+      color: var(--ink);
+      background: var(--smoke);
+    }
+
+    .hero-search-btn:not(.btn-ghost):hover {
       background: var(--red-hover);
     }
 
