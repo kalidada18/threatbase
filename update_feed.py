@@ -478,11 +478,9 @@ def write_csv(sorted_ips: List[str], ip_map: Dict[str, set], geoip: GeoIPEngine)
     total = len(sorted_ips)
     log.info(f"  Enriching {total} IPs with GeoIP (batch sweep)...")
 
-    # Build sorted (ip_int, original_index) pairs for single-pass sweep
-    ip_int_pairs = []
-    for idx, ip in enumerate(sorted_ips):
-        ip_int_pairs.append((ip_to_int(ip), idx))
-    ip_int_pairs.sort(key=lambda x: x[0])
+    # sorted_ips is already in numerical order, so ip_to_int preserves that order
+    # No need to re-sort — just build the pairs directly
+    ip_int_pairs = [(ip_to_int(ip), idx) for idx, ip in enumerate(sorted_ips)]
 
     # Single-pass GeoIP sweep — O(n+m) instead of O(n*log(m))
     geo_results = geoip.batch_lookup(ip_int_pairs)
@@ -494,27 +492,26 @@ def write_csv(sorted_ips: List[str], ip_map: Dict[str, set], geoip: GeoIPEngine)
         writer.writerow(["ip", "sources", "source_count", "reputation", "categories", "country", "asn", "isp"])
 
         for idx, ip in enumerate(sorted_ips):
-            sources = sorted(ip_map[ip])
-            source_count = len(sources)
+            src_set = ip_map[ip]
+            source_count = len(src_set)
             reputation = min(100, source_count * 20)
-            categories = sorted(set(FEED_CATEGORIES.get(s, "Mixed") for s in sources))
+            sources_str = "|".join(sorted(src_set))
+            categories_str = "|".join(sorted({FEED_CATEGORIES.get(s, "Mixed") for s in src_set}))
             country, asn, isp = geo_results[idx]
 
-            writer.writerow([ip, "|".join(sources), source_count, reputation, "|".join(categories), country, asn, isp])
+            writer.writerow([ip, sources_str, source_count, reputation, categories_str, country, asn, isp])
 
-            heap_key = (reputation, source_count, ip)
-            row_dict = {
-                "ip": ip, "sources": "|".join(sources), "source_count": source_count,
-                "reputation": reputation, "categories": "|".join(categories),
-                "country": country, "asn": asn, "isp": isp
-            }
-            if len(top_100) < 100:
-                heapq.heappush(top_100, (heap_key, row_dict))
-            else:
-                heapq.heappushpop(top_100, (heap_key, row_dict))
-
-            if idx % 200000 == 0 and idx > 0:
-                log.info(f"    CSV progress: {idx}/{total} IPs...")
+            if reputation >= 40 or len(top_100) < 100:
+                row_dict = {
+                    "ip": ip, "sources": sources_str, "source_count": source_count,
+                    "reputation": reputation, "categories": categories_str,
+                    "country": country, "asn": asn, "isp": isp
+                }
+                heap_key = (reputation, source_count, ip)
+                if len(top_100) < 100:
+                    heapq.heappush(top_100, (heap_key, row_dict))
+                else:
+                    heapq.heappushpop(top_100, (heap_key, row_dict))
 
     top_100.sort(key=lambda x: x[0], reverse=True)
     top_100_records = [item[1] for item in top_100]
@@ -670,13 +667,20 @@ def write_urls(url_map: Dict[str, Set[str]]) -> set:
 def build_stats(ip_map, ip_sources, failed, ts, domains, hashes=None, urls=None):
     hashes = hashes or set()
     urls = urls or set()
-    ips_per_source = {src: sum(1 for src_set in ip_map.values() if src in src_set) for src in ip_sources}
-    multi_source = sum(1 for src_set in ip_map.values() if len(src_set) > 1)
 
+    # Single-pass: count per-source IPs, multi-source IPs, and categories at once
+    # Old code did O(sources * IPs) — this is O(IPs)
+    ips_per_source = {src: 0 for src in ip_sources}
+    multi_source = 0
     category_counts = {}
+
     for src_set in ip_map.values():
-        cats = set(FEED_CATEGORIES.get(s, "Mixed") for s in src_set)
-        for cat in cats:
+        if len(src_set) > 1:
+            multi_source += 1
+        for s in src_set:
+            if s in ips_per_source:
+                ips_per_source[s] += 1
+            cat = FEED_CATEGORIES.get(s, "Mixed")
             category_counts[cat] = category_counts.get(cat, 0) + 1
 
     return {
@@ -866,9 +870,9 @@ def main():
             f.write(ip)
             f.write('\n')
 
-    # Plain text domain list
+    # Plain text domain list — skip sorting, order doesn't matter for a blocklist
     with open("malicious_domains.txt", "w", encoding="utf-8", buffering=1 << 16) as f:
-        for d in sorted(domain_set):
+        for d in domain_set:
             f.write(d)
             f.write('\n')
 
