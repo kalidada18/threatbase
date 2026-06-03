@@ -753,23 +753,7 @@
         return String.fromCodePoint(...[...code].map(c => 0x1F1E6 + c.charCodeAt(0) - 65));
       } catch (e) { return '🌐'; }
     }
-
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist < 120) {
-              ctx.beginPath();
-              ctx.moveTo(p.x, p.y);
-              ctx.lineTo(p2.x, p2.y);
-              ctx.strokeStyle = `rgba(56, 189, 248, ${0.8 - (dist / 150)})`;
-              ctx.lineWidth = 1;
-              ctx.stroke();
-            }
-          }
-        }
-        requestAnimationFrame(draw);
-      }
-      draw();
     }
-    initDataPeaks();
 
     boot();
   
