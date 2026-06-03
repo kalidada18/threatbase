@@ -34,10 +34,10 @@ function initTheme() {
   function applyTheme(theme) {
     if (theme === 'light') {
       document.documentElement.setAttribute('data-theme', 'light');
-      themeIcon.setAttribute('data-lucide', 'sun');
+      toggleBtn.innerHTML = '<i data-lucide="sun"></i>';
     } else {
       document.documentElement.removeAttribute('data-theme');
-      themeIcon.setAttribute('data-lucide', 'moon');
+      toggleBtn.innerHTML = '<i data-lucide="moon"></i>';
     }
     if (window.lucide) window.lucide.createIcons();
   }

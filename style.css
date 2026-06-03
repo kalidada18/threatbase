@@ -363,14 +363,14 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .accent-gradient {
-  background: linear-gradient(135deg, #fff, var(--slate));
+  background: linear-gradient(135deg, var(--ink), var(--slate));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .hero-sub {
   font-size: 1.1rem;
-  color: var(--slate);
+  color: var(--iron);
   max-width: 650px;
   margin: 0 auto 3rem;
   line-height: 1.6;
@@ -401,14 +401,14 @@ h1, h2, h3, h4, h5, h6 {
 
 .hero-search-row {
   display: flex;
-  background: rgba(10, 10, 12, 0.7);
+  background: var(--bg-panel);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--glass-light-008);
   border-radius: 100px;
   overflow: hidden;
   padding: 3px;
-  transition: border-color 0.3s ease;
+  transition: border-color 0.3s ease, background 0.3s ease;
 }
 
 .hero-search-wrapper:focus-within .hero-search-row {
@@ -444,8 +444,8 @@ h1, h2, h3, h4, h5, h6 {
   align-items: center;
   gap: 6px;
   padding: 0 1.2rem;
-  background: var(--white);
-  color: var(--black);
+  background: var(--ink);
+  color: var(--bg-deep);
   border: none;
   border-radius: 100px;
   font-family: var(--font);
@@ -457,7 +457,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .hero-search-btn:hover {
   transform: scale(0.97);
-  background: var(--snow);
+  background: var(--iron);
 }
 
 .hero-search-btn i {
@@ -675,7 +675,7 @@ h1, h2, h3, h4, h5, h6 {
 /* ── Premium Report Card ───────────────────────────── */
 .report-card {
   display: none;
-  background: rgba(10, 10, 12, 0.65);
+  background: var(--bg-panel);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border: 1px solid var(--glass-light-008);
@@ -684,6 +684,7 @@ h1, h2, h3, h4, h5, h6 {
   overflow: hidden;
   box-shadow: 0 24px 60px var(--glass-dark-04), inset 0 1px 0 var(--glass-light-01);
   animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transition: background 0.4s ease;
 }
 
 .report-card.show { display: block; }
@@ -855,7 +856,6 @@ h1, h2, h3, h4, h5, h6 {
 
 .vt-icon { width: 18px; height: 18px; }
 .rc-ext-btn i { width: 18px; height: 18px; }
-}
 
 .rc-ext {
   display: flex;
@@ -991,21 +991,20 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .dl-card {
-  position: relative;
-  background: rgba(15, 15, 15, 0.4);
+  background: var(--bg-panel);
   border: 1px solid var(--glass-light-008);
   border-radius: 20px;
   padding: 2rem;
+  position: relative;
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
   transition: all 0.3s ease;
 }
 
 .dl-card:hover {
+  transform: translateY(-5px);
   border-color: var(--glass-light-02);
-  background: rgba(15, 15, 15, 0.8);
-  transform: translateY(-2px);
+  background: var(--bg-panel-hover);
+  box-shadow: 0 10px 30px var(--glass-dark-02);
 }
 
 .dl-glow {
