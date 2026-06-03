@@ -30,12 +30,12 @@
     "total_unique_urls": 28845,
     "active_feeds": 16,
     "category_counts": {
-      "Malware": 8859,
       "Mixed": 732429,
-      "Spam": 181610,
       "C2": 7607,
-      "Brute-Force": 29999,
-      "Compromised": 1056
+      "Compromised": 1056,
+      "Brute-Force": 29998,
+      "Spam": 181610,
+      "Malware": 8859
     },
     "top_sources": {
       "firehol_level1": 547429,
