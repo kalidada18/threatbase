@@ -9,7 +9,6 @@ Optimized for speed: all feeds fetched in parallel, single-pass GeoIP sweep.
 """
 
 import bisect
-import csv
 import gzip
 import heapq
 import ipaddress
@@ -392,140 +391,10 @@ def fetch_threatfox(name: str, url: str) -> dict:
 # ─────────────────────────────────────────────────────────────────────────────
 # Exporters
 # ─────────────────────────────────────────────────────────────────────────────
-def write_csv(sorted_ips: List[str], ip_map: Dict[str, set], geoip: GeoIPEngine) -> None:
-    """
-    Write malicious_ips.csv.
-    Also produces top_100.json.
-    """
-    total = len(sorted_ips)
-    log.info(f"  Writing {total} IPs to CSV...")
-
-    # Write CSV
-    top_100 = []
-    with open("malicious_ips.csv", "w", newline="", encoding="utf-8", buffering=1 << 16) as f:
-        writer = csv.writer(f)
-        writer.writerow(["ip", "sources", "source_count", "reputation", "categories", "country", "asn", "isp"])
-
-        for idx, ip in enumerate(sorted_ips):
-            src_set = ip_map[ip]
-            source_count = len(src_set)
-            reputation = min(100, source_count * 20)
-            sources_str = "|".join(sorted(src_set))
-            categories_str = "|".join(sorted({FEED_CATEGORIES.get(s, "Mixed") for s in src_set}))
-            country, asn, isp = "Unknown", "0", "Unknown"
-
-            writer.writerow([ip, sources_str, source_count, reputation, categories_str, country, asn, isp])
-
-            if reputation >= 40 or len(top_100) < 100:
-                row_dict = {
-                    "ip": ip, "sources": sources_str, "source_count": source_count,
-                    "reputation": reputation, "categories": categories_str,
-                    "country": country, "asn": asn, "isp": isp
-                }
-                heap_key = (reputation, source_count, ip)
-                if len(top_100) < 100:
-                    heapq.heappush(top_100, (heap_key, row_dict))
-                else:
-                    heapq.heappushpop(top_100, (heap_key, row_dict))
-
-    top_100.sort(key=lambda x: x[0], reverse=True)
-    top_100_records = [item[1] for item in top_100]
-
-    with open("top_100.json", "w", encoding="utf-8") as f:
-        json.dump(top_100_records, f, indent=2)
-
-    log.info(f"  Wrote malicious_ips.csv ({total} IPs) and top_100.json")
-
-
-# STIX namespace for deterministic UUIDs
-_STIX_NS = uuid.UUID("a06e3c8f-7b2d-4f5a-9c1e-0d8f6b3a2e7c")
-
-
-def write_stix(sorted_ips: List[str], ip_map: Dict[str, set],
-               domains: set = None, hashes: set = None, urls: set = None):
-    """
-    Export STIX 2.1 bundle.
-    - IPs: only reputation >= 80 (source_count >= 4)
-    - Domains/Hashes/URLs: all included, capped for file size
-    """
-    domains = domains or set()
-    hashes = hashes or set()
-    urls = urls or set()
-
-    high_conf = [ip for ip in sorted_ips if len(ip_map[ip]) >= 4]
-
-    objects = []
-    ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-
-    for ip in high_conf:
-        objects.append({
-            "type": "indicator", "spec_version": "2.1",
-            "id": f"indicator--{uuid.uuid5(_STIX_NS, f'ipv4:{ip}')}",
-            "created": ts, "modified": ts,
-            "name": f"Malicious IP {ip}",
-            "pattern": f"[ipv4-addr:value = '{ip}']",
-            "pattern_type": "stix", "valid_from": ts
-        })
-
-    for domain in sorted(domains)[:5000]:
-        objects.append({
-            "type": "indicator", "spec_version": "2.1",
-            "id": f"indicator--{uuid.uuid5(_STIX_NS, f'domain:{domain}')}",
-            "created": ts, "modified": ts,
-            "name": f"Malicious Domain {domain}",
-            "pattern": f"[domain-name:value = '{domain}']",
-            "pattern_type": "stix", "valid_from": ts
-        })
-
-    for h in sorted(hashes)[:5000]:
-        objects.append({
-            "type": "indicator", "spec_version": "2.1",
-            "id": f"indicator--{uuid.uuid5(_STIX_NS, f'sha256:{h}')}",
-            "created": ts, "modified": ts,
-            "name": f"Malicious File {h[:16]}...",
-            "pattern": f"[file:hashes.'SHA-256' = '{h}']",
-            "pattern_type": "stix", "valid_from": ts
-        })
-
-    for u in sorted(urls)[:2000]:
-        safe_url = u.replace("'", "\\'")
-        objects.append({
-            "type": "indicator", "spec_version": "2.1",
-            "id": f"indicator--{uuid.uuid5(_STIX_NS, f'url:{u}')}",
-            "created": ts, "modified": ts,
-            "name": f"Malicious URL {u[:60]}...",
-            "pattern": f"[url:value = '{safe_url}']",
-            "pattern_type": "stix", "valid_from": ts
-        })
-
-    bundle = {
-        "type": "bundle",
-        "id": f"bundle--{uuid.uuid5(_STIX_NS, f'bundle:{ts[:10]}')}",
-        "objects": objects
-    }
-
-    with open("stix2_feed.json", "w", encoding="utf-8") as f:
-        json.dump(bundle, f)
-    log.info(f"  Wrote stix2_feed.json with {len(objects)} indicators "
-             f"({len(high_conf)} IPs, {min(len(domains),5000)} domains, "
-             f"{min(len(hashes),5000)} hashes, {min(len(urls),2000)} URLs)")
-
-
-def write_ip_prefixes(sorted_ips: List[str]):
-    """Write 3-octet IP prefix map for fast client-side pre-filtering."""
-    prefixes = {}
-    for ip in sorted_ips:
-        parts = ip.split('.')
-        prefix = f"{parts[0]}.{parts[1]}.{parts[2]}"
-        prefixes[prefix] = prefixes.get(prefix, 0) + 1
-
-    with open("ip_prefixes.json", "w", encoding="utf-8") as f:
-        json.dump(prefixes, f)
-    log.info(f"  Wrote ip_prefixes.json with {len(prefixes)} /24 prefixes")
 
 
 def write_hashes(hash_map: Dict[str, Set[str]]) -> set:
-    """Write malicious_hashes.txt, malicious_hashes.csv, top_100_hashes.json."""
+    """Write malicious_hashes.txt."""
     hash_sources = {}  # hash -> set of source names
     for src, hashes in hash_map.items():
         for h in hashes:
@@ -541,26 +410,7 @@ def write_hashes(hash_map: Dict[str, Set[str]]) -> set:
             f.write(h)
             f.write('\n')
 
-    # CSV with source tracking + top 100
-    top_100 = []
-    with open("malicious_hashes.csv", "w", newline="", encoding="utf-8", buffering=1 << 16) as f:
-        writer = csv.writer(f)
-        writer.writerow(["hash", "type", "sources", "source_count"])
-        for h, sources in hash_sources.items():
-            src_sorted = sorted(sources)
-            source_count = len(src_sorted)
-            writer.writerow([h, "SHA-256", "|".join(src_sorted), source_count])
-            entry = {"hash": h, "type": "SHA-256", "sources": "|".join(src_sorted), "source_count": source_count}
-            if len(top_100) < 100:
-                heapq.heappush(top_100, (source_count, h, entry))
-            else:
-                heapq.heappushpop(top_100, (source_count, h, entry))
-
-    top_100.sort(key=lambda x: x[0], reverse=True)
-    with open("top_100_hashes.json", "w", encoding="utf-8") as f:
-        json.dump([item[2] for item in top_100], f, indent=2)
-
-    log.info(f"  Wrote malicious_hashes.txt ({len(all_hashes)} hashes), malicious_hashes.csv, top_100_hashes.json")
+    log.info(f"  Wrote malicious_hashes.txt ({len(all_hashes)} hashes)")
     return all_hashes
 
 
@@ -790,10 +640,6 @@ def main():
         for d in domain_set:
             f.write(d)
             f.write('\n')
-
-    write_csv(sorted_ips, ip_map, geoip)
-    write_stix(sorted_ips, ip_map, domain_set, all_hashes, all_urls)
-    write_ip_prefixes(sorted_ips)
     write_history(stats)
 
     elapsed = time.time() - t_start
