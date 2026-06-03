@@ -108,6 +108,11 @@ if ABUSEIPDB_API_KEY:
     FEEDS["abuseipdb"] = "https://api.abuseipdb.com/api/v2/blacklist?confidenceMinimum=90"
 
 
+REQUEST_TIMEOUT = 30
+MAX_RETRIES = 3
+RETRY_DELAY = 5
+MAX_WORKERS = 8
+
 def get_session():
     session = requests.Session()
     retry = Retry(
@@ -124,10 +129,6 @@ def get_session():
 
 global_session = get_session()
 
-REQUEST_TIMEOUT = 30
-MAX_RETRIES = 3
-RETRY_DELAY = 5
-MAX_WORKERS = 8
 
 _IPV4_PATTERN = re.compile(
     r"^(?:(?:25[0-5]|2[0-4]\d|1\d{2}|[1-9]\d|\d)\.){3}"
