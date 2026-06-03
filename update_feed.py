@@ -136,22 +136,6 @@ _MD5_PATTERN = re.compile(r'^[a-fA-F0-9]{32}$')
 _URL_PATTERN = re.compile(r'^https?://.+')
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# GeoIP Engine — Dummy (Disabled as per user request)
-# ─────────────────────────────────────────────────────────────────────────────
-class GeoIPEngine:
-    def __init__(self):
-        pass
-
-    def load(self, url=""):
-        log.info("GeoIP fetching disabled.")
-
-    def lookup(self, ip_str: str) -> tuple:
-        return "Unknown", "0", "Unknown"
-
-    def batch_lookup(self, ip_int_pairs: List[tuple]) -> List[tuple]:
-        return [("Unknown", "0", "Unknown")] * len(ip_int_pairs)
-
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Helpers
@@ -510,9 +494,6 @@ def main():
     log.info("  HimalayaFeed v3 — Advanced Threat Aggregator")
     log.info("═" * 55)
 
-    # ── GeoIP (can overlap with feed fetches, but needs to finish before CSV write)
-    geoip = GeoIPEngine()
-    geoip.load()
 
     ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 

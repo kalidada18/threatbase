@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HimalayaFeed — Threat Intelligence Platform</title>
+  <title>HimalayaFeed — Advanced Threat Intelligence</title>
   <meta name="description"
-    content="HimalayaFeed is a proprietary Threat Intelligence Platform tracking malicious IPv4 addresses globally. Free, automated, zero infrastructure.">
+    content="HimalayaFeed is a proprietary Threat Intelligence Platform tracking malicious infrastructure globally. Fully automated, high-speed IOC aggregator.">
   <link rel="icon" href="img/himalayafeed.png" type="image/png">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -29,138 +29,77 @@
       <a href="#" class="nav-brand">
         <img src="https://raw.githubusercontent.com/kalidada18/himalayafeed/main/img/himalayafeed.png"
           alt="HimalayaFeed">
-        <span>Himalaya<em>Feed</em></span>
+        <span>Himalaya<em class="brand-accent">Feed</em></span>
       </a>
 
-      <div class="nav-right" style="display: flex; align-items: center; gap: 1rem;">
+      <div class="nav-right">
         <ul class="nav-links" id="nav-links">
           <li><a href="#dashboard" class="active">Dashboard</a></li>
+          <li><a href="#feeds">Threat Feeds</a></li>
           <li><a href="#analytics">Analytics</a></li>
-          <li><a href="#ioc">IOC Database</a></li>
-          <li><a href="#downloads">Downloads</a></li>
           <li><a href="https://github.com/kalidada18/himalayafeed" target="_blank" rel="noopener">GitHub</a></li>
         </ul>
 
-        <button id="theme-toggle" class="theme-toggle" aria-label="Toggle Dark Mode">
-          <i data-lucide="moon" id="theme-icon"></i>
-        </button>
-
-        <button id="mobile-menu-btn" class="theme-toggle" style="display: none;" aria-label="Toggle Mobile Menu">
-          <div class="hamburger-icon" id="hamburger-icon">
-            <span></span><span></span><span></span>
-          </div>
-        </button>
-
         <div class="nav-status">
           <div class="nav-dot"></div>
-          Operational
+          <span id="sync-status">Operational</span>
         </div>
       </div>
     </div>
   </nav>
 
-  <style>
-    @media (max-width: 640px) {
-      #mobile-menu-btn {
-        display: block !important;
-      }
-
-      .nav-links {
-        position: absolute;
-        top: 64px;
-        left: 0;
-        width: 100%;
-        background: var(--white);
-        flex-direction: column;
-        padding: 1rem 0;
-        border-bottom: 1px solid var(--ash);
-        box-shadow: var(--shadow-lg);
-        display: none;
-        z-index: 99;
-      }
-
-      .nav-links li {
-        width: 100%;
-        text-align: center;
-      }
-
-      .nav-links a {
-        display: block;
-        padding: 0.8rem;
-        margin: 0 1rem;
-      }
-
-      .nav-links.show {
-        display: flex;
-      }
-    }
-
-    .top100-table thead th {
-      position: sticky;
-      top: 0;
-      background: var(--white);
-      z-index: 10;
-      box-shadow: 0 1px 0 var(--ash);
-    }
-
-    .dark .top100-table thead th {
-      background: var(--snow);
-    }
-  </style>
-
-  <!-- ═══════════════ HERO + SEARCH ════════ -->
+  <!-- ═══════════════ HERO ══════════════════ -->
   <header class="hero" id="dashboard">
+    <!-- Glowing background elements -->
+    <div class="hero-glow hero-glow-1"></div>
+    <div class="hero-glow hero-glow-2"></div>
+    
     <div class="hero-inner">
-      <h1>Threat Intelligence<br><span class="accent">From the land of himalayas.</span></h1>
+      <div class="hero-badge">Next-Gen Threat Intelligence</div>
+      <h1>Global Threat Defense<br><span class="accent-gradient">From the Himalayas.</span></h1>
+      <p class="hero-sub">HimalayaFeed aggregates, deduplicates, and sanitizes global threat data in real-time, delivering a lightweight, high-performance blocklist ready for immediate deployment.</p>
 
-      <div class="hero-search" id="lookup">
-        <div class="hero-search-row">
-          <i data-lucide="search" class="hero-search-icon"></i>
-          <input type="text" class="hero-search-input" id="ip-input"
-            placeholder="Search IP, Domain, Hash, or URL..." autocomplete="off" spellcheck="false">
-          <input type="file" id="file-scan-input" style="display: none;">
-          <button class="hero-search-btn btn-ghost" onclick="document.getElementById('file-scan-input').click()" id="file-btn" title="Scan File (Calculates hash locally)">
-            <i data-lucide="file-up"></i> File
-          </button>
-          <button class="hero-search-btn" id="scan-btn" onclick="scanIP()">Scan <i data-lucide="arrow-right"></i></button>
+      <!-- Search / Scan Module -->
+      <div class="hero-search-wrapper">
+        <div class="hero-search" id="lookup">
+          <div class="hero-search-row">
+            <i data-lucide="crosshair" class="hero-search-icon"></i>
+            <input type="text" class="hero-search-input" id="ip-input"
+              placeholder="Scan IP, Domain, Hash, or URL..." autocomplete="off" spellcheck="false">
+            <button class="hero-search-btn" id="scan-btn" onclick="scanIndicator()">
+              <span>Scan Threat</span>
+              <i data-lucide="arrow-right"></i>
+            </button>
+          </div>
         </div>
       </div>
 
       <div class="hero-actions">
-        <a href="./malicious_ips.txt" class="btn btn-ghost" target="_blank" rel="noopener" id="btn-dl-txt">
-          <i data-lucide="download"></i> Download Feed
+        <a href="#feeds" class="btn btn-primary">
+          <i data-lucide="database"></i> Access IOC Database
         </a>
-        <a href="./malicious_ips.csv" class="btn btn-ghost" target="_blank" rel="noopener" id="btn-dl-csv">
-          <i data-lucide="file-spreadsheet"></i> CSV Format
-        </a>
-        <a href="https://github.com/kalidada18/himalayafeed" class="btn btn-ghost" target="_blank" rel="noopener">
-          <i data-lucide="github"></i> GitHub
+        <a href="https://github.com/kalidada18/himalayafeed" class="btn btn-glass" target="_blank" rel="noopener">
+          <i data-lucide="github"></i> View on GitHub
         </a>
       </div>
     </div>
   </header>
 
-  <!-- ═══════════════ REPORT SECTION ═══════ -->
+  <!-- ═══════════════ REPORT SCANNER ════════ -->
   <section class="report-section" id="report-section">
     <div class="report-container">
 
-      <!-- Scanning Animation -->
+      <!-- Loading / Scanning State -->
       <div class="scan-overlay" id="scan-overlay">
-        <div class="hacker-catch-container">
-          <div class="hacker-bug">
-            <i data-lucide="bug"></i>
-          </div>
-          <div class="hacker-trap"></div>
+        <div class="radar-container">
+          <div class="radar-ping"></div>
+          <i data-lucide="radar" class="radar-icon"></i>
         </div>
-        <div class="scan-title" id="scan-title-text">Scanning IP Address</div>
+        <div class="scan-title" id="scan-title-text">Analyzing Indicator</div>
         <div class="scan-ip" id="scan-ip"></div>
-        <div class="scan-steps">
-          <div class="scan-step" id="step-feed"><i data-lucide="database"></i> HimalayaFeed Engine</div>
-          <div class="scan-step" id="step-report"><i data-lucide="file-text"></i> Generating Report</div>
-        </div>
       </div>
 
-      <!-- Report Card -->
+      <!-- Result Card -->
       <div class="report-card" id="report-card">
         <div class="rc-header" id="rc-header">
           <div class="rc-h-left">
@@ -174,368 +113,139 @@
         </div>
 
         <div class="rc-body">
-          <!-- Threat Bar -->
-          <div class="threat-bar">
-            <div class="tb-top">
-              <span class="tb-label">Combined Threat Level</span>
-              <span class="tb-level" id="tb-level">—</span>
-            </div>
-            <div class="tb-track">
-              <div class="tb-fill" id="tb-fill" style="width:0%"></div>
-            </div>
-          </div>
-
-          <!-- Panels -->
-          <div class="rc-panels" style="grid-template-columns: 1fr;">
-            <!-- Feed Intel Panel -->
-            <div class="rc-panel rc-panel-feed">
-              <div class="rc-panel-head"><i data-lucide="radio"></i> Threat Reputation Engine</div>
-              <div class="rc-panel-body" id="feed-panel-body"></div>
-            </div>
-          </div>
-
-          <!-- External Links -->
-          <div class="rc-ext" id="rc-ext">
-            <a class="rc-ext-vt" id="ext-vt" href="#" target="_blank" rel="noopener">
-              <i data-lucide="shield"></i> VirusTotal Report
-            </a>
-            <a class="rc-ext-abuse" id="ext-abuse" href="#" target="_blank" rel="noopener">
-              <i data-lucide="alert-octagon"></i> AbuseIPDB Profile
-            </a>
-            <a class="rc-ext-shodan" id="ext-shodan" href="#" target="_blank" rel="noopener">
-              <i data-lucide="search"></i> Shodan Recon
-            </a>
-          </div>
-
-          <!-- Assessment -->
           <div class="rc-assessment" id="rc-assessment"></div>
+
+          <div class="rc-ext" id="rc-ext">
+            <a class="rc-ext-btn" id="ext-vt" href="#" target="_blank" rel="noopener">
+              <i data-lucide="shield"></i> VirusTotal
+            </a>
+            <a class="rc-ext-btn" id="ext-abuse" href="#" target="_blank" rel="noopener">
+              <i data-lucide="alert-octagon"></i> AbuseIPDB
+            </a>
+          </div>
         </div>
       </div>
 
     </div>
   </section>
 
-  <!-- ═══════════════ METRICS STRIP ═════════ -->
-  <div class="metrics">
-    <div class="metric-item"><i data-lucide="clock"></i> Last Updated: <strong id="ms-time">Loading...</strong></div>
-    <div class="metric-item"><i data-lucide="server"></i> Detection Nodes: <strong id="ms-src">-</strong></div>
-    <div class="metric-item"><i data-lucide="target"></i> Malicious IPs: <strong id="ms-ips">-</strong></div>
-    <div class="metric-item"><i data-lucide="hash"></i> Total IOCs: <strong id="ms-ioc">-</strong></div>
-    <div class="metric-item"><i data-lucide="refresh-cw"></i> Real-time DB sync <strong>every 2 hours</strong></div>
-  </div>
-
-  <!-- ═══════════════ MAIN ═════════════════ -->
+  <!-- ═══════════════ MAIN CONTENT ═════════ -->
   <main class="container">
 
-    <!-- Stat Cards -->
-    <section class="section">
+    <!-- Stat Dashboard -->
+    <section class="section" id="stats">
       <div class="stats-grid">
-        <div class="stat-card sc-red">
+        <div class="stat-card">
           <div class="stat-top">
-            <span class="stat-label">Total Malicious IPs</span>
-            <div class="stat-icon"><i data-lucide="shield-alert"></i></div>
+            <span class="stat-label">Malicious IPs</span>
+            <div class="stat-icon icon-red"><i data-lucide="shield-alert"></i></div>
           </div>
           <div class="stat-value" id="n-total">-</div>
-          <div class="stat-sub">Unique IPv4 addresses tracked globally</div>
+          <div class="stat-sub">Active IPv4 addresses globally</div>
         </div>
-        <div class="stat-card sc-amber">
-          <div class="stat-top">
-            <span class="stat-label">High-Confidence Threats</span>
-            <div class="stat-icon"><i data-lucide="layers"></i></div>
-          </div>
-          <div class="stat-value" id="n-multi">-</div>
-          <div class="stat-sub">Confirmed by multiple detection nodes</div>
-        </div>
-        <div class="stat-card sc-green">
-          <div class="stat-top">
-            <span class="stat-label">Active Nodes</span>
-            <div class="stat-icon"><i data-lucide="radio-receiver"></i></div>
-          </div>
-          <div class="stat-value" id="n-feeds">-</div>
-          <div class="stat-sub">Threat detection sensors currently active</div>
-        </div>
-        <div class="stat-card sc-slate">
-          <div class="stat-top">
-            <span class="stat-label">Offline Nodes</span>
-            <div class="stat-icon"><i data-lucide="alert-triangle"></i></div>
-          </div>
-          <div class="stat-value" id="n-failed">-</div>
-          <div class="stat-sub">Sensors unreachable in the latest cycle</div>
-        </div>
-        <div class="stat-card sc-red" style="--sc-color: var(--red)">
+        
+        <div class="stat-card">
           <div class="stat-top">
             <span class="stat-label">Malicious Domains</span>
-            <div class="stat-icon"><i data-lucide="globe"></i></div>
+            <div class="stat-icon icon-purple"><i data-lucide="globe"></i></div>
           </div>
           <div class="stat-value" id="n-domains">-</div>
-          <div class="stat-sub">Unique domains tracked from threat feeds</div>
+          <div class="stat-sub">Known malicious domains</div>
         </div>
-        <div class="stat-card sc-amber">
+        
+        <div class="stat-card">
           <div class="stat-top">
             <span class="stat-label">File Hashes</span>
-            <div class="stat-icon"><i data-lucide="file-lock-2"></i></div>
+            <div class="stat-icon icon-amber"><i data-lucide="file-lock-2"></i></div>
           </div>
           <div class="stat-value" id="n-hashes">-</div>
-          <div class="stat-sub">SHA-256 malware sample hashes</div>
+          <div class="stat-sub">SHA-256 malware signatures</div>
         </div>
-        <div class="stat-card sc-slate">
+        
+        <div class="stat-card">
           <div class="stat-top">
             <span class="stat-label">Malicious URLs</span>
-            <div class="stat-icon"><i data-lucide="link-2"></i></div>
+            <div class="stat-icon icon-blue"><i data-lucide="link-2"></i></div>
           </div>
           <div class="stat-value" id="n-urls">-</div>
-          <div class="stat-sub">Active malicious URLs from threat intelligence</div>
+          <div class="stat-sub">Active phishing & malware URLs</div>
         </div>
       </div>
     </section>
 
-    <hr class="divider">
-
-    <!-- Top 100 Leaderboard -->
-    <section class="section" id="top100">
+    <!-- IOC Feeds -->
+    <section class="section" id="feeds">
       <div class="section-head">
-        <div class="section-label">High-Confidence</div>
-        <h2 class="section-title"><i data-lucide="list"></i> Top 100 Critical Threats</h2>
-        <p class="section-desc">The most globally active malicious IPs, confirmed by multiple detection nodes.</p>
+        <div class="section-label">Automated Delivery</div>
+        <h2 class="section-title"><i data-lucide="server"></i> Threat Feeds</h2>
+        <p class="section-desc">Integrate our plain text indicators directly into your Firewalls, IDS/IPS, and SIEMs.</p>
       </div>
 
-      <div class="chart-card"
-        style="padding:0; overflow-x:auto; max-height:400px; overflow-y:auto; border-radius:10px;">
-        <table class="top100-table">
-          <thead>
-            <tr>
-              <th>IP Address</th>
-              <th>Location / ASN</th>
-              <th>Threat Score</th>
-              <th>Categories</th>
-            </tr>
-          </thead>
-          <tbody id="top100-body">
-            <tr>
-              <td colspan="4" style="text-align:center; padding:3rem;"><span class="spinner"
-                  style="border-color:var(--ash); border-top-color:var(--red);"></span> Loading top threats...</td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="dl-grid">
+        <!-- IPs -->
+        <div class="dl-card">
+          <div class="dl-glow dl-glow-red"></div>
+          <div class="dl-top">
+            <div class="dl-icon icon-red"><i data-lucide="shield-alert"></i></div>
+            <span class="dl-name">IPv4 Blocklist</span>
+          </div>
+          <p class="dl-desc">High-confidence malicious IPs. One IP per line, numerically sorted.</p>
+          <a href="./malicious_ips.txt" class="btn btn-outline" target="_blank" rel="noopener">
+            <i data-lucide="download"></i> malicious_ips.txt
+          </a>
+        </div>
+        
+        <!-- Domains -->
+        <div class="dl-card">
+          <div class="dl-glow dl-glow-purple"></div>
+          <div class="dl-top">
+            <div class="dl-icon icon-purple"><i data-lucide="globe"></i></div>
+            <span class="dl-name">Domain Blocklist</span>
+          </div>
+          <p class="dl-desc">Malicious, phishing, and C2 domains ready for DNS sinkholing.</p>
+          <a href="./malicious_domains.txt" class="btn btn-outline" target="_blank" rel="noopener">
+            <i data-lucide="download"></i> malicious_domains.txt
+          </a>
+        </div>
+        
+        <!-- Hashes -->
+        <div class="dl-card">
+          <div class="dl-glow dl-glow-amber"></div>
+          <div class="dl-top">
+            <div class="dl-icon icon-amber"><i data-lucide="file-lock-2"></i></div>
+            <span class="dl-name">Hash Blocklist</span>
+          </div>
+          <p class="dl-desc">SHA-256 malware file signatures for EDRs and AV scanners.</p>
+          <a href="./malicious_hashes.txt" class="btn btn-outline" target="_blank" rel="noopener">
+            <i data-lucide="download"></i> malicious_hashes.txt
+          </a>
+        </div>
+        
+        <!-- URLs -->
+        <div class="dl-card">
+          <div class="dl-glow dl-glow-blue"></div>
+          <div class="dl-top">
+            <div class="dl-icon icon-blue"><i data-lucide="link-2"></i></div>
+            <span class="dl-name">URL Blocklist</span>
+          </div>
+          <p class="dl-desc">Complete malicious URLs for web proxies and filtering.</p>
+          <a href="./malicious_urls.txt" class="btn btn-outline" target="_blank" rel="noopener">
+            <i data-lucide="download"></i> malicious_urls.txt
+          </a>
+        </div>
       </div>
     </section>
-
-    <hr class="divider">
 
     <!-- Analytics -->
     <section class="section" id="analytics">
       <div class="section-head">
         <div class="section-label">Global Activity</div>
         <h2 class="section-title"><i data-lucide="trending-up"></i> Threat Landscape Trend</h2>
-        <p class="section-desc">Historical tracking of active malicious IP addresses identified by our network.</p>
+        <p class="section-desc">90-day volume trend of tracked malicious IPv4 addresses across our sensor network.</p>
       </div>
 
-      <div class="chart-card">
-        <div class="chart-title"><i data-lucide="activity"></i> 90-Day Volume Trend</div>
+      <div class="chart-card glass-panel">
         <div class="chart-wrap"><canvas id="historyChart"></canvas></div>
-      </div>
-    </section>
-
-    <hr class="divider">
-
-    <!-- World Threat Map -->
-    <section class="section" id="threat-map">
-      <div class="section-head">
-        <div class="section-label">Geolocation Intelligence</div>
-        <h2 class="section-title"><i data-lucide="map"></i> Global Threat Origins</h2>
-        <p class="section-desc">Geographic distribution of threat origins based on GeoIP data from our Top 100 critical threats.</p>
-      </div>
-
-      <div class="map-container" id="world-map-container">
-        <div class="chart-title"><i data-lucide="globe"></i> Threat Origin Heatmap</div>
-        <div id="world-map" style="text-align:center; padding: 2rem; color: var(--slate); font-size: 0.85rem;">
-          <span class="spinner" style="border-color:var(--ash); border-top-color:var(--red);"></span> Loading threat map...
-        </div>
-        <div class="map-legend">
-          <span>Low</span>
-          <div class="map-legend-bar"></div>
-          <span>Critical</span>
-        </div>
-      </div>
-    </section>
-
-    <hr class="divider">
-
-    <!-- IOC Database -->
-    <section class="section" id="ioc">
-      <div class="section-head">
-        <div class="section-label">All Indicators</div>
-        <h2 class="section-title"><i data-lucide="database"></i> IOC Database</h2>
-        <p class="section-desc">Complete inventory of tracked Indicators of Compromise across all categories.</p>
-      </div>
-
-      <div class="ioc-tabs">
-        <button class="ioc-tab active" data-tab="ioc-ips" onclick="switchIOCTab(this)">IPv4 Addresses</button>
-        <button class="ioc-tab" data-tab="ioc-domains" onclick="switchIOCTab(this)">Domains</button>
-        <button class="ioc-tab" data-tab="ioc-hashes" onclick="switchIOCTab(this)">File Hashes</button>
-        <button class="ioc-tab" data-tab="ioc-urls" onclick="switchIOCTab(this)">Malicious URLs</button>
-      </div>
-
-      <!-- IPs Tab -->
-      <div class="ioc-content active" id="ioc-ips">
-        <div class="dl-grid">
-          <div class="dl-card">
-            <div class="dl-top">
-              <div class="dl-icon dl-icon-red"><i data-lucide="shield-alert"></i></div>
-              <span class="dl-name">Malicious IPv4 Addresses</span>
-            </div>
-            <p class="dl-desc">Complete list of <strong id="ioc-ip-count">-</strong> unique malicious IPv4 addresses. One IP per line, sorted numerically.</p>
-            <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-              <a href="./malicious_ips.txt" class="btn btn-outline" target="_blank" rel="noopener"><i data-lucide="file-text"></i> Plain Text</a>
-              <a href="./malicious_ips.csv" class="btn btn-outline" target="_blank" rel="noopener"><i data-lucide="file-spreadsheet"></i> CSV + GeoIP</a>
-              <a href="./stix2_feed.json" class="btn btn-outline" target="_blank" rel="noopener"><i data-lucide="shield"></i> STIX 2.1</a>
-            </div>
-          </div>
-          <div class="dl-card">
-            <div class="dl-top">
-              <div class="dl-icon dl-icon-amb"><i data-lucide="trophy"></i></div>
-              <span class="dl-name">Top 100 Critical IPs</span>
-            </div>
-            <p class="dl-desc">The most globally active malicious IPs ranked by multi-source confirmation and reputation score.</p>
-            <a href="./top_100.json" class="btn btn-outline" target="_blank" rel="noopener"><i data-lucide="file-json"></i> JSON Feed</a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Domains Tab -->
-      <div class="ioc-content" id="ioc-domains">
-        <div class="dl-grid">
-          <div class="dl-card">
-            <div class="dl-top">
-              <div class="dl-icon dl-icon-red"><i data-lucide="globe"></i></div>
-              <span class="dl-name">Malicious Domains</span>
-            </div>
-            <p class="dl-desc"><strong id="ioc-domain-count">-</strong> unique malicious domains aggregated from phishing, malware, and C2 feeds.</p>
-            <a href="./malicious_domains.txt" class="btn btn-outline" target="_blank" rel="noopener"><i data-lucide="file-text"></i> Plain Text</a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Hashes Tab -->
-      <div class="ioc-content" id="ioc-hashes">
-        <div class="dl-grid" style="margin-bottom: 1.5rem;">
-          <div class="dl-card">
-            <div class="dl-top">
-              <div class="dl-icon dl-icon-amb"><i data-lucide="file-lock-2"></i></div>
-              <span class="dl-name">Malware File Hashes</span>
-            </div>
-            <p class="dl-desc"><strong id="ioc-hash-count">-</strong> unique SHA-256 hashes from MalwareBazaar and ThreatFox.</p>
-            <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-              <a href="./malicious_hashes.txt" class="btn btn-red" target="_blank" rel="noopener"><i data-lucide="file-text"></i> Full Hashes (TXT)</a>
-              <a href="./malicious_hashes.csv" class="btn btn-outline" target="_blank" rel="noopener"><i data-lucide="file-spreadsheet"></i> CSV</a>
-              <a href="./top_100_hashes.json" class="btn btn-outline" target="_blank" rel="noopener"><i data-lucide="file-json"></i> Top 100 JSON</a>
-            </div>
-          </div>
-        </div>
-
-        <!-- Hash Search -->
-        <div style="margin-bottom: 1rem; display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
-          <div style="flex: 1; min-width: 250px; position: relative;">
-            <input type="text" id="hash-search-input" placeholder="Search hashes..." 
-              style="width:100%; padding: 0.7rem 1rem 0.7rem 2.5rem; border: 1px solid var(--ash); border-radius: 8px; font-family: var(--mono); font-size: 0.8rem; background: var(--white); color: var(--ink); outline: none; transition: border-color 0.2s;"
-              oninput="filterHashes()">
-            <i data-lucide="search" style="position:absolute; left:0.8rem; top:50%; transform:translateY(-50%); width:16px; height:16px; color:var(--slate); pointer-events:none;"></i>
-          </div>
-          <span id="hash-display-count" style="font-size: 0.76rem; color: var(--slate); font-weight: 600; white-space: nowrap;"></span>
-        </div>
-
-        <!-- Hash Table -->
-        <div class="chart-card" style="padding:0; overflow: hidden; border-radius: 10px;">
-          <div style="max-height: 500px; overflow-y: auto;">
-            <table class="top100-table" id="hash-table">
-              <thead>
-                <tr>
-                  <th style="width: 40px;">#</th>
-                  <th>SHA-256 Hash</th>
-                  <th style="width: 60px;">Action</th>
-                </tr>
-              </thead>
-              <tbody id="hash-table-body">
-                <tr>
-                  <td colspan="3" style="text-align:center; padding:3rem;">
-                    <span class="spinner" style="border-color:var(--ash); border-top-color:var(--red);"></span> Loading hashes...
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Load More -->
-        <div id="hash-load-more" style="text-align: center; margin-top: 1rem; display: none;">
-          <button class="btn btn-outline" onclick="loadMoreHashes()" id="hash-load-more-btn">
-            <i data-lucide="chevrons-down"></i> Load More Hashes
-          </button>
-        </div>
-      </div>
-
-      <!-- URLs Tab -->
-      <div class="ioc-content" id="ioc-urls">
-        <div class="dl-grid">
-          <div class="dl-card">
-            <div class="dl-top">
-              <div class="dl-icon dl-icon-red"><i data-lucide="link-2"></i></div>
-              <span class="dl-name">Malicious URLs</span>
-            </div>
-            <p class="dl-desc"><strong id="ioc-url-count">-</strong> unique malicious URLs from URLhaus, OpenPhish, and ThreatFox.</p>
-            <a href="./malicious_urls.txt" class="btn btn-outline" target="_blank" rel="noopener"><i data-lucide="file-text"></i> Plain Text</a>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <hr class="divider">
-
-    <!-- Downloads -->
-    <section class="section" id="downloads">
-      <div class="section-head">
-        <div class="section-label">Automated Ingestion</div>
-        <h2 class="section-title"><i data-lucide="download-cloud"></i> Database Access</h2>
-        <p class="section-desc">Pull our threat intelligence directly into your firewall, IDS/IPS, or custom defense pipeline.</p>
-      </div>
-
-      <div class="dl-grid">
-        <div class="dl-card">
-          <div class="dl-top">
-            <div class="dl-icon dl-icon-red"><i data-lucide="file-text"></i></div>
-            <span class="dl-name">Plain Text Feed</span>
-          </div>
-          <p class="dl-desc">One IPv4 per line. Ideal for iptables, ipset, and firewall blocklists.</p>
-          <div class="dl-url">https://raw.githubusercontent.com/kalidada18/himalayafeed/main/malicious_ips.txt</div>
-          <a href="https://raw.githubusercontent.com/kalidada18/himalayafeed/main/malicious_ips.txt"
-            class="btn btn-outline" target="_blank" rel="noopener" style="justify-content:center">
-            <i data-lucide="external-link"></i> Open Feed
-          </a>
-        </div>
-        <div class="dl-card">
-          <div class="dl-top">
-            <div class="dl-icon dl-icon-grn"><i data-lucide="file-spreadsheet"></i></div>
-            <span class="dl-name">CSV Format</span>
-          </div>
-          <p class="dl-desc">Includes IP addresses and internal confidence scoring metrics.</p>
-          <div class="dl-url">https://raw.githubusercontent.com/kalidada18/himalayafeed/main/malicious_ips.csv</div>
-          <a href="https://raw.githubusercontent.com/kalidada18/himalayafeed/main/malicious_ips.csv"
-            class="btn btn-outline" target="_blank" rel="noopener" style="justify-content:center">
-            <i data-lucide="external-link"></i> Open Feed
-          </a>
-        </div>
-        <div class="dl-card">
-          <div class="dl-top">
-            <div class="dl-icon dl-icon-amb"><i data-lucide="file-json"></i></div>
-            <span class="dl-name">Statistics JSON</span>
-          </div>
-          <p class="dl-desc">Aggregate metadata, network status, and timestamps for APIs.</p>
-          <div class="dl-url">https://raw.githubusercontent.com/kalidada18/himalayafeed/main/stats.json</div>
-          <a href="https://raw.githubusercontent.com/kalidada18/himalayafeed/main/stats.json" class="btn btn-outline"
-            target="_blank" rel="noopener" style="justify-content:center">
-            <i data-lucide="external-link"></i> Open Feed
-          </a>
-        </div>
       </div>
     </section>
 
@@ -544,40 +254,20 @@
   <!-- ═══════════════ FOOTER ═══════════════ -->
   <footer>
     <div class="footer-inner">
-      <div>
-        <div class="footer-brand">
-          <img src="./img/himalayafeed.png" alt="HimalayaFeed">
-          <span>Himalaya<em>Feed</em></span>
-        </div>
-        <p class="footer-desc">HimalayaFeed is a leading Threat Intelligence Platform detecting and tracking malicious
-          IPs globally. Fully automated. Zero infrastructure. Zero cost.</p>
+      <div class="footer-brand">
+        <img src="./img/himalayafeed.png" alt="HimalayaFeed">
+        <span>Himalaya<em class="brand-accent">Feed</em></span>
       </div>
-      <div class="footer-col">
-        <h4>Database</h4>
-        <ul>
-          <li><a href="./malicious_ips.txt">Malicious IPs (.txt)</a></li>
-          <li><a href="./malicious_ips.csv">Malicious IPs (.csv)</a></li>
-          <li><a href="./malicious_domains.txt">Malicious Domains (.txt)</a></li>
-          <li><a href="./stats.json">Stats JSON</a></li>
-          <li><a href="https://github.com/kalidada18/himalayafeed/releases">Daily Archives</a></li>
-        </ul>
+      <p class="footer-desc">Advanced Threat Intelligence Platform. Fully automated. Zero infrastructure. Zero cost.</p>
+      
+      <div class="footer-links">
+        <a href="https://github.com/kalidada18/himalayafeed"><i data-lucide="github"></i> GitHub</a>
+        <a href="./stats.json"><i data-lucide="file-json"></i> stats.json</a>
+        <span>&copy; 2025 HimalayaFeed</span>
       </div>
-      <div class="footer-col">
-        <h4>Project</h4>
-        <ul>
-          <li><a href="https://github.com/kalidada18/himalayafeed">GitHub Repository</a></li>
-          <li><a href="https://github.com/kalidada18/himalayafeed/actions">System Status</a></li>
-          <li><a href="https://github.com/kalidada18/himalayafeed/blob/main/LICENSE">MIT License</a></li>
-          <li><a href="https://github.com/kalidada18/himalayafeed/issues">Report Issue</a></li>
-        </ul>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <span>&copy; 2025 HimalayaFeed. All rights reserved.</span>
     </div>
   </footer>
 
   <script src="script.js"></script>
 </body>
-
 </html>
