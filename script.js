@@ -749,6 +749,7 @@
         const code = countryCode.toUpperCase();
         return String.fromCodePoint(...[...code].map(c => 0x1F1E6 + c.charCodeAt(0) - 65));
       } catch (e) { return '🌐'; }
+    }
 
     document.addEventListener('DOMContentLoaded', boot);
 
