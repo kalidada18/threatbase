@@ -284,6 +284,7 @@ def process_malwarebazaar_zips() -> Set[str]:
     if not zip_files:
         return extracted_hashes
     
+    hash_pattern = re.compile(r"\b(?:[a-fA-F0-9]{32}|[a-fA-F0-9]{40}|[a-fA-F0-9]{64})\b")
     for zip_path in zip_files:
         log.info(f"Found MalwareBazaar ZIP: {zip_path}, extracting...")
         try:
@@ -291,11 +292,9 @@ def process_malwarebazaar_zips() -> Set[str]:
                 for filename in zf.namelist():
                     with zf.open(filename) as f:
                         content = f.read().decode('utf-8', errors='ignore')
-                        # Aggressive SHA-256 scan
-                        for word in content.split():
-                            word = word.strip().lower()
-                            if _SHA256_PATTERN.match(word):
-                                extracted_hashes.add(word)
+                        matches = hash_pattern.findall(content)
+                        for m in matches:
+                            extracted_hashes.add(m.lower())
             log.info(f"  ✓ Extracted {len(extracted_hashes)} hashes from {zip_path}")
             os.remove(zip_path)
             log.info(f"  ✓ Deleted {zip_path}")
