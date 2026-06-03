@@ -256,6 +256,14 @@
     /* ── Hero + Search ─────────────────────────────────── */
     .hero { padding: 9rem 2rem 7rem; text-align: center; position: relative; overflow: hidden; background: transparent; }
 
+    #hero-canvas {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      width: 100%; height: 100%;
+      z-index: 0;
+      pointer-events: auto;
+    }
+
     .hero-inner { position: relative; max-width: 720px; margin: 0 auto; z-index: 2; }
 
     /* Hero Animations */
