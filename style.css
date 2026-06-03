@@ -901,6 +901,7 @@
       display: flex;
       align-items: center;
       gap: 16px;
+      min-width: 0;
     }
 
     .rc-h-icon {
@@ -912,6 +913,7 @@
       align-items: center;
       justify-content: center;
       backdrop-filter: blur(8px);
+      flex-shrink: 0;
     }
 
     .rc-h-icon i {
@@ -923,6 +925,7 @@
       font-family: var(--mono);
       font-size: 1.4rem;
       font-weight: 700;
+      word-break: break-all;
     }
 
     .rc-h-sub {

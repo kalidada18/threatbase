@@ -1,9 +1,9 @@
 name: HimalayaFeed — Update Threat Intelligence Feed
 
 on:
-  # ── Automatic: every hour at minute 0 ─────────────────────────────────────
+  # ── Automatic: every 2 hours at minute 0 ──────────────────────────────────
   schedule:
-    - cron: '0 * * * *'
+    - cron: '0 */2 * * *'
 
   # ── Re-enable schedule whenever code is pushed to main ────────────────────
   push:
