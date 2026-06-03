@@ -280,7 +280,7 @@ def fetch_feed(name: str, url: str) -> Set[str]:
                 if "/" in token:
                     try:
                         network = ipaddress.ip_network(token, strict=False)
-                        if network.prefixlen >= 24:
+                        if network.version == 4 and network.prefixlen >= 24:
                             for ip in network.hosts():
                                 ip_str = str(ip)
                                 if is_public_ipv4(ip_str): ips.add(ip_str)
