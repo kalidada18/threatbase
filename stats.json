@@ -10,11 +10,10 @@
   "multi_source_ips": 215800,
   "failed_feeds": [
     "cins_army",
-    "alienvault_reputation"
+    "alienvault_reputation",
+    "abuseipdb"
   ],
   "ips_per_source": {
-    "feodo_tracker": 5,
-    "feodo_tracker_aggressive": 7607,
     "bbcan177_ms1": 8842,
     "firehol_level2": 29814,
     "firehol_level3": 32503,
