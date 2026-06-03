@@ -66,7 +66,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           # Stage all generated output files (including dashboard data)
-          git add malicious_ips.txt malicious_ips.csv stats.json history.json malicious_domains.txt ip_prefixes.json top_100.json malicious_hashes.txt malicious_hashes.csv malicious_urls.txt top_100_hashes.json stix2_feed.json
+          git add malicious_ips.txt stats.json history.json malicious_domains.txt malicious_hashes.txt malicious_urls.txt
 
           # Check whether any staged file actually changed
           if git diff --staged --quiet; then
@@ -91,14 +91,14 @@ jobs:
           DATE_DASH=$(date -u +'%Y-%m-%d')
           DATE_DOT=$(date -u +'%Y.%m.%d')
           echo "ARCHIVE_DATE=${DATE_DASH}" >> $GITHUB_ENV
-          zip himalayafeed-archive-${DATE_DOT}.zip malicious_ips.txt malicious_ips.csv malicious_domains.txt malicious_hashes.txt malicious_hashes.csv malicious_urls.txt
+          zip himalayafeed-archive-${DATE_DOT}.zip malicious_ips.txt malicious_domains.txt malicious_hashes.txt malicious_urls.txt
 
       - name: Create Daily Archive Release
         uses: ncipollo/release-action@v1
         with:
           tag: archive-${{ env.ARCHIVE_DATE }}
           name: Daily Feed Archive - ${{ env.ARCHIVE_DATE }}
-          artifacts: "malicious_ips.txt,malicious_ips.csv,malicious_domains.txt,malicious_hashes.txt,malicious_hashes.csv,malicious_urls.txt,stats.json,stix2_feed.json,top_100_hashes.json,himalayafeed-archive-*.zip"
+          artifacts: "malicious_ips.txt,malicious_domains.txt,malicious_hashes.txt,malicious_urls.txt,stats.json,himalayafeed-archive-*.zip"
           allowUpdates: true
           replacesArtifacts: true
           body: "Automated daily archive of the HimalayaFeed threat intelligence database."
