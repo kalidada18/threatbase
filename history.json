@@ -25,13 +25,13 @@
   {
     "date": "2026-06-03",
     "total_unique_ips": 746046,
-    "total_unique_domains": 828382,
+    "total_unique_domains": 828383,
     "total_unique_hashes": 1092705,
     "total_unique_urls": 46112,
     "active_feeds": 16,
     "category_counts": {
-      "Brute-Force": 30329,
       "Mixed": 708721,
+      "Brute-Force": 30329,
       "Malicious": 15328,
       "Malware": 8871,
       "C2": 7607,
