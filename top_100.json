@@ -110,6 +110,16 @@
     "isp": "BRM-AS"
   },
   {
+    "ip": "176.65.139.203",
+    "sources": "abuseipdb|blocklist_de|bruteforceblocker|criticalpath_security|emerging_threats|firehol_level2|firehol_level3|ipsum|spamhaus_drop",
+    "source_count": 9,
+    "reputation": 100,
+    "categories": "Brute-Force|Compromised|Malicious|Mixed|Spam",
+    "country": "US",
+    "asn": "214472",
+    "isp": "OFFSHORE"
+  },
+  {
     "ip": "152.32.226.205",
     "sources": "abuseipdb|blocklist_de|bruteforceblocker|criticalpath_security|emerging_threats|firehol_level2|firehol_level3|greensnow|ipsum",
     "source_count": 9,
@@ -365,6 +375,16 @@
     "source_count": 8,
     "reputation": 100,
     "categories": "Brute-Force|Malicious|Mixed|Spam",
+    "country": "DE",
+    "asn": "51396",
+    "isp": "PFCLOUD"
+  },
+  {
+    "ip": "45.153.34.205",
+    "sources": "blocklist_de|bruteforceblocker|criticalpath_security|emerging_threats|firehol_level1|firehol_level3|ipsum|spamhaus_drop",
+    "source_count": 8,
+    "reputation": 100,
+    "categories": "Brute-Force|Compromised|Mixed|Spam",
     "country": "DE",
     "asn": "51396",
     "isp": "PFCLOUD"
@@ -630,16 +650,6 @@
     "isp": "OFFSHORE"
   },
   {
-    "ip": "176.65.139.203",
-    "sources": "abuseipdb|bruteforceblocker|criticalpath_security|emerging_threats|firehol_level2|firehol_level3|ipsum|spamhaus_drop",
-    "source_count": 8,
-    "reputation": 100,
-    "categories": "Brute-Force|Compromised|Malicious|Mixed|Spam",
-    "country": "US",
-    "asn": "214472",
-    "isp": "OFFSHORE"
-  },
-  {
     "ip": "176.65.132.17",
     "sources": "ThreatFox|abuseipdb|binary_defense|blocklist_de|firehol_level1|firehol_level2|ipsum|spamhaus_drop",
     "source_count": 8,
@@ -870,6 +880,16 @@
     "isp": "SHIKHAR-AS-IN Shikhar Broadband Enterprises Pvt Ltd"
   },
   {
+    "ip": "95.182.82.132",
+    "sources": "abuseipdb|blocklist_de|bruteforceblocker|criticalpath_security|emerging_threats|firehol_level3|ipsum",
+    "source_count": 7,
+    "reputation": 100,
+    "categories": "Brute-Force|Compromised|Malicious|Mixed",
+    "country": "AE",
+    "asn": "211273",
+    "isp": "-Reserved AS-"
+  },
+  {
     "ip": "94.26.106.209",
     "sources": "abuseipdb|blocklist_de|firehol_level1|firehol_level2|greensnow|ipsum|spamhaus_drop",
     "source_count": 7,
@@ -978,25 +998,5 @@
     "country": "LT",
     "asn": "209605",
     "isp": "HOSTBALTIC"
-  },
-  {
-    "ip": "89.190.156.8",
-    "sources": "abuseipdb|blocklist_de|firehol_level1|firehol_level2|greensnow|ipsum|spamhaus_drop",
-    "source_count": 7,
-    "reputation": 100,
-    "categories": "Brute-Force|Malicious|Mixed|Spam",
-    "country": "NL",
-    "asn": "49870",
-    "isp": "AS49870-BV"
-  },
-  {
-    "ip": "89.190.156.4",
-    "sources": "abuseipdb|blocklist_de|firehol_level1|firehol_level2|greensnow|ipsum|spamhaus_drop",
-    "source_count": 7,
-    "reputation": 100,
-    "categories": "Brute-Force|Malicious|Mixed|Spam",
-    "country": "NL",
-    "asn": "49870",
-    "isp": "AS49870-BV"
   }
 ]
