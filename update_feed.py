@@ -135,6 +135,7 @@ _DOMAIN_PATTERN = re.compile(
 )
 _SHA256_PATTERN = re.compile(r'^[a-fA-F0-9]{64}$')
 _MD5_PATTERN = re.compile(r'^[a-fA-F0-9]{32}$')
+_HASH_PATTERN = re.compile(r'^(?:[a-fA-F0-9]{32}|[a-fA-F0-9]{40}|[a-fA-F0-9]{64})$')
 _URL_PATTERN = re.compile(r'^https?://.+')
 
 
@@ -192,7 +193,7 @@ def load_custom_iocs(filename="custom_iocs.txt") -> dict:
                     continue
                 if is_public_ipv4(line):
                     result["ips"].add(line)
-                elif _SHA256_PATTERN.match(line.lower()):
+                elif _HASH_PATTERN.match(line.lower()):
                     result["hashes"].add(line.lower())
                 elif _URL_PATTERN.match(line):
                     result["urls"].add(line)
