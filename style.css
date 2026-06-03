@@ -283,13 +283,27 @@
       animation: heroFadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
+    @keyframes typing {
+      from { width: 0; }
+      to { width: 100%; }
+    }
+    @keyframes blinkCaret {
+      from, to { border-right-color: transparent; }
+      50% { border-right-color: var(--red); }
+    }
+
     .hero h1 .accent { 
-      color: var(--red); 
       background: linear-gradient(135deg, #ff0033, #ff4d4d);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       text-shadow: none;
       display: inline-block;
+      overflow: hidden;
+      white-space: nowrap;
+      border-right: 0.1em solid var(--red);
+      vertical-align: bottom;
+      animation: typing 2.5s steps(40, end) 1s forwards, blinkCaret 0.8s step-end infinite;
+      width: 0; /* Starts hidden until animation */
     }
 
     .hero-sub {
