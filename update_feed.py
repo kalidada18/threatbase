@@ -849,6 +849,37 @@ def main():
     if custom_iocs["urls"]:
         url_sources["custom_iocs.txt"] = custom_iocs["urls"]
 
+    # ── Load historical hashes & URLs (feeds only give recent samples) ───────
+    # IP/domain feeds provide full current datasets (700K+), no history needed.
+    # But hash feeds give only ~450 recent samples per run — accumulation is key.
+    if os.path.exists("malicious_hashes.txt"):
+        try:
+            historical_hashes = set()
+            with open("malicious_hashes.txt", "r", encoding="utf-8") as f:
+                for line in f:
+                    h = line.strip()
+                    if h and _SHA256_PATTERN.match(h):
+                        historical_hashes.add(h)
+            if historical_hashes:
+                hash_sources["historical"] = historical_hashes
+                log.info(f"  Loaded {len(historical_hashes)} historical hashes")
+        except Exception as e:
+            log.error(f"Failed to load malicious_hashes.txt: {e}")
+
+    if os.path.exists("malicious_urls.txt"):
+        try:
+            historical_urls = set()
+            with open("malicious_urls.txt", "r", encoding="utf-8") as f:
+                for line in f:
+                    u = line.strip()
+                    if u and _URL_PATTERN.match(u):
+                        historical_urls.add(u)
+            if historical_urls:
+                url_sources["historical"] = historical_urls
+                log.info(f"  Loaded {len(historical_urls)} historical URLs")
+        except Exception as e:
+            log.error(f"Failed to load malicious_urls.txt: {e}")
+
     # Sort IPs once
     sorted_ips = sorted(ip_map.keys(), key=numerical_ip_key)
     log.info(f"Merged in {time.time()-t0:.1f}s — {len(ip_map)} IPs, {len(domain_set)} domains")
