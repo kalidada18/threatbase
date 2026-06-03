@@ -117,15 +117,14 @@
 
       <div class="hero-search" id="lookup">
         <div class="hero-search-row">
+          <i data-lucide="search" class="hero-search-icon"></i>
           <input type="text" class="hero-search-input" id="ip-input"
             placeholder="Search IP, Domain, Hash, or URL..." autocomplete="off" spellcheck="false">
           <input type="file" id="file-scan-input" style="display: none;">
-          <button class="hero-search-btn" style="background: rgba(255,255,255,0.1); border-right: 1px solid rgba(255,255,255,0.1);" onclick="document.getElementById('file-scan-input').click()" id="file-btn" title="Scan File (Calculates hash locally)">
+          <button class="hero-search-btn btn-ghost" onclick="document.getElementById('file-scan-input').click()" id="file-btn" title="Scan File (Calculates hash locally)">
             <i data-lucide="file-up"></i> File
           </button>
-          <button class="hero-search-btn" onclick="scanIP()" id="scan-btn">
-            <i data-lucide="scan"></i> Scan
-          </button>
+          <button class="hero-search-btn" id="scan-btn" onclick="scanIP()">Scan <i data-lucide="arrow-right"></i></button>
         </div>
       </div>
 

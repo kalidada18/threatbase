@@ -773,3 +773,36 @@
 
     boot();
   
+
+// -- Theme Toggle Logic --
+document.addEventListener('DOMContentLoaded', () => {
+  const toggleBtn = document.getElementById('theme-toggle');
+  const themeIcon = document.getElementById('theme-icon');
+  
+  // Check local storage for preference
+  const currentTheme = localStorage.getItem('theme');
+  if (currentTheme === 'light') {
+    document.body.classList.add('light-mode');
+    themeIcon.setAttribute('data-lucide', 'sun');
+  } else {
+    themeIcon.setAttribute('data-lucide', 'moon');
+  }
+  
+  if (window.lucide) {
+    lucide.createIcons();
+  }
+
+  toggleBtn.addEventListener('click', () => {
+    document.body.classList.toggle('light-mode');
+    let theme = 'dark';
+    if (document.body.classList.contains('light-mode')) {
+      theme = 'light';
+      themeIcon.setAttribute('data-lucide', 'sun');
+    } else {
+      themeIcon.setAttribute('data-lucide', 'moon');
+    }
+    localStorage.setItem('theme', theme);
+    if (window.lucide) lucide.createIcons();
+  });
+});
+
