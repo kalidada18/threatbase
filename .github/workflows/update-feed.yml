@@ -47,10 +47,10 @@ jobs:
       - name: Install Python dependencies
         run: pip install --quiet --no-cache-dir -r requirements.txt
 
-      # ── 4. Process MalwareBazaar ZIPs ────────────────────────────────────────
-      - name: Extract MalwareBazaar Hashes
+      # ── 4. Process Uploaded ZIPs (MalwareBazaar) ─────────────────────────────
+      - name: Extract Hashes from ZIPs
         run: |
-          for zip in *malwarebazaar*.zip; do
+          for zip in *.zip; do
             if [ -f "$zip" ]; then
               echo "Extracting hashes from $zip..."
               echo "" >> custom_iocs.txt
