@@ -40,6 +40,16 @@
     "isp": "OFFSHORE"
   },
   {
+    "ip": "107.189.24.77",
+    "sources": "abuseipdb|binary_defense|blocklist_de|bruteforceblocker|criticalpath_security|emerging_threats|firehol_level2|firehol_level3|greensnow|ipsum",
+    "source_count": 10,
+    "reputation": 100,
+    "categories": "Brute-Force|Compromised|Malicious|Mixed",
+    "country": "US",
+    "asn": "14956",
+    "isp": "ROUTERHOSTING"
+  },
+  {
     "ip": "79.72.3.119",
     "sources": "abuseipdb|binary_defense|blocklist_de|bruteforceblocker|criticalpath_security|emerging_threats|firehol_level2|firehol_level3|ipsum",
     "source_count": 9,
@@ -108,16 +118,6 @@
     "country": "HK",
     "asn": "135377",
     "isp": "UCLOUD-HK-AS-AP UCLOUD INFORMATION TECHNOLOGY HK LIMITED"
-  },
-  {
-    "ip": "107.189.24.77",
-    "sources": "abuseipdb|binary_defense|blocklist_de|bruteforceblocker|criticalpath_security|emerging_threats|firehol_level2|firehol_level3|ipsum",
-    "source_count": 9,
-    "reputation": 100,
-    "categories": "Brute-Force|Compromised|Malicious|Mixed",
-    "country": "US",
-    "asn": "14956",
-    "isp": "ROUTERHOSTING"
   },
   {
     "ip": "103.210.22.17",
