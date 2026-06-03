@@ -444,9 +444,9 @@ def write_hashes(hash_map: Dict[str, Set[str]]) -> set:
                 hash_sources[h] = set()
             hash_sources[h].add(src)
 
-    all_hashes = set(hash_sources.keys())
+    all_hashes = sorted(hash_sources.keys())
 
-    # Write TXT — no need to sort for a flat list
+    # Write TXT
     with open("malicious_hashes.txt", "w", encoding="utf-8", buffering=1 << 16) as f:
         for h in all_hashes:
             f.write(h)
@@ -458,9 +458,7 @@ def write_hashes(hash_map: Dict[str, Set[str]]) -> set:
 
 def write_urls(url_map: Dict[str, Set[str]]) -> set:
     """Write malicious_urls.txt."""
-    all_urls = set()
-    for urls in url_map.values():
-        all_urls.update(urls)
+    all_urls = sorted(set(u for urls in url_map.values() for u in urls))
 
     with open("malicious_urls.txt", "w", encoding="utf-8", buffering=1 << 16) as f:
         for u in all_urls:
@@ -679,9 +677,10 @@ def main():
             f.write(ip)
             f.write('\n')
 
-    # Plain text domain list — skip sorting, order doesn't matter for a blocklist
+    # Plain text domain list
+    sorted_domains = sorted(domain_set)
     with open("malicious_domains.txt", "w", encoding="utf-8", buffering=1 << 16) as f:
-        for d in domain_set:
+        for d in sorted_domains:
             f.write(d)
             f.write('\n')
     write_history(stats)

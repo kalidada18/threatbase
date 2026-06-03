@@ -116,25 +116,22 @@ async function renderHistoryChart() {
   }
 }
 
-/* ── Binary Search on TXT Files ── */
+/* ── High-Performance In-Memory Binary Search ── */
 
-async function getFileSize(url) {
-  try {
-    const r = await fetch(url, { method: 'HEAD' });
-    if (!r.ok) return 0;
-    return parseInt(r.headers.get('content-length') || '0', 10);
-  } catch (e) {
-    return 0;
-  }
-}
+const feedCache = {};
 
-async function fetchChunk(url, start, end) {
+async function fetchAndCacheFeed(url) {
+  if (feedCache[url]) return feedCache[url];
   try {
-    const r = await fetch(url, { headers: { 'Range': `bytes=${start}-${end}` } });
-    if (!r.ok) return null;
-    return await r.text();
+    const r = await fetch(url);
+    if (!r.ok) return [];
+    const text = await r.text();
+    const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    feedCache[url] = lines;
+    return lines;
   } catch (e) {
-    return null;
+    console.error("Failed to fetch feed:", e);
+    return [];
   }
 }
 
@@ -155,64 +152,15 @@ function stringCompare(query, line) {
   return 0;
 }
 
-async function binarySearchFile(url, query, compareFn) {
-  const size = await getFileSize(url);
-  if (!size) {
-    try {
-      const r = await fetch(url);
-      const txt = await r.text();
-      const lines = txt.split('\n');
-      for (let line of lines) {
-        if (compareFn(query, line.trim()) === 0) return true;
-      }
-    } catch (e) {}
-    return false;
-  }
-
+function binarySearchArray(arr, query, compareFn) {
   let low = 0;
-  let high = size - 1;
-  const CHUNK_SIZE = 8192;
-  let iterations = 0;
-
-  while (low <= high && iterations < 50) {
-    iterations++;
+  let high = arr.length - 1;
+  while (low <= high) {
     const mid = Math.floor((low + high) / 2);
-    const start = Math.max(0, mid - Math.floor(CHUNK_SIZE / 2));
-    const end = Math.min(size - 1, start + CHUNK_SIZE - 1);
-
-    const chunk = await fetchChunk(url, start, end);
-    if (!chunk) break;
-
-    const lines = chunk.split('\n');
-    if (start > 0 && lines.length > 0) lines.shift();
-    if (end < size - 1 && lines.length > 0) lines.pop();
-
-    if (lines.length === 0) break;
-
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim();
-      if (!line) continue;
-      if (compareFn(query, line) === 0) return true;
-    }
-
-    let firstLine = '';
-    for (let i = 0; i < lines.length; i++) {
-      if (lines[i].trim()) { firstLine = lines[i].trim(); break; }
-    }
-    let lastLine = '';
-    for (let i = lines.length - 1; i >= 0; i--) {
-      if (lines[i].trim()) { lastLine = lines[i].trim(); break; }
-    }
-
-    if (!firstLine || !lastLine) break;
-
-    if (compareFn(query, firstLine) < 0) {
-      high = start - 1;
-    } else if (compareFn(query, lastLine) > 0) {
-      low = end + 1;
-    } else {
-      return false;
-    }
+    const comp = compareFn(query, arr[mid]);
+    if (comp === 0) return true;
+    if (comp < 0) high = mid - 1;
+    else low = mid + 1;
   }
   return false;
 }
@@ -238,46 +186,78 @@ async function scanIndicator() {
     return;
   }
 
-  btn.innerHTML = '<span class="spinner" style="border-color:rgba(255,255,255,0.3); border-top-color:#fff; width:16px; height:16px; margin-right:8px;"></span> Scanning';
+  btn.innerHTML = '<span class="spinner" style="border-color:rgba(255,255,255,0.3); border-top-color:#fff; width:16px; height:16px; margin-right:8px; display:inline-block; border-radius:50%; border-width:2px; border-style:solid; animation:spin 1s linear infinite;"></span> Scanning';
   btn.disabled = true;
 
   const section = document.getElementById('report-section');
   const overlay = document.getElementById('scan-overlay');
   const card = document.getElementById('report-card');
+  const progressFill = document.querySelector('.scan-progress-fill');
 
   section.classList.add('show');
   overlay.classList.add('active');
   card.classList.remove('show');
   document.getElementById('scan-ip').textContent = ip;
+  
+  // Reset progress bar
+  progressFill.style.width = '0%';
+  progressFill.style.transition = 'none';
 
   let scanType = 'Indicator';
   if (isIP) scanType = 'IP Address';
   else if (isHash) scanType = 'File Hash';
   else if (isURL) scanType = 'URL';
   else if (isDomain) scanType = 'Domain';
-  document.getElementById('scan-title-text').textContent = 'Analyzing ' + scanType + ' against Global Database...';
+  
+  const titleText = document.getElementById('scan-title-text');
 
   // Smooth scroll
   section.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  
+  // Start animation sequence
+  setTimeout(() => {
+    progressFill.style.transition = 'width 1.5s cubic-bezier(0.1, 0.8, 0.3, 1)';
+    progressFill.style.width = '100%';
+  }, 50);
 
-  // Perform Binary Search
+  const texts = [
+    'Establishing Secure Connection...',
+    `Parsing ${scanType} signature...`,
+    'Querying Global Threat Matrix...',
+    'Performing Cryptographic Verification...'
+  ];
+  
+  let step = 0;
+  const interval = setInterval(() => {
+    step++;
+    if (step < texts.length) titleText.textContent = texts[step];
+  }, 400);
+
+  // Perform In-Memory Binary Search
   let isMalicious = false;
   try {
+    let list = [];
+    let compareFn = stringCompare;
+    
     if (isIP) {
-      isMalicious = await binarySearchFile(RAW + 'malicious_ips.txt?v=' + feedVersion, ip, ipCompare);
+      list = await fetchAndCacheFeed(RAW + 'malicious_ips.txt?v=' + feedVersion);
+      compareFn = ipCompare;
     } else if (isDomain) {
-      isMalicious = await binarySearchFile(RAW + 'malicious_domains.txt?v=' + feedVersion, ip, stringCompare);
+      list = await fetchAndCacheFeed(RAW + 'malicious_domains.txt?v=' + feedVersion);
     } else if (isHash) {
-      isMalicious = await binarySearchFile(RAW + 'malicious_hashes.txt?v=' + feedVersion, ip, stringCompare);
+      list = await fetchAndCacheFeed(RAW + 'malicious_hashes.txt?v=' + feedVersion);
     } else if (isURL) {
-      isMalicious = await binarySearchFile(RAW + 'malicious_urls.txt?v=' + feedVersion, ip, stringCompare);
+      list = await fetchAndCacheFeed(RAW + 'malicious_urls.txt?v=' + feedVersion);
     }
+    
+    isMalicious = binarySearchArray(list, ip, compareFn);
   } catch (e) {
     console.error(e);
   }
 
-  // Artificial delay for UI scanning effect
-  await new Promise(r => setTimeout(r, 600));
+  // Artificial delay for UI scanning effect to complete
+  await new Promise(r => setTimeout(r, 1600));
+  clearInterval(interval);
 
   overlay.classList.remove('active');
   showReport(isMalicious ? 'danger' : 'safe', ip, isIP, isDomain, isHash, isURL);
@@ -290,33 +270,50 @@ async function scanIndicator() {
 function showReport(type, ip, isIP, isDomain, isHash, isURL) {
   const card = document.getElementById('report-card');
   const header = document.getElementById('rc-header');
+  const glow = document.getElementById('rc-glow');
+  const iconBg = document.getElementById('rc-icon-bg');
   
   document.getElementById('rc-ip').textContent = ip;
+  
+  // Reset classes
   header.className = 'rc-header';
+  glow.className = 'rc-glow';
+  iconBg.className = 'rc-h-icon';
 
   if (type === 'danger') {
     header.classList.add('rc-header-danger');
+    glow.classList.add('rc-glow-danger');
+    iconBg.classList.add('rc-icon-danger');
     document.getElementById('rc-icon').setAttribute('data-lucide', 'shield-alert');
-    document.getElementById('rc-sub').textContent = 'Flagged in HimalayaFeed Threat Database';
+    document.getElementById('rc-sub').textContent = 'Malicious Indicator Confirmed';
     document.getElementById('rc-badge').textContent = 'CRITICAL THREAT';
+    document.getElementById('rc-badge').className = 'rc-h-badge badge-danger';
     
     document.getElementById('rc-assessment').innerHTML = `
-      <div style="color: #ff0033; font-weight: 700; margin-bottom: 0.5rem;">Immediate Action Required</div>
-      <code>${ip}</code> has been confirmed malicious by our global sensor network and is actively present in the threat intelligence blocklist. It is highly recommended to block this indicator at the firewall or DNS level.`;
+      <div class="assessment-title text-red">Immediate Action Required</div>
+      <p>The indicator <code>${ip}</code> has been positively identified as malicious by the HimalayaFeed global sensor network. It is currently active in our threat intelligence blocklists.</p>
+      <p style="margin-top:0.8rem;"><strong>Recommendation:</strong> Blacklist this indicator immediately across your network perimeter (Firewalls, DNS Sinkholes, or EDR platforms).</p>`;
   } else if (type === 'safe') {
     header.classList.add('rc-header-safe');
+    glow.classList.add('rc-glow-safe');
+    iconBg.classList.add('rc-icon-safe');
     document.getElementById('rc-icon').setAttribute('data-lucide', 'shield-check');
     document.getElementById('rc-sub').textContent = 'Not found in active blocklists';
     document.getElementById('rc-badge').textContent = 'NOT LISTED';
+    document.getElementById('rc-badge').className = 'rc-h-badge badge-safe';
 
     document.getElementById('rc-assessment').innerHTML = `
-      <div style="color: #10b981; font-weight: 700; margin-bottom: 0.5rem;">Clean Result</div>
-      <code>${ip}</code> is <strong>not currently listed</strong> in the active HimalayaFeed threat database. However, this does not guarantee the indicator is safe; it only means it hasn't been flagged recently by our sensors.`;
+      <div class="assessment-title text-green">Clean Result</div>
+      <p>The indicator <code>${ip}</code> is <strong>not currently listed</strong> in the active HimalayaFeed threat database.</p>
+      <p style="margin-top:0.8rem;"><strong>Note:</strong> This does not guarantee the indicator is completely safe; it only means it hasn't been flagged recently by our honeypots or aggregated feeds.</p>`;
   } else {
     header.classList.add('rc-header-warn');
+    glow.classList.add('rc-glow-warn');
+    iconBg.classList.add('rc-icon-warn');
     document.getElementById('rc-icon').setAttribute('data-lucide', 'alert-triangle');
     document.getElementById('rc-sub').textContent = 'Invalid format';
     document.getElementById('rc-badge').textContent = 'WARNING';
+    document.getElementById('rc-badge').className = 'rc-h-badge badge-warn';
     document.getElementById('rc-assessment').innerHTML = `Please enter a valid IPv4 address, Domain, SHA-256 Hash, or URL.`;
   }
 

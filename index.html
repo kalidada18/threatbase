@@ -91,37 +91,46 @@
 
       <!-- Loading / Scanning State -->
       <div class="scan-overlay" id="scan-overlay">
-        <div class="radar-container">
-          <div class="radar-ping"></div>
-          <i data-lucide="radar" class="radar-icon"></i>
+        <div class="matrix-scanner">
+          <div class="matrix-ring matrix-ring-1"></div>
+          <div class="matrix-ring matrix-ring-2"></div>
+          <div class="matrix-ring matrix-ring-3"></div>
+          <div class="matrix-core"><i data-lucide="cpu"></i></div>
         </div>
-        <div class="scan-title" id="scan-title-text">Analyzing Indicator</div>
+        <div class="scan-title" id="scan-title-text">Establishing Secure Connection...</div>
         <div class="scan-ip" id="scan-ip"></div>
+        <div class="scan-progress-bar"><div class="scan-progress-fill"></div></div>
       </div>
 
       <!-- Result Card -->
       <div class="report-card" id="report-card">
+        <div class="rc-glow" id="rc-glow"></div>
         <div class="rc-header" id="rc-header">
           <div class="rc-h-left">
-            <div class="rc-h-icon"><i id="rc-icon" data-lucide="shield-alert"></i></div>
-            <div>
-              <div class="rc-h-ip" id="rc-ip"></div>
+            <div class="rc-h-icon" id="rc-icon-bg"><i id="rc-icon" data-lucide="shield-alert"></i></div>
+            <div class="rc-h-text">
               <div class="rc-h-sub" id="rc-sub"></div>
+              <div class="rc-h-ip" id="rc-ip"></div>
             </div>
           </div>
           <div class="rc-h-badge" id="rc-badge"></div>
         </div>
 
         <div class="rc-body">
-          <div class="rc-assessment" id="rc-assessment"></div>
-
-          <div class="rc-ext" id="rc-ext">
-            <a class="rc-ext-btn" id="ext-vt" href="#" target="_blank" rel="noopener">
-              <i data-lucide="shield"></i> VirusTotal
-            </a>
-            <a class="rc-ext-btn" id="ext-abuse" href="#" target="_blank" rel="noopener">
-              <i data-lucide="alert-octagon"></i> AbuseIPDB
-            </a>
+          <div class="rc-grid">
+            <div class="rc-assessment-panel" id="rc-assessment"></div>
+            
+            <div class="rc-side">
+              <div class="rc-side-label">Threat Intelligence Sources</div>
+              <div class="rc-ext" id="rc-ext">
+                <a class="rc-ext-btn vt-btn" id="ext-vt" href="#" target="_blank" rel="noopener">
+                  <img src="https://www.virustotal.com/gui/images/favicon.png" alt="VT" class="vt-icon"> VirusTotal
+                </a>
+                <a class="rc-ext-btn abuse-btn" id="ext-abuse" href="#" target="_blank" rel="noopener">
+                  <i data-lucide="alert-octagon"></i> AbuseIPDB
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </div>
