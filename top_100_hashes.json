@@ -1,12 +1,12 @@
 [
   {
-    "hash": "cc4aed185ff224de372d968457382222fe685cadd14934b26b349935da88e64a",
+    "hash": "cae5d68276df2104a7c7bced499fde57447c740fd5cffbb1d2f267b6fd3db750",
     "type": "SHA-256",
     "sources": "MalwareBazaar|malwarebazaar_recent",
     "source_count": 2
   },
   {
-    "hash": "cd4aa230c7750f57d17620b868607f7228b4cda756d63c9fa86fe2c84fc11b45",
+    "hash": "cc4aed185ff224de372d968457382222fe685cadd14934b26b349935da88e64a",
     "type": "SHA-256",
     "sources": "MalwareBazaar|malwarebazaar_recent",
     "source_count": 2
@@ -18,7 +18,13 @@
     "source_count": 2
   },
   {
-    "hash": "cd52cc74f7340252a66ad7c08f38c528db0b5755de4e0d8299e0d5377f64b2e7",
+    "hash": "d1a95901bdcfcc333791d88eca7514c1b3482c45209e5c53c3949d4ee4e0b9ad",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "cd4aa230c7750f57d17620b868607f7228b4cda756d63c9fa86fe2c84fc11b45",
     "type": "SHA-256",
     "sources": "MalwareBazaar|malwarebazaar_recent",
     "source_count": 2
@@ -30,49 +36,7 @@
     "source_count": 2
   },
   {
-    "hash": "d05519da897fa942cd63f3b05257dc850deee869a188b2faf25c5f54d9a4effa",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "d0d7e289a35968ade145fb00705e5947f62338d7a49082982387e726c823cce7",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "d81a27bbf882d13e0752fcd8d70a53d67dfdeda877c62fb365e16c4ccae0804b",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "d1a95901bdcfcc333791d88eca7514c1b3482c45209e5c53c3949d4ee4e0b9ad",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "d9830b95f5f1207b6c53e6d48aa43a08c6c9e3a48f51156fe8a4caab6042378e",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
     "hash": "d49077ea86e43d2a8dc984157607684cc4e2b6cf27812985b2e0a2710a42c43e",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "d34f823b58007b32c593c427cdfb76faec0409036a99e1ace840b2fde53dc5af",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "d6c0e9af7af53fb665d2ec03e2e5b68c80501e97885d2dda31f0e2d38fe3bd04",
     "type": "SHA-256",
     "sources": "MalwareBazaar|malwarebazaar_recent",
     "source_count": 2
@@ -84,25 +48,31 @@
     "source_count": 2
   },
   {
-    "hash": "d5f651b772c567a2997eebad10b8b062191270dba3d17c99f161686bf8b98adf",
+    "hash": "d56867554012ff1dbff99de2d1646f006db083396179f5128152eda36d598c7b",
     "type": "SHA-256",
     "sources": "MalwareBazaar|malwarebazaar_recent",
     "source_count": 2
   },
   {
-    "hash": "dd70f6f9b5276fdb2e2c79d6650e993c7dd08fc34a3529ddfb10744dabd645e8",
+    "hash": "d34f823b58007b32c593c427cdfb76faec0409036a99e1ace840b2fde53dc5af",
     "type": "SHA-256",
     "sources": "MalwareBazaar|malwarebazaar_recent",
     "source_count": 2
   },
   {
-    "hash": "dd4199c2b8d94da33925badf03a25a5a896c71167a1afa6b8fe6119a4d28f213",
+    "hash": "cd52cc74f7340252a66ad7c08f38c528db0b5755de4e0d8299e0d5377f64b2e7",
     "type": "SHA-256",
     "sources": "MalwareBazaar|malwarebazaar_recent",
     "source_count": 2
   },
   {
-    "hash": "ec413c4fdd42a843de651d6c854f129f779eeca0d7fd14e5a329153706075ce6",
+    "hash": "d0d7e289a35968ade145fb00705e5947f62338d7a49082982387e726c823cce7",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "d05519da897fa942cd63f3b05257dc850deee869a188b2faf25c5f54d9a4effa",
     "type": "SHA-256",
     "sources": "MalwareBazaar|malwarebazaar_recent",
     "source_count": 2
@@ -114,25 +84,7 @@
     "source_count": 2
   },
   {
-    "hash": "da1a3acffea047754f7eab0de4066da8daa39f290bc5268e0baf0575fcf2cae3",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "de3272243ad9ae5b9e37324de70ad7296b4c5e46b6d415eff8ba8b2c42060276",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "d7a290f060fc5af062cbf417685961c4e2188f9a8ea9a523b2e8bb54e1256bce",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "d8f89146217d957acc5444d0dc819116b6906683b01ff189f7d3e3e461d1ade4",
+    "hash": "d81a27bbf882d13e0752fcd8d70a53d67dfdeda877c62fb365e16c4ccae0804b",
     "type": "SHA-256",
     "sources": "MalwareBazaar|malwarebazaar_recent",
     "source_count": 2
@@ -144,67 +96,7 @@
     "source_count": 2
   },
   {
-    "hash": "d56867554012ff1dbff99de2d1646f006db083396179f5128152eda36d598c7b",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "f9ef2c485beb0cf5024cf0d66e91da71ddaee6a6d6eb34ffe287c4fc9cb64c36",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "dbe50aad918d3d19f06f0b3dabd11791180258c761a8655f1f3dfc68123a991d",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "ec72118e58a55c1ebec13caa01dfe41dee17bb337a1f2a93e7cd566a995c590c",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "d43b6df9cb7cfe7dd9eb222f9e9ed0294554cad689b91260f8da3174081a4e23",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "d91e2b5174e6e091201a0b219bb993bb9d8d8603b565663eb626ca285ff840fa",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "d7b4f9e10c306aa74ed49f99595c5924b380dc8ef1fb601ca6733584ae478580",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
     "hash": "dee47219a890900261c89dc51db234be9213568a8c0a89290ac155adf7b79c2b",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "df205094a085d7e76a6ce26e257d7f47ecd77699eb57df9b99c664ada7083edb",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "e30a11906aadffc1682a1b07934301c6b68b854c9979bc64fd65152a349ed59f",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "df5a544637ca04758ce210cff2943aec8406cca4fa31efe9cf8820b212836974",
     "type": "SHA-256",
     "sources": "MalwareBazaar|malwarebazaar_recent",
     "source_count": 2
@@ -216,127 +108,7 @@
     "source_count": 2
   },
   {
-    "hash": "f1542012866d855ac0bf2346907d2c4ad9965db72eedf8ee7300dac730357055",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "db43f4e4713a9f7629b68589d5a9d087541012c414667a900429997fd8961c06",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "d61cee195f615e4abf35c4f1f53acd3c501279f6bcf126ba20d14cc6c4755637",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "f6c19972c7868d2aba77121f00237c9094eb6a32c7bcab31bcb6e17617bee280",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "db35ab5a5e12afdfbf855cb2caa2f39775a9f015cd624e2c7f26ff5a163b45d3",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "e1271774df0f0768474fa2972f5b0c7811c8d1e122180dce99d9b7d2d0cfc31c",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "f6403fc468e123672813e9e2fe0e1b33d0c7d4eae03017d6093f9387cdf72936",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "f217d0dd5b3a9665d075eaed2b69ead2de65eef2a82ecab4bbb4c4fc764335f0",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "d9f81bc212ecc590f42afe066311576f23940ab936fb91889a47e5ebf58c8bfb",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "df249293c0f1e0c87b5b0eac79221e04e4c6d1a7f91fbc1940ffe29619bfd07b",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "de65ce687b091c84efac8f1e46502b489c1e187e84aa8f8d2bd63ef94e3666bb",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "dac3e58c6f4687e68192fd5d479387687f148eb1f8e3a28bc6bc4023c7714b13",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "e019a3a33192450ef27162103599c89da0cdfa64025bd735634bb412a985b745",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "ee8b9057db5d1d7197ba91869ec4621274f418e734351d61c037c97be1679a0c",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "e19eed96a246d7a5f33796446931ae643afeb153d7a243e3b9d11fbd1e6d4a48",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "fe514c54237c1978d00d9315eb1e329b4e70cc31ae88adedeca60d7d7e3338c5",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "ffaab76142f6a1140d049c2bc59677a588e776bb212d87e92337223c9a885541",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "e2f6f6ed64516ac9e5c885e9f16d5fd55c0146886ba9e526a4dfba2632dee1a5",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "dd7496fabd96645126996d8be44fbac5d1b6adbadcc2220eb98c0d5cb461ab46",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "fc4ba40128ee5df9caaa25bafe1a3d6619f208b2bd206f564267298a0294328f",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "f1f46f5010ce1d182021e54dbd77099c94efcc23c2925bf4d777e052b84db65a",
+    "hash": "d7b4f9e10c306aa74ed49f99595c5924b380dc8ef1fb601ca6733584ae478580",
     "type": "SHA-256",
     "sources": "MalwareBazaar|malwarebazaar_recent",
     "source_count": 2
@@ -348,19 +120,43 @@
     "source_count": 2
   },
   {
-    "hash": "d8a4361786c81cb9fdf83140bbb1e09500f8bfee9c3193935347ce574a5c71f2",
+    "hash": "df5a544637ca04758ce210cff2943aec8406cca4fa31efe9cf8820b212836974",
     "type": "SHA-256",
     "sources": "MalwareBazaar|malwarebazaar_recent",
     "source_count": 2
   },
   {
-    "hash": "f11057ab58bef936d98ba189829c64260a6a540cdaa046f93613138e820c98c6",
+    "hash": "d6c0e9af7af53fb665d2ec03e2e5b68c80501e97885d2dda31f0e2d38fe3bd04",
     "type": "SHA-256",
     "sources": "MalwareBazaar|malwarebazaar_recent",
     "source_count": 2
   },
   {
-    "hash": "ebdeddea3e27f47ea658ad31160b5ccf64f729a39cfb0ad5ac9c0837dd055c5b",
+    "hash": "da1a3acffea047754f7eab0de4066da8daa39f290bc5268e0baf0575fcf2cae3",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "db35ab5a5e12afdfbf855cb2caa2f39775a9f015cd624e2c7f26ff5a163b45d3",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "d5f651b772c567a2997eebad10b8b062191270dba3d17c99f161686bf8b98adf",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "d43b6df9cb7cfe7dd9eb222f9e9ed0294554cad689b91260f8da3174081a4e23",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "de65ce687b091c84efac8f1e46502b489c1e187e84aa8f8d2bd63ef94e3666bb",
     "type": "SHA-256",
     "sources": "MalwareBazaar|malwarebazaar_recent",
     "source_count": 2
@@ -372,25 +168,31 @@
     "source_count": 2
   },
   {
-    "hash": "f29525ef6bbc16debc7a1db3045899727be9fd7b80798a6730fd2bbd782ed932",
+    "hash": "d61cee195f615e4abf35c4f1f53acd3c501279f6bcf126ba20d14cc6c4755637",
     "type": "SHA-256",
     "sources": "MalwareBazaar|malwarebazaar_recent",
     "source_count": 2
   },
   {
-    "hash": "e7fe7fbcd7648b473caf4db264caa4b44179e391520bd72ef2263f0885c0e133",
+    "hash": "dac3e58c6f4687e68192fd5d479387687f148eb1f8e3a28bc6bc4023c7714b13",
     "type": "SHA-256",
     "sources": "MalwareBazaar|malwarebazaar_recent",
     "source_count": 2
   },
   {
-    "hash": "feb5b9e841bd79cd932fb457a98d3e4563dd2fc8462cf9f42895fedfcf80ab92",
+    "hash": "d9830b95f5f1207b6c53e6d48aa43a08c6c9e3a48f51156fe8a4caab6042378e",
     "type": "SHA-256",
     "sources": "MalwareBazaar|malwarebazaar_recent",
     "source_count": 2
   },
   {
-    "hash": "f49df2fdbe4c63bcebdfad04d20289ab6c227f33e455c43bf5fd8edb1e6d71d7",
+    "hash": "df205094a085d7e76a6ce26e257d7f47ecd77699eb57df9b99c664ada7083edb",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "e1271774df0f0768474fa2972f5b0c7811c8d1e122180dce99d9b7d2d0cfc31c",
     "type": "SHA-256",
     "sources": "MalwareBazaar|malwarebazaar_recent",
     "source_count": 2
@@ -402,151 +204,49 @@
     "source_count": 2
   },
   {
-    "hash": "f9348db80c31a66494d9aff4a875bd49aaa7842604dc95a132b8aed136d693ce",
+    "hash": "e1c5b305fff7516f94bc2173caff4d0168df91e131488ac066bf3c340ca46c27",
     "type": "SHA-256",
     "sources": "MalwareBazaar|malwarebazaar_recent",
     "source_count": 2
   },
   {
-    "hash": "f0d5bbec893bf516a36e88d47f249b4e8a5724127d3ccb1128f33b57e55c45a0",
+    "hash": "f1f46f5010ce1d182021e54dbd77099c94efcc23c2925bf4d777e052b84db65a",
     "type": "SHA-256",
     "sources": "MalwareBazaar|malwarebazaar_recent",
     "source_count": 2
   },
   {
-    "hash": "dfd542f72cad80cd5536ec3ce826c569a64f0c5ae2f5451f6dc4a4fda9746de8",
+    "hash": "f49df2fdbe4c63bcebdfad04d20289ab6c227f33e455c43bf5fd8edb1e6d71d7",
     "type": "SHA-256",
     "sources": "MalwareBazaar|malwarebazaar_recent",
     "source_count": 2
   },
   {
-    "hash": "e7fd5d8f51b11b577370daa858c48e6e894cde5fc0422dfc04db564813582cc1",
+    "hash": "de3272243ad9ae5b9e37324de70ad7296b4c5e46b6d415eff8ba8b2c42060276",
     "type": "SHA-256",
     "sources": "MalwareBazaar|malwarebazaar_recent",
     "source_count": 2
   },
   {
-    "hash": "fbb4882273f777b3191990c58f8fcf6fbc9782120f9a0c47b9ee4f9fca8b7d71",
+    "hash": "d8a4361786c81cb9fdf83140bbb1e09500f8bfee9c3193935347ce574a5c71f2",
     "type": "SHA-256",
     "sources": "MalwareBazaar|malwarebazaar_recent",
     "source_count": 2
   },
   {
-    "hash": "f3413ab438c85f9dd4c12e2c5df61c24ed5a3ba197edc9f9514d6cfbb72a10de",
+    "hash": "dbe50aad918d3d19f06f0b3dabd11791180258c761a8655f1f3dfc68123a991d",
     "type": "SHA-256",
     "sources": "MalwareBazaar|malwarebazaar_recent",
     "source_count": 2
   },
   {
-    "hash": "fc5fff5a1ca57f1e8c8e4cd61a37001b87c02462054ef0237409dadecbba05d2",
+    "hash": "dd7496fabd96645126996d8be44fbac5d1b6adbadcc2220eb98c0d5cb461ab46",
     "type": "SHA-256",
     "sources": "MalwareBazaar|malwarebazaar_recent",
     "source_count": 2
   },
   {
-    "hash": "fa0af45e17e3bc6e05d025f34ac37005b4914014fb24bec2fd077f2a197fbc78",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "ee11b70a0c9db312a9c48ff6ce5e6c18147165927d0011c1c3b888e16bb83b69",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "ede6cfb8415518ad6598ec1ed1899183d9fd8f61534f47840ad3c2c85a59bcb1",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "e2093d7d177396fb32ee0ebdd2074fcb778295c9fdfaba913dbcdce5a7c14e55",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "fcced086a0c2d1ebfbb1a6355d36d6365ceab9dee0dc9c30144e8572279ef896",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "fea14750843a3871842f948c54e0643fd95a0ab341be4474f119e23e8a2a4a05",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "facb147464759e3ce625baa23e5e3859cad56791cb0b771aec688472230761d9",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "ec2743bc10f9207b04b2e96badce4e5f564da05f35e5a06cdc268d4a4f8811f3",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "e47dd0230c2fb8b585744b476956cfe15adeefbf4069be339dfed8bc0721f699",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "e5b8fdc2746717bdc8ba46d4924f05020926448f5f26f218e233bd6c3e287c3f",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "f6d326bcb8dacfe6b808afa487e5238c442867f06799b7c06d7b705dd1b2de99",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "fc5b7d8c69520851bec746e5db338db2fd1981c78da6f0c542d9dc4541e5f0d0",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "fbacb917b4ff93ac23d9d20f8ff08f0cf16147fd28b5b3c14410496d5325dbb3",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "fda63c374e68ff8079e2537b0969632aabcface517f62fea4df565524eb60c33",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "f9fe2d56235727bb252612c130ea8fc5468eb537a06e680f5027fa4bd105a204",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "fd61e12b3cc64cb2ec483506d1d2f5e2b00b1f42362d79ddf1a8152f256a4389",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "f4feb4b8de80f857932025b16a6a164569be6f23613cfd7786fd5171c13562ea",
-    "type": "SHA-256",
-    "sources": "MalwareBazaar|malwarebazaar_recent",
-    "source_count": 2
-  },
-  {
-    "hash": "e23ff3aa7eec990c1559d18a2631b1a57475e83a86a59fb80cf45349d64b34f1",
+    "hash": "e2f6f6ed64516ac9e5c885e9f16d5fd55c0146886ba9e526a4dfba2632dee1a5",
     "type": "SHA-256",
     "sources": "MalwareBazaar|malwarebazaar_recent",
     "source_count": 2
@@ -558,7 +258,133 @@
     "source_count": 2
   },
   {
-    "hash": "ea7f608e0d0fe8dffbde3acfc6afdb5ad9624c31b21eaf1589c5f8f35332824e",
+    "hash": "d91e2b5174e6e091201a0b219bb993bb9d8d8603b565663eb626ca285ff840fa",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "db43f4e4713a9f7629b68589d5a9d087541012c414667a900429997fd8961c06",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "e19eed96a246d7a5f33796446931ae643afeb153d7a243e3b9d11fbd1e6d4a48",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "dfd542f72cad80cd5536ec3ce826c569a64f0c5ae2f5451f6dc4a4fda9746de8",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "dd4199c2b8d94da33925badf03a25a5a896c71167a1afa6b8fe6119a4d28f213",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "e23ff3aa7eec990c1559d18a2631b1a57475e83a86a59fb80cf45349d64b34f1",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "d7a290f060fc5af062cbf417685961c4e2188f9a8ea9a523b2e8bb54e1256bce",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "e30a11906aadffc1682a1b07934301c6b68b854c9979bc64fd65152a349ed59f",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "d8f89146217d957acc5444d0dc819116b6906683b01ff189f7d3e3e461d1ade4",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "fbb4882273f777b3191990c58f8fcf6fbc9782120f9a0c47b9ee4f9fca8b7d71",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "e7fe7fbcd7648b473caf4db264caa4b44179e391520bd72ef2263f0885c0e133",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "df249293c0f1e0c87b5b0eac79221e04e4c6d1a7f91fbc1940ffe29619bfd07b",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "fda63c374e68ff8079e2537b0969632aabcface517f62fea4df565524eb60c33",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "f4feb4b8de80f857932025b16a6a164569be6f23613cfd7786fd5171c13562ea",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "dd70f6f9b5276fdb2e2c79d6650e993c7dd08fc34a3529ddfb10744dabd645e8",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "d9f81bc212ecc590f42afe066311576f23940ab936fb91889a47e5ebf58c8bfb",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "f3413ab438c85f9dd4c12e2c5df61c24ed5a3ba197edc9f9514d6cfbb72a10de",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "ee11b70a0c9db312a9c48ff6ce5e6c18147165927d0011c1c3b888e16bb83b69",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "f217d0dd5b3a9665d075eaed2b69ead2de65eef2a82ecab4bbb4c4fc764335f0",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "f6c19972c7868d2aba77121f00237c9094eb6a32c7bcab31bcb6e17617bee280",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "ec2743bc10f9207b04b2e96badce4e5f564da05f35e5a06cdc268d4a4f8811f3",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "e019a3a33192450ef27162103599c89da0cdfa64025bd735634bb412a985b745",
     "type": "SHA-256",
     "sources": "MalwareBazaar|malwarebazaar_recent",
     "source_count": 2
@@ -570,19 +396,103 @@
     "source_count": 2
   },
   {
+    "hash": "ec413c4fdd42a843de651d6c854f129f779eeca0d7fd14e5a329153706075ce6",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "fbacb917b4ff93ac23d9d20f8ff08f0cf16147fd28b5b3c14410496d5325dbb3",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "f29525ef6bbc16debc7a1db3045899727be9fd7b80798a6730fd2bbd782ed932",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "e2093d7d177396fb32ee0ebdd2074fcb778295c9fdfaba913dbcdce5a7c14e55",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "ebdeddea3e27f47ea658ad31160b5ccf64f729a39cfb0ad5ac9c0837dd055c5b",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "fd61e12b3cc64cb2ec483506d1d2f5e2b00b1f42362d79ddf1a8152f256a4389",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "f6d326bcb8dacfe6b808afa487e5238c442867f06799b7c06d7b705dd1b2de99",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "feb5b9e841bd79cd932fb457a98d3e4563dd2fc8462cf9f42895fedfcf80ab92",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "fc5b7d8c69520851bec746e5db338db2fd1981c78da6f0c542d9dc4541e5f0d0",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "f11057ab58bef936d98ba189829c64260a6a540cdaa046f93613138e820c98c6",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "f0d5bbec893bf516a36e88d47f249b4e8a5724127d3ccb1128f33b57e55c45a0",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "e5b8fdc2746717bdc8ba46d4924f05020926448f5f26f218e233bd6c3e287c3f",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "ff6bdf02a401c62c889182f7d984d951121acd76e3ad8fbeffad399a645c5f45",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
     "hash": "f8c2d5f3bd508bdf2fd39f8940e03ad29a4d679d62f670810cfac0d9b125123a",
     "type": "SHA-256",
     "sources": "MalwareBazaar|malwarebazaar_recent",
     "source_count": 2
   },
   {
-    "hash": "e1c5b305fff7516f94bc2173caff4d0168df91e131488ac066bf3c340ca46c27",
+    "hash": "fc5fff5a1ca57f1e8c8e4cd61a37001b87c02462054ef0237409dadecbba05d2",
     "type": "SHA-256",
     "sources": "MalwareBazaar|malwarebazaar_recent",
     "source_count": 2
   },
   {
-    "hash": "f77e3aa9821369459cc48ccd1ee56af9b20637bca393fbefdf059fd377732891",
+    "hash": "ee8b9057db5d1d7197ba91869ec4621274f418e734351d61c037c97be1679a0c",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "ea7f608e0d0fe8dffbde3acfc6afdb5ad9624c31b21eaf1589c5f8f35332824e",
     "type": "SHA-256",
     "sources": "MalwareBazaar|malwarebazaar_recent",
     "source_count": 2
@@ -594,7 +504,97 @@
     "source_count": 2
   },
   {
-    "hash": "ff6bdf02a401c62c889182f7d984d951121acd76e3ad8fbeffad399a645c5f45",
+    "hash": "f9348db80c31a66494d9aff4a875bd49aaa7842604dc95a132b8aed136d693ce",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "fe514c54237c1978d00d9315eb1e329b4e70cc31ae88adedeca60d7d7e3338c5",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "fcced086a0c2d1ebfbb1a6355d36d6365ceab9dee0dc9c30144e8572279ef896",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "f6403fc468e123672813e9e2fe0e1b33d0c7d4eae03017d6093f9387cdf72936",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "fc4ba40128ee5df9caaa25bafe1a3d6619f208b2bd206f564267298a0294328f",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "ffaab76142f6a1140d049c2bc59677a588e776bb212d87e92337223c9a885541",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "f77e3aa9821369459cc48ccd1ee56af9b20637bca393fbefdf059fd377732891",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "e7fd5d8f51b11b577370daa858c48e6e894cde5fc0422dfc04db564813582cc1",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "fa0af45e17e3bc6e05d025f34ac37005b4914014fb24bec2fd077f2a197fbc78",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "ec72118e58a55c1ebec13caa01dfe41dee17bb337a1f2a93e7cd566a995c590c",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "f9ef2c485beb0cf5024cf0d66e91da71ddaee6a6d6eb34ffe287c4fc9cb64c36",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "facb147464759e3ce625baa23e5e3859cad56791cb0b771aec688472230761d9",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "e47dd0230c2fb8b585744b476956cfe15adeefbf4069be339dfed8bc0721f699",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "f9fe2d56235727bb252612c130ea8fc5468eb537a06e680f5027fa4bd105a204",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "ede6cfb8415518ad6598ec1ed1899183d9fd8f61534f47840ad3c2c85a59bcb1",
+    "type": "SHA-256",
+    "sources": "MalwareBazaar|malwarebazaar_recent",
+    "source_count": 2
+  },
+  {
+    "hash": "f1542012866d855ac0bf2346907d2c4ad9965db72eedf8ee7300dac730357055",
     "type": "SHA-256",
     "sources": "MalwareBazaar|malwarebazaar_recent",
     "source_count": 2
