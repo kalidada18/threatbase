@@ -108,18 +108,16 @@ if ABUSEIPDB_API_KEY:
     FEEDS["abuseipdb"] = "https://api.abuseipdb.com/api/v2/blacklist?confidenceMinimum=90"
 
 
-REQUEST_TIMEOUT = 30
-MAX_RETRIES = 3
-RETRY_DELAY = 5
+REQUEST_TIMEOUT = (10, 30)  # (connect, read) — fail fast on unreachable hosts
 MAX_WORKERS = 8
 
 def get_session():
     session = requests.Session()
     retry = Retry(
-        total=MAX_RETRIES,
-        read=MAX_RETRIES,
-        connect=MAX_RETRIES,
-        backoff_factor=1,
+        total=2,
+        read=2,
+        connect=2,
+        backoff_factor=0.5,
         status_forcelist=(429, 500, 502, 503, 504),
     )
     adapter = HTTPAdapter(max_retries=retry)
@@ -262,118 +260,106 @@ def fetch_feed(name: str, url: str) -> Set[str]:
     if name == "abuseipdb" and ABUSEIPDB_API_KEY:
         headers["Key"] = ABUSEIPDB_API_KEY
 
-    for attempt in range(1, MAX_RETRIES + 1):
-        try:
-            r = global_session.get(url, headers=headers, timeout=REQUEST_TIMEOUT)
-            r.raise_for_status()
+    try:
+        r = global_session.get(url, headers=headers, timeout=REQUEST_TIMEOUT)
+        r.raise_for_status()
+        
+        if name == "abuseipdb":
+            data = r.json()
+            return {d["ipAddress"] for d in data.get("data", []) if is_public_ipv4(d["ipAddress"])}
             
-            if name == "abuseipdb":
-                data = r.json()
-                return {d["ipAddress"] for d in data.get("data", []) if is_public_ipv4(d["ipAddress"])}
-                
-            ips = set()
-            for line in r.text.splitlines():
-                line = line.strip()
-                if not line or line.startswith(("#", "//", "!", "/*")): continue
-                token = line.split()[0].split(",")[0].strip('"\';')
-                
-                if "/" in token:
-                    try:
-                        network = ipaddress.ip_network(token, strict=False)
-                        if network.version == 4 and network.prefixlen >= 24:
-                            for ip in network.hosts():
-                                ip_str = str(ip)
-                                if is_public_ipv4(ip_str): ips.add(ip_str)
-                    except ValueError: pass
-                elif is_public_ipv4(token):
-                    ips.add(token)
+        ips = set()
+        for line in r.text.splitlines():
+            line = line.strip()
+            if not line or line.startswith(("#", "//", "!", "/*")): continue
+            token = line.split()[0].split(",")[0].strip('"\';')
             
-            return ips
-        except Exception as e:
-            if attempt == MAX_RETRIES:
-                log.error(f"Feed {name} failed: {e}")
-            else:
-                time.sleep(RETRY_DELAY)
+            if "/" in token:
+                try:
+                    network = ipaddress.ip_network(token, strict=False)
+                    if network.version == 4 and network.prefixlen >= 24:
+                        for ip in network.hosts():
+                            ip_str = str(ip)
+                            if is_public_ipv4(ip_str): ips.add(ip_str)
+                except ValueError: pass
+            elif is_public_ipv4(token):
+                ips.add(token)
+        
+        log.info(f"  ✓ {name}: {len(ips)} IPs")
+        return ips
+    except Exception as e:
+        log.error(f"  ✗ Feed {name} failed: {e}")
     return set()
 
 def fetch_domain_feed(name: str, url: str) -> Set[str]:
-    for attempt in range(1, MAX_RETRIES + 1):
-        try:
-            r = global_session.get(url, timeout=REQUEST_TIMEOUT)
-            r.raise_for_status()
-                
-            domains = set()
-            for line in r.text.splitlines():
-                line = line.strip()
-                if not line or line.startswith(("#", "//")): continue
-                # For URLhaus, CSV style
-                if line.startswith('"'):
-                    parts = line.split('","')
-                    if len(parts) > 2:
-                        domain = extract_domain(parts[2])
-                        if domain: domains.add(domain)
-                else:
-                    domain = extract_domain(line)
+    try:
+        r = global_session.get(url, timeout=REQUEST_TIMEOUT)
+        r.raise_for_status()
+            
+        domains = set()
+        for line in r.text.splitlines():
+            line = line.strip()
+            if not line or line.startswith(("#", "//")): continue
+            # For URLhaus, CSV style
+            if line.startswith('"'):
+                parts = line.split('","')
+                if len(parts) > 2:
+                    domain = extract_domain(parts[2])
                     if domain: domains.add(domain)
-            return domains
-        except Exception as e:
-            if attempt == MAX_RETRIES:
-                log.error(f"Domain Feed {name} failed: {e}")
             else:
-                time.sleep(RETRY_DELAY)
+                domain = extract_domain(line)
+                if domain: domains.add(domain)
+        log.info(f"  ✓ {name}: {len(domains)} domains")
+        return domains
+    except Exception as e:
+        log.error(f"  ✗ Domain feed {name} failed: {e}")
     return set()
 
 def fetch_hash_feed(name: str, url: str) -> Set[str]:
     """Fetch SHA256 hashes from feeds."""
-    for attempt in range(1, MAX_RETRIES + 1):
-        try:
-            r = global_session.get(url, timeout=REQUEST_TIMEOUT,
-                           headers={"User-Agent": "HimalayaFeed-Aggregator/3.0"})
-            r.raise_for_status()
-            hashes = set()
-            for line in r.text.splitlines():
-                line = line.strip()
-                if not line or line.startswith(('#', '//', '"')): continue
-                token = line.split()[0].split(',')[0].strip('"\';\r\n')
-                if _SHA256_PATTERN.match(token):
-                    hashes.add(token.lower())
-            return hashes
-        except Exception as e:
-            if attempt == MAX_RETRIES:
-                log.error(f"Hash feed {name} failed: {e}")
-            else:
-                time.sleep(RETRY_DELAY)
+    try:
+        r = global_session.get(url, timeout=REQUEST_TIMEOUT,
+                       headers={"User-Agent": "HimalayaFeed-Aggregator/3.0"})
+        r.raise_for_status()
+        hashes = set()
+        for line in r.text.splitlines():
+            line = line.strip()
+            if not line or line.startswith(('#', '//', '"')): continue
+            token = line.split()[0].split(',')[0].strip('"\';\r\n')
+            if _SHA256_PATTERN.match(token):
+                hashes.add(token.lower())
+        log.info(f"  ✓ {name}: {len(hashes)} hashes")
+        return hashes
+    except Exception as e:
+        log.error(f"  ✗ Hash feed {name} failed: {e}")
     return set()
 
 def fetch_url_feed(name: str, url: str) -> Set[str]:
     """Fetch malicious URLs from feeds."""
-    for attempt in range(1, MAX_RETRIES + 1):
-        try:
-            r = global_session.get(url, timeout=REQUEST_TIMEOUT, stream=True,
-                           headers={"User-Agent": "HimalayaFeed-Aggregator/3.0"})
-            r.raise_for_status()
-            if r.encoding is None:
-                r.encoding = 'utf-8'
-            urls = set()
-            for line in r.iter_lines(decode_unicode=True):
-                if not line: continue
-                line = line.strip()
-                if not line or line.startswith(('#', '//')): continue
-                # URLhaus CSV: extract URL from quoted fields
-                if line.startswith('"'):
-                    parts = line.split('","')
-                    if len(parts) > 2:
-                        candidate = parts[2].strip('"')
-                        if _URL_PATTERN.match(candidate):
-                            urls.add(candidate)
-                elif _URL_PATTERN.match(line):
-                    urls.add(line)
-            return urls
-        except Exception as e:
-            if attempt == MAX_RETRIES:
-                log.error(f"URL feed {name} failed: {e}")
-            else:
-                time.sleep(RETRY_DELAY)
+    try:
+        r = global_session.get(url, timeout=REQUEST_TIMEOUT, stream=True,
+                       headers={"User-Agent": "HimalayaFeed-Aggregator/3.0"})
+        r.raise_for_status()
+        if r.encoding is None:
+            r.encoding = 'utf-8'
+        urls = set()
+        for line in r.iter_lines(decode_unicode=True):
+            if not line: continue
+            line = line.strip()
+            if not line or line.startswith(('#', '//')): continue
+            # URLhaus CSV: extract URL from quoted fields
+            if line.startswith('"'):
+                parts = line.split('","')
+                if len(parts) > 2:
+                    candidate = parts[2].strip('"')
+                    if _URL_PATTERN.match(candidate):
+                        urls.add(candidate)
+            elif _URL_PATTERN.match(line):
+                urls.add(line)
+        log.info(f"  ✓ {name}: {len(urls)} URLs")
+        return urls
+    except Exception as e:
+        log.error(f"  ✗ URL feed {name} failed: {e}")
     return set()
 
 def fetch_threatfox(name: str, url: str) -> dict:
