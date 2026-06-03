@@ -105,14 +105,14 @@ ABUSEIPDB_API_KEY: Optional[str] = os.environ.get("ABUSEIPDB_API_KEY")
 if ABUSEIPDB_API_KEY:
     FEEDS["abuseipdb"] = "https://api.abuseipdb.com/api/v2/blacklist?confidenceMinimum=90"
 
-REQUEST_TIMEOUT = (10, 30)
+REQUEST_TIMEOUT = (5, 10)
 MAX_WORKERS = 12  # Increased — all feed types now share one pool
 
 
 def get_session():
     session = requests.Session()
     retry = Retry(
-        total=2, read=2, connect=2,
+        total=0, read=0, connect=0,
         backoff_factor=0.5,
         status_forcelist=(429, 500, 502, 503, 504),
     )
