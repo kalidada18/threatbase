@@ -1979,7 +1979,7 @@
 
       <!-- Hashes Tab -->
       <div class="ioc-content" id="ioc-hashes">
-        <div class="dl-grid">
+        <div class="dl-grid" style="margin-bottom: 1.5rem;">
           <div class="dl-card">
             <div class="dl-top">
               <div class="dl-icon dl-icon-amb"><i data-lucide="file-lock-2"></i></div>
@@ -1987,11 +1987,51 @@
             </div>
             <p class="dl-desc"><strong id="ioc-hash-count">-</strong> unique SHA-256 hashes from MalwareBazaar and ThreatFox.</p>
             <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-              <a href="./malicious_hashes.txt" class="btn btn-outline" target="_blank" rel="noopener"><i data-lucide="file-text"></i> Plain Text</a>
+              <a href="./malicious_hashes.txt" class="btn btn-red" target="_blank" rel="noopener"><i data-lucide="file-text"></i> Full Hashes (TXT)</a>
               <a href="./malicious_hashes.csv" class="btn btn-outline" target="_blank" rel="noopener"><i data-lucide="file-spreadsheet"></i> CSV</a>
               <a href="./top_100_hashes.json" class="btn btn-outline" target="_blank" rel="noopener"><i data-lucide="file-json"></i> Top 100 JSON</a>
             </div>
           </div>
+        </div>
+
+        <!-- Hash Search -->
+        <div style="margin-bottom: 1rem; display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+          <div style="flex: 1; min-width: 250px; position: relative;">
+            <input type="text" id="hash-search-input" placeholder="Search hashes..." 
+              style="width:100%; padding: 0.7rem 1rem 0.7rem 2.5rem; border: 1px solid var(--ash); border-radius: 8px; font-family: var(--mono); font-size: 0.8rem; background: var(--white); color: var(--ink); outline: none; transition: border-color 0.2s;"
+              oninput="filterHashes()">
+            <i data-lucide="search" style="position:absolute; left:0.8rem; top:50%; transform:translateY(-50%); width:16px; height:16px; color:var(--slate); pointer-events:none;"></i>
+          </div>
+          <span id="hash-display-count" style="font-size: 0.76rem; color: var(--slate); font-weight: 600; white-space: nowrap;"></span>
+        </div>
+
+        <!-- Hash Table -->
+        <div class="chart-card" style="padding:0; overflow: hidden; border-radius: 10px;">
+          <div style="max-height: 500px; overflow-y: auto;">
+            <table class="top100-table" id="hash-table">
+              <thead>
+                <tr>
+                  <th style="width: 40px;">#</th>
+                  <th>SHA-256 Hash</th>
+                  <th style="width: 60px;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="hash-table-body">
+                <tr>
+                  <td colspan="3" style="text-align:center; padding:3rem;">
+                    <span class="spinner" style="border-color:var(--ash); border-top-color:var(--red);"></span> Loading hashes...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Load More -->
+        <div id="hash-load-more" style="text-align: center; margin-top: 1rem; display: none;">
+          <button class="btn btn-outline" onclick="loadMoreHashes()" id="hash-load-more-btn">
+            <i data-lucide="chevrons-down"></i> Load More Hashes
+          </button>
         </div>
       </div>
 
@@ -2197,6 +2237,7 @@
       renderHistoryChart();
       renderTop100();
       renderWorldMap();
+      renderHashTable();
     }
 
     async function renderTop100() {
@@ -2637,6 +2678,105 @@
       btn.classList.add('active');
       const targetId = btn.getAttribute('data-tab');
       document.getElementById(targetId)?.classList.add('active');
+    }
+
+    /* ── Hash Table ────────────────────────── */
+    let allHashes = [];
+    let filteredHashes = [];
+    let hashDisplayCount = 0;
+    const HASH_PAGE_SIZE = 200;
+
+    async function renderHashTable() {
+      try {
+        const r = await fetch(RAW + 'malicious_hashes.txt?_=' + Date.now());
+        if (!r.ok) return;
+        const txt = await r.text();
+        allHashes = txt.split('\n').map(h => h.trim()).filter(h => /^[a-fA-F0-9]{64}$/.test(h));
+        filteredHashes = allHashes;
+        hashDisplayCount = 0;
+        renderHashRows();
+
+        // Update hash count in IOC tab
+        const countEl = document.getElementById('ioc-hash-count');
+        if (countEl) countEl.textContent = fmt(allHashes.length);
+
+        // Update stat card count
+        const statEl = document.getElementById('n-hashes');
+        if (statEl) animateValue(statEl, allHashes.length);
+
+      } catch (e) {
+        console.warn('hashes.txt unavailable', e);
+        document.getElementById('hash-table-body').innerHTML = '<tr><td colspan="3" style="text-align:center; padding:2rem; color:var(--slate)">Hash data will appear after the first feed run.</td></tr>';
+      }
+    }
+
+    function renderHashRows() {
+      const tbody = document.getElementById('hash-table-body');
+      const start = hashDisplayCount;
+      const end = Math.min(hashDisplayCount + HASH_PAGE_SIZE, filteredHashes.length);
+
+      if (start === 0) tbody.innerHTML = '';
+
+      if (filteredHashes.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:2rem; color:var(--slate)">No hashes found.</td></tr>';
+        document.getElementById('hash-load-more').style.display = 'none';
+        document.getElementById('hash-display-count').textContent = '0 hashes';
+        return;
+      }
+
+      for (let i = start; i < end; i++) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="font-weight:600; color:var(--slate); font-size:0.75rem;">${i + 1}</td>
+          <td style="font-family:var(--mono); font-size:0.75rem; color:var(--red); word-break:break-all;">${filteredHashes[i]}</td>
+          <td>
+            <button onclick="copyHash('${filteredHashes[i]}', this)" class="btn btn-outline" style="padding:0.3rem 0.5rem; font-size:0.68rem;" title="Copy hash">
+              <i data-lucide="copy" style="width:12px;height:12px;"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      }
+
+      hashDisplayCount = end;
+      lucide.createIcons();
+
+      // Update display count
+      document.getElementById('hash-display-count').textContent = `Showing ${fmt(hashDisplayCount)} of ${fmt(filteredHashes.length)} hashes`;
+
+      // Show/hide load more button
+      const loadMore = document.getElementById('hash-load-more');
+      if (hashDisplayCount < filteredHashes.length) {
+        loadMore.style.display = 'block';
+        document.getElementById('hash-load-more-btn').innerHTML = `<i data-lucide="chevrons-down"></i> Load More (${fmt(filteredHashes.length - hashDisplayCount)} remaining)`;
+        lucide.createIcons();
+      } else {
+        loadMore.style.display = 'none';
+      }
+    }
+
+    function loadMoreHashes() {
+      renderHashRows();
+    }
+
+    function filterHashes() {
+      const query = document.getElementById('hash-search-input').value.trim().toLowerCase();
+      if (!query) {
+        filteredHashes = allHashes;
+      } else {
+        filteredHashes = allHashes.filter(h => h.includes(query));
+      }
+      hashDisplayCount = 0;
+      renderHashRows();
+    }
+
+    function copyHash(hash, btn) {
+      navigator.clipboard.writeText(hash).then(() => {
+        const orig = btn.innerHTML;
+        btn.innerHTML = '<i data-lucide="check" style="width:12px;height:12px;color:var(--green)"></i>';
+        lucide.createIcons();
+        setTimeout(() => { btn.innerHTML = orig; lucide.createIcons(); }, 1500);
+      });
     }
 
     /* ── World Threat Map ───────────────────── */

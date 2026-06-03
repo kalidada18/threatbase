@@ -56,6 +56,11 @@ https://raw.githubusercontent.com/kalidada18/himalayafeed/main/malicious_ips.csv
 ### 3. Historical Archives (Best for Research)
 A zip archive of the feed is automatically published every day at midnight UTC to the **[Releases](https://github.com/kalidada18/himalayafeed/releases)** page. These daily snapshots allow you to historically analyze which IPs were malicious on any given day.
 
+### 4. Full Malware Hashes (SHA-256)
+`malicious_hashes.txt` — Over **1,000,000+** SHA-256 malware sample hashes sourced from MalwareBazaar. One hash per line, fully visible and searchable on the website.
+```
+https://raw.githubusercontent.com/kalidada18/himalayafeed/main/malicious_hashes.txt
+```
 
 
 ## 🚀 How to Run Your Own Instance
