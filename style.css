@@ -1,58 +1,88 @@
 
-    :root {
-      --white: #ffffff;
-      --snow: #F0F4F8;
-      /* Icy Snow White */
-      --smoke: #f1f3f7;
-      --ash: #e4e7ed;
-      --silver: #c5cad4;
-      --slate: #8891a5;
-      --iron: #5f6980;
-      --ink: #2d3142;
-      --midnight: #0f111a;
-      /* Black */
-      --black: #0f111a;
+    
+:root {
+  /* Apple/Vercel inspired pristine light mode */
+  --bg-deep: #fafafa;
+  --bg-panel: #ffffff;
+  --bg-glass: rgba(255, 255, 255, 0.7);
+  --bg-glass-hover: rgba(255, 255, 255, 0.9);
+  
+  --white: #ffffff;
+  --snow: #fafafa;
+  --smoke: #f4f4f5;
+  --ash: #e4e4e7;
+  --silver: #d4d4d8;
+  --slate: #71717a;
+  --iron: #52525b;
+  --ink: #27272a;
+  --midnight: #09090b;
+  --black: #000000;
 
-      --red: #DC143C;
-      /* Nepali Crimson Red */
-      --red-hover: #B20A2B;
-      --red-light: rgba(220, 20, 60, 0.08);
-      --red-glow: rgba(220, 20, 60, 0.12);
-      --red-border: rgba(220, 20, 60, 0.2);
+  --red: #ef4444;
+  --red-hover: #dc2626;
+  --red-light: rgba(239, 68, 68, 0.1);
+  --red-glow: rgba(239, 68, 68, 0.2);
+  --red-border: rgba(239, 68, 68, 0.3);
 
-      --green: #16a34a;
-      --green-light: #f0fdf4;
-      --amber: #d97706;
-      --amber-light: #fffbeb;
-      --blue: #0f111a;
-      --blue-light: #f1f3f7;
+  --green: #10b981;
+  --green-light: rgba(16, 185, 129, 0.1);
+  --amber: #f59e0b;
+  --amber-light: rgba(245, 158, 11, 0.1);
+  --blue: #3b82f6;
+  --blue-light: rgba(59, 130, 246, 0.1);
+  
+  --nav-bg: rgba(255, 255, 255, 0.8);
+  
+  --font: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-heading: 'Outfit', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', 'Fira Code', monospace;
+  
+  --radius: 16px;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow: 0 8px 30px rgba(0,0,0,0.04);
+  --shadow-lg: 0 20px 40px rgba(0,0,0,0.08);
+}
 
-      --font: 'Inter', system-ui, -apple-system, sans-serif;
-      --font-heading: 'Outfit', system-ui, sans-serif;
-      --mono: 'JetBrains Mono', 'Fira Code', monospace;
-      --radius: 10px;
-      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.03);
-      --shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-      --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.08);
-    }
+:root.dark, body.dark-mode {
+  /* Extremely deep, premium dark mode */
+  --bg-deep: #000000;
+  --bg-panel: #0a0a0a;
+  --bg-glass: rgba(10, 10, 10, 0.6);
+  --bg-glass-hover: rgba(20, 20, 20, 0.8);
+  
+  --white: #0a0a0a;
+  --snow: #000000;
+  --smoke: #171717;
+  --ash: #262626;
+  --silver: #404040;
+  --slate: #a3a3a3;
+  --iron: #d4d4d4;
+  --ink: #f5f5f5;
+  --midnight: #ffffff;
+  --black: #ffffff;
+  
+  --red: #ff3b30;
+  --red-hover: #ff453a;
+  --red-light: rgba(255, 59, 48, 0.15);
+  --red-glow: rgba(255, 59, 48, 0.3);
+  --red-border: rgba(255, 59, 48, 0.4);
 
-    :root.dark {
-      --white: #0a0f1d;
-      --snow: #050810;
-      --smoke: #111a30;
-      --ash: #1e293b;
-      --silver: #334155;
-      --slate: #94a3b8;
-      --iron: #cbd5e1;
-      --ink: #f8fafc;
-      --midnight: #ffffff; /* Fix: was too dark, causing invisible text */
-      --black: #ffffff;
-      --red-light: rgba(220, 20, 60, 0.15);
-      --green-light: rgba(22, 163, 74, 0.15);
-      --amber-light: rgba(217, 119, 6, 0.15);
-      --blue-light: rgba(0, 56, 147, 0.15);
-      --nav-bg: rgba(10, 15, 29, 0.92);
-    }
+  --green: #34c759;
+  --green-light: rgba(52, 199, 89, 0.15);
+  --amber: #ff9f0a;
+  --amber-light: rgba(255, 159, 10, 0.15);
+  --blue: #0a84ff;
+  --blue-light: rgba(10, 132, 255, 0.15);
+  
+  --nav-bg: rgba(0, 0, 0, 0.8);
+  
+  --shadow-sm: 0 1px 2px rgba(255,255,255,0.05);
+  --shadow: 0 8px 30px rgba(0,0,0,0.5);
+  --shadow-lg: 0 20px 40px rgba(0,0,0,0.8);
+}
+
+
+    
 
     *,
     *::before,
@@ -66,13 +96,23 @@
       scroll-behavior: smooth;
     }
 
+    
     body {
       font-family: var(--font);
-      background: var(--snow);
+      background-color: var(--bg-deep);
+      background-image: 
+        radial-gradient(circle at 10% 20%, var(--bg-gradient-1, rgba(220, 38, 38, 0.05)) 0%, transparent 40%),
+        radial-gradient(circle at 90% 10%, var(--bg-gradient-4, rgba(168, 85, 247, 0.03)) 0%, transparent 40%),
+        radial-gradient(circle at 80% 80%, var(--bg-gradient-2, rgba(16, 185, 129, 0.04)) 0%, transparent 50%),
+        radial-gradient(circle at 20% 90%, var(--bg-gradient-3, rgba(59, 130, 246, 0.05)) 0%, transparent 50%);
+      background-attachment: fixed;
       color: var(--ink);
       -webkit-font-smoothing: antialiased;
       line-height: 1.6;
+      transition: background-color 0.4s ease, color 0.4s ease;
+      min-height: 100vh;
     }
+
     
     h1, h2, h3, h4, h5, h6 {
       font-family: var(--font-heading);
@@ -214,13 +254,7 @@
     }
 
     /* ── Hero + Search ─────────────────────────────────── */
-    .hero {
-      background-color: #020617;
-      padding: 7rem 2rem 7rem;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-    }
+    .hero { padding: 9rem 2rem 7rem; text-align: center; position: relative; overflow: hidden; background: transparent; }
 
     #hero-canvas {
       position: absolute;
@@ -485,16 +519,26 @@
       gap: 1rem;
     }
 
+    
     .stat-card {
-      background: var(--white);
+      background: var(--bg-glass);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       border: 1px solid var(--ash);
       border-radius: var(--radius);
-      padding: 1.5rem;
-      box-shadow: var(--shadow-sm);
-      transition: box-shadow 0.2s, transform 0.2s;
+      padding: 1.8rem;
+      box-shadow: var(--shadow);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
       overflow: hidden;
     }
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--silver);
+    }
+    .stat-card::before { display: none; }
+
 
     .stat-card:hover {
       box-shadow: var(--shadow);
@@ -806,6 +850,8 @@
     }
 
     .rc-body {
+      background-color: var(--snow);
+      transition: background-color 0.4s ease, color 0.4s ease;
       background: var(--white);
       border: 1px solid var(--ash);
       border-top: none;
@@ -855,6 +901,8 @@
     }
 
     .rc-panel-body {
+      background-color: var(--snow);
+      transition: background-color 0.4s ease, color 0.4s ease;
       padding: 1.2rem;
     }
 
@@ -1393,9 +1441,7 @@
         display: none;
       }
 
-      .hero {
-        padding: 2.5rem 1rem 2rem;
-      }
+      .hero { padding: 9rem 2rem 7rem; text-align: center; position: relative; overflow: hidden; background: transparent; }
 
       .hero-search-row {
         flex-direction: column;
