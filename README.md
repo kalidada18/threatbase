@@ -9,31 +9,15 @@
     </a>
     <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="Python 3.11+">
     <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
-    <img src="https://img.shields.io/badge/API%20keys-none-brightgreen" alt="No API Keys">
-    <img src="https://img.shields.io/badge/infrastructure-zero-brightgreen" alt="No VPS">
   </p>
   
   <h3>A fully-automated, simple malicious IP intelligence feed.</h3>
+  <p><em>Powered by curiosity</em></p>
 </div>
 
 <br/>
 
-HimalayaFeed is designed for pure simplicity and effectiveness. It aggregates known malicious IPv4 addresses from reputable open-source intelligence (OSINT) feeds without any complex infrastructure requirements.
-
-**No VPCs. No API Keys. No Paid Services. Just Simple Threat Intelligence.**
-
-### 🎨 Visual Identity
-
-HimalayaFeed's website features a **black and red** color scheme — black for all primary text, headings, and data values, paired with **Nepali Crimson Red (#DC143C)** as the accent color. This bold contrast ensures maximum readability and a strong visual presence befitting a threat intelligence platform.
-
----
-
-## ⚡ Why HimalayaFeed?
-
-- **Zero Infrastructure:** Runs entirely on GitHub Actions. You don't need to spin up a VPS, manage servers, or deal with VPC networking.
-- **Zero Cost:** Uses only free, public feeds and free GitHub Actions minutes.
-- **Zero Friction:** Fork the repository once, and the feed updates automatically every hour.
-- **Highly Compatible:** Outputs raw IPs, CSVs, and JSON files ready to be ingested by firewalls, SIEMs, or custom scripts.
+HimalayaFeed is designed for pure simplicity and effectiveness. It aggregates known malicious IPv4 addresses from reputable open-source intelligence (OSINT) feeds.
 
 ---
 
@@ -41,37 +25,25 @@ HimalayaFeed's website features a **black and red** color scheme — black for a
 
 All files are committed directly to this repository and updated automatically every hour. You can pull these directly into your security infrastructure:
 
-### 1. Plain Text (Best for Firewalls & iptables)
-`malicious_ips.txt` — One IPv4 address per line.
+### 🤬 🖕 🛑 Fucking Malicious IPs (Block these assholes)
+`malicious_ips.txt` — One fucking IPv4 address per line. Drop them all to hell!
+
+<img src="https://media.tenor.com/Fw57_XkF60sAAAAC/middle-finger-mr-bean.gif" width="200" alt="Fuck those IPs">
+<img src="https://media.tenor.com/lD2Yd2N3D6sAAAAC/fuck-you.gif" width="200" alt="Fuck you">
+
+
 ```
 https://raw.githubusercontent.com/kalidada18/himalayafeed/main/malicious_ips.txt
 ```
 
-### 2. CSV (Best for SIEMs & Databases)
-`malicious_ips.csv` — Includes the IP, sources that reported it, and a confidence count.
-```
-https://raw.githubusercontent.com/kalidada18/himalayafeed/main/malicious_ips.csv
-```
-
-### 3. Historical Archives (Best for Research)
+### 🗄️ Historical Archives (Best for Research)
 A zip archive of the feed is automatically published every day at midnight UTC to the **[Releases](https://github.com/kalidada18/himalayafeed/releases)** page. These daily snapshots allow you to historically analyze which IPs were malicious on any given day.
 
-### 4. Full Malware Hashes (SHA-256)
+### 💀 Full Malware Hashes (SHA-256)
 `malicious_hashes.txt` — Over **1,000,000+** SHA-256 malware sample hashes sourced from MalwareBazaar. One hash per line, fully visible and searchable on the website.
 ```
 https://raw.githubusercontent.com/kalidada18/himalayafeed/main/malicious_hashes.txt
 ```
-
-
-## 🚀 How to Run Your Own Instance
-
-It takes less than 2 minutes to deploy your own private or public fork of HimalayaFeed:
-
-1. **Fork this repository** to your own GitHub account.
-2. Navigate to **Settings → Actions → General** in your fork.
-3. Ensure that **"Allow all actions and reusable workflows"** is checked and save.
-
-The GitHub Action will now automatically run every hour, gathering threat data and pushing it to your repository.
 
 ---
 
