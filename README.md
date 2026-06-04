@@ -1,8 +1,8 @@
 <div align="center">
   <img src="img/himalayafeed.png" alt="HimalayaFeed" width="130" style="border-radius: 50%;">
 
-  <h1>🏔️ HimalayaFeed</h1>
-  <p><em>Automated malicious IP & IOC intelligence — powered by GitHub Actions.</em></p>
+  <h1> HimalayaFeed</h1>
+  <p><em>Automated malicious IP & IOC intelligence — powered by Curosity.</em></p>
 
   [![Update Feed](https://github.com/kalidada18/himalayafeed/actions/workflows/update-feed.yml/badge.svg)](https://github.com/kalidada18/himalayafeed/actions/workflows/update-feed.yml)
   &nbsp;
