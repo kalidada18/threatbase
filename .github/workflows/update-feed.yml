@@ -5,10 +5,6 @@ on:
   schedule:
     - cron: '0 */2 * * *'
 
-  # ── Re-enable schedule whenever code is pushed to main ────────────────────
-  push:
-    branches: [main]
-
   # ── Manual: trigger from the Actions tab any time ─────────────────────────
   workflow_dispatch:
 
@@ -65,6 +61,7 @@ jobs:
       - name: Run feed aggregator
         env:
           ABUSEIPDB_API_KEY: ${{ secrets.ABUSEIPDB_API_KEY }}
+          OTX_API_KEY: ${{ secrets.OTX_API_KEY }}
           PYTHONUNBUFFERED: '1'
         run: python update_feed.py
 

@@ -54,7 +54,7 @@ FEEDS: Dict[str, str] = {
     "spamhaus_drop": "https://www.spamhaus.org/drop/drop.txt",
     "dshield_blocklist": "https://feeds.dshield.org/block.txt",
     "criticalpath_security": "https://raw.githubusercontent.com/CriticalPathSecurity/Public-Intelligence-Feeds/master/compromised-ips.txt",
-    "alienvault_reputation": "https://reputation.alienvault.com/reputation.data",
+
     "bruteforceblocker": "https://danger.rulez.sk/projects/bruteforceblocker/blist.php",
     "botvrij": "https://www.botvrij.eu/data/misp.text_ip-dst.ADMIN.txt",
 }
@@ -75,7 +75,7 @@ FEED_CATEGORIES: Dict[str, str] = {
     "spamhaus_drop": "Spam",
     "dshield_blocklist": "Malware",
     "criticalpath_security": "Compromised",
-    "alienvault_reputation": "Mixed",
+    "otx_pulses": "Mixed",
     "abuseipdb": "Malicious",
     "bruteforceblocker": "Brute-Force",
     "botvrij": "Mixed",
@@ -106,6 +106,8 @@ THREATFOX_FEEDS: Dict[str, str] = {
 ABUSEIPDB_API_KEY: Optional[str] = os.environ.get("ABUSEIPDB_API_KEY")
 if ABUSEIPDB_API_KEY:
     FEEDS["abuseipdb"] = "https://api.abuseipdb.com/api/v2/blacklist?confidenceMinimum=90"
+
+OTX_API_KEY: Optional[str] = os.environ.get("OTX_API_KEY")
 
 REQUEST_TIMEOUT = (5, 10)
 MAX_WORKERS = 12  # Increased — all feed types now share one pool
@@ -433,6 +435,103 @@ def fetch_threatfox(name: str, url: str) -> dict:
     return result
 
 
+def fetch_otx() -> dict:
+    """
+    Fetch IOCs from AlienVault OTX subscribed pulses.
+    Paginates through /api/v1/pulses/subscribed, extracts all indicator types.
+    Caches results for 6 hours to respect API rate limits (10K req/hr).
+    """
+    result = {"ips": set(), "domains": set(), "hashes": set(), "urls": set()}
+
+    if not OTX_API_KEY:
+        log.info("  ⊘ OTX: No API key set (OTX_API_KEY), skipping")
+        return result
+
+    # ── Check cache (6-hour TTL) ──
+    cache_file = ".otx_cache.json"
+    if os.path.exists(cache_file):
+        try:
+            if time.time() - os.path.getmtime(cache_file) < 21600:  # 6 hours
+                log.info("  ✓ otx_pulses: Loading from local cache (under 6h old)")
+                with open(cache_file, "r", encoding="utf-8") as f:
+                    cached = json.load(f)
+                for key in result:
+                    result[key] = set(cached.get(key, []))
+                log.info(f"  ✓ otx_pulses (cached): {len(result['ips'])} IPs, "
+                         f"{len(result['domains'])} domains, {len(result['hashes'])} hashes, "
+                         f"{len(result['urls'])} URLs")
+                return result
+        except Exception as e:
+            log.warning(f"Failed to read OTX cache: {e}")
+
+    # ── Fetch from API with pagination ──
+    headers = {
+        "X-OTX-API-KEY": OTX_API_KEY,
+        "User-Agent": "HimalayaFeed-Aggregator/3.0",
+    }
+    base_url = "https://otx.alienvault.com/api/v1/pulses/subscribed"
+    page = 1
+    max_pages = 50  # Safety cap
+
+    try:
+        while page <= max_pages:
+            url = f"{base_url}?page={page}&limit=50"
+            r = global_session.get(url, headers=headers, timeout=(10, 30))
+            r.raise_for_status()
+            data = r.json()
+
+            pulses = data.get("results", [])
+            if not pulses:
+                break
+
+            for pulse in pulses:
+                for indicator in pulse.get("indicators", []):
+                    ioc_type = indicator.get("type", "").lower()
+                    ioc_value = indicator.get("indicator", "").strip()
+                    if not ioc_value:
+                        continue
+
+                    if ioc_type in ("ipv4",):
+                        ip_part = ioc_value.split(":")[0]
+                        if is_valid_ipv4(ip_part):
+                            result["ips"].add(ip_part)
+                    elif ioc_type in ("domain", "hostname"):
+                        d = extract_domain(ioc_value)
+                        if d:
+                            result["domains"].add(d)
+                    elif ioc_type in ("filehash-sha256",) and _SHA256_PATTERN.match(ioc_value):
+                        result["hashes"].add(ioc_value.lower())
+                    elif ioc_type in ("filehash-md5",) and _MD5_PATTERN.match(ioc_value):
+                        result["hashes"].add(ioc_value.lower())
+                    elif ioc_type in ("filehash-sha1",) and _HASH_PATTERN.match(ioc_value):
+                        result["hashes"].add(ioc_value.lower())
+                    elif ioc_type == "url" and _URL_PATTERN.match(ioc_value):
+                        result["urls"].add(ioc_value)
+
+            # Check if there are more pages
+            if not data.get("next"):
+                break
+            page += 1
+
+        log.info(f"  ✓ otx_pulses: {len(result['ips'])} IPs, "
+                 f"{len(result['domains'])} domains, {len(result['hashes'])} hashes, "
+                 f"{len(result['urls'])} URLs (fetched {page} pages)")
+
+        # ── Write cache ──
+        try:
+            cache_data = {k: list(v) for k, v in result.items()}
+            with open(cache_file, "w", encoding="utf-8") as f:
+                json.dump(cache_data, f)
+            log.info("  ✓ otx_pulses: Saved to cache")
+        except Exception as e:
+            log.warning(f"Failed to write OTX cache: {e}")
+
+    except Exception as e:
+        log.error(f"  ✗ otx_pulses failed: {e}")
+
+    return result
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Exporters
 # ─────────────────────────────────────────────────────────────────────────────
@@ -569,6 +668,7 @@ def main():
     hash_sources = {}
     url_sources = {}
     tf_results = {}
+    otx_result = {}
     failed = []
 
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
@@ -578,6 +678,7 @@ def main():
         hash_futures = {executor.submit(fetch_hash_feed, n, u): ("hash", n) for n, u in HASH_FEEDS.items()}
         url_futures = {executor.submit(fetch_url_feed, n, u): ("url", n) for n, u in URL_FEEDS.items()}
         tf_futures = {executor.submit(fetch_threatfox, n, u): ("tf", n) for n, u in THREATFOX_FEEDS.items()}
+        otx_future = executor.submit(fetch_otx)
 
         all_futures = {}
         all_futures.update(ip_futures)
@@ -585,6 +686,7 @@ def main():
         all_futures.update(hash_futures)
         all_futures.update(url_futures)
         all_futures.update(tf_futures)
+        all_futures[otx_future] = ("otx", "otx_pulses")
 
         for future in as_completed(all_futures):
             feed_type, name = all_futures[future]
@@ -612,6 +714,8 @@ def main():
                         failed.append(name)
                 elif feed_type == "tf":
                     tf_results[name] = result
+                elif feed_type == "otx":
+                    otx_result = result
             except Exception as e:
                 log.error(f"  ✗ {name} raised exception: {e}")
                 failed.append(name)
@@ -654,6 +758,21 @@ def main():
             hash_sources[name] = hash_sources.get(name, set()) | tf["hashes"]
         if tf["urls"]:
             url_sources[name] = url_sources.get(name, set()) | tf["urls"]
+
+    # ── Merge OTX results into all categories
+    if otx_result:
+        otx_name = "otx_pulses"
+        if otx_result["ips"]:
+            ip_sources[otx_name] = otx_result["ips"]
+            for ip in otx_result["ips"]:
+                if ip not in ip_map:
+                    ip_map[ip] = set()
+                ip_map[ip].add(otx_name)
+        domain_set.update(otx_result["domains"])
+        if otx_result["hashes"]:
+            hash_sources[otx_name] = hash_sources.get(otx_name, set()) | otx_result["hashes"]
+        if otx_result["urls"]:
+            url_sources[otx_name] = url_sources.get(otx_name, set()) | otx_result["urls"]
 
     # Add custom hashes/URLs and historical ones
     if custom_iocs["hashes"]:

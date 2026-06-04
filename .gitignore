@@ -31,3 +31,7 @@ find_canvas.py
 
 # GeoIP database (downloaded at runtime)
 ip2asn-v4.tsv.gz
+
+# API caches
+.otx_cache.json
+.abuseipdb_cache.txt
