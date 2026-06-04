@@ -1,5 +1,8 @@
 name: HimalayaFeed — Update Threat Intelligence Feed
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 on:
   # ── Automatic: every 2 hours at minute 0 ──────────────────────────────────
   schedule:
