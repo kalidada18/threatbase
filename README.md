@@ -25,7 +25,7 @@ HimalayaFeed is designed for pure simplicity and effectiveness. It aggregates kn
 
 All files are committed directly to this repository and updated automatically every hour. You can pull these directly into your security infrastructure:
 
-### 🤬 🖕 🛑 Fucking Malicious IPs (Block these assholes)
+### 🤬 🖕  Fucking Malicious IPs (Block these assholes)
 `malicious_ips.txt` — One fucking IPv4 address per line. Drop them all to hell!
 
 <img src="https://media.tenor.com/Fw57_XkF60sAAAAC/middle-finger-mr-bean.gif" width="200" alt="Fuck those IPs">
