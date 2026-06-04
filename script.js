@@ -120,6 +120,18 @@ async function boot() {
   }
 
   renderHistoryChart();
+
+  // Auto-scan from URL parameter (SIEM-like deep linking)
+  const urlParams = new URLSearchParams(window.location.search);
+  const searchParam = urlParams.get('search') || urlParams.get('q');
+  if (searchParam) {
+    const ipInput = document.getElementById('ip-input');
+    if (ipInput) {
+      ipInput.value = searchParam;
+      // Slight delay to ensure UI is ready
+      setTimeout(() => scanIndicator(), 300);
+    }
+  }
 }
 
 let historyChartInstance = null;
