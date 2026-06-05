@@ -4,9 +4,9 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 on:
-  # ── Automatic: every 2 hours at minute 0 ──────────────────────────────────
+  # ── Automatic: every 8 hours at minute 0 ──────────────────────────────────
   schedule:
-    - cron: '0 */2 * * *'
+    - cron: '0 */8 * * *'
 
   # ── Manual: trigger from the Actions tab any time ─────────────────────────
   workflow_dispatch:

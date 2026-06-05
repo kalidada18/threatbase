@@ -150,8 +150,13 @@ def is_valid_ipv4(ip: str) -> bool:
     if len(parts) != 4:
         return False
     try:
-        p1, p2, p3, p4 = int(parts[0]), int(parts[1]), int(parts[2]), int(parts[3])
-        if not (0 <= p1 <= 255 and 0 <= p2 <= 255 and 0 <= p3 <= 255 and 0 <= p4 <= 255):
+        ip_obj = ipaddress.IPv4Address(ip)
+        if (ip_obj.is_private or 
+            ip_obj.is_multicast or 
+            ip_obj.is_loopback or 
+            ip_obj.is_link_local or 
+            ip_obj.is_reserved or 
+            ip_obj.is_unspecified):
             return False
         return True
     except Exception:
@@ -555,6 +560,12 @@ def write_hashes(hash_map: Dict[str, Set[str]]) -> set:
 
     # Write TXT
     with open("malicious_hashes.txt", "w", encoding="utf-8", buffering=1 << 16) as f:
+        timestamp = datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S +0000")
+        f.write("# HimalayaFeed Threat Intelligence Feed - Hashes\n")
+        f.write("# (https://github.com/kalidada18/himalayafeed)\n")
+        f.write("#\n")
+        f.write(f"# Last update: {timestamp}\n")
+        f.write("#\n")
         for h in all_hashes:
             f.write(h)
             f.write('\n')
@@ -568,6 +579,12 @@ def write_urls(url_map: Dict[str, Set[str]]) -> set:
     all_urls = sorted(set(u for urls in url_map.values() for u in urls))
 
     with open("malicious_urls.txt", "w", encoding="utf-8", buffering=1 << 16) as f:
+        timestamp = datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S +0000")
+        f.write("# HimalayaFeed Threat Intelligence Feed - URLs\n")
+        f.write("# (https://github.com/kalidada18/himalayafeed)\n")
+        f.write("#\n")
+        f.write(f"# Last update: {timestamp}\n")
+        f.write("#\n")
         for u in all_urls:
             f.write(u)
             f.write('\n')
@@ -807,6 +824,12 @@ def main():
 
     # Plain text IP list
     with open("malicious_ips.txt", "w", encoding="utf-8", buffering=1 << 16) as f:
+        timestamp = datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S +0000")
+        f.write("# HimalayaFeed Threat Intelligence Feed - IPs\n")
+        f.write("# (https://github.com/kalidada18/himalayafeed)\n")
+        f.write("#\n")
+        f.write(f"# Last update: {timestamp}\n")
+        f.write("#\n")
         for ip in sorted_ips:
             f.write(ip)
             f.write('\n')
@@ -814,6 +837,12 @@ def main():
     # Plain text domain list
     sorted_domains = sorted(domain_set)
     with open("malicious_domains.txt", "w", encoding="utf-8", buffering=1 << 16) as f:
+        timestamp = datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S +0000")
+        f.write("# HimalayaFeed Threat Intelligence Feed - Domains\n")
+        f.write("# (https://github.com/kalidada18/himalayafeed)\n")
+        f.write("#\n")
+        f.write(f"# Last update: {timestamp}\n")
+        f.write("#\n")
         for d in sorted_domains:
             f.write(d)
             f.write('\n')
