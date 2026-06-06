@@ -1,8 +1,8 @@
-let RAW = './';
+let RAW = 'ioc/';
 if (window.location.hostname === 'kalidada18.github.io') {
-  RAW = 'https://kalidada18.github.io/himalayafeed/';
+  RAW = 'https://kalidada18.github.io/himalayafeed/ioc/';
 } else if (window.location.protocol === 'file:') {
-  RAW = 'https://raw.githubusercontent.com/kalidada18/himalayafeed/main/';
+  RAW = 'https://raw.githubusercontent.com/kalidada18/himalayafeed/main/ioc/';
 }
 const fmt = n => new Intl.NumberFormat('en-US').format(n);
 

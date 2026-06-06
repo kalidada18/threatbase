@@ -76,17 +76,17 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           # Stage all generated output files (including dashboard data)
-          git add malicious_ips.txt stats.json history.json malicious_domains.txt malicious_hashes.txt malicious_urls.txt
+          git add ioc/malicious_ips.txt ioc/stats.json ioc/history.json ioc/malicious_domains.txt ioc/malicious_hashes.txt ioc/malicious_urls.txt
 
           # Check whether any staged file actually changed
           if git diff --staged --quiet; then
             echo "✓ No changes detected — feed is already up-to-date. Skipping commit."
           else
             # Count non-comment IP and domain lines for a meaningful commit message
-            IP_COUNT=$(grep -cE '^[0-9]' malicious_ips.txt 2>/dev/null || echo "0")
-            DOMAIN_COUNT=$(grep -cvE '^$|^#' malicious_domains.txt 2>/dev/null || echo "0")
-            HASH_COUNT=$(wc -l < malicious_hashes.txt 2>/dev/null || echo "0")
-            URL_COUNT=$(wc -l < malicious_urls.txt 2>/dev/null || echo "0")
+            IP_COUNT=$(grep -cE '^[0-9]' ioc/malicious_ips.txt 2>/dev/null || echo "0")
+            DOMAIN_COUNT=$(grep -cvE '^$|^#' ioc/malicious_domains.txt 2>/dev/null || echo "0")
+            HASH_COUNT=$(wc -l < ioc/malicious_hashes.txt 2>/dev/null || echo "0")
+            URL_COUNT=$(wc -l < ioc/malicious_urls.txt 2>/dev/null || echo "0")
             TIMESTAMP=$(date -u '+%Y-%m-%d %H:%M UTC')
             git commit -m "Update: ${TIMESTAMP} — ${IP_COUNT} IPs, ${DOMAIN_COUNT} domains, ${HASH_COUNT} hashes, ${URL_COUNT} URLs"
 
@@ -101,14 +101,14 @@ jobs:
           DATE_DASH=$(date -u +'%Y-%m-%d')
           DATE_DOT=$(date -u +'%Y.%m.%d')
           echo "ARCHIVE_DATE=${DATE_DASH}" >> $GITHUB_ENV
-          zip himalayafeed-archive-${DATE_DOT}.zip malicious_ips.txt malicious_domains.txt malicious_hashes.txt malicious_urls.txt
+          zip -j himalayafeed-archive-${DATE_DOT}.zip ioc/malicious_ips.txt ioc/malicious_domains.txt ioc/malicious_hashes.txt ioc/malicious_urls.txt
 
       - name: Create Daily Archive Release
         uses: ncipollo/release-action@v1
         with:
           tag: archive-${{ env.ARCHIVE_DATE }}
           name: Daily Feed Archive - ${{ env.ARCHIVE_DATE }}
-          artifacts: "malicious_ips.txt,malicious_domains.txt,malicious_hashes.txt,malicious_urls.txt,stats.json,himalayafeed-archive-*.zip"
+          artifacts: "ioc/malicious_ips.txt,ioc/malicious_domains.txt,ioc/malicious_hashes.txt,ioc/malicious_urls.txt,ioc/stats.json,himalayafeed-archive-*.zip"
           allowUpdates: true
           replacesArtifacts: true
           body: "Automated daily archive of the HimalayaFeed threat intelligence database."

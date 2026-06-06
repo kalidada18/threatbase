@@ -218,10 +218,10 @@ def load_existing_iocs() -> dict:
     
     # Map filenames to keys and validation functions
     files_map = {
-        "malicious_ips.txt": ("ips", is_valid_ipv4, lambda x: x),
-        "malicious_domains.txt": ("domains", lambda x: extract_domain(x) is not None, lambda x: extract_domain(x)),
-        "malicious_hashes.txt": ("hashes", lambda x: _HASH_PATTERN.match(x.lower()), lambda x: x.lower()),
-        "malicious_urls.txt": ("urls", lambda x: _URL_PATTERN.match(x), lambda x: x)
+        "ioc/malicious_ips.txt": ("ips", is_valid_ipv4, lambda x: x),
+        "ioc/malicious_domains.txt": ("domains", lambda x: extract_domain(x) is not None, lambda x: extract_domain(x)),
+        "ioc/malicious_hashes.txt": ("hashes", lambda x: _HASH_PATTERN.match(x.lower()), lambda x: x.lower()),
+        "ioc/malicious_urls.txt": ("urls", lambda x: _URL_PATTERN.match(x), lambda x: x)
     }
     
     for filename, (key, validator, transformer) in files_map.items():
@@ -559,7 +559,7 @@ def write_hashes(hash_map: Dict[str, Set[str]]) -> set:
     all_hashes = sorted(hash_sources.keys())
 
     # Write TXT
-    with open("malicious_hashes.txt", "w", encoding="utf-8", buffering=1 << 16) as f:
+    with open("ioc/malicious_hashes.txt", "w", encoding="utf-8", buffering=1 << 16) as f:
         timestamp = datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S +0000")
         f.write("# HimalayaFeed Threat Intelligence Feed - Hashes\n")
         f.write("# (https://github.com/kalidada18/himalayafeed)\n")
@@ -578,7 +578,7 @@ def write_urls(url_map: Dict[str, Set[str]]) -> set:
     """Write malicious_urls.txt."""
     all_urls = sorted(set(u for urls in url_map.values() for u in urls))
 
-    with open("malicious_urls.txt", "w", encoding="utf-8", buffering=1 << 16) as f:
+    with open("ioc/malicious_urls.txt", "w", encoding="utf-8", buffering=1 << 16) as f:
         timestamp = datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S +0000")
         f.write("# HimalayaFeed Threat Intelligence Feed - URLs\n")
         f.write("# (https://github.com/kalidada18/himalayafeed)\n")
@@ -629,7 +629,7 @@ def build_stats(ip_map, ip_sources, failed, ts, domains, hashes=None, urls=None)
 
 
 def write_history(stats: dict) -> None:
-    history_file = "history.json"
+    history_file = "ioc/history.json"
     history = []
     if os.path.exists(history_file):
         try:
@@ -819,11 +819,12 @@ def main():
     all_urls = write_urls(url_sources)
 
     stats = build_stats(ip_map, ip_sources, failed, ts, domain_set, all_hashes, all_urls)
-    with open("stats.json", "w", encoding="utf-8") as f:
+    os.makedirs("ioc", exist_ok=True)
+    with open("ioc/stats.json", "w", encoding="utf-8") as f:
         json.dump(stats, f, indent=2)
 
     # Plain text IP list
-    with open("malicious_ips.txt", "w", encoding="utf-8", buffering=1 << 16) as f:
+    with open("ioc/malicious_ips.txt", "w", encoding="utf-8", buffering=1 << 16) as f:
         timestamp = datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S +0000")
         f.write("# HimalayaFeed Threat Intelligence Feed - IPs\n")
         f.write("# (https://github.com/kalidada18/himalayafeed)\n")
@@ -836,7 +837,7 @@ def main():
 
     # Plain text domain list
     sorted_domains = sorted(domain_set)
-    with open("malicious_domains.txt", "w", encoding="utf-8", buffering=1 << 16) as f:
+    with open("ioc/malicious_domains.txt", "w", encoding="utf-8", buffering=1 << 16) as f:
         timestamp = datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S +0000")
         f.write("# HimalayaFeed Threat Intelligence Feed - Domains\n")
         f.write("# (https://github.com/kalidada18/himalayafeed)\n")
