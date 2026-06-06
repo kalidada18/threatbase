@@ -76,7 +76,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           # Stage all generated output files (including dashboard data)
-          git add ioc/malicious_ips.txt ioc/stats.json ioc/history.json ioc/malicious_domains.txt ioc/malicious_hashes.txt ioc/malicious_urls.txt
+          git add ioc/malicious_ips.txt ioc/malicious_ipv6.txt ioc/malicious_cidrs.txt ioc/stats.json ioc/history.json ioc/malicious_domains.txt ioc/malicious_hashes.txt ioc/malicious_urls.txt
 
           # Check whether any staged file actually changed
           if git diff --staged --quiet; then
@@ -84,12 +84,16 @@ jobs:
           else
             # Get current counts
             IP_COUNT=$(grep -cE '^[0-9]' ioc/malicious_ips.txt 2>/dev/null || echo "0")
+            IPV6_COUNT=$(grep -cvE '^$|^#' ioc/malicious_ipv6.txt 2>/dev/null || echo "0")
+            CIDR_COUNT=$(grep -cvE '^$|^#' ioc/malicious_cidrs.txt 2>/dev/null || echo "0")
             DOMAIN_COUNT=$(grep -cvE '^$|^#' ioc/malicious_domains.txt 2>/dev/null || echo "0")
             HASH_COUNT=$(wc -l < ioc/malicious_hashes.txt 2>/dev/null || echo "0")
             URL_COUNT=$(wc -l < ioc/malicious_urls.txt 2>/dev/null || echo "0")
             
             # Get previous counts from HEAD
             PREV_IP=$(git show HEAD:ioc/malicious_ips.txt 2>/dev/null | grep -cE '^[0-9]' || echo "0")
+            PREV_IPV6=$(git show HEAD:ioc/malicious_ipv6.txt 2>/dev/null | grep -cvE '^$|^#' || echo "0")
+            PREV_CIDR=$(git show HEAD:ioc/malicious_cidrs.txt 2>/dev/null | grep -cvE '^$|^#' || echo "0")
             PREV_DOMAIN=$(git show HEAD:ioc/malicious_domains.txt 2>/dev/null | grep -cvE '^$|^#' || echo "0")
             PREV_HASH=$(git show HEAD:ioc/malicious_hashes.txt 2>/dev/null | wc -l || echo "0")
             PREV_URL=$(git show HEAD:ioc/malicious_urls.txt 2>/dev/null | wc -l || echo "0")
@@ -99,6 +103,8 @@ jobs:
               if [ "$1" -gt 0 ]; then echo "+$1"; else echo "$1"; fi
             }
             D_IP=$(fmt_diff $((IP_COUNT - PREV_IP)))
+            D_IPV6=$(fmt_diff $((IPV6_COUNT - PREV_IPV6)))
+            D_CIDR=$(fmt_diff $((CIDR_COUNT - PREV_CIDR)))
             D_DOMAIN=$(fmt_diff $((DOMAIN_COUNT - PREV_DOMAIN)))
             D_HASH=$(fmt_diff $((HASH_COUNT - PREV_HASH)))
             D_URL=$(fmt_diff $((URL_COUNT - PREV_URL)))
@@ -106,7 +112,7 @@ jobs:
             # Format timestamp in Nepal Time (NPT/NTP)
             TIMESTAMP=$(TZ='Asia/Kathmandu' date '+%Y-%m-%d %I:%M %p NPT')
             
-            git commit -m "Update: ${TIMESTAMP} — Added ${D_IP} IPs, ${D_DOMAIN} Domains, ${D_HASH} Hashes, ${D_URL} URLs" -m "Total: ${IP_COUNT} IPs, ${DOMAIN_COUNT} domains, ${HASH_COUNT} hashes, ${URL_COUNT} URLs"
+            git commit -m "Update: ${TIMESTAMP} — Added ${D_IP} IPs, ${D_IPV6} IPv6, ${D_CIDR} CIDRs, ${D_DOMAIN} Domains, ${D_HASH} Hashes, ${D_URL} URLs" -m "Total: ${IP_COUNT} IPs, ${IPV6_COUNT} IPv6, ${CIDR_COUNT} CIDRs, ${DOMAIN_COUNT} domains, ${HASH_COUNT} hashes, ${URL_COUNT} URLs"
 
             git pull --rebase --autostash --quiet origin "${GITHUB_REF_NAME:-main}" || true
             git push origin "${GITHUB_REF_NAME:-main}"
@@ -119,14 +125,14 @@ jobs:
           DATE_DASH=$(date -u +'%Y-%m-%d')
           DATE_DOT=$(date -u +'%Y.%m.%d')
           echo "ARCHIVE_DATE=${DATE_DASH}" >> $GITHUB_ENV
-          zip -j himalayafeed-archive-${DATE_DOT}.zip ioc/malicious_ips.txt ioc/malicious_domains.txt ioc/malicious_hashes.txt ioc/malicious_urls.txt
+          zip -j himalayafeed-archive-${DATE_DOT}.zip ioc/malicious_ips.txt ioc/malicious_ipv6.txt ioc/malicious_cidrs.txt ioc/malicious_domains.txt ioc/malicious_hashes.txt ioc/malicious_urls.txt
 
       - name: Create Daily Archive Release
         uses: ncipollo/release-action@v1
         with:
           tag: archive-${{ env.ARCHIVE_DATE }}
           name: Daily Feed Archive - ${{ env.ARCHIVE_DATE }}
-          artifacts: "ioc/malicious_ips.txt,ioc/malicious_domains.txt,ioc/malicious_hashes.txt,ioc/malicious_urls.txt,ioc/stats.json,himalayafeed-archive-*.zip"
+          artifacts: "ioc/malicious_ips.txt,ioc/malicious_ipv6.txt,ioc/malicious_cidrs.txt,ioc/malicious_domains.txt,ioc/malicious_hashes.txt,ioc/malicious_urls.txt,ioc/stats.json,himalayafeed-archive-*.zip"
           allowUpdates: true
           replacesArtifacts: true
           body: "Automated daily archive of the HimalayaFeed threat intelligence database."

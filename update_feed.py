@@ -52,6 +52,7 @@ FEEDS: Dict[str, str] = {
     "binary_defense": "https://binarydefense.com/banlist.txt",
     "greensnow": "https://blocklist.greensnow.co/greensnow.txt",
     "spamhaus_drop": "https://www.spamhaus.org/drop/drop.txt",
+    "spamhaus_edrop": "https://www.spamhaus.org/drop/edrop.txt",
     "dshield_blocklist": "https://feeds.dshield.org/block.txt",
     "criticalpath_security": "https://raw.githubusercontent.com/CriticalPathSecurity/Public-Intelligence-Feeds/master/compromised-ips.txt",
 
@@ -97,6 +98,7 @@ URL_FEEDS: Dict[str, str] = {
     "urlhaus_online": "https://urlhaus.abuse.ch/downloads/text_online/",
     "urlhaus_recent": "https://urlhaus.abuse.ch/downloads/csv_recent/",
     "openphish_urls": "https://raw.githubusercontent.com/openphish/public_feed/refs/heads/main/feed.txt",
+    "phishtank": "https://data.phishtank.com/data/online-valid.csv",
 }
 
 THREATFOX_FEEDS: Dict[str, str] = {
@@ -145,6 +147,18 @@ _URL_PATTERN = re.compile(r'^https?://.+')
 # ─────────────────────────────────────────────────────────────────────────────
 # Helpers
 # ─────────────────────────────────────────────────────────────────────────────
+def is_valid_ipv6(ip: str) -> bool:
+    if ":" not in ip:
+        return False
+    try:
+        ip_obj = ipaddress.IPv6Address(ip)
+        if (ip_obj.is_private or ip_obj.is_multicast or ip_obj.is_loopback or 
+            ip_obj.is_link_local or ip_obj.is_reserved or ip_obj.is_unspecified):
+            return False
+        return True
+    except Exception:
+        return False
+
 def is_valid_ipv4(ip: str) -> bool:
     parts = ip.split('.')
     if len(parts) != 4:
@@ -187,7 +201,7 @@ def numerical_ip_key(ip: str) -> tuple:
 
 
 def load_custom_iocs(filename="custom_iocs.txt") -> dict:
-    result = {"ips": set(), "domains": set(), "hashes": set(), "urls": set()}
+    result = {"ips": set(), "ipv6": set(), "cidrs": set(), "domains": set(), "hashes": set(), "urls": set()}
     if not os.path.exists(filename):
         return result
     try:
@@ -214,11 +228,13 @@ def load_custom_iocs(filename="custom_iocs.txt") -> dict:
 
 def load_existing_iocs() -> dict:
     """Load already identified IOCs so the feed is cumulative (never drops IPs)."""
-    result = {"ips": set(), "domains": set(), "hashes": set(), "urls": set()}
+    result = {"ips": set(), "ipv6": set(), "cidrs": set(), "domains": set(), "hashes": set(), "urls": set()}
     
     # Map filenames to keys and validation functions
     files_map = {
         "ioc/malicious_ips.txt": ("ips", is_valid_ipv4, lambda x: x),
+        "ioc/malicious_ipv6.txt": ("ipv6", is_valid_ipv6, lambda x: x),
+        "ioc/malicious_cidrs.txt": ("cidrs", lambda x: "/" in x, lambda x: x),
         "ioc/malicious_domains.txt": ("domains", lambda x: extract_domain(x) is not None, lambda x: extract_domain(x)),
         "ioc/malicious_hashes.txt": ("hashes", lambda x: _HASH_PATTERN.match(x.lower()), lambda x: x.lower()),
         "ioc/malicious_urls.txt": ("urls", lambda x: _URL_PATTERN.match(x), lambda x: x)
@@ -243,14 +259,14 @@ def load_existing_iocs() -> dict:
 # ─────────────────────────────────────────────────────────────────────────────
 # Feed Fetchers
 # ─────────────────────────────────────────────────────────────────────────────
-def fetch_feed(name: str, url: str) -> Set[str]:
+def fetch_feed(name: str, url: str) -> dict:
     headers = {"User-Agent": "HimalayaFeed-Aggregator/3.0"}
     
     if name == "abuseipdb":
         if ABUSEIPDB_API_KEY:
             headers["Key"] = ABUSEIPDB_API_KEY
         else:
-            return set()
+            return {'ipv4': set(), 'ipv6': set(), 'cidrs': set()}
             
         cache_file = ".abuseipdb_cache.txt"
         if os.path.exists(cache_file):
@@ -259,7 +275,7 @@ def fetch_feed(name: str, url: str) -> Set[str]:
                 try:
                     with open(cache_file, "r") as f:
                         ips = {line.strip() for line in f if line.strip()}
-                    return ips
+                    return {'ipv4': ips, 'ipv6': set(), 'cidrs': set()}
                 except Exception as e:
                     log.warning(f"Failed to read abuseipdb cache: {e}")
 
@@ -277,9 +293,11 @@ def fetch_feed(name: str, url: str) -> Set[str]:
             except Exception as e:
                 log.warning(f"Failed to write abuseipdb cache: {e}")
             log.info(f"  ✓ {name}: {len(ips)} IPs (Saved to cache)")
-            return ips
+            return {'ipv4': ips, 'ipv6': set(), 'cidrs': set()}
 
         ips = set()
+        ipv6s = set()
+        cidrs = set()
         raw_lines = 0
         for line in r.text.splitlines():
             line = line.strip()
@@ -291,25 +309,32 @@ def fetch_feed(name: str, url: str) -> Set[str]:
             if "/" in token:
                 try:
                     network = ipaddress.ip_network(token, strict=False)
-                    if network.version == 4 and network.prefixlen >= 24:
-                        for ip in network.hosts():
-                            ip_str = str(ip)
-                            if is_valid_ipv4(ip_str):
-                                ips.add(ip_str)
+                    if network.version == 4:
+                        if network.prefixlen >= 24:
+                            for ip in network.hosts():
+                                ip_str = str(ip)
+                                if is_valid_ipv4(ip_str):
+                                    ips.add(ip_str)
+                        else:
+                            cidrs.add(token)
+                    elif network.version == 6:
+                        cidrs.add(token)
                 except ValueError:
                     pass
             elif is_valid_ipv4(token):
                 ips.add(token)
+            elif is_valid_ipv6(token):
+                ipv6s.add(token)
 
         if name == "greensnow":
             duplicates = raw_lines - len(ips)
             log.info(f"  ✓ {name}: {len(ips)} IPs (Removed {duplicates} duplicate/invalid entries from source)")
         else:
             log.info(f"  ✓ {name}: {len(ips)} IPs")
-        return ips
+        return {'ipv4': ips, 'ipv6': ipv6s, 'cidrs': cidrs}
     except Exception as e:
         log.error(f"  ✗ Feed {name} failed: {e}")
-    return set()
+    return {'ipv4': set(), 'ipv6': set(), 'cidrs': set()}
 
 
 
@@ -398,7 +423,7 @@ def fetch_threatfox(name: str, url: str) -> dict:
     """
     Fetch from ThreatFox — returns dict with keys: ips, domains, hashes, urls.
     """
-    result = {"ips": set(), "domains": set(), "hashes": set(), "urls": set()}
+    result = {"ips": set(), "ipv6": set(), "cidrs": set(), "domains": set(), "hashes": set(), "urls": set()}
     try:
         r = global_session.get(url, timeout=60,
                                headers={"User-Agent": "HimalayaFeed-Aggregator/3.0"})
@@ -446,7 +471,7 @@ def fetch_otx() -> dict:
     Paginates through /api/v1/pulses/subscribed, extracts all indicator types.
     Caches results for 6 hours to respect API rate limits (10K req/hr).
     """
-    result = {"ips": set(), "domains": set(), "hashes": set(), "urls": set()}
+    result = {"ips": set(), "ipv6": set(), "cidrs": set(), "domains": set(), "hashes": set(), "urls": set()}
 
     if not OTX_API_KEY:
         log.info("  ⊘ OTX: No API key set (OTX_API_KEY), skipping")
@@ -593,12 +618,12 @@ def write_urls(url_map: Dict[str, Set[str]]) -> set:
     return all_urls
 
 
-def build_stats(ip_map, ip_sources, failed, ts, domains, hashes=None, urls=None):
+def build_stats(ip_map, ip_sources, failed, ts, domain_map, hashes=None, urls=None, ipv6_map=None, cidr_map=None):
     hashes = hashes or set()
     urls = urls or set()
+    ipv6_map = ipv6_map or {}
+    cidr_map = cidr_map or {}
 
-    # Single-pass: count per-source IPs, multi-source IPs, and categories at once
-    # Old code did O(sources * IPs) — this is O(IPs)
     ips_per_source = {src: 0 for src in ip_sources}
     multi_source = 0
     category_counts = {}
@@ -615,10 +640,12 @@ def build_stats(ip_map, ip_sources, failed, ts, domains, hashes=None, urls=None)
     return {
         "last_updated": ts,
         "total_unique_ips": len(ip_map),
-        "total_unique_domains": len(domains),
+        "total_unique_ipv6": len(ipv6_map),
+        "total_unique_cidrs": len(cidr_map),
+        "total_unique_domains": len(domain_map),
         "total_unique_hashes": len(hashes),
         "total_unique_urls": len(urls),
-        "total_ioc_count": len(ip_map) + len(domains) + len(hashes) + len(urls),
+        "total_ioc_count": len(ip_map) + len(ipv6_map) + len(cidr_map) + len(domain_map) + len(hashes) + len(urls),
         "total_feeds_processed": len(ip_sources),
         "total_feeds_failed": len(failed),
         "multi_source_ips": multi_source,
@@ -686,6 +713,8 @@ def main():
     t0 = time.time()
 
     ip_sources = {}
+    ipv6_sources = {}
+    cidr_sources = {}
     domain_results = {}
     hash_sources = {}
     url_sources = {}
@@ -716,7 +745,9 @@ def main():
                 result = future.result()
                 if feed_type == "ip":
                     if result:
-                        ip_sources[name] = result
+                        ip_sources[name] = result.get('ipv4', set())
+                        ipv6_sources[name] = result.get('ipv6', set())
+                        cidr_sources[name] = result.get('cidrs', set())
                     else:
                         failed.append(name)
                 elif feed_type == "domain":
@@ -790,7 +821,10 @@ def main():
                 if ip not in ip_map:
                     ip_map[ip] = set()
                 ip_map[ip].add(otx_name)
-        domain_set.update(otx_result["domains"])
+        for d in otx_result["domains"]:
+            if d not in domain_map:
+                domain_map[d] = set()
+            domain_map[d].add(otx_name)
         if otx_result["hashes"]:
             hash_sources[otx_name] = hash_sources.get(otx_name, set()) | otx_result["hashes"]
         if otx_result["urls"]:
@@ -809,7 +843,7 @@ def main():
 
     # Sort IPs once
     sorted_ips = sorted(ip_map.keys(), key=numerical_ip_key)
-    log.info(f"Merged in {time.time()-t0:.1f}s — {len(ip_map)} IPs, {len(domain_set)} domains")
+    log.info(f"Merged in {time.time()-t0:.1f}s — {len(ip_map)} IPs, {len(domain_map)} domains")
 
     # ── Write outputs ────────────────────────────────────────────────────────
     log.info("Writing output files...")
@@ -818,7 +852,7 @@ def main():
     all_hashes = write_hashes(hash_sources)
     all_urls = write_urls(url_sources)
 
-    stats = build_stats(ip_map, ip_sources, failed, ts, domain_set, all_hashes, all_urls)
+    stats = build_stats(ip_map, ip_sources, failed, ts, domain_map, all_hashes, all_urls, ipv6_map, cidr_map)
     os.makedirs("ioc", exist_ok=True)
     with open("ioc/stats.json", "w", encoding="utf-8") as f:
         json.dump(stats, f, indent=2)
@@ -836,7 +870,7 @@ def main():
             f.write('\n')
 
     # Plain text domain list
-    sorted_domains = sorted(domain_set)
+    sorted_domains = sorted(domain_map.keys())
     with open("ioc/malicious_domains.txt", "w", encoding="utf-8", buffering=1 << 16) as f:
         timestamp = datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S +0000")
         f.write("# HimalayaFeed Threat Intelligence Feed - Domains\n")
@@ -847,12 +881,29 @@ def main():
         for d in sorted_domains:
             f.write(d)
             f.write('\n')
+            
+    # Write IPv6
+    sorted_ipv6 = sorted(ipv6_map.keys())
+    with open("ioc/malicious_ipv6.txt", "w", encoding="utf-8", buffering=1 << 16) as f:
+        f.write("# HimalayaFeed Threat Intelligence Feed - IPv6\n")
+        f.write(f"# Last update: {timestamp}\n")
+        for ip in sorted_ipv6:
+            f.write(ip + '\n')
+            
+    # Write CIDRs
+    sorted_cidrs = sorted(cidr_map.keys())
+    with open("ioc/malicious_cidrs.txt", "w", encoding="utf-8", buffering=1 << 16) as f:
+        f.write("# HimalayaFeed Threat Intelligence Feed - CIDRs\n")
+        f.write(f"# Last update: {timestamp}\n")
+        for c in sorted_cidrs:
+            f.write(c + '\n')
+            
     write_history(stats)
 
     elapsed = time.time() - t_start
     log.info(f"═" * 55)
     log.info(f"  Done in {elapsed:.1f}s — {stats['total_ioc_count']} IOCs "
-             f"({len(ip_map)} IPs, {len(domain_set)} domains, "
+             f"({len(ip_map)} IPs, {len(domain_map)} domains, "
              f"{len(all_hashes)} hashes, {len(all_urls)} URLs)")
     log.info(f"═" * 55)
 

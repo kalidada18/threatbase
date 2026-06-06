@@ -117,6 +117,10 @@ async function boot() {
   } catch (err) {
     console.warn('stats.json unavailable:', err.message);
     updateSyncTime(null);
+    document.getElementById('n-total').textContent = 'Err';
+    document.getElementById('n-domains').textContent = 'Err';
+    document.getElementById('n-hashes').textContent = 'Err';
+    document.getElementById('n-urls').textContent = 'Err';
   }
 
   renderHistoryChart();
