@@ -46,6 +46,9 @@ function initUI() {
       localStorage.setItem('himalaya-theme', currentTheme);
       applyTheme(currentTheme);
       renderHistoryChart(); // Re-render chart for theme changes
+      if (statsData && statsData.category_counts) {
+        renderCategoryChart(statsData.category_counts);
+      }
     });
   }
 
@@ -112,6 +115,8 @@ async function boot() {
     animateValue(document.getElementById('n-domains'), d.total_unique_domains || 0);
     animateValue(document.getElementById('n-hashes'), d.total_unique_hashes || 0);
     animateValue(document.getElementById('n-urls'), d.total_unique_urls || 0);
+    animateValue(document.getElementById('n-ipv6'), d.total_unique_ipv6 || 0);
+    animateValue(document.getElementById('n-cidrs'), d.total_unique_cidrs || 0);
 
     updateSyncTime(d.last_updated);
   } catch (err) {
@@ -121,9 +126,14 @@ async function boot() {
     document.getElementById('n-domains').textContent = 'Err';
     document.getElementById('n-hashes').textContent = 'Err';
     document.getElementById('n-urls').textContent = 'Err';
+    document.getElementById('n-ipv6').textContent = 'Err';
+    document.getElementById('n-cidrs').textContent = 'Err';
   }
 
   renderHistoryChart();
+  if (statsData && statsData.category_counts) {
+    renderCategoryChart(statsData.category_counts);
+  }
 
   // Auto-scan from URL parameter (SIEM-like deep linking)
   const urlParams = new URLSearchParams(window.location.search);
@@ -147,7 +157,38 @@ async function renderHistoryChart() {
     const history = await r.json();
     if (!history || history.length === 0) return;
 
-    const labels = history.map(h => h.date);
+    if (history.length >= 2) {
+      const today = history[history.length - 1];
+      const yday = history[history.length - 2];
+      
+      const updateTrend = (id, cur, prev) => {
+        const el = document.getElementById(id);
+        if (!el || typeof cur !== 'number' || typeof prev !== 'number') return;
+        const diff = cur - prev;
+        if (diff > 0) {
+          el.textContent = `↑ +${fmt(diff)}`;
+          el.className = 'trend up';
+        } else if (diff < 0) {
+          el.textContent = `↓ ${fmt(diff)}`;
+          el.className = 'trend down';
+        } else {
+          el.textContent = `— 0`;
+          el.className = 'trend neutral';
+        }
+      };
+
+      updateTrend('trend-ips', today.total_unique_ips, yday.total_unique_ips);
+      updateTrend('trend-domains', today.total_unique_domains, yday.total_unique_domains);
+      updateTrend('trend-hashes', today.total_unique_hashes, yday.total_unique_hashes);
+      updateTrend('trend-urls', today.total_unique_urls, yday.total_unique_urls);
+      updateTrend('trend-ipv6', today.total_unique_ipv6, yday.total_unique_ipv6);
+      updateTrend('trend-cidrs', today.total_unique_cidrs, yday.total_unique_cidrs);
+    }
+
+    const labels = history.map(h => {
+      const d = new Date(h.date);
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+    });
     const vals = history.map(h => h.total_unique_ips);
 
     const ctx = document.getElementById('historyChart');
@@ -189,6 +230,14 @@ async function renderHistoryChart() {
         maintainAspectRatio: false,
         plugins: { 
           legend: { display: false }, 
+          subtitle: {
+            display: true,
+            text: '* Feed started ' + labels[0] + ' (Baseline aggregation)',
+            color: textColor,
+            font: { size: 12, weight: 'normal', style: 'italic' },
+            padding: { bottom: 16 },
+            align: 'start'
+          },
           tooltip: { 
             backgroundColor: isLight ? 'rgba(255, 255, 255, 0.95)' : 'rgba(10, 10, 11, 0.95)',
             titleColor: isLight ? '#0a0a0b' : '#fafafa',
@@ -219,6 +268,66 @@ async function renderHistoryChart() {
   } catch (e) {
     console.warn('history.json unavailable', e);
   }
+}
+
+let categoryChartInstance = null;
+function renderCategoryChart(categories) {
+  const ctx = document.getElementById('categoryChart');
+  if (!ctx) return;
+  
+  const labels = [];
+  const vals = [];
+  const sorted = Object.entries(categories).sort((a,b) => b[1] - a[1]);
+  for (const [k, v] of sorted) {
+     if (k === 'Mixed' || k === 'Unknown') continue; // Hide generic categories to show the specialized breakdown
+     labels.push(k);
+     vals.push(v);
+  }
+
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  const textColor = isLight ? '#71717a' : '#a1a1aa';
+  const bgColors = ['#ef4444', '#f59e0b', '#3b82f6', '#8b5cf6', '#10b981', '#ec4899'];
+  
+  const ctx2d = ctx.getContext('2d');
+  if (categoryChartInstance) categoryChartInstance.destroy();
+  
+  categoryChartInstance = new Chart(ctx2d, {
+    type: 'doughnut',
+    data: {
+      labels,
+      datasets: [{
+        data: vals,
+        backgroundColor: bgColors,
+        borderWidth: 2,
+        borderColor: isLight ? '#ffffff' : '#0a0a0b',
+        hoverOffset: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '70%',
+      plugins: {
+        legend: {
+          position: 'right',
+          labels: { color: textColor, font: { size: 11 }, boxWidth: 12, padding: 16 }
+        },
+        tooltip: {
+          backgroundColor: isLight ? 'rgba(255, 255, 255, 0.95)' : 'rgba(10, 10, 11, 0.95)',
+          titleColor: isLight ? '#0a0a0b' : '#fafafa',
+          bodyColor: isLight ? '#3f3f46' : '#d4d4d8',
+          borderColor: isLight ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)',
+          borderWidth: 1,
+          padding: 12,
+          callbacks: {
+            label: function(context) {
+              return ' ' + context.label + ': ' + fmt(context.parsed);
+            }
+          }
+        }
+      }
+    }
+  });
 }
 
 /* ── High-Performance In-Memory Binary Search ── */
@@ -295,9 +404,11 @@ async function scanIndicator() {
   if (!ip) { input.focus(); return; }
 
   const isIP = /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(ip);
-  const isDomain = !isIP && !isURL && !isHash && /^(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\.(?!-)[A-Za-z0-9-]{1,63}(?<!-))*\.[A-Za-z]{2,}$/.test(ip);
+  const isIPv6 = ip.includes(':') && /^[0-9a-fA-F:]+$/.test(ip) && !ip.includes('/');
+  const isCIDR = ip.includes('/') && /^[a-fA-F0-9:\.]+\/\d{1,3}$/.test(ip);
+  const isDomain = !isIP && !isIPv6 && !isCIDR && !isURL && !isHash && /^(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\.(?!-)[A-Za-z0-9-]{1,63}(?<!-))*\.[A-Za-z]{2,}$/.test(ip);
 
-  if (!isIP && !isDomain && !isHash && !isURL) {
+  if (!isIP && !isIPv6 && !isCIDR && !isDomain && !isHash && !isURL) {
     showReport('warn', ip);
     return;
   }
@@ -321,6 +432,8 @@ async function scanIndicator() {
 
   let scanType = 'Indicator';
   if (isIP) scanType = 'IP Address';
+  else if (isIPv6) scanType = 'IPv6 Address';
+  else if (isCIDR) scanType = 'CIDR Block';
   else if (isHash) scanType = 'File Hash';
   else if (isURL) scanType = 'URL';
   else if (isDomain) scanType = 'Domain';
@@ -358,8 +471,12 @@ async function scanIndicator() {
     let compareFn = stringCompare;
     
     if (isIP) {
-      list = await fetchAndCacheFeed(RAW + 'malicious_ips.csv?v=' + feedVersion);
+      list = await fetchAndCacheFeed(RAW + 'malicious_ips.txt?v=' + feedVersion);
       compareFn = ipCsvCompare;
+    } else if (isIPv6) {
+      list = await fetchAndCacheFeed(RAW + 'malicious_ipv6.txt?v=' + feedVersion);
+    } else if (isCIDR) {
+      list = await fetchAndCacheFeed(RAW + 'malicious_cidrs.txt?v=' + feedVersion);
     } else if (isDomain) {
       list = await fetchAndCacheFeed(RAW + 'malicious_domains.txt?v=' + feedVersion);
     } else if (isHash) {
@@ -388,14 +505,14 @@ async function scanIndicator() {
   clearInterval(interval);
 
   overlay.classList.remove('active');
-  showReport(isMalicious ? 'danger' : 'safe', ip, isIP, isDomain, isHash, isURL, riskScore, feedCount);
+  showReport(isMalicious ? 'danger' : 'safe', ip, isIP, isDomain, isHash, isURL, isIPv6, isCIDR, riskScore, feedCount);
 
   btn.innerHTML = '<span>Scan</span>';
   btn.disabled = false;
   lucide.createIcons();
 }
 
-function showReport(type, ip, isIP, isDomain, isHash, isURL, riskScore = 'Low', feedCount = 1) {
+function showReport(type, ip, isIP, isDomain, isHash, isURL, isIPv6, isCIDR, riskScore = 'Low', feedCount = 1) {
   const card = document.getElementById('report-card');
   const header = document.getElementById('rc-header');
   const glow = document.getElementById('rc-glow');
@@ -420,7 +537,8 @@ function showReport(type, ip, isIP, isDomain, isHash, isURL, riskScore = 'Low', 
       
       document.getElementById('rc-assessment').innerHTML = `
         <div class="assessment-title text-red">Immediate Action Required</div>
-        <p>The indicator <code>${ip}</code> has been positively identified as malicious. It was found in <strong>${feedCount}</strong> independent feeds (max feed threshold reached).</p>`;
+        <p>The indicator <code>${ip}</code> has been positively identified as malicious. It was found in <strong>${feedCount}</strong> independent feeds (max feed threshold reached).</p>
+        <div class="rep-meter" title="Threat Confidence Score"><div class="rep-fill" style="width: ${Math.min(100, feedCount * 20)}%; background: var(--accent);"></div></div>`;
     } else if (isIP && riskScore === 'High') {
       header.classList.add('rc-header-danger');
       glow.classList.add('rc-glow-danger');
@@ -432,7 +550,8 @@ function showReport(type, ip, isIP, isDomain, isHash, isURL, riskScore = 'Low', 
       
       document.getElementById('rc-assessment').innerHTML = `
         <div class="assessment-title text-red">Action Recommended</div>
-        <p>The indicator <code>${ip}</code> has been identified as highly malicious. It was found in <strong>${feedCount}</strong> independent feeds.</p>`;
+        <p>The indicator <code>${ip}</code> has been identified as highly malicious. It was found in <strong>${feedCount}</strong> independent feeds.</p>
+        <div class="rep-meter" title="Threat Confidence Score"><div class="rep-fill" style="width: ${Math.min(100, feedCount * 20)}%; background: var(--accent);"></div></div>`;
     } else if (isIP && riskScore === 'Low') {
       header.classList.add('rc-header-warn');
       glow.classList.add('rc-glow-warn');
@@ -444,7 +563,8 @@ function showReport(type, ip, isIP, isDomain, isHash, isURL, riskScore = 'Low', 
       
       document.getElementById('rc-assessment').innerHTML = `
         <div class="assessment-title text-yellow">Monitoring Suggested</div>
-        <p>The indicator <code>${ip}</code> has been identified as malicious. It was found in <strong>${feedCount}</strong> feed(s).</p>`;
+        <p>The indicator <code>${ip}</code> has been identified as malicious. It was found in <strong>${feedCount}</strong> feed(s).</p>
+        <div class="rep-meter" title="Threat Confidence Score"><div class="rep-fill" style="width: ${Math.min(100, feedCount * 20)}%; background: var(--accent);"></div></div>`;
     } else {
       header.classList.add('rc-header-danger');
       glow.classList.add('rc-glow-danger');
@@ -456,7 +576,8 @@ function showReport(type, ip, isIP, isDomain, isHash, isURL, riskScore = 'Low', 
       
       document.getElementById('rc-assessment').innerHTML = `
         <div class="assessment-title text-red">Action Recommended</div>
-        <p>The indicator <code>${ip}</code> has been positively identified as malicious by the HimalayaFeed global sensor network. It is currently active in our threat intelligence blocklists.</p>`;
+        <p>The indicator <code>${ip}</code> has been positively identified as malicious by the HimalayaFeed global sensor network. It is currently active in our threat intelligence blocklists.</p>
+        <div class="rep-meter" title="Threat Confidence Score"><div class="rep-fill" style="width: ${Math.min(100, feedCount * 20)}%; background: var(--accent);"></div></div>`;
     }
   } else if (type === 'safe') {
     header.classList.add('rc-header-safe');
@@ -485,10 +606,10 @@ function showReport(type, ip, isIP, isDomain, isHash, isURL, riskScore = 'Low', 
   const extVt = document.getElementById('ext-vt');
   const extAbuse = document.getElementById('ext-abuse');
   
-  if (isIP) {
-    extVt.href = 'https://www.virustotal.com/gui/ip-address/' + ip;
+  if (isIP || isIPv6) {
+    extVt.href = 'https://www.virustotal.com/gui/ip-address/' + encodeURIComponent(ip);
     extVt.style.display = 'inline-flex';
-    extAbuse.href = 'https://www.abuseipdb.com/check/' + ip;
+    extAbuse.href = 'https://www.abuseipdb.com/check/' + encodeURIComponent(ip);
     extAbuse.style.display = 'inline-flex';
   } else if (isHash) {
     extVt.href = 'https://www.virustotal.com/gui/file/' + ip;
