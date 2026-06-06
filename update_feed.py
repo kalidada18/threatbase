@@ -792,10 +792,32 @@ def main():
             ip_map[ip].add(src)
 
     # ── Merge Domains
-    domain_set: set = custom_iocs["domains"].copy()
-    domain_set.update(existing_iocs["domains"])
-    for domains in domain_results.values():
-        domain_set.update(domains)
+    domain_map: Dict[str, set] = {d: {"custom_iocs.txt"} for d in custom_iocs["domains"]}
+    for d in existing_iocs["domains"]:
+        if d not in domain_map:
+            domain_map[d] = set()
+        domain_map[d].add("historical")
+        
+    for src, domains in domain_results.items():
+        for d in domains:
+            if d not in domain_map:
+                domain_map[d] = set()
+            domain_map[d].add(src)
+
+    # ── Merge IPv6 & CIDR
+    ipv6_map: Dict[str, set] = {ip: {"historical"} for ip in existing_iocs["ipv6"]}
+    for src, ips in ipv6_sources.items():
+        for ip in ips:
+            if ip not in ipv6_map:
+                ipv6_map[ip] = set()
+            ipv6_map[ip].add(src)
+            
+    cidr_map: Dict[str, set] = {c: {"historical"} for c in existing_iocs["cidrs"]}
+    for src, cidrs in cidr_sources.items():
+        for c in cidrs:
+            if c not in cidr_map:
+                cidr_map[c] = set()
+            cidr_map[c].add(src)
 
     # ── Merge ThreatFox results into all categories
     for name, tf in tf_results.items():
@@ -805,7 +827,10 @@ def main():
                 if ip not in ip_map:
                     ip_map[ip] = set()
                 ip_map[ip].add(name)
-        domain_set.update(tf["domains"])
+        for d in tf["domains"]:
+            if d not in domain_map:
+                domain_map[d] = set()
+            domain_map[d].add(name)
         if tf["hashes"]:
             hash_sources[name] = hash_sources.get(name, set()) | tf["hashes"]
         if tf["urls"]:
@@ -880,7 +905,7 @@ def main():
         for d in sorted_domains:
             f.write(d)
             f.write('\n')
-            
+
     # Write IPv6
     sorted_ipv6 = sorted(ipv6_map.keys())
     with open("ioc/malicious_ipv6.txt", "w", encoding="utf-8", buffering=1 << 16) as f:
@@ -896,6 +921,7 @@ def main():
         f.write(f"# Last update: {timestamp}\n")
         for c in sorted_cidrs:
             f.write(c + '\n')
+
             
     write_history(stats)
 
