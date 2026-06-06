@@ -893,6 +893,23 @@ def main():
             f.write(ip)
             f.write('\n')
 
+    # CSV IP list with Risk Score
+    max_count = max(len(sources) for sources in ip_map.values()) if ip_map else 1
+    with open("ioc/malicious_ips.csv", "w", encoding="utf-8", buffering=1 << 16) as f:
+        f.write("ip,feed_count,risk_score\n")
+        for ip in sorted_ips:
+            count = len(ip_map[ip])
+            # If an IP is found in 4+ feeds, it is Critical.
+            # If found in 2-3 feeds, it is High.
+            # If found in 1 feed, it is Low.
+            if count >= 4:
+                score = "Critical"
+            elif count >= 2:
+                score = "High"
+            else:
+                score = "Low"
+            f.write(f"{ip},{count},{score}\n")
+
     # Plain text domain list
     sorted_domains = sorted(domain_map.keys())
     with open("ioc/malicious_domains.txt", "w", encoding="utf-8", buffering=1 << 16) as f:

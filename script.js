@@ -231,7 +231,7 @@ async function fetchAndCacheFeed(url) {
     const r = await fetch(url);
     if (!r.ok) return [];
     const text = await r.text();
-    const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0 && !l.startsWith('#') && !l.startsWith('ip,'));
     feedCache[url] = lines;
     return lines;
   } catch (e) {
@@ -243,6 +243,17 @@ async function fetchAndCacheFeed(url) {
 function ipCompare(query, line) {
   const pA = query.split('.').map(Number);
   const pB = line.split('.').map(Number);
+  for (let i = 0; i < 4; i++) {
+    if ((pA[i] || 0) < (pB[i] || 0)) return -1;
+    if ((pA[i] || 0) > (pB[i] || 0)) return 1;
+  }
+  return 0;
+}
+
+function ipCsvCompare(query, line) {
+  const ipPart = line.split(',')[0];
+  const pA = query.split('.').map(Number);
+  const pB = ipPart.split('.').map(Number);
   for (let i = 0; i < 4; i++) {
     if ((pA[i] || 0) < (pB[i] || 0)) return -1;
     if ((pA[i] || 0) > (pB[i] || 0)) return 1;
@@ -263,11 +274,11 @@ function binarySearchArray(arr, query, compareFn) {
   while (low <= high) {
     const mid = Math.floor((low + high) / 2);
     const comp = compareFn(query, arr[mid]);
-    if (comp === 0) return true;
+    if (comp === 0) return arr[mid];
     if (comp < 0) high = mid - 1;
     else low = mid + 1;
   }
-  return false;
+  return null;
 }
 
 /* ── Threat Scanning UI ── */
@@ -339,13 +350,16 @@ async function scanIndicator() {
 
   // Perform In-Memory Binary Search
   let isMalicious = false;
+  let riskScore = 'Low';
+  let feedCount = 1;
+
   try {
     let list = [];
     let compareFn = stringCompare;
     
     if (isIP) {
-      list = await fetchAndCacheFeed(RAW + 'malicious_ips.txt?v=' + feedVersion);
-      compareFn = ipCompare;
+      list = await fetchAndCacheFeed(RAW + 'malicious_ips.csv?v=' + feedVersion);
+      compareFn = ipCsvCompare;
     } else if (isDomain) {
       list = await fetchAndCacheFeed(RAW + 'malicious_domains.txt?v=' + feedVersion);
     } else if (isHash) {
@@ -354,7 +368,17 @@ async function scanIndicator() {
       list = await fetchAndCacheFeed(RAW + 'malicious_urls.txt?v=' + feedVersion);
     }
     
-    isMalicious = binarySearchArray(list, ip, compareFn);
+    const result = binarySearchArray(list, ip, compareFn);
+    if (result) {
+      isMalicious = true;
+      if (isIP) {
+         const parts = result.split(',');
+         if (parts.length >= 3) {
+            feedCount = parts[1];
+            riskScore = parts[2];
+         }
+      }
+    }
   } catch (e) {
     console.error(e);
   }
@@ -364,14 +388,14 @@ async function scanIndicator() {
   clearInterval(interval);
 
   overlay.classList.remove('active');
-  showReport(isMalicious ? 'danger' : 'safe', ip, isIP, isDomain, isHash, isURL);
+  showReport(isMalicious ? 'danger' : 'safe', ip, isIP, isDomain, isHash, isURL, riskScore, feedCount);
 
   btn.innerHTML = '<span>Scan</span>';
   btn.disabled = false;
   lucide.createIcons();
 }
 
-function showReport(type, ip, isIP, isDomain, isHash, isURL) {
+function showReport(type, ip, isIP, isDomain, isHash, isURL, riskScore = 'Low', feedCount = 1) {
   const card = document.getElementById('report-card');
   const header = document.getElementById('rc-header');
   const glow = document.getElementById('rc-glow');
@@ -385,17 +409,55 @@ function showReport(type, ip, isIP, isDomain, isHash, isURL) {
   iconBg.className = 'rc-h-icon';
 
   if (type === 'danger') {
-    header.classList.add('rc-header-danger');
-    glow.classList.add('rc-glow-danger');
-    iconBg.classList.add('rc-icon-danger');
-    document.getElementById('rc-icon').setAttribute('data-lucide', 'shield-alert');
-    document.getElementById('rc-sub').textContent = 'Malicious Indicator Confirmed';
-    document.getElementById('rc-badge').textContent = 'CRITICAL THREAT';
-    document.getElementById('rc-badge').className = 'rc-h-badge badge-danger';
-    
-    document.getElementById('rc-assessment').innerHTML = `
-      <div class="assessment-title text-red">Immediate Action Required</div>
-      <p>The indicator <code>${ip}</code> has been positively identified as malicious by the HimalayaFeed global sensor network. It is currently active in our threat intelligence blocklists.</p>`;
+    if (isIP && riskScore === 'Critical') {
+      header.classList.add('rc-header-danger');
+      glow.classList.add('rc-glow-danger');
+      iconBg.classList.add('rc-icon-danger');
+      document.getElementById('rc-icon').setAttribute('data-lucide', 'shield-alert');
+      document.getElementById('rc-sub').textContent = 'Critical Threat Confirmed';
+      document.getElementById('rc-badge').textContent = 'CRITICAL THREAT';
+      document.getElementById('rc-badge').className = 'rc-h-badge badge-danger';
+      
+      document.getElementById('rc-assessment').innerHTML = `
+        <div class="assessment-title text-red">Immediate Action Required</div>
+        <p>The indicator <code>${ip}</code> has been positively identified as malicious. It was found in <strong>${feedCount}</strong> independent feeds (max feed threshold reached).</p>`;
+    } else if (isIP && riskScore === 'High') {
+      header.classList.add('rc-header-danger');
+      glow.classList.add('rc-glow-danger');
+      iconBg.classList.add('rc-icon-danger');
+      document.getElementById('rc-icon').setAttribute('data-lucide', 'shield-alert');
+      document.getElementById('rc-sub').textContent = 'High Risk Threat';
+      document.getElementById('rc-badge').textContent = 'HIGH RISK';
+      document.getElementById('rc-badge').className = 'rc-h-badge badge-danger';
+      
+      document.getElementById('rc-assessment').innerHTML = `
+        <div class="assessment-title text-red">Action Recommended</div>
+        <p>The indicator <code>${ip}</code> has been identified as highly malicious. It was found in <strong>${feedCount}</strong> independent feeds.</p>`;
+    } else if (isIP && riskScore === 'Low') {
+      header.classList.add('rc-header-warn');
+      glow.classList.add('rc-glow-warn');
+      iconBg.classList.add('rc-icon-warn');
+      document.getElementById('rc-icon').setAttribute('data-lucide', 'alert-triangle');
+      document.getElementById('rc-sub').textContent = 'Low Risk Threat';
+      document.getElementById('rc-badge').textContent = 'LOW RISK';
+      document.getElementById('rc-badge').className = 'rc-h-badge badge-warn';
+      
+      document.getElementById('rc-assessment').innerHTML = `
+        <div class="assessment-title text-yellow">Monitoring Suggested</div>
+        <p>The indicator <code>${ip}</code> has been identified as malicious. It was found in <strong>${feedCount}</strong> feed(s).</p>`;
+    } else {
+      header.classList.add('rc-header-danger');
+      glow.classList.add('rc-glow-danger');
+      iconBg.classList.add('rc-icon-danger');
+      document.getElementById('rc-icon').setAttribute('data-lucide', 'shield-alert');
+      document.getElementById('rc-sub').textContent = 'Malicious Indicator Confirmed';
+      document.getElementById('rc-badge').textContent = 'THREAT DETECTED';
+      document.getElementById('rc-badge').className = 'rc-h-badge badge-danger';
+      
+      document.getElementById('rc-assessment').innerHTML = `
+        <div class="assessment-title text-red">Action Recommended</div>
+        <p>The indicator <code>${ip}</code> has been positively identified as malicious by the HimalayaFeed global sensor network. It is currently active in our threat intelligence blocklists.</p>`;
+    }
   } else if (type === 'safe') {
     header.classList.add('rc-header-safe');
     glow.classList.add('rc-glow-safe');
