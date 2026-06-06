@@ -428,7 +428,7 @@ def fetch_threatfox(name: str, url: str) -> dict:
                                headers={"User-Agent": "HimalayaFeed-Aggregator/3.0"})
         r.raise_for_status()
         data = r.json()
-        entries = data.get("data", [])
+        entries = data.get("data", data)
         if isinstance(entries, dict):
             entries = list(entries.values())
         if isinstance(entries, list):
