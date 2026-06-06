@@ -91,5 +91,29 @@
       "firehol_level3": 33084,
       "firehol_level2": 30642
     }
+  },
+  {
+    "date": "2026-06-06",
+    "total_unique_ips": 1061291,
+    "total_unique_domains": 785583,
+    "total_unique_hashes": 1092594,
+    "total_unique_urls": 33146,
+    "active_feeds": 18,
+    "category_counts": {
+      "Spam": 184150,
+      "Mixed": 1785986,
+      "Compromised": 16050,
+      "Brute-Force": 28596,
+      "C2": 7612,
+      "Malicious": 9969,
+      "Malware": 8862
+    },
+    "top_sources": {
+      "firehol_level1": 549717,
+      "spamhaus_drop": 184150,
+      "ipsum": 119449,
+      "firehol_level3": 33368,
+      "firehol_level2": 26818
+    }
   }
 ]
