@@ -98,6 +98,7 @@ DOMAIN_FEEDS: Dict[str, str] = {
     "urlhaus": "https://urlhaus.abuse.ch/downloads/text_online/",
     "romainmarcoux": "https://raw.githubusercontent.com/romainmarcoux/malicious-domains/refs/heads/main/full-domains-aa.txt",
     "hagezi_ultimate": "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/domains/ultimate.txt",
+    "stevenblack_hosts": "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts",
     "blocklist_malware": "https://blocklistproject.github.io/Lists/malware.txt",
     "blocklist_torrent": "https://blocklistproject.github.io/Lists/torrent.txt",
     "blocklist_fraud": "https://blocklistproject.github.io/Lists/fraud.txt",
