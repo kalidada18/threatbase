@@ -114,7 +114,9 @@
       "ipsum": 119449,
       "firehol_level3": 33336,
       "firehol_level2": 27691
-    }
+    },
+    "total_unique_ipv6": 112,
+    "total_unique_cidrs": 2432
   },
   {
     "date": "2026-06-07",
@@ -139,6 +141,8 @@
       "romainmarcoux_outgoing_aa": 131072,
       "ipsum": 120811,
       "romainmarcoux_outgoing_ab": 60832
-    }
+    },
+    "total_unique_ipv6": 3205,
+    "total_unique_cidrs": 2432
   }
 ]

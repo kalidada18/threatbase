@@ -688,6 +688,8 @@ def write_history(stats: dict) -> None:
     entry = {
         "date": current_date,
         "total_unique_ips": stats["total_unique_ips"],
+        "total_unique_ipv6": stats.get("total_unique_ipv6", 0),
+        "total_unique_cidrs": stats.get("total_unique_cidrs", 0),
         "total_unique_domains": stats.get("total_unique_domains", 0),
         "total_unique_hashes": stats.get("total_unique_hashes", 0),
         "total_unique_urls": stats.get("total_unique_urls", 0),
