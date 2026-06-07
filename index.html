@@ -95,6 +95,7 @@
           <div class="hero-search" id="lookup">
             <div class="hero-search-row">
               <i data-lucide="search" class="hero-search-icon" aria-hidden="true"></i>
+              <label for="ip-input" class="sr-only">Search indicator</label>
               <input type="text" class="hero-search-input" id="ip-input"
                 placeholder="Scan IP, Domain, Hash, or URL..." autocomplete="off" spellcheck="false" aria-label="Search threat indicator">
               <button class="hero-search-btn" id="scan-btn" onclick="scanIndicator()">
@@ -174,7 +175,7 @@
               <span class="stat-label">Malicious IPs</span>
               <div class="stat-icon icon-red"><i data-lucide="radar"></i></div>
             </div>
-            <div class="stat-value" id="n-total">-</div>
+            <div class="stat-value tabular-nums" id="n-total">-</div>
             <div class="stat-sub">Active IPv4 addresses <span id="trend-ips" class="trend neutral"></span></div>
           </div>
           
@@ -183,7 +184,7 @@
               <span class="stat-label">Domains</span>
               <div class="stat-icon icon-purple"><i data-lucide="network"></i></div>
             </div>
-            <div class="stat-value" id="n-domains">-</div>
+            <div class="stat-value tabular-nums" id="n-domains">-</div>
             <div class="stat-sub">Known malicious domains <span id="trend-domains" class="trend neutral"></span></div>
           </div>
           
@@ -192,7 +193,7 @@
               <span class="stat-label">File Hashes</span>
               <div class="stat-icon icon-amber"><i data-lucide="fingerprint"></i></div>
             </div>
-            <div class="stat-value" id="n-hashes">-</div>
+            <div class="stat-value tabular-nums" id="n-hashes">-</div>
             <div class="stat-sub">SHA-256 signatures <span id="trend-hashes" class="trend neutral"></span></div>
           </div>
           
@@ -201,7 +202,7 @@
               <span class="stat-label">Malicious URLs</span>
               <div class="stat-icon icon-blue"><i data-lucide="unlink"></i></div>
             </div>
-            <div class="stat-value" id="n-urls">-</div>
+            <div class="stat-value tabular-nums" id="n-urls">-</div>
             <div class="stat-sub">Active phishing URLs <span id="trend-urls" class="trend neutral"></span></div>
           </div>
           
@@ -210,7 +211,7 @@
               <span class="stat-label">IPv6 Addresses</span>
               <div class="stat-icon icon-teal"><i data-lucide="network"></i></div>
             </div>
-            <div class="stat-value" id="n-ipv6">-</div>
+            <div class="stat-value tabular-nums" id="n-ipv6">-</div>
             <div class="stat-sub">Active IPv6 threats <span id="trend-ipv6" class="trend neutral"></span></div>
           </div>
           
@@ -219,7 +220,7 @@
               <span class="stat-label">CIDR Blocks</span>
               <div class="stat-icon icon-orange"><i data-lucide="layers"></i></div>
             </div>
-            <div class="stat-value" id="n-cidrs">-</div>
+            <div class="stat-value tabular-nums" id="n-cidrs">-</div>
             <div class="stat-sub">Malicious subnets <span id="trend-cidrs" class="trend neutral"></span></div>
           </div>
         </div>

@@ -16,9 +16,9 @@
 
   /* ── Text ── */
   --text-primary: #fafafa;
-  --text-secondary: #a1a1aa;
-  --text-muted: #71717a;
-  --text-faint: #52525b;
+  --text-secondary: #d4d4d8;
+  --text-muted: #a1a1aa;
+  --text-faint: #71717a;
 
   /* ── Accents ── */
   --accent: #ef4444;
@@ -83,10 +83,10 @@
   --border-default: rgba(0, 0, 0, 0.1);
   --border-strong: rgba(0, 0, 0, 0.18);
 
-  --text-primary: #0a0a0b;
-  --text-secondary: #52525b;
-  --text-muted: #71717a;
-  --text-faint: #a1a1aa;
+  --text-primary: #09090b;
+  --text-secondary: #3f3f46;
+  --text-muted: #52525b;
+  --text-faint: #71717a;
 
   --accent: #dc2626;
   --accent-hover: #b91c1c;
@@ -176,6 +176,32 @@ h1, h2, h3, h4, h5, h6 {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--text-faint); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* ── Accessibility & Utilities ── */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
 
 /* ═══════════════════════════════════════════════════════════════
    Container
@@ -640,7 +666,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .hero-search-btn:active {
-  transform: scale(0.97);
+  transform: scale(0.98);
 }
 
 .hero-search-btn:focus-visible {
@@ -695,7 +721,7 @@ h1, h2, h3, h4, h5, h6 {
   transform: translateY(-1px);
 }
 
-.btn-primary:active { transform: translateY(0); }
+.btn-primary:active { transform: translateY(0) scale(0.98); }
 
 .btn-glass {
   background: var(--bg-raised);
@@ -709,6 +735,10 @@ h1, h2, h3, h4, h5, h6 {
   border-color: var(--border-strong);
 }
 
+.btn-glass:active {
+  transform: scale(0.98);
+}
+
 .btn-outline {
   background: transparent;
   color: var(--text-secondary);
@@ -719,6 +749,10 @@ h1, h2, h3, h4, h5, h6 {
   background: var(--bg-raised);
   color: var(--text-primary);
   border-color: var(--border-strong);
+}
+
+.btn-outline:active {
+  transform: scale(0.98);
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -1092,7 +1126,7 @@ h1, h2, h3, h4, h5, h6 {
 @media (min-width: 768px) {
   .stats-grid {
     grid-template-columns: repeat(4, 1fr);
-    gap: var(--space-4);
+    gap: var(--space-5);
   }
 }
 
@@ -1111,6 +1145,10 @@ h1, h2, h3, h4, h5, h6 {
 .stat-card:hover {
   border-color: var(--border-default);
   transform: translateY(-2px);
+}
+
+.stat-card:active {
+  transform: translateY(0) scale(0.98);
 }
 
 .stat-top {
@@ -1173,7 +1211,10 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 @media (min-width: 1024px) {
-  .dl-grid { grid-template-columns: repeat(4, 1fr); }
+  .dl-grid { 
+    grid-template-columns: repeat(4, 1fr); 
+    gap: var(--space-5);
+  }
 }
 
 .dl-card {
@@ -1191,6 +1232,10 @@ h1, h2, h3, h4, h5, h6 {
 .dl-card:hover {
   transform: translateY(-3px);
   border-color: var(--border-default);
+}
+
+.dl-card:active {
+  transform: translateY(0) scale(0.98);
 }
 
 .dl-glow {
