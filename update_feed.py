@@ -120,7 +120,7 @@ THREATFOX_FEEDS: Dict[str, str] = {
 
 ABUSEIPDB_API_KEY: Optional[str] = os.environ.get("ABUSEIPDB_API_KEY")
 if ABUSEIPDB_API_KEY:
-    FEEDS["abuseipdb"] = "https://otx.alienvault.com/pulse/60ece5998a5b54a5ffe75cb4"
+    FEEDS["abuseipdb"] = "https://api.abuseipdb.com/api/v2/blacklist?confidenceMinimum=70"
 
 OTX_API_KEY: Optional[str] = os.environ.get("OTX_API_KEY")
 
