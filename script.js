@@ -541,59 +541,17 @@ function showReport(type, ip, isIP, isDomain, isHash, isURL, isIPv6, isCIDR, ris
   iconBg.className = 'rc-h-icon';
 
   if (type === 'danger') {
-    if (isIP && riskScore === 'Critical') {
-      header.classList.add('rc-header-danger');
-      glow.classList.add('rc-glow-danger');
-      iconBg.classList.add('rc-icon-danger');
-      document.getElementById('rc-icon').setAttribute('data-lucide', 'shield-alert');
-      document.getElementById('rc-sub').textContent = 'Critical Threat Confirmed';
-      document.getElementById('rc-badge').textContent = 'CRITICAL THREAT';
-      document.getElementById('rc-badge').className = 'rc-h-badge badge-danger';
-      
-      document.getElementById('rc-assessment').innerHTML = `
-        <div class="assessment-title text-red">Immediate Action Required</div>
-        <p>The indicator <code>${ip}</code> has been positively identified as malicious. It was found in <strong>${feedCount}</strong> independent feeds (max feed threshold reached).</p>
-        <div class="rep-meter" title="Threat Confidence Score"><div class="rep-fill" style="width: ${Math.min(100, feedCount * 20)}%; background: var(--accent);"></div></div>`;
-    } else if (isIP && riskScore === 'High') {
-      header.classList.add('rc-header-danger');
-      glow.classList.add('rc-glow-danger');
-      iconBg.classList.add('rc-icon-danger');
-      document.getElementById('rc-icon').setAttribute('data-lucide', 'shield-alert');
-      document.getElementById('rc-sub').textContent = 'High Risk Threat';
-      document.getElementById('rc-badge').textContent = 'HIGH RISK';
-      document.getElementById('rc-badge').className = 'rc-h-badge badge-danger';
-      
-      document.getElementById('rc-assessment').innerHTML = `
-        <div class="assessment-title text-red">Action Recommended</div>
-        <p>The indicator <code>${ip}</code> has been identified as highly malicious. It was found in <strong>${feedCount}</strong> independent feeds.</p>
-        <div class="rep-meter" title="Threat Confidence Score"><div class="rep-fill" style="width: ${Math.min(100, feedCount * 20)}%; background: var(--accent);"></div></div>`;
-    } else if (isIP && riskScore === 'Low') {
-      header.classList.add('rc-header-warn');
-      glow.classList.add('rc-glow-warn');
-      iconBg.classList.add('rc-icon-warn');
-      document.getElementById('rc-icon').setAttribute('data-lucide', 'alert-triangle');
-      document.getElementById('rc-sub').textContent = 'Low Risk Threat';
-      document.getElementById('rc-badge').textContent = 'LOW RISK';
-      document.getElementById('rc-badge').className = 'rc-h-badge badge-warn';
-      
-      document.getElementById('rc-assessment').innerHTML = `
-        <div class="assessment-title text-yellow">Monitoring Suggested</div>
-        <p>The indicator <code>${ip}</code> has been identified as malicious. It was found in <strong>${feedCount}</strong> feed(s).</p>
-        <div class="rep-meter" title="Threat Confidence Score"><div class="rep-fill" style="width: ${Math.min(100, feedCount * 20)}%; background: var(--accent);"></div></div>`;
-    } else {
-      header.classList.add('rc-header-danger');
-      glow.classList.add('rc-glow-danger');
-      iconBg.classList.add('rc-icon-danger');
-      document.getElementById('rc-icon').setAttribute('data-lucide', 'shield-alert');
-      document.getElementById('rc-sub').textContent = 'Malicious Indicator Confirmed';
-      document.getElementById('rc-badge').textContent = 'THREAT DETECTED';
-      document.getElementById('rc-badge').className = 'rc-h-badge badge-danger';
-      
-      document.getElementById('rc-assessment').innerHTML = `
-        <div class="assessment-title text-red">Action Recommended</div>
-        <p>The indicator <code>${ip}</code> has been positively identified as malicious by the HimalayaFeed global sensor network. It is currently active in our threat intelligence blocklists.</p>
-        <div class="rep-meter" title="Threat Confidence Score"><div class="rep-fill" style="width: ${Math.min(100, feedCount * 20)}%; background: var(--accent);"></div></div>`;
-    }
+    header.classList.add('rc-header-danger');
+    glow.classList.add('rc-glow-danger');
+    iconBg.classList.add('rc-icon-danger');
+    document.getElementById('rc-icon').setAttribute('data-lucide', 'shield-alert');
+    document.getElementById('rc-sub').textContent = 'Malicious Indicator Confirmed';
+    document.getElementById('rc-badge').textContent = 'THREAT DETECTED';
+    document.getElementById('rc-badge').className = 'rc-h-badge badge-danger';
+    
+    document.getElementById('rc-assessment').innerHTML = `
+      <div class="assessment-title text-red">Action Recommended</div>
+      <p>The indicator <code>${ip}</code> has been positively identified as malicious by the HimalayaFeed global sensor network. It is currently active in our threat intelligence blocklists.</p>`;
   } else if (type === 'safe') {
     header.classList.add('rc-header-safe');
     glow.classList.add('rc-glow-safe');

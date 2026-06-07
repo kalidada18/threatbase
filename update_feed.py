@@ -53,8 +53,6 @@ FEEDS: Dict[str, str] = {
     "greensnow": "https://blocklist.greensnow.co/greensnow.txt",
     "spamhaus_drop": "https://www.spamhaus.org/drop/drop.txt",
     "spamhaus_edrop": "https://www.spamhaus.org/drop/edrop.txt",
-    "bitwire_inbound": "https://raw.githubusercontent.com/bitwire-it/ipblocklist/main/inbound.txt",
-    "bitwire_outbound": "https://raw.githubusercontent.com/bitwire-it/ipblocklist/main/outbound.txt",
     "dshield_blocklist": "https://feeds.dshield.org/block.txt",
     "criticalpath_security": "https://raw.githubusercontent.com/CriticalPathSecurity/Public-Intelligence-Feeds/master/compromised-ips.txt",
 
@@ -84,8 +82,6 @@ FEED_CATEGORIES: Dict[str, str] = {
     "dshield_blocklist": "Malware",
     "criticalpath_security": "Compromised",
     "abuseipdb": "Malicious",
-    "bitwire_inbound": "Malicious",
-    "bitwire_outbound": "Malicious",
     "bruteforceblocker": "Brute-Force",
     "botvrij": "Mixed",
     "threatfox_recent": "Mixed",
@@ -243,33 +239,8 @@ def load_custom_iocs(filename="custom_iocs.txt") -> dict:
 
 
 def load_existing_iocs() -> dict:
-    """Load already identified IOCs so the feed is cumulative (never drops IPs)."""
-    result = {"ips": set(), "ipv6": set(), "cidrs": set(), "domains": set(), "hashes": set(), "urls": set()}
-    
-    # Map filenames to keys and validation functions
-    files_map = {
-        "ioc/malicious_ips.txt": ("ips", is_valid_ipv4, lambda x: x),
-        "ioc/malicious_ipv6.txt": ("ipv6", is_valid_ipv6, lambda x: x),
-        "ioc/malicious_cidrs.txt": ("cidrs", lambda x: "/" in x, lambda x: x),
-        "ioc/malicious_domains.txt": ("domains", lambda x: extract_domain(x) is not None, lambda x: extract_domain(x)),
-        "ioc/malicious_hashes.txt": ("hashes", lambda x: _HASH_PATTERN.match(x.lower()), lambda x: x.lower()),
-        "ioc/malicious_urls.txt": ("urls", lambda x: _URL_PATTERN.match(x), lambda x: x)
-    }
-    
-    for filename, (key, validator, transformer) in files_map.items():
-        if os.path.exists(filename):
-            try:
-                with open(filename, "r", encoding="utf-8") as f:
-                    for line in f:
-                        line = line.strip()
-                        if line and not line.startswith(('#', '//')):
-                            if validator(line):
-                                result[key].add(transformer(line))
-                log.info(f"Loaded existing {len(result[key])} {key} from {filename}")
-            except Exception as e:
-                log.error(f"Failed to load existing {filename}: {e}")
-                
-    return result
+    """Return empty sets instead of loading historical IOCs so the feed drops IPs that are no longer malicious."""
+    return {"ips": set(), "ipv6": set(), "cidrs": set(), "domains": set(), "hashes": set(), "urls": set()}
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -781,19 +752,17 @@ def main():
     with open("ioc/stats.json", "w", encoding="utf-8") as f:
         json.dump(stats, f, indent=2)
 
-    # Plain text IP list with Risk Score (10 to 100)
+    # Plain text IP list
     with open("ioc/malicious_ips.txt", "w", encoding="utf-8", buffering=1 << 16) as f:
         timestamp = datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S +0000")
         f.write("# HimalayaFeed Threat Intelligence Feed - IPs\n")
         f.write("# (https://github.com/kalidada18/himalayafeed)\n")
-        f.write("# Format: IP,Score\n")
+        f.write("# Format: IP\n")
         f.write("#\n")
         f.write(f"# Last update: {timestamp}\n")
         f.write("#\n")
         for ip in sorted_ips:
-            count = len(ip_map[ip])
-            score = min(100, count * 10)
-            f.write(f"{ip},{score}\n")
+            f.write(f"{ip}\n")
 
     # Plain text domain list
     sorted_domains = sorted(domain_map.keys())
