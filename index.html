@@ -1,17 +1,21 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
   <meta name="theme-color" content="#0a0a0b">
   <title>HimalayaFeed — Advanced Threat Intelligence</title>
-  <meta name="description" content="HimalayaFeed tracks malicious infrastructure globally. A lightweight, high-performance blocklist ready for deployment.">
+  <meta name="description"
+    content="HimalayaFeed tracks malicious infrastructure globally. A lightweight, high-performance blocklist ready for deployment.">
   <link rel="icon" href="img/himalayafeed.png" type="image/png">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet">
+
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <link rel="stylesheet" href="style.css">
@@ -25,7 +29,8 @@
   <nav class="nav">
     <div class="nav-inner">
       <a href="#" class="nav-brand" aria-label="HimalayaFeed Home">
-        <img src="https://raw.githubusercontent.com/kalidada18/himalayafeed/main/img/himalayafeed.png" alt="" aria-hidden="true">
+        <img src="https://raw.githubusercontent.com/kalidada18/himalayafeed/main/img/himalayafeed.png" alt=""
+          aria-hidden="true">
         <span>Himalaya<em class="brand-accent">Feed</em></span>
       </a>
 
@@ -41,12 +46,13 @@
           <div class="nav-dot" aria-hidden="true"></div>
           <span id="sync-status">Operational</span>
         </div>
-        
+
         <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle Theme">
           <i data-lucide="moon" id="theme-icon"></i>
         </button>
 
-        <button id="mobile-menu-btn" class="hamburger" aria-label="Open Menu" aria-expanded="false" aria-controls="mobile-drawer">
+        <button id="mobile-menu-btn" class="hamburger" aria-label="Open Menu" aria-expanded="false"
+          aria-controls="mobile-drawer">
           <i data-lucide="menu"></i>
         </button>
       </div>
@@ -58,19 +64,21 @@
     <nav id="mobile-drawer" class="mobile-drawer" aria-label="Mobile Navigation">
       <div class="mobile-drawer-header">
         <div class="nav-brand">
-          <img src="https://raw.githubusercontent.com/kalidada18/himalayafeed/main/img/himalayafeed.png" alt="" aria-hidden="true">
+          <img src="https://raw.githubusercontent.com/kalidada18/himalayafeed/main/img/himalayafeed.png" alt=""
+            aria-hidden="true">
           <span>Himalaya<em class="brand-accent">Feed</em></span>
         </div>
         <button id="mobile-close-btn" class="mobile-drawer-close" aria-label="Close Menu">
           <i data-lucide="x"></i>
         </button>
       </div>
-      
+
       <ul class="mobile-nav-links">
         <li><a href="#dashboard" class="mobile-link active"><i data-lucide="layout-dashboard"></i> Dashboard</a></li>
         <li><a href="#feeds" class="mobile-link"><i data-lucide="server"></i> Threat Feeds</a></li>
         <li><a href="#analytics" class="mobile-link"><i data-lucide="trending-up"></i> Analytics</a></li>
-        <li><a href="https://github.com/kalidada18/himalayafeed" class="mobile-link" target="_blank" rel="noopener"><i data-lucide="github"></i> GitHub</a></li>
+        <li><a href="https://github.com/kalidada18/himalayafeed" class="mobile-link" target="_blank" rel="noopener"><i
+              data-lucide="github"></i> GitHub</a></li>
       </ul>
 
       <div class="mobile-drawer-status" aria-live="polite">
@@ -85,10 +93,11 @@
     <header class="hero" id="dashboard">
       <div class="hero-glow hero-glow-1"></div>
       <div class="hero-glow hero-glow-2"></div>
-      
+
       <div class="hero-inner">
-        <h1>Tracking threats, <br><span class="hero-highlight">so you don't have to.</span></h1>
-        <p class="hero-sub">HimalayaFeed aggregates and sanitizes global threat data into a lightweight, high-performance blocklist ready for immediate deployment.</p>
+        <h1>Tracking threats <br><span class="hero-highlight">so you don't have to.</span></h1>
+        <p class="hero-sub">HimalayaFeed aggregates and sanitizes global threat data into a lightweight,
+          high-performance blocklist ready for immediate deployment.</p>
 
         <!-- Search / Scan Module -->
         <div class="hero-search-wrapper">
@@ -96,8 +105,8 @@
             <div class="hero-search-row">
               <i data-lucide="search" class="hero-search-icon" aria-hidden="true"></i>
               <label for="ip-input" class="sr-only">Search indicator</label>
-              <input type="text" class="hero-search-input" id="ip-input"
-                placeholder="Scan IP, Domain, Hash, or URL..." autocomplete="off" spellcheck="false" aria-label="Search threat indicator">
+              <input type="text" class="hero-search-input" id="ip-input" placeholder="Scan IP, Domain, Hash, or URL..."
+                autocomplete="off" spellcheck="false" aria-label="Search threat indicator">
               <button class="hero-search-btn" id="scan-btn" onclick="scanIndicator()">
                 <span>Scan</span>
               </button>
@@ -127,7 +136,9 @@
           </div>
           <div class="scan-title" id="scan-title-text">Initializing scan...</div>
           <div class="scan-ip" id="scan-ip"></div>
-          <div class="scan-progress-bar"><div class="scan-progress-fill"></div></div>
+          <div class="scan-progress-bar">
+            <div class="scan-progress-fill"></div>
+          </div>
         </div>
 
         <!-- Result Card -->
@@ -147,12 +158,13 @@
           <div class="rc-body">
             <div class="rc-grid">
               <div class="rc-assessment-panel" id="rc-assessment"></div>
-              
+
               <div class="rc-side">
                 <div class="rc-side-label">Intelligence Sources</div>
                 <div class="rc-ext" id="rc-ext">
                   <a class="rc-ext-btn vt-btn" id="ext-vt" href="#" target="_blank" rel="noopener">
-                    <img src="https://www.virustotal.com/gui/images/favicon.png" alt="" class="vt-icon" aria-hidden="true"> VirusTotal
+                    <img src="https://www.virustotal.com/gui/images/favicon.png" alt="" class="vt-icon"
+                      aria-hidden="true"> VirusTotal
                   </a>
                   <a class="rc-ext-btn abuse-btn" id="ext-abuse" href="#" target="_blank" rel="noopener">
                     <i data-lucide="alert-octagon"></i> AbuseIPDB
@@ -178,7 +190,7 @@
             <div class="stat-value tabular-nums" id="n-total">-</div>
             <div class="stat-sub">Active IPv4 addresses <span id="trend-ips" class="trend neutral"></span></div>
           </div>
-          
+
           <div class="stat-card">
             <div class="stat-top">
               <span class="stat-label">Domains</span>
@@ -187,7 +199,7 @@
             <div class="stat-value tabular-nums" id="n-domains">-</div>
             <div class="stat-sub">Known malicious domains <span id="trend-domains" class="trend neutral"></span></div>
           </div>
-          
+
           <div class="stat-card">
             <div class="stat-top">
               <span class="stat-label">File Hashes</span>
@@ -196,7 +208,7 @@
             <div class="stat-value tabular-nums" id="n-hashes">-</div>
             <div class="stat-sub">SHA-256 signatures <span id="trend-hashes" class="trend neutral"></span></div>
           </div>
-          
+
           <div class="stat-card">
             <div class="stat-top">
               <span class="stat-label">Malicious URLs</span>
@@ -205,7 +217,7 @@
             <div class="stat-value tabular-nums" id="n-urls">-</div>
             <div class="stat-sub">Active phishing URLs <span id="trend-urls" class="trend neutral"></span></div>
           </div>
-          
+
           <div class="stat-card">
             <div class="stat-top">
               <span class="stat-label">IPv6 Addresses</span>
@@ -214,7 +226,7 @@
             <div class="stat-value tabular-nums" id="n-ipv6">-</div>
             <div class="stat-sub">Active IPv6 threats <span id="trend-ipv6" class="trend neutral"></span></div>
           </div>
-          
+
           <div class="stat-card">
             <div class="stat-top">
               <span class="stat-label">CIDR Blocks</span>
@@ -231,7 +243,8 @@
         <div class="section-head">
           <div class="section-label">Blocklists</div>
           <h2 class="section-title"><i data-lucide="server"></i> Threat Feeds</h2>
-          <p class="section-desc">Integrate these plain text indicators directly into your Firewalls, IDS/IPS, and SIEMs. Updated regularly.</p>
+          <p class="section-desc">Integrate these plain text indicators directly into your Firewalls, IDS/IPS, and
+            SIEMs. Updated regularly.</p>
         </div>
 
         <div class="dl-grid">
@@ -247,7 +260,7 @@
             </a>
           </div>
 
-          
+
           <div class="dl-card">
             <div class="dl-glow dl-glow-purple"></div>
             <div class="dl-top">
@@ -259,7 +272,7 @@
               <i data-lucide="download"></i> malicious_domains.txt
             </a>
           </div>
-          
+
           <div class="dl-card">
             <div class="dl-glow dl-glow-amber"></div>
             <div class="dl-top">
@@ -271,7 +284,7 @@
               <i data-lucide="download"></i> malicious_hashes.txt
             </a>
           </div>
-          
+
           <div class="dl-card">
             <div class="dl-glow dl-glow-blue"></div>
             <div class="dl-top">
@@ -323,10 +336,11 @@
             <h3 class="panel-title">Volume Trend</h3>
             <div class="chart-wrap"><canvas id="historyChart" aria-label="90 day history chart"></canvas></div>
           </div>
-          
+
           <div class="glass-panel">
             <h3 class="panel-title">Specialized Threat Categories</h3>
-            <div class="chart-wrap donut-wrap"><canvas id="categoryChart" aria-label="Category breakdown chart"></canvas></div>
+            <div class="chart-wrap donut-wrap"><canvas id="categoryChart"
+                aria-label="Category breakdown chart"></canvas></div>
           </div>
         </div>
       </section>
@@ -342,7 +356,7 @@
         <span>Himalaya<em class="brand-accent">Feed</em></span>
       </div>
       <p class="footer-desc">Advanced Threat Intelligence Platform. Fully automated, zero infrastructure, zero cost.</p>
-      
+
       <div class="footer-links">
         <a href="https://github.com/kalidada18/himalayafeed"><i data-lucide="github"></i> GitHub</a>
         <a href="./ioc/stats.json"><i data-lucide="file-json"></i> stats.json</a>
@@ -354,4 +368,5 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="script.js"></script>
 </body>
+
 </html>

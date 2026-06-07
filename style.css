@@ -584,7 +584,11 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .hero-highlight {
-  color: var(--text-muted);
+  background: linear-gradient(135deg, var(--accent) 0%, var(--purple) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
 }
 
 .hero-sub {
@@ -609,12 +613,13 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: var(--radius-full);
   overflow: hidden;
   padding: 3px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
   transition: border-color 300ms var(--ease), box-shadow 300ms var(--ease);
 }
 
 .hero-search-wrapper:focus-within .hero-search-row {
-  border-color: var(--border-strong);
-  box-shadow: 0 0 0 3px var(--accent-subtle);
+  border-color: var(--accent);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2), 0 0 0 3px var(--accent-subtle);
 }
 
 .hero-search-icon {
@@ -1416,3 +1421,78 @@ footer {
 @media (min-width: 992px) { .analytics-grid { grid-template-columns: 2fr 1fr; } }
 .panel-title { font-size: 0.95rem; margin-bottom: var(--space-4); color: var(--text-primary); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
 .donut-wrap { min-height: 250px; display: flex; align-items: center; justify-content: center; }
+
+/* ═══════════════════════════════════════════════════════════════
+   Pro Max Spotlight & Glassmorphism 2.0
+   ═══════════════════════════════════════════════════════════════ */
+
+.stat-card, .dl-card, .glass-panel {
+  position: relative;
+  z-index: 1;
+}
+
+.stat-card > *, .dl-card > *, .glass-panel > * {
+  position: relative;
+  z-index: 2;
+}
+
+.stat-card::before, .dl-card::before, .glass-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: radial-gradient(
+    800px circle at var(--mouse-x, 0) var(--mouse-y, 0),
+    rgba(255, 255, 255, 0.15),
+    transparent 40%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--duration) var(--ease);
+  z-index: 10;
+}
+
+.stat-card::after, .dl-card::after, .glass-panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    800px circle at var(--mouse-x, 0) var(--mouse-y, 0),
+    rgba(255, 255, 255, 0.03),
+    transparent 40%
+  );
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--duration) var(--ease);
+  z-index: 0;
+}
+
+.stat-card:hover::before, .dl-card:hover::before, .glass-panel:hover::before,
+.stat-card:hover::after, .dl-card:hover::after, .glass-panel:hover::after {
+  opacity: 1;
+}
+
+[data-theme="light"] .stat-card::before, 
+[data-theme="light"] .dl-card::before, 
+[data-theme="light"] .glass-panel::before {
+  background: radial-gradient(
+    800px circle at var(--mouse-x, 0) var(--mouse-y, 0),
+    rgba(0, 0, 0, 0.15),
+    transparent 40%
+  );
+}
+
+[data-theme="light"] .stat-card::after, 
+[data-theme="light"] .dl-card::after, 
+[data-theme="light"] .glass-panel::after {
+  background: radial-gradient(
+    800px circle at var(--mouse-x, 0) var(--mouse-y, 0),
+    rgba(0, 0, 0, 0.02),
+    transparent 40%
+  );
+}
