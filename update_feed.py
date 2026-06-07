@@ -20,6 +20,7 @@ import time
 import uuid
 import zipfile
 import glob
+import io
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from typing import Dict, List, Optional, Set
@@ -105,6 +106,7 @@ DOMAIN_FEEDS: Dict[str, str] = {
 
 HASH_FEEDS: Dict[str, str] = {
     "malwarebazaar_recent": "https://bazaar.abuse.ch/export/txt/sha256/recent/",
+    "malwarebazaar_full": "https://bazaar.abuse.ch/export/txt/sha256/full/",
 }
 
 URL_FEEDS: Dict[str, str] = {
@@ -361,17 +363,34 @@ def fetch_domain_feed(name: str, url: str) -> Set[str]:
 def fetch_hash_feed(name: str, url: str) -> Set[str]:
     """Fetch SHA256 hashes from feeds."""
     try:
-        r = global_session.get(url, timeout=REQUEST_TIMEOUT,
+        # Increased timeout for large feeds like the full hash list
+        r = global_session.get(url, timeout=60,
                                headers={"User-Agent": "HimalayaFeed-Aggregator/3.0"})
         r.raise_for_status()
         hashes = set()
-        for line in r.text.splitlines():
-            line = line.strip()
-            if not line or line.startswith(('#', '//', '"')):
-                continue
-            token = line.split()[0].split(',')[0].strip('"\';\r\n')
-            if _SHA256_PATTERN.match(token):
-                hashes.add(token.lower())
+        
+        content_type = r.headers.get('Content-Type', '')
+        if 'application/zip' in content_type or url.endswith('.zip'):
+            with zipfile.ZipFile(io.BytesIO(r.content)) as z:
+                for filename in z.namelist():
+                    if filename.endswith('.txt') or filename.endswith('.csv'):
+                        with z.open(filename) as f:
+                            for line_bytes in f:
+                                line = line_bytes.decode('utf-8', errors='ignore').strip()
+                                if not line or line.startswith(('#', '//', '"')):
+                                    continue
+                                token = line.split()[0].split(',')[0].strip('"\';\r\n')
+                                if _SHA256_PATTERN.match(token):
+                                    hashes.add(token.lower())
+        else:
+            for line in r.text.splitlines():
+                line = line.strip()
+                if not line or line.startswith(('#', '//', '"')):
+                    continue
+                token = line.split()[0].split(',')[0].strip('"\';\r\n')
+                if _SHA256_PATTERN.match(token):
+                    hashes.add(token.lower())
+                    
         log.info(f"  ✓ {name}: {len(hashes)} hashes")
         return hashes
     except Exception as e:
