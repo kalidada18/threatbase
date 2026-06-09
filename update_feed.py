@@ -154,6 +154,7 @@ def get_session():
         total=3, read=3, connect=3,
         backoff_factor=1.0,
         status_forcelist=(429, 500, 502, 503, 504),
+        respect_retry_after=False
     )
     adapter = HTTPAdapter(max_retries=retry, pool_maxsize=MAX_WORKERS)
     session.mount('http://', adapter)
@@ -687,7 +688,9 @@ def main():
 
         import concurrent.futures
         pending = set(all_futures.keys())
-        while pending:
+        max_waits = 6
+        waits = 0
+        while pending and waits < max_waits:
             done, pending = concurrent.futures.wait(pending, timeout=10)
             for future in done:
                 feed_type, name = all_futures[future]
@@ -725,6 +728,13 @@ def main():
                 hanging = [all_futures[f][1] for f in pending]
                 log.warning(f"Still waiting on {len(pending)} feeds: {hanging}")
                 import sys; sys.stderr.flush()
+                waits += 1
+
+        if pending:
+            hanging = [all_futures[f][1] for f in pending]
+            log.error(f"Abandoning {len(pending)} feeds that hung for over 60s: {hanging}")
+            for f in pending:
+                failed.append(all_futures[f][1])
 
 
     log.info(f"All feeds fetched in {time.time()-t0:.1f}s")
@@ -873,6 +883,8 @@ def main():
              f"({len(ip_count)} IPs, {len(all_domains)} domains, "
              f"{len(all_hashes)} hashes, {len(all_urls)} URLs)")
     log.info(f"═" * 55)
+    import os
+    os._exit(0)
 
 
 if __name__ == "__main__":
