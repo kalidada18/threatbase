@@ -523,16 +523,9 @@ def fetch_threatfox(name: str, url: str) -> dict:
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-def write_hashes(hash_map: Dict[str, Set[str]]) -> set:
+def write_hashes(hash_sources: Dict[str, Set[str]]) -> set:
     """Write malicious_hashes.txt."""
-    hash_sources = {}  # hash -> set of source names
-    for src, hashes in hash_map.items():
-        for h in hashes:
-            if h not in hash_sources:
-                hash_sources[h] = set()
-            hash_sources[h].add(src)
-
-    all_hashes = sorted(hash_sources.keys())
+    all_hashes = sorted(set(h for hashes in hash_sources.values() for h in hashes))
 
     # Write TXT
     with open("ioc/malicious_hashes.txt", "w", encoding="utf-8", buffering=1 << 16) as f:
@@ -569,34 +562,37 @@ def write_urls(url_map: Dict[str, Set[str]]) -> set:
     return all_urls
 
 
-def build_stats(ip_map, ip_sources, failed, ts, domain_map, hashes=None, urls=None, ipv6_map=None, cidr_map=None):
+def build_stats(ip_count, ip_sources, failed, ts, all_domains, hashes=None, urls=None, all_ipv6=None, all_cidrs=None, custom_iocs=None, existing_iocs=None):
     hashes = hashes or set()
     urls = urls or set()
-    ipv6_map = ipv6_map or {}
-    cidr_map = cidr_map or {}
+    all_ipv6 = all_ipv6 or set()
+    all_cidrs = all_cidrs or set()
+    custom_iocs = custom_iocs or {}
+    existing_iocs = existing_iocs or {}
 
-    ips_per_source = {src: 0 for src in ip_sources}
-    multi_source = 0
+    ips_per_source = {src: len(ips) for src, ips in ip_sources.items()}
+    multi_source = sum(1 for count in ip_count.values() if count > 1)
     category_counts = {}
 
-    for src_set in ip_map.values():
-        if len(src_set) > 1:
-            multi_source += 1
-        for s in src_set:
-            if s in ips_per_source:
-                ips_per_source[s] += 1
-            cat = FEED_CATEGORIES.get(s, "Mixed")
-            category_counts[cat] = category_counts.get(cat, 0) + 1
+    for src, ips in ip_sources.items():
+        cat = FEED_CATEGORIES.get(src, "Mixed")
+        category_counts[cat] = category_counts.get(cat, 0) + len(ips)
+        
+    cat = FEED_CATEGORIES.get("historical", "Mixed")
+    category_counts[cat] = category_counts.get(cat, 0) + len(existing_iocs.get("ips", set()))
+    
+    cat = FEED_CATEGORIES.get("custom_iocs.txt", "Mixed")
+    category_counts[cat] = category_counts.get(cat, 0) + len(custom_iocs.get("ips", set()))
 
     return {
         "last_updated": ts,
-        "total_unique_ips": len(ip_map),
-        "total_unique_ipv6": len(ipv6_map),
-        "total_unique_cidrs": len(cidr_map),
-        "total_unique_domains": len(domain_map),
+        "total_unique_ips": len(ip_count),
+        "total_unique_ipv6": len(all_ipv6),
+        "total_unique_cidrs": len(all_cidrs),
+        "total_unique_domains": len(all_domains),
         "total_unique_hashes": len(hashes),
         "total_unique_urls": len(urls),
-        "total_ioc_count": len(ip_map) + len(ipv6_map) + len(cidr_map) + len(domain_map) + len(hashes) + len(urls),
+        "total_ioc_count": len(ip_count) + len(all_ipv6) + len(all_cidrs) + len(all_domains) + len(hashes) + len(urls),
         "total_feeds_processed": len(ip_sources),
         "total_feeds_failed": len(failed),
         "multi_source_ips": multi_source,
@@ -727,59 +723,38 @@ def main():
     log.info("Merging IOCs...")
     t0 = time.time()
 
-    # Start with custom IOCs and existing historical IOCs
-    ip_map: Dict[str, set] = {ip: {"custom_iocs.txt"} for ip in custom_iocs["ips"]}
-    for ip in existing_iocs["ips"]:
-        if ip not in ip_map:
-            ip_map[ip] = set()
-        ip_map[ip].add("historical")
-        
-    for src, ips in ip_sources.items():
-        for ip in ips:
-            if ip not in ip_map:
-                ip_map[ip] = set()
-            ip_map[ip].add(src)
+    from collections import Counter
+    ip_count = Counter()
+    ip_count.update(custom_iocs["ips"])
+    ip_count.update(existing_iocs["ips"])
+    for ips in ip_sources.values():
+        ip_count.update(ips)
 
     # ── Merge Domains
-    domain_map: Dict[str, set] = {d: {"custom_iocs.txt"} for d in custom_iocs["domains"]}
-    for d in existing_iocs["domains"]:
-        if d not in domain_map:
-            domain_map[d] = set()
-        domain_map[d].add("historical")
-        
-    for src, domains in domain_results.items():
-        for d in domains:
-            if d not in domain_map:
-                domain_map[d] = set()
-            domain_map[d].add(src)
+    all_domains = set()
+    all_domains.update(custom_iocs["domains"])
+    all_domains.update(existing_iocs["domains"])
+    for domains in domain_results.values():
+        all_domains.update(domains)
 
     # ── Merge IPv6 & CIDR
-    ipv6_map: Dict[str, set] = {ip: {"historical"} for ip in existing_iocs["ipv6"]}
-    for src, ips in ipv6_sources.items():
-        for ip in ips:
-            if ip not in ipv6_map:
-                ipv6_map[ip] = set()
-            ipv6_map[ip].add(src)
+    all_ipv6 = set()
+    all_ipv6.update(existing_iocs["ipv6"])
+    for ips in ipv6_sources.values():
+        all_ipv6.update(ips)
             
-    cidr_map: Dict[str, set] = {c: {"historical"} for c in existing_iocs["cidrs"]}
-    for src, cidrs in cidr_sources.items():
-        for c in cidrs:
-            if c not in cidr_map:
-                cidr_map[c] = set()
-            cidr_map[c].add(src)
+    all_cidrs = set()
+    all_cidrs.update(existing_iocs["cidrs"])
+    for cidrs in cidr_sources.values():
+        all_cidrs.update(cidrs)
 
     # ── Merge ThreatFox results into all categories
     for name, tf in tf_results.items():
         if tf["ips"]:
             ip_sources[name] = tf["ips"]
-            for ip in tf["ips"]:
-                if ip not in ip_map:
-                    ip_map[ip] = set()
-                ip_map[ip].add(name)
-        for d in tf["domains"]:
-            if d not in domain_map:
-                domain_map[d] = set()
-            domain_map[d].add(name)
+            ip_count.update(tf["ips"])
+        if tf["domains"]:
+            all_domains.update(tf["domains"])
         if tf["hashes"]:
             hash_sources[name] = hash_sources.get(name, set()) | tf["hashes"]
         if tf["urls"]:
@@ -799,8 +774,8 @@ def main():
         url_sources["historical"] = existing_iocs["urls"]
 
     # Sort IPs once
-    sorted_ips = sorted(ip_map.keys(), key=numerical_ip_key)
-    log.info(f"Merged in {time.time()-t0:.1f}s — {len(ip_map)} IPs, {len(domain_map)} domains")
+    sorted_ips = sorted(ip_count.keys(), key=numerical_ip_key)
+    log.info(f"Merged in {time.time()-t0:.1f}s — {len(ip_count)} IPs, {len(all_domains)} domains")
 
     # ── Write outputs ────────────────────────────────────────────────────────
     log.info("Writing output files...")
@@ -809,7 +784,7 @@ def main():
     all_hashes = write_hashes(hash_sources)
     all_urls = write_urls(url_sources)
 
-    stats = build_stats(ip_map, ip_sources, failed, ts, domain_map, all_hashes, all_urls, ipv6_map, cidr_map)
+    stats = build_stats(ip_count, ip_sources, failed, ts, all_domains, all_hashes, all_urls, all_ipv6, all_cidrs, custom_iocs, existing_iocs)
     os.makedirs("ioc", exist_ok=True)
     with open("ioc/stats.json", "w", encoding="utf-8") as f:
         json.dump(stats, f, indent=2)
@@ -827,7 +802,7 @@ def main():
             f.write(f"{ip}\n")
 
     # Plain text domain list
-    sorted_domains = sorted(domain_map.keys())
+    sorted_domains = sorted(all_domains)
     with open("ioc/malicious_domains.txt", "w", encoding="utf-8", buffering=1 << 16) as f:
         timestamp = datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S +0000")
         f.write("# HimalayaFeed Threat Intelligence Feed - Domains\n")
@@ -840,7 +815,7 @@ def main():
             f.write('\n')
 
     # Write IPv6
-    sorted_ipv6 = sorted(ipv6_map.keys())
+    sorted_ipv6 = sorted(all_ipv6)
     with open("ioc/malicious_ipv6.txt", "w", encoding="utf-8", buffering=1 << 16) as f:
         f.write("# HimalayaFeed Threat Intelligence Feed - IPv6\n")
         f.write(f"# Last update: {timestamp}\n")
@@ -848,7 +823,7 @@ def main():
             f.write(ip + '\n')
             
     # Write CIDRs
-    sorted_cidrs = sorted(cidr_map.keys())
+    sorted_cidrs = sorted(all_cidrs)
     with open("ioc/malicious_cidrs.txt", "w", encoding="utf-8", buffering=1 << 16) as f:
         f.write("# HimalayaFeed Threat Intelligence Feed - CIDRs\n")
         f.write(f"# Last update: {timestamp}\n")
@@ -861,7 +836,7 @@ def main():
     elapsed = time.time() - t_start
     log.info(f"═" * 55)
     log.info(f"  Done in {elapsed:.1f}s — {stats['total_ioc_count']} IOCs "
-             f"({len(ip_map)} IPs, {len(domain_map)} domains, "
+             f"({len(ip_count)} IPs, {len(all_domains)} domains, "
              f"{len(all_hashes)} hashes, {len(all_urls)} URLs)")
     log.info(f"═" * 55)
 
