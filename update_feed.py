@@ -686,56 +686,56 @@ def main():
         all_futures.update(url_futures)
         all_futures.update(tf_futures)
 
-        import concurrent.futures
-        pending = set(all_futures.keys())
-        max_waits = 6
-        waits = 0
-        while pending and waits < max_waits:
-            done, pending = concurrent.futures.wait(pending, timeout=10)
-            for future in done:
-                feed_type, name = all_futures[future]
-                try:
-                    result = future.result()
-                    if feed_type == "ip":
-                        if result:
-                            ip_sources[name] = result.get('ipv4', set())
-                            ipv6_sources[name] = result.get('ipv6', set())
-                            cidr_sources[name] = result.get('cidrs', set())
-                        else:
-                            failed.append(name)
-                    elif feed_type == "domain":
-                        if result:
-                            domain_results[name] = result
-                        else:
-                            failed.append(name)
-                    elif feed_type == "hash":
-                        if result:
-                            hash_sources[name] = result
-                        else:
-                            failed.append(name)
-                    elif feed_type == "url":
-                        if result:
-                            url_sources[name] = result
-                        else:
-                            failed.append(name)
-                    elif feed_type == "tf":
-                        tf_results[name] = result
-                except Exception as e:
-                    log.error(f"  ✗ {name} raised exception: {e}")
-                    failed.append(name)
-            
-            if pending:
-                hanging = [all_futures[f][1] for f in pending]
-                log.warning(f"Still waiting on {len(pending)} feeds: {hanging}")
-                import sys; sys.stderr.flush()
-                waits += 1
-
+    pending = set(all_futures.keys())
+    max_waits = 6
+    waits = 0
+    while pending and waits < max_waits:
+        done, pending = concurrent.futures.wait(pending, timeout=10)
+        for future in done:
+            feed_type, name = all_futures[future]
+            try:
+                result = future.result()
+                if feed_type == "ip":
+                    if result:
+                        ip_sources[name] = result.get('ipv4', set())
+                        ipv6_sources[name] = result.get('ipv6', set())
+                        cidr_sources[name] = result.get('cidrs', set())
+                    else:
+                        failed.append(name)
+                elif feed_type == "domain":
+                    if result:
+                        domain_results[name] = result
+                    else:
+                        failed.append(name)
+                elif feed_type == "hash":
+                    if result:
+                        hash_sources[name] = result
+                    else:
+                        failed.append(name)
+                elif feed_type == "url":
+                    if result:
+                        url_sources[name] = result
+                    else:
+                        failed.append(name)
+                elif feed_type == "tf":
+                    tf_results[name] = result
+            except Exception as e:
+                log.error(f"  ✗ {name} raised exception: {e}")
+                failed.append(name)
+        
         if pending:
             hanging = [all_futures[f][1] for f in pending]
-            log.error(f"Abandoning {len(pending)} feeds that hung for over 60s: {hanging}")
-            for f in pending:
-                failed.append(all_futures[f][1])
+            log.warning(f"Still waiting on {len(pending)} feeds: {hanging}")
+            import sys; sys.stderr.flush()
+            waits += 1
 
+    if pending:
+        hanging = [all_futures[f][1] for f in pending]
+        log.error(f"Abandoning {len(pending)} feeds that hung for over 60s: {hanging}")
+        for f in pending:
+            failed.append(all_futures[f][1])
+
+    executor.shutdown(wait=False, cancel_futures=True)
 
     log.info(f"All feeds fetched in {time.time()-t0:.1f}s")
     import sys; sys.stderr.flush()
