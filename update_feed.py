@@ -884,7 +884,6 @@ def main():
              f"({len(ip_count)} IPs, {len(all_domains)} domains, "
              f"{len(all_hashes)} hashes, {len(all_urls)} URLs)")
     log.info(f"═" * 55)
-    import os
     os._exit(0)
 
 
