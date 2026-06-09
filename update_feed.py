@@ -21,6 +21,7 @@ import uuid
 import zipfile
 import glob
 import io
+import concurrent.futures
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from typing import Dict, List, Optional, Set
@@ -671,20 +672,20 @@ def main():
     tf_results = {}
     failed = []
 
-    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        # Submit all feed types at once
-        ip_futures = {executor.submit(fetch_feed, n, u): ("ip", n) for n, u in FEEDS.items()}
-        domain_futures = {executor.submit(fetch_domain_feed, n, u): ("domain", n) for n, u in DOMAIN_FEEDS.items()}
-        hash_futures = {executor.submit(fetch_hash_feed, n, u): ("hash", n) for n, u in HASH_FEEDS.items()}
-        url_futures = {executor.submit(fetch_url_feed, n, u): ("url", n) for n, u in URL_FEEDS.items()}
-        tf_futures = {executor.submit(fetch_threatfox, n, u): ("tf", n) for n, u in THREATFOX_FEEDS.items()}
+    executor = ThreadPoolExecutor(max_workers=MAX_WORKERS)
+    # Submit all feed types at once
+    ip_futures = {executor.submit(fetch_feed, n, u): ("ip", n) for n, u in FEEDS.items()}
+    domain_futures = {executor.submit(fetch_domain_feed, n, u): ("domain", n) for n, u in DOMAIN_FEEDS.items()}
+    hash_futures = {executor.submit(fetch_hash_feed, n, u): ("hash", n) for n, u in HASH_FEEDS.items()}
+    url_futures = {executor.submit(fetch_url_feed, n, u): ("url", n) for n, u in URL_FEEDS.items()}
+    tf_futures = {executor.submit(fetch_threatfox, n, u): ("tf", n) for n, u in THREATFOX_FEEDS.items()}
 
-        all_futures = {}
-        all_futures.update(ip_futures)
-        all_futures.update(domain_futures)
-        all_futures.update(hash_futures)
-        all_futures.update(url_futures)
-        all_futures.update(tf_futures)
+    all_futures = {}
+    all_futures.update(ip_futures)
+    all_futures.update(domain_futures)
+    all_futures.update(hash_futures)
+    all_futures.update(url_futures)
+    all_futures.update(tf_futures)
 
     pending = set(all_futures.keys())
     max_waits = 6
