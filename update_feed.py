@@ -64,11 +64,6 @@ FEEDS: Dict[str, str] = {
     "romainmarcoux_outgoing_40k": "https://raw.githubusercontent.com/romainmarcoux/malicious-outgoing-ip/main/full-outgoing-ip-40k.txt",
     "romainmarcoux_outgoing_aa": "https://raw.githubusercontent.com/romainmarcoux/malicious-outgoing-ip/main/full-outgoing-ip-aa.txt",
     "romainmarcoux_outgoing_ab": "https://raw.githubusercontent.com/romainmarcoux/malicious-outgoing-ip/main/full-outgoing-ip-ab.txt",
-    
-    # New Free OSINT Feeds added
-    "alienvault_reputation": "https://reputation.alienvault.com/reputation.generic",
-    "bambenek_c2_ips": "https://osint.bambenekconsulting.com/feeds/c2-ipmasterlist.txt",
-    "talos_blacklist": "https://talosintelligence.com/documents/ip-blacklist",
 }
 
 FEED_CATEGORIES: Dict[str, str] = {
@@ -96,9 +91,6 @@ FEED_CATEGORIES: Dict[str, str] = {
     "romainmarcoux_outgoing_40k": "Malicious",
     "romainmarcoux_outgoing_aa": "Malicious",
     "romainmarcoux_outgoing_ab": "Malicious",
-    "alienvault_reputation": "Mixed",
-    "bambenek_c2_ips": "C2",
-    "talos_blacklist": "Malicious",
 }
 
 DOMAIN_FEEDS: Dict[str, str] = {
@@ -111,7 +103,6 @@ DOMAIN_FEEDS: Dict[str, str] = {
     "blocklist_torrent": "https://blocklistproject.github.io/Lists/torrent.txt",
     "blocklist_fraud": "https://blocklistproject.github.io/Lists/fraud.txt",
     "blocklist_phishing": "https://blocklistproject.github.io/Lists/phishing.txt",
-    "bambenek_c2_domains": "https://osint.bambenekconsulting.com/feeds/c2-dommasterlist.txt",
 }
 
 HASH_FEEDS: Dict[str, str] = {
