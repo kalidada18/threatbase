@@ -212,7 +212,7 @@ const HeroHeader = () => {
                         </div>
                     </motion.div>
                 </div>
-            </nav>
+            </motion.nav>
         </header>
     )
 }
