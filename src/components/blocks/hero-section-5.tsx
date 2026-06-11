@@ -124,14 +124,14 @@ const HeroHeader = () => {
             <nav
                 data-state={menuState && 'active'}
                 className="group fixed z-50 w-full pt-2">
-                <div className={cn('mx-auto max-w-7xl rounded-3xl px-6 transition-all duration-300 lg:px-12', scrolled && 'bg-background/80 backdrop-blur-2xl border shadow-sm')}>
+                <div className={cn('mx-auto max-w-7xl rounded-full px-6 transition-all duration-300 lg:px-12 mt-4', scrolled ? 'bg-slate-900/60 backdrop-blur-xl border border-white/10 shadow-2xl py-2' : 'py-4')}>
                     <motion.div
-                        className={cn('relative flex flex-wrap items-center justify-between gap-6 py-3 duration-200 lg:gap-0 lg:py-6', scrolled && 'lg:py-4')}>
+                        className="relative flex flex-wrap items-center justify-between gap-6 lg:gap-0">
                         <div className="flex w-full items-center justify-between gap-12 lg:w-auto">
                             <a
                                 href="/"
                                 aria-label="home"
-                                className="flex items-center space-x-2 font-bold text-xl text-black dark:text-white">
+                                className="flex items-center space-x-2 font-bold text-xl text-white">
                                 Himalaya<span className="text-red-600">Feed</span>
                             </a>
 
@@ -149,7 +149,7 @@ const HeroHeader = () => {
                                         <li key={index}>
                                             <a
                                                 href={item.href}
-                                                className="text-muted-foreground hover:text-foreground block duration-150">
+                                                className="text-slate-300 hover:text-white block duration-150">
                                                 <span>{item.name}</span>
                                             </a>
                                         </li>
@@ -158,7 +158,7 @@ const HeroHeader = () => {
                             </div>
                         </div>
 
-                        <div className="bg-background group-data-[state=active]:block lg:group-data-[state=active]:flex mb-6 hidden w-full flex-wrap items-center justify-end space-y-8 rounded-3xl border p-6 shadow-2xl shadow-zinc-300/20 md:flex-nowrap lg:m-0 lg:flex lg:w-fit lg:gap-6 lg:space-y-0 lg:border-transparent lg:bg-transparent lg:p-0 lg:shadow-none dark:shadow-none dark:lg:bg-transparent">
+                        <div className="bg-slate-900/95 backdrop-blur-xl border border-white/10 group-data-[state=active]:block lg:group-data-[state=active]:flex mb-6 hidden w-full flex-wrap items-center justify-end space-y-8 rounded-3xl p-6 shadow-2xl md:flex-nowrap lg:m-0 lg:flex lg:w-fit lg:gap-6 lg:space-y-0 lg:border-transparent lg:bg-transparent lg:p-0 lg:shadow-none">
                             <div className="lg:hidden">
                                 <ul className="space-y-6 text-base font-medium">
                                     {menuItems.map((item, index) => (
@@ -177,6 +177,7 @@ const HeroHeader = () => {
                                 <Button
                                     asChild
                                     variant="outline"
+                                    className="border-white/20 bg-white/10 text-white hover:bg-white/20 hover:text-white"
                                     size="sm">
                                     <a href="https://github.com/kalidada18/himalayafeed" target="_blank" rel="noopener">
                                         <span>GitHub</span>
