@@ -46,27 +46,38 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
       <div className="mx-auto max-w-4xl px-6 lg:px-12 relative">
         {isScanning && (
           <motion.div 
-            className="w-full min-h-[350px] flex flex-col items-center justify-center bg-slate-900/60 backdrop-blur-3xl rounded-2xl border border-white/10 p-8 shadow-[0_0_50px_rgba(0,0,0,0.3)] relative overflow-hidden"
+            className="w-full min-h-[400px] flex flex-col items-center justify-center bg-slate-900/80 backdrop-blur-3xl rounded-2xl border border-white/10 p-8 shadow-[0_0_50px_rgba(0,0,0,0.5)] relative overflow-hidden"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
           >
-            <div className="absolute top-0 inset-x-0 h-px w-full bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent"></div>
-            <div className="relative w-32 h-32 mb-8 flex items-center justify-center shrink-0">
-              <div className="absolute inset-0 rounded-full border border-cyan-500/30 animate-ping opacity-20 duration-1000"></div>
-              <div className="absolute inset-2 rounded-full border-[3px] border-dashed border-cyan-500/40 animate-[spin_3s_linear_infinite]"></div>
-              <div className="absolute inset-6 rounded-full border border-cyan-400/50 shadow-[0_0_30px_rgba(34,211,238,0.2)]"></div>
-              <Radar size={48} className="text-cyan-400 animate-pulse drop-shadow-[0_0_15px_rgba(34,211,238,0.8)]" />
+            {/* Cyber Grid Background */}
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(6,182,212,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(6,182,212,0.05)_1px,transparent_1px)] bg-[size:32px_32px]"></div>
+            <div className="absolute top-0 inset-x-0 h-px w-full bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_15px_rgba(34,211,238,1)]"></div>
+            
+            {/* Sweeping Radar Centerpiece */}
+            <div className="relative w-40 h-40 mb-10 flex items-center justify-center shrink-0">
+              <div className="absolute inset-0 rounded-full border border-cyan-500/20"></div>
+              {/* Spinning Conic Radar Sweep */}
+              <div className="absolute inset-0 rounded-full border border-cyan-400/50 animate-spin" style={{ background: 'conic-gradient(from 0deg, transparent 70%, rgba(6,182,212,0.1) 80%, rgba(6,182,212,0.6) 100%)' }}></div>
+              <div className="absolute inset-4 rounded-full border border-dashed border-cyan-500/40 animate-[spin_4s_linear_infinite_reverse]"></div>
+              <div className="absolute inset-8 rounded-full border border-cyan-400/30 bg-slate-900/50 shadow-[0_0_30px_rgba(34,211,238,0.2)]"></div>
+              <Radar size={48} className="text-cyan-400 animate-pulse drop-shadow-[0_0_15px_rgba(34,211,238,1)] z-10" />
             </div>
-            <div className="text-2xl font-black mb-3 tracking-widest text-white uppercase drop-shadow-md">Scanning Target</div>
-            <div className="text-cyan-400 font-mono mb-8 tracking-widest text-lg bg-cyan-950/50 px-4 py-1.5 rounded-md border border-cyan-500/20">{ip}</div>
-            <div className="w-full max-w-sm h-1.5 bg-slate-800 rounded-full overflow-hidden shadow-inner relative">
+
+            <div className="relative z-10 text-2xl font-black mb-3 tracking-[0.2em] text-white uppercase drop-shadow-[0_0_10px_rgba(255,255,255,0.5)] animate-pulse">Scanning Target</div>
+            <div className="relative z-10 text-cyan-400 font-mono mb-10 tracking-[0.15em] text-lg bg-slate-950/80 px-6 py-2 rounded-lg border border-cyan-500/30 shadow-[inset_0_0_15px_rgba(6,182,212,0.2)]">{ip}</div>
+            
+            <div className="relative z-10 w-full max-w-md h-2 bg-slate-950 rounded-full overflow-hidden shadow-inner border border-white/5">
               <motion.div 
-                className="absolute top-0 left-0 h-full bg-cyan-400 shadow-[0_0_20px_rgba(34,211,238,1)]" 
+                className="absolute top-0 left-0 h-full bg-cyan-400 shadow-[0_0_20px_rgba(34,211,238,1)] relative" 
                 initial={{ width: '0%' }}
                 animate={{ width: '100%' }}
                 transition={{ duration: 1.5, ease: 'linear' }}
-              />
+              >
+                {/* Glowing head of the progress bar */}
+                <div className="absolute top-0 right-0 bottom-0 w-8 bg-white blur-[2px]"></div>
+              </motion.div>
             </div>
           </motion.div>
         )}
