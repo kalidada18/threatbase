@@ -88,8 +88,8 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           # Stage all generated output files (including dashboard data + community reports)
-          git add ioc/malicious_ips.txt ioc/malicious_ipv6.txt ioc/malicious_cidrs.txt ioc/stats.json ioc/history.json ioc/malicious_domains.txt ioc/malicious_hashes.txt ioc/malicious_urls.txt
-          git add -f ioc/community_reports.json 2>/dev/null || true
+          git add public/ioc/malicious_ips.txt public/ioc/malicious_ipv6.txt public/ioc/malicious_cidrs.txt public/ioc/stats.json public/ioc/history.json public/ioc/malicious_domains.txt public/ioc/malicious_hashes.txt public/ioc/malicious_urls.txt
+          git add -f public/ioc/community_reports.json 2>/dev/null || true
           git add -f custom_iocs.txt 2>/dev/null || true
 
           # Check whether any staged file actually changed
@@ -97,20 +97,20 @@ jobs:
             echo "✓ No changes detected — feed is already up-to-date. Skipping commit."
           else
             # Get current counts
-            IP_COUNT=$(grep -cE '^[0-9]' ioc/malicious_ips.txt 2>/dev/null || echo "0")
-            IPV6_COUNT=$(grep -cvE '^$|^#' ioc/malicious_ipv6.txt 2>/dev/null || echo "0")
-            CIDR_COUNT=$(grep -cvE '^$|^#' ioc/malicious_cidrs.txt 2>/dev/null || echo "0")
-            DOMAIN_COUNT=$(grep -cvE '^$|^#' ioc/malicious_domains.txt 2>/dev/null || echo "0")
-            HASH_COUNT=$(wc -l < ioc/malicious_hashes.txt 2>/dev/null || echo "0")
-            URL_COUNT=$(wc -l < ioc/malicious_urls.txt 2>/dev/null || echo "0")
+            IP_COUNT=$(grep -cE '^[0-9]' public/ioc/malicious_ips.txt 2>/dev/null || echo "0")
+            IPV6_COUNT=$(grep -cvE '^$|^#' public/ioc/malicious_ipv6.txt 2>/dev/null || echo "0")
+            CIDR_COUNT=$(grep -cvE '^$|^#' public/ioc/malicious_cidrs.txt 2>/dev/null || echo "0")
+            DOMAIN_COUNT=$(grep -cvE '^$|^#' public/ioc/malicious_domains.txt 2>/dev/null || echo "0")
+            HASH_COUNT=$(wc -l < public/ioc/malicious_hashes.txt 2>/dev/null || echo "0")
+            URL_COUNT=$(wc -l < public/ioc/malicious_urls.txt 2>/dev/null || echo "0")
             
             # Get previous counts from HEAD
-            PREV_IP=$(git show HEAD:ioc/malicious_ips.txt 2>/dev/null | grep -cE '^[0-9]' || echo "0")
-            PREV_IPV6=$(git show HEAD:ioc/malicious_ipv6.txt 2>/dev/null | grep -cvE '^$|^#' || echo "0")
-            PREV_CIDR=$(git show HEAD:ioc/malicious_cidrs.txt 2>/dev/null | grep -cvE '^$|^#' || echo "0")
-            PREV_DOMAIN=$(git show HEAD:ioc/malicious_domains.txt 2>/dev/null | grep -cvE '^$|^#' || echo "0")
-            PREV_HASH=$(git show HEAD:ioc/malicious_hashes.txt 2>/dev/null | wc -l || echo "0")
-            PREV_URL=$(git show HEAD:ioc/malicious_urls.txt 2>/dev/null | wc -l || echo "0")
+            PREV_IP=$(git show HEAD:public/ioc/malicious_ips.txt 2>/dev/null | grep -cE '^[0-9]' || echo "0")
+            PREV_IPV6=$(git show HEAD:public/ioc/malicious_ipv6.txt 2>/dev/null | grep -cvE '^$|^#' || echo "0")
+            PREV_CIDR=$(git show HEAD:public/ioc/malicious_cidrs.txt 2>/dev/null | grep -cvE '^$|^#' || echo "0")
+            PREV_DOMAIN=$(git show HEAD:public/ioc/malicious_domains.txt 2>/dev/null | grep -cvE '^$|^#' || echo "0")
+            PREV_HASH=$(git show HEAD:public/ioc/malicious_hashes.txt 2>/dev/null | wc -l || echo "0")
+            PREV_URL=$(git show HEAD:public/ioc/malicious_urls.txt 2>/dev/null | wc -l || echo "0")
             
             # Calculate deltas
             fmt_diff() {
@@ -140,14 +140,14 @@ jobs:
           DATE_DASH=$(date -u +'%Y-%m-%d')
           DATE_DOT=$(date -u +'%Y.%m.%d')
           echo "ARCHIVE_DATE=${DATE_DASH}" >> $GITHUB_ENV
-          zip -j himalayafeed-archive-${DATE_DOT}.zip ioc/malicious_ips.txt ioc/malicious_ipv6.txt ioc/malicious_cidrs.txt ioc/malicious_domains.txt ioc/malicious_hashes.txt ioc/malicious_urls.txt
+          zip -j himalayafeed-archive-${DATE_DOT}.zip public/ioc/malicious_ips.txt public/ioc/malicious_ipv6.txt public/ioc/malicious_cidrs.txt public/ioc/malicious_domains.txt public/ioc/malicious_hashes.txt public/ioc/malicious_urls.txt
 
       - name: Create Daily Archive Release
         uses: ncipollo/release-action@v1
         with:
           tag: archive-${{ env.ARCHIVE_DATE }}
           name: Daily Feed Archive - ${{ env.ARCHIVE_DATE }}
-          artifacts: "ioc/malicious_ips.txt,ioc/malicious_ipv6.txt,ioc/malicious_cidrs.txt,ioc/malicious_domains.txt,ioc/malicious_hashes.txt,ioc/malicious_urls.txt,ioc/stats.json,himalayafeed-archive-*.zip"
+          artifacts: "public/ioc/malicious_ips.txt,public/ioc/malicious_ipv6.txt,public/ioc/malicious_cidrs.txt,public/ioc/malicious_domains.txt,public/ioc/malicious_hashes.txt,public/ioc/malicious_urls.txt,public/ioc/stats.json,himalayafeed-archive-*.zip"
           allowUpdates: true
           replacesArtifacts: true
           body: "Automated daily archive of the HimalayaFeed threat intelligence database."

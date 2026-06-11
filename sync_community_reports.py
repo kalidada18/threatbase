@@ -4,7 +4,7 @@ HimalayaFeed — Sync Community-Reported IPs from Supabase
 ========================================================
 Fetches new (unprocessed) reports from the Supabase `reported_ips` table,
 appends them to `custom_iocs.txt` (which update_feed.py already reads),
-marks them as processed in Supabase, and backs up to `ioc/community_reports.json`.
+marks them as processed in Supabase, and backs up to `public/ioc/community_reports.json`.
 """
 
 import json
@@ -106,8 +106,8 @@ def append_to_custom_iocs(ips):
 
 
 def backup_to_json(reports):
-    """Save a full backup of community reports to ioc/community_reports.json."""
-    backup_file = "ioc/community_reports.json"
+    """Save a full backup of community reports to public/ioc/community_reports.json."""
+    backup_file = "public/ioc/community_reports.json"
 
     existing = []
     if os.path.exists(backup_file):
@@ -168,7 +168,7 @@ def main():
     append_to_custom_iocs(valid_ips)
 
     # 4. Backup to JSON
-    log.info("Backing up reports to ioc/community_reports.json...")
+    log.info("Backing up reports to public/ioc/community_reports.json...")
     backup_to_json(reports)
 
     # 5. Mark as processed in Supabase

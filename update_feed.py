@@ -265,12 +265,12 @@ def load_existing_iocs() -> dict:
     result = {"ips": set(), "ipv6": set(), "cidrs": set(), "domains": set(), "hashes": set(), "urls": set()}
     
     file_map = {
-        "ioc/malicious_ips.txt": "ips",
-        "ioc/malicious_ipv6.txt": "ipv6",
-        "ioc/malicious_cidrs.txt": "cidrs",
-        "ioc/malicious_domains.txt": "domains",
-        "ioc/malicious_hashes.txt": "hashes",
-        "ioc/malicious_urls.txt": "urls"
+        "public/ioc/malicious_ips.txt": "ips",
+        "public/ioc/malicious_ipv6.txt": "ipv6",
+        "public/ioc/malicious_cidrs.txt": "cidrs",
+        "public/ioc/malicious_domains.txt": "domains",
+        "public/ioc/malicious_hashes.txt": "hashes",
+        "public/ioc/malicious_urls.txt": "urls"
     }
     
     for filepath, key in file_map.items():
@@ -530,7 +530,7 @@ def write_hashes(hash_sources: Dict[str, Set[str]]) -> set:
     all_hashes = sorted(set(h for hashes in hash_sources.values() for h in hashes))
 
     # Write TXT
-    with open("ioc/malicious_hashes.txt", "w", encoding="utf-8", buffering=1 << 16) as f:
+    with open("public/ioc/malicious_hashes.txt", "w", encoding="utf-8", buffering=1 << 16) as f:
         timestamp = datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S +0000")
         f.write("# HimalayaFeed Threat Intelligence Feed - Hashes\n")
         f.write("# (https://github.com/kalidada18/himalayafeed)\n")
@@ -549,7 +549,7 @@ def write_urls(url_map: Dict[str, Set[str]]) -> set:
     """Write malicious_urls.txt."""
     all_urls = sorted(set(u for urls in url_map.values() for u in urls))
 
-    with open("ioc/malicious_urls.txt", "w", encoding="utf-8", buffering=1 << 16) as f:
+    with open("public/ioc/malicious_urls.txt", "w", encoding="utf-8", buffering=1 << 16) as f:
         timestamp = datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S +0000")
         f.write("# HimalayaFeed Threat Intelligence Feed - URLs\n")
         f.write("# (https://github.com/kalidada18/himalayafeed)\n")
@@ -605,7 +605,7 @@ def build_stats(ip_count, ip_sources, failed, ts, all_domains, hashes=None, urls
 
 
 def write_history(stats: dict) -> None:
-    history_file = "ioc/history.json"
+    history_file = "public/ioc/history.json"
     history = []
     if os.path.exists(history_file):
         try:
@@ -821,14 +821,14 @@ def main():
     
     log.info("Saving stats.json...")
     sys.stderr.flush()
-    os.makedirs("ioc", exist_ok=True)
-    with open("ioc/stats.json", "w", encoding="utf-8") as f:
+    os.makedirs("public/ioc", exist_ok=True)
+    with open("public/ioc/stats.json", "w", encoding="utf-8") as f:
         json.dump(stats, f, indent=2)
 
     # Plain text IP list
     log.info("Saving malicious_ips.txt...")
     sys.stderr.flush()
-    with open("ioc/malicious_ips.txt", "w", encoding="utf-8", buffering=1 << 16) as f:
+    with open("public/ioc/malicious_ips.txt", "w", encoding="utf-8", buffering=1 << 16) as f:
         timestamp = datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S +0000")
         f.write("# HimalayaFeed Threat Intelligence Feed - IPs\n")
         f.write("# (https://github.com/kalidada18/himalayafeed)\n")
@@ -843,7 +843,7 @@ def main():
     log.info("Sorting and saving malicious_domains.txt...")
     sys.stderr.flush()
     sorted_domains = sorted(all_domains)
-    with open("ioc/malicious_domains.txt", "w", encoding="utf-8", buffering=1 << 16) as f:
+    with open("public/ioc/malicious_domains.txt", "w", encoding="utf-8", buffering=1 << 16) as f:
         timestamp = datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S +0000")
         f.write("# HimalayaFeed Threat Intelligence Feed - Domains\n")
         f.write("# (https://github.com/kalidada18/himalayafeed)\n")
@@ -858,7 +858,7 @@ def main():
     log.info("Sorting and saving malicious_ipv6.txt...")
     sys.stderr.flush()
     sorted_ipv6 = sorted(all_ipv6)
-    with open("ioc/malicious_ipv6.txt", "w", encoding="utf-8", buffering=1 << 16) as f:
+    with open("public/ioc/malicious_ipv6.txt", "w", encoding="utf-8", buffering=1 << 16) as f:
         f.write("# HimalayaFeed Threat Intelligence Feed - IPv6\n")
         f.write(f"# Last update: {timestamp}\n")
         for ip in sorted_ipv6:
@@ -868,7 +868,7 @@ def main():
     log.info("Sorting and saving malicious_cidrs.txt...")
     sys.stderr.flush()
     sorted_cidrs = sorted(all_cidrs)
-    with open("ioc/malicious_cidrs.txt", "w", encoding="utf-8", buffering=1 << 16) as f:
+    with open("public/ioc/malicious_cidrs.txt", "w", encoding="utf-8", buffering=1 << 16) as f:
         f.write("# HimalayaFeed Threat Intelligence Feed - CIDRs\n")
         f.write(f"# Last update: {timestamp}\n")
         for c in sorted_cidrs:

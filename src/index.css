@@ -2261,3 +2261,87 @@ footer {
     right: 0;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   Additional Utilities (React Migration)
+   ═══════════════════════════════════════════════════════════════ */
+
+.icon-orange { color: #f97316; background: rgba(249, 115, 22, 0.12); }
+.dl-glow-orange { background: rgba(249, 115, 22, 0.35); top: -20px; right: -20px; }
+
+/* ── Backdrop Blobs ── */
+.blob-container {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.15;
+  animation: blobFloat 20s ease-in-out infinite alternate;
+}
+
+.blob-1 {
+  width: 600px;
+  height: 600px;
+  background: var(--accent);
+  top: -200px;
+  left: -100px;
+}
+
+.blob-2 {
+  width: 500px;
+  height: 500px;
+  background: var(--purple);
+  bottom: -150px;
+  right: -100px;
+  animation-delay: -7s;
+}
+
+.blob-3 {
+  width: 400px;
+  height: 400px;
+  background: var(--blue);
+  top: 40%;
+  left: 60%;
+  animation-delay: -14s;
+}
+
+@keyframes blobFloat {
+  0% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -50px) scale(1.1); }
+  66% { transform: translate(-20px, 30px) scale(0.9); }
+  100% { transform: translate(10px, -20px) scale(1.05); }
+}
+
+/* ── Lucide React SVG sizing ──
+   lucide-react renders <svg> instead of <i>, so we add
+   equivalent sizing rules for SVG children. */
+.section-title svg {
+  color: var(--accent);
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+}
+
+.minimal-scanner svg { width: 24px; height: 24px; }
+.rc-h-icon svg { width: 18px; height: 18px; }
+.stat-icon svg { width: 18px; height: 18px; }
+.dl-icon svg { width: 18px; height: 18px; }
+.btn svg { width: 16px; height: 16px; }
+.hero-search-btn svg { width: 16px; height: 16px; }
+.rc-ext-btn svg { width: 16px; height: 16px; }
+.rip-label svg { width: 14px; height: 14px; color: var(--accent); }
+.footer-links svg { width: 14px; height: 14px; }
+.theme-toggle-btn svg { width: 18px; height: 18px; }
+.hamburger svg { width: 20px; height: 20px; }
+.mobile-drawer-close svg { width: 18px; height: 18px; }
+.mobile-nav-links svg { width: 18px; height: 18px; }
+.reported-ips-title svg { color: var(--accent); width: 18px; height: 18px; }
+.rip-empty svg { width: 40px; height: 40px; color: var(--text-faint); margin-bottom: var(--space-3); opacity: 0.5; }
+.toast svg { width: 18px; height: 18px; flex-shrink: 0; }
