@@ -34,12 +34,22 @@ export default function ThanksPage() {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="mb-16 text-center relative"
+          className="mb-20 text-center relative flex flex-col items-center"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-black/40 border border-white/10 shadow-2xl text-xs font-bold uppercase tracking-widest mb-6 text-slate-300">
-            <HeartHandshake size={14} className="text-cyan-400" />
-            Acknowledgements
-          </div>
+          {/* Glowing Background Behind Handshake */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-cyan-500/20 rounded-full blur-[100px] pointer-events-none"></div>
+
+          {/* Shaking Handshake Animation */}
+          <motion.div
+            animate={{ rotate: [0, -15, 15, -15, 15, 0] }}
+            transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 3, ease: "easeInOut" }}
+            className="mb-6 relative z-10"
+          >
+            <div className="bg-gradient-to-b from-white/10 to-transparent p-4 rounded-full border border-white/10 shadow-[0_0_30px_rgba(34,211,238,0.2)]">
+              <HeartHandshake size={56} className="text-cyan-400 drop-shadow-[0_0_15px_rgba(34,211,238,0.6)]" />
+            </div>
+          </motion.div>
+
           <h1 className="text-4xl md:text-6xl font-black flex flex-col items-center justify-center gap-2 text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400 tracking-tight drop-shadow-sm pb-2">
             Intel Sources
           </h1>
