@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { Flag, Globe, Tag, MessageSquare, Send, List, Inbox, ChevronLeft, ChevronRight, ShieldAlert } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Flag, Globe, Tag, MessageSquare, Send, List, Inbox, ChevronLeft, ChevronRight, ShieldAlert, Activity, AlertTriangle } from 'lucide-react'
 import supabaseClient from '../supabaseClient'
 import { fmt, timeAgo } from '../utils'
 import { Button } from '@/components/ui/button'
@@ -124,199 +125,277 @@ export default function ReportIP({ addToast }: any) {
     }
   }, [ipValue, category, comment, addToast, loadReportedIPs])
 
+  const getCategoryColor = (cat: string) => {
+    if (cat.includes('Brute')) return 'bg-orange-500/10 text-orange-400 border-orange-500/20'
+    if (cat.includes('Malware')) return 'bg-red-500/10 text-red-400 border-red-500/20'
+    if (cat.includes('DDoS')) return 'bg-purple-500/10 text-purple-400 border-purple-500/20'
+    if (cat.includes('Phish')) return 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+    return 'bg-slate-500/10 text-slate-300 border-slate-500/20'
+  }
+
   return (
-    <main className="min-h-screen pt-32 pb-20 relative bg-slate-950 overflow-hidden">
-      {/* Premium Ambient Background Effects */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]"></div>
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] opacity-20 pointer-events-none z-0">
-        <div className="absolute inset-0 bg-red-600 rounded-full blur-[120px] mix-blend-screen"></div>
-        <div className="absolute inset-20 bg-rose-500 rounded-full blur-[100px] mix-blend-screen"></div>
+    <main className="min-h-screen pt-32 pb-24 relative bg-slate-950 overflow-hidden font-sans">
+      {/* Animated Abstract Background */}
+      <div className="absolute inset-0 pointer-events-none z-0">
+        <motion.div 
+          animate={{ scale: [1, 1.1, 1], opacity: [0.1, 0.15, 0.1] }} 
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute -top-[20%] -left-[10%] w-[70vw] h-[70vw] rounded-full bg-gradient-to-br from-red-900/40 via-red-950/0 to-transparent blur-[100px]"
+        />
+        <motion.div 
+          animate={{ scale: [1, 1.2, 1], opacity: [0.05, 0.1, 0.05] }} 
+          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+          className="absolute top-[40%] -right-[20%] w-[60vw] h-[60vw] rounded-full bg-gradient-to-tl from-purple-900/30 via-slate-900/0 to-transparent blur-[120px]"
+        />
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay"></div>
       </div>
 
       <div className="mx-auto max-w-7xl px-6 lg:px-12 relative z-10">
+        
         {/* Page Header */}
-        <div className="mb-16 text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-bold uppercase tracking-widest mb-6">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-            </span>
-            Community Intelligence
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="mb-16 text-center"
+        >
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900/80 border border-white/5 backdrop-blur-md shadow-xl text-xs font-bold uppercase tracking-widest mb-6 text-slate-300">
+            <Activity size={14} className="text-red-500" />
+            Active Threat Database
           </div>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold flex items-center justify-center gap-4 text-white tracking-tight drop-shadow-md">
-            Report Malicious IP
+          <h1 className="text-5xl md:text-7xl font-extrabold flex flex-col items-center justify-center gap-2 text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400 tracking-tight drop-shadow-sm pb-2">
+            Community Intel
           </h1>
-          <p className="mt-6 text-slate-300 text-base md:text-lg max-w-2xl mx-auto font-medium leading-relaxed drop-shadow">
-            Help strengthen our global threat intelligence by reporting suspicious IPs. Your contributions directly empower defenders worldwide.
+          <p className="mt-4 text-slate-400 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed drop-shadow">
+            Help protect the global community. Report malicious IPs to our live feed and empower defenders worldwide.
           </p>
-        </div>
+        </motion.div>
 
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 lg:gap-12">
+          
           {/* Left Col: Submit Form */}
-          <div className="xl:col-span-4 rounded-3xl border border-white/10 bg-slate-900/60 backdrop-blur-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] p-8 relative overflow-hidden group">
-            <div className="absolute top-0 inset-x-0 h-px w-full bg-gradient-to-r from-transparent via-red-500/50 to-transparent"></div>
-            
-            <div className="space-y-6 relative z-10">
-              <div>
-                <label className="flex items-center gap-2 text-sm font-semibold mb-2 text-slate-300" htmlFor="rip-ip-input">
-                  <Globe size={16} className="text-red-400" /> IP Address
-                </label>
-                <input
-                  type="text"
-                  id="rip-ip-input"
-                  className="w-full flex h-14 rounded-xl border border-white/10 bg-black/20 px-4 py-2 text-sm text-white placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:border-red-500/50 focus-visible:ring-red-500/50 disabled:cursor-not-allowed disabled:opacity-50 transition-all shadow-inner"
-                  placeholder="e.g. 192.168.1.1"
-                  autoComplete="off"
-                  spellCheck="false"
-                  value={ipValue}
-                  onChange={(e) => setIpValue(e.target.value)}
-                />
-              </div>
+          <motion.div 
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="xl:col-span-4"
+          >
+            <div className="rounded-3xl border border-white/10 bg-slate-900/40 backdrop-blur-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] p-8 relative overflow-hidden group">
+              <div className="absolute top-0 inset-x-0 h-[2px] w-full bg-gradient-to-r from-transparent via-red-500/80 to-transparent"></div>
+              <div className="absolute -inset-1 bg-gradient-to-r from-red-500/20 to-purple-500/20 rounded-3xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
+              
+              <div className="space-y-6 relative z-10">
+                <div className="mb-8">
+                  <h2 className="text-2xl font-bold text-white flex items-center gap-3">
+                    <Flag className="text-red-500" size={24} /> File a Report
+                  </h2>
+                  <p className="text-slate-400 text-sm mt-2">All submissions are verified against global honeypots.</p>
+                </div>
 
-              <div>
-                <label className="flex items-center gap-2 text-sm font-semibold mb-2 text-slate-300" htmlFor="rip-category">
-                  <Tag size={16} className="text-rose-400" /> Category
-                </label>
-                <select
-                  id="rip-category"
-                  className="w-full flex h-14 rounded-xl border border-white/10 bg-slate-900/80 px-4 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:border-rose-500/50 focus-visible:ring-rose-500/50 disabled:cursor-not-allowed disabled:opacity-50 transition-all appearance-none shadow-inner"
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-400 ml-1" htmlFor="rip-ip-input">
+                    IP Address
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <Globe size={18} className="text-slate-500" />
+                    </div>
+                    <input
+                      type="text"
+                      id="rip-ip-input"
+                      className="w-full h-14 rounded-2xl border border-white/5 bg-black/40 pl-11 pr-4 text-sm text-white placeholder:text-slate-600 focus-visible:outline-none focus-visible:border-red-500/50 focus-visible:ring-4 focus-visible:ring-red-500/10 transition-all shadow-inner"
+                      placeholder="e.g. 192.168.1.1"
+                      autoComplete="off"
+                      spellCheck="false"
+                      value={ipValue}
+                      onChange={(e) => setIpValue(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-400 ml-1" htmlFor="rip-category">
+                    Threat Category
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <Tag size={18} className="text-slate-500" />
+                    </div>
+                    <select
+                      id="rip-category"
+                      className="w-full h-14 rounded-2xl border border-white/5 bg-black/40 pl-11 pr-4 text-sm text-white focus-visible:outline-none focus-visible:border-rose-500/50 focus-visible:ring-4 focus-visible:ring-rose-500/10 transition-all appearance-none shadow-inner"
+                      value={category}
+                      onChange={(e) => setCategory(e.target.value)}
+                    >
+                      <option value="" disabled>Select category...</option>
+                      <option value="Brute Force">Brute Force</option>
+                      <option value="Port Scan">Port Scan</option>
+                      <option value="Phishing">Phishing</option>
+                      <option value="Malware / C2">Malware / C2</option>
+                      <option value="DDoS">DDoS</option>
+                      <option value="Spam">Spam</option>
+                      <option value="Exploit Attempt">Exploit Attempt</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-400 ml-1" htmlFor="rip-comment">
+                    Analyst Notes
+                  </label>
+                  <div className="relative">
+                    <div className="absolute top-4 left-0 pl-4 pointer-events-none">
+                      <MessageSquare size={18} className="text-slate-500" />
+                    </div>
+                    <textarea
+                      id="rip-comment"
+                      className="w-full min-h-[120px] rounded-2xl border border-white/5 bg-black/40 pl-11 pr-4 py-4 text-sm text-white placeholder:text-slate-600 focus-visible:outline-none focus-visible:border-orange-500/50 focus-visible:ring-4 focus-visible:ring-orange-500/10 transition-all shadow-inner resize-none"
+                      rows={3}
+                      placeholder="Describe the activity..."
+                      value={comment}
+                      onChange={(e) => setComment(e.target.value)}
+                    ></textarea>
+                  </div>
+                </div>
+
+                <Button
+                  className="w-full h-14 rounded-2xl bg-white text-slate-950 hover:bg-slate-200 font-bold text-base shadow-[0_0_20px_rgba(255,255,255,0.15)] hover:shadow-[0_0_25px_rgba(255,255,255,0.3)] transition-all mt-6"
+                  onClick={handleSubmit}
+                  disabled={submitting}
                 >
-                  <option value="" disabled>Select threat category...</option>
-                  <option value="Brute Force">Brute Force</option>
-                  <option value="Port Scan">Port Scan</option>
-                  <option value="Phishing">Phishing</option>
-                  <option value="Malware / C2">Malware / C2</option>
-                  <option value="DDoS">DDoS</option>
-                  <option value="Spam">Spam</option>
-                  <option value="Exploit Attempt">Exploit Attempt</option>
-                  <option value="Other">Other</option>
-                </select>
+                  {submitting ? (
+                    <span className="flex items-center gap-2">
+                      <span className="h-5 w-5 animate-spin rounded-full border-2 border-slate-950/30 border-t-slate-950" />
+                      Processing...
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      <Send size={18} className="mr-1" /> Transmit Intel
+                    </span>
+                  )}
+                </Button>
               </div>
-
-              <div>
-                <label className="flex items-center gap-2 text-sm font-semibold mb-2 text-slate-300" htmlFor="rip-comment">
-                  <MessageSquare size={16} className="text-orange-400" /> Comment
-                </label>
-                <textarea
-                  id="rip-comment"
-                  className="flex min-h-[120px] w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:border-orange-500/50 focus-visible:ring-orange-500/50 disabled:cursor-not-allowed disabled:opacity-50 resize-none transition-all shadow-inner"
-                  rows={4}
-                  placeholder="Describe the suspicious activity..."
-                  value={comment}
-                  onChange={(e) => setComment(e.target.value)}
-                ></textarea>
-              </div>
-
-              <Button
-                className="w-full h-14 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-bold text-base shadow-[0_0_20px_rgba(225,29,72,0.3)] hover:shadow-[0_0_25px_rgba(225,29,72,0.5)] transition-all border border-red-500/20 mt-4"
-                onClick={handleSubmit}
-                disabled={submitting}
-              >
-                {submitting ? (
-                  <span className="flex items-center gap-2">
-                    <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                    Submitting...
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-2">
-                    <Send size={18} /> Submit Report
-                  </span>
-                )}
-              </Button>
             </div>
-          </div>
+          </motion.div>
 
           {/* Right Col: Reported IPs Table */}
-          <div className="xl:col-span-8 rounded-3xl border border-white/10 bg-slate-900/60 backdrop-blur-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] flex flex-col overflow-hidden relative">
-            <div className="absolute top-0 inset-x-0 h-px w-full bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-            
-            {/* Table Header Section */}
-            <div className="p-6 md:px-8 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
-              <h3 className="font-bold text-xl flex items-center gap-3 text-white">
-                <List className="text-slate-400" size={20} /> 
-                Recent Community Reports
-              </h3>
-              <div className="hidden sm:flex text-sm text-slate-300 font-bold bg-black/40 px-4 py-2 rounded-full border border-white/10 shadow-inner items-center gap-2">
-                <ShieldAlert size={16} className="text-red-400"/>
-                {reportCount > 0 ? `${fmt(reportCount)} Total Reports` : 'Syncing...'}
+          <motion.div 
+            initial={{ opacity: 0, x: 30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="xl:col-span-8 flex flex-col"
+          >
+            <div className="rounded-3xl border border-white/10 bg-slate-900/40 backdrop-blur-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] flex flex-col overflow-hidden relative h-full">
+              
+              {/* Table Header Section */}
+              <div className="p-6 md:px-8 flex items-center justify-between border-b border-white/5 bg-black/20">
+                <h3 className="font-bold text-xl flex items-center gap-3 text-white">
+                  <List className="text-slate-400" size={20} /> 
+                  Global Intel Feed
+                </h3>
+                <div className="hidden sm:flex text-sm text-slate-300 font-bold bg-white/5 px-4 py-2 rounded-xl border border-white/5 shadow-inner items-center gap-2">
+                  <ShieldAlert size={16} className="text-red-400"/>
+                  {reportCount > 0 ? `${fmt(reportCount)} Submissions` : 'Live'}
+                </div>
               </div>
-            </div>
 
-            <div className="flex-1 overflow-x-auto">
-              {loading ? (
-                <div className="p-20 flex flex-col items-center justify-center text-slate-400">
-                  <span className="h-10 w-10 animate-spin rounded-full border-4 border-slate-700 border-t-red-500 mb-6" />
-                  <p className="font-medium tracking-wide">Loading threat intel database...</p>
-                </div>
-              ) : isEmpty ? (
-                <div className="p-24 flex flex-col items-center justify-center text-slate-500 text-center">
-                  <Inbox size={56} className="mb-6 opacity-20" />
-                  <p className="text-xl font-semibold text-slate-300 mb-2">No reports yet.</p>
-                  <p className="text-sm">Be the first to submit a malicious IP to the global database!</p>
-                </div>
-              ) : (
-                <table className="w-full text-sm text-left">
-                  <thead className="text-xs uppercase bg-black/20 text-slate-400 font-semibold border-b border-white/5">
-                    <tr>
-                      <th className="px-6 py-5 tracking-widest whitespace-nowrap">IP Address</th>
-                      <th className="px-6 py-5 tracking-widest whitespace-nowrap">Category</th>
-                      <th className="px-6 py-5 tracking-widest">Comment</th>
-                      <th className="px-6 py-5 tracking-widest whitespace-nowrap text-right">Reported</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/5">
-                    {reports.map((row) => (
-                      <tr key={row.id || row.created_at} className="hover:bg-white/[0.03] transition-colors group">
-                        <td className="px-6 py-5 font-mono font-medium text-slate-200 whitespace-nowrap">
-                          {row.ip}
-                        </td>
-                        <td className="px-6 py-5 whitespace-nowrap">
-                          <span className="inline-flex items-center px-3 py-1 rounded-md text-[11px] font-bold tracking-wider uppercase bg-white/5 text-slate-300 border border-white/10 shadow-sm group-hover:border-white/20 transition-colors">
-                            {row.category}
-                          </span>
-                        </td>
-                        <td className="px-6 py-5 text-slate-400 truncate max-w-[200px] sm:max-w-xs font-medium" title={row.comment || ''}>
-                          {row.comment || '—'}
-                        </td>
-                        <td className="px-6 py-5 text-slate-400 whitespace-nowrap font-medium text-right">
-                          {timeAgo(row.created_at)}
-                        </td>
+              <div className="flex-1 overflow-x-auto">
+                {loading ? (
+                  <div className="h-full flex flex-col items-center justify-center text-slate-400 py-24">
+                    <div className="relative h-16 w-16 mb-6">
+                      <div className="absolute inset-0 rounded-full border-t-2 border-red-500 animate-spin"></div>
+                      <div className="absolute inset-2 rounded-full border-b-2 border-slate-500 animate-spin animation-delay-200"></div>
+                      <ShieldAlert className="absolute inset-0 m-auto text-slate-600" size={20} />
+                    </div>
+                    <p className="font-medium tracking-wide">Syncing with global database...</p>
+                  </div>
+                ) : isEmpty ? (
+                  <div className="h-full flex flex-col items-center justify-center text-slate-500 text-center py-24 px-6">
+                    <div className="bg-white/5 p-6 rounded-full mb-6 border border-white/5 shadow-inner">
+                      <Inbox size={48} className="opacity-50" />
+                    </div>
+                    <p className="text-xl font-bold text-white mb-2">No Reports Found</p>
+                    <p className="text-sm max-w-sm">The intel feed is currently clear. Submit the first malicious IP to start the database.</p>
+                  </div>
+                ) : (
+                  <table className="w-full text-sm text-left">
+                    <thead className="text-[10px] uppercase bg-black/40 text-slate-500 font-bold border-b border-white/5">
+                      <tr>
+                        <th className="px-8 py-5 tracking-[0.2em] whitespace-nowrap">IP Address</th>
+                        <th className="px-6 py-5 tracking-[0.2em] whitespace-nowrap">Category</th>
+                        <th className="px-6 py-5 tracking-[0.2em]">Context</th>
+                        <th className="px-8 py-5 tracking-[0.2em] whitespace-nowrap text-right">Time</th>
                       </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/5">
+                      <AnimatePresence>
+                        {reports.map((row, idx) => (
+                          <motion.tr 
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: idx * 0.05 }}
+                            key={row.id || row.created_at} 
+                            className="hover:bg-white/[0.02] transition-colors group"
+                          >
+                            <td className="px-8 py-6 font-mono font-semibold text-slate-200 whitespace-nowrap flex items-center gap-3">
+                              <div className="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]"></div>
+                              {row.ip}
+                            </td>
+                            <td className="px-6 py-6 whitespace-nowrap">
+                              <span className={`inline-flex items-center px-3 py-1 rounded-lg text-[11px] font-bold tracking-wider uppercase border shadow-sm ${getCategoryColor(row.category)}`}>
+                                {row.category}
+                              </span>
+                            </td>
+                            <td className="px-6 py-6 text-slate-400 truncate max-w-[200px] sm:max-w-xs font-medium" title={row.comment || ''}>
+                              {row.comment ? (
+                                <span className="flex items-center gap-2">
+                                  <AlertTriangle size={14} className="text-slate-500 flex-shrink-0" />
+                                  <span className="truncate">{row.comment}</span>
+                                </span>
+                              ) : '—'}
+                            </td>
+                            <td className="px-8 py-6 text-slate-500 whitespace-nowrap font-medium text-right group-hover:text-slate-300 transition-colors">
+                              {timeAgo(row.created_at)}
+                            </td>
+                          </motion.tr>
+                        ))}
+                      </AnimatePresence>
+                    </tbody>
+                  </table>
+                )}
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && !loading && !isEmpty && (
+                <div className="p-4 md:px-8 border-t border-white/5 flex items-center justify-between bg-black/20">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-slate-400 hover:bg-white/5 hover:text-white rounded-xl transition-all font-semibold"
+                    onClick={() => loadReportedIPs(page - 1)}
+                    disabled={page === 0}
+                  >
+                    <ChevronLeft size={16} className="mr-1" /> Prev
+                  </Button>
+                  <div className="flex gap-1.5">
+                    {[...Array(Math.min(totalPages, 5))].map((_, i) => (
+                      <div key={i} className={`h-1.5 w-1.5 rounded-full ${i === page ? 'bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]' : 'bg-slate-700'}`}></div>
                     ))}
-                  </tbody>
-                </table>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-slate-400 hover:bg-white/5 hover:text-white rounded-xl transition-all font-semibold"
+                    onClick={() => loadReportedIPs(page + 1)}
+                    disabled={page >= totalPages - 1}
+                  >
+                    Next <ChevronRight size={16} className="ml-1" />
+                  </Button>
+                </div>
               )}
             </div>
-
-            {/* Pagination */}
-            {totalPages > 1 && !loading && !isEmpty && (
-              <div className="p-4 md:px-8 border-t border-white/10 flex items-center justify-between bg-white/[0.02]">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="bg-black/20 border-white/10 text-white hover:bg-white/10 hover:text-white rounded-lg px-5 transition-all"
-                  onClick={() => loadReportedIPs(page - 1)}
-                  disabled={page === 0}
-                >
-                  <ChevronLeft size={16} className="mr-1" /> Prev
-                </Button>
-                <span className="text-sm text-slate-400 font-semibold tracking-wide">
-                  Page <span className="text-white">{page + 1}</span> of <span className="text-white">{totalPages}</span>
-                </span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="bg-black/20 border-white/10 text-white hover:bg-white/10 hover:text-white rounded-lg px-5 transition-all"
-                  onClick={() => loadReportedIPs(page + 1)}
-                  disabled={page >= totalPages - 1}
-                >
-                  Next <ChevronRight size={16} className="ml-1" />
-                </Button>
-              </div>
-            )}
-          </div>
+          </motion.div>
         </div>
       </div>
     </main>
