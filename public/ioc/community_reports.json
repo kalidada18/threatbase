@@ -33,5 +33,26 @@
     "category": "DDoS",
     "comment": "Malicious Web Attacks Detected",
     "created_at": "2026-06-11T06:49:08.751794+00:00"
+  },
+  {
+    "id": "fef0c80f-b34f-4a76-b98f-3459264dc9ae",
+    "ip": "64.62.156.169",
+    "category": "Port Scan",
+    "comment": "[rede-164-29] 06/11/2026-04:19:01.510612, 64.62.156.169, Protocol: 6, ET DROP Dshield Block Listed Source group 1",
+    "created_at": "2026-06-11T14:50:23.715295+00:00"
+  },
+  {
+    "id": "9dcb2d69-dbb0-4b05-928f-5a7fbb9e6623",
+    "ip": "98.90.43.197",
+    "category": "Port Scan",
+    "comment": "trying to access non-authorized port",
+    "created_at": "2026-06-11T15:09:29.246394+00:00"
+  },
+  {
+    "id": "c0bc8c34-8ae5-4598-a2c5-c0367ae70808",
+    "ip": "188.213.202.70",
+    "category": "Brute Force",
+    "comment": "BruteForce Detected in Wordpress",
+    "created_at": "2026-06-11T15:41:18.308707+00:00"
   }
 ]
