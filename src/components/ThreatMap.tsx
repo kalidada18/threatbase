@@ -128,11 +128,14 @@ export default function ThreatMap() {
           ctx.clearRect(0, 0, width, height)
           
           // Draw map dots with red tint
-          ctx.fillStyle = 'rgba(220, 38, 38, 0.4)' // red-600
           dots.forEach(dot => {
             ctx.beginPath()
             ctx.arc(dot.x, dot.y, 1.5, 0, Math.PI * 2)
+            ctx.shadowColor = 'rgba(255, 0, 0, 0.6)'
+            ctx.shadowBlur = 4
+            ctx.fillStyle = 'rgba(255, 30, 30, 0.9)' // Intensely red dots
             ctx.fill()
+            ctx.shadowBlur = 0 // Reset shadow for other draws
           })
 
           // Spawn new attacks randomly

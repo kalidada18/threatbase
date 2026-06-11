@@ -124,7 +124,7 @@ const HeroHeader = () => {
             <nav
                 data-state={menuState && 'active'}
                 className="group fixed z-50 w-full pt-2">
-                <div className={cn('mx-auto max-w-7xl rounded-full px-6 transition-all duration-300 lg:px-12 mt-4', scrolled ? 'bg-slate-900/60 backdrop-blur-xl border border-white/10 shadow-2xl py-2' : 'py-4')}>
+                <div className={cn('mx-auto max-w-7xl rounded-full px-8 transition-all duration-500 lg:px-12 mt-6', scrolled ? 'bg-slate-900/70 backdrop-blur-2xl border border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] py-3' : 'py-5 bg-transparent border border-transparent')}>
                     <motion.div
                         className="relative flex flex-wrap items-center justify-between gap-6 lg:gap-0">
                         <div className="flex w-full items-center justify-between gap-12 lg:w-auto">
@@ -149,7 +149,7 @@ const HeroHeader = () => {
                                         <li key={index}>
                                             <a
                                                 href={item.href}
-                                                className="text-slate-300 hover:text-white block duration-150">
+                                                className="text-slate-300 hover:text-white px-4 py-2 rounded-full hover:bg-white/10 block transition-all duration-300 font-semibold tracking-wide">
                                                 <span>{item.name}</span>
                                             </a>
                                         </li>
