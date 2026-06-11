@@ -18,41 +18,46 @@ export function HeroSection({ scanInput, setScanInput, handleScan, statsData }: 
                 <section className="relative z-10 pt-24 md:pt-32">
                     <div className="py-24 md:pb-32 lg:pb-36 lg:pt-32 relative">
                         <div className="relative z-10 mx-auto flex max-w-7xl flex-col px-6 lg:block lg:px-12">
-                            <div className="mx-auto max-w-2xl text-center lg:ml-0 lg:max-w-full lg:text-left">
-                                <h1 className="mt-8 max-w-4xl text-balance text-5xl md:text-6xl font-semibold tracking-tight text-white lg:mt-16 xl:text-7xl">
-                                    Built for Defenders. <span className="block text-cyan-400 mt-2">Powered by Open Intelligence.</span>
-                                </h1>
-                                <p className="mt-6 max-w-2xl text-lg leading-relaxed text-slate-300">
-                                    Access real-time threat data and indicators to proactively identify, investigate, and respond to cyber threats.
-                                </p>
+                            <div className="mx-auto max-w-2xl text-center lg:ml-0 lg:max-w-full lg:text-left relative">
+                                {/* Subtle radial gradient mask to improve text readability against the map dots */}
+                                <div className="absolute -inset-x-10 -inset-y-10 z-0 bg-[radial-gradient(ellipse_at_center,rgba(15,23,42,0.85)_0%,rgba(15,23,42,0)_70%)] pointer-events-none lg:-inset-x-20 lg:-inset-y-20 rounded-full blur-2xl"></div>
+                                
+                                <div className="relative z-10">
+                                    <h1 className="mt-8 max-w-4xl text-balance text-5xl md:text-6xl font-semibold tracking-tight text-white lg:mt-16 xl:text-7xl">
+                                        Built for Defenders. <span className="block bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400 bg-clip-text text-transparent mt-2 pb-2">Powered by Open Intelligence.</span>
+                                    </h1>
+                                    <p className="mt-6 max-w-2xl text-lg leading-relaxed text-slate-300">
+                                        Access real-time threat data and indicators to proactively identify, investigate, and respond to cyber threats.
+                                    </p>
 
-                                <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row lg:justify-start">
-                                    <div className="relative w-full max-w-md flex items-center">
-                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
-                                        <input 
-                                            type="text" 
-                                            placeholder="Scan IP, Domain, Hash (e.g. 223.252.176.131)" 
-                                            className="h-12 w-full rounded-full border border-input bg-background pl-10 pr-32 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                                            value={scanInput}
-                                            onChange={(e) => setScanInput(e.target.value)}
-                                            onKeyDown={(e) => e.key === 'Enter' && handleScan()}
-                                        />
+                                    <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row lg:justify-start">
+                                        <div className="relative w-full max-w-md flex items-center">
+                                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                                            <input 
+                                                type="text" 
+                                                placeholder="Scan IP, Domain, Hash (e.g. 223.252.176.131)" 
+                                                className="h-14 w-full rounded-full border border-white/10 bg-slate-900/60 backdrop-blur-xl pl-12 pr-32 text-sm text-white placeholder:text-slate-500 focus-visible:outline-none focus-visible:border-cyan-500/50 focus-visible:ring-1 focus-visible:ring-cyan-500/50 transition-all shadow-[0_0_20px_rgba(0,0,0,0.5)]"
+                                                value={scanInput}
+                                                onChange={(e) => setScanInput(e.target.value)}
+                                                onKeyDown={(e) => e.key === 'Enter' && handleScan()}
+                                            />
+                                            <Button
+                                                size="sm"
+                                                className="absolute right-1.5 top-1.5 bottom-1.5 h-11 rounded-full px-7 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold shadow-[0_0_15px_rgba(34,211,238,0.3)] hover:shadow-[0_0_20px_rgba(34,211,238,0.5)] transition-all border border-cyan-400/20"
+                                                onClick={handleScan}
+                                            >
+                                                Scan
+                                            </Button>
+                                        </div>
                                         <Button
-                                            size="sm"
-                                            className="absolute right-1 top-1 bottom-1 h-10 rounded-full px-6"
-                                            onClick={handleScan}
+                                            variant="outline"
+                                            size="lg"
+                                            className="h-14 rounded-full px-8 text-base border-white/10 bg-slate-900/50 backdrop-blur-md text-slate-200 hover:bg-white/10 hover:text-white hover:border-white/20 transition-all duration-300"
+                                            asChild
                                         >
-                                            Scan
+                                            <a href="#feeds">Browse Feeds</a>
                                         </Button>
                                     </div>
-                                    <Button
-                                        variant="outline"
-                                        size="lg"
-                                        className="h-12 rounded-full px-6 text-base border-white/20 text-white hover:bg-white/10 hover:text-white bg-white/5"
-                                        asChild
-                                    >
-                                        <a href="#feeds">Browse Feeds</a>
-                                    </Button>
                                 </div>
                             </div>
                         </div>
