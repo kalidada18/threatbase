@@ -55,11 +55,11 @@ export default function Navbar() {
                             <Link
                                 to="/"
                                 aria-label="home"
-                                className="flex items-baseline group relative z-10 transition-transform duration-300 hover:scale-[1.02]">
-                                <span className="font-black text-3xl tracking-tighter text-white drop-shadow-[0_0_12px_rgba(255,255,255,0.3)] group-hover:drop-shadow-[0_0_20px_rgba(255,255,255,0.5)] transition-all duration-300">
+                                className="flex items-center group relative z-10">
+                                <span className="font-extrabold text-2xl tracking-tight text-white transition-colors group-hover:text-slate-200">
                                     Himalaya
                                 </span>
-                                <span className="font-light italic text-3xl tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-rose-500 drop-shadow-[0_0_15px_rgba(239,68,68,0.4)] group-hover:drop-shadow-[0_0_25px_rgba(239,68,68,0.6)] transition-all duration-300">
+                                <span className="font-bold text-2xl tracking-tight text-red-500 transition-colors group-hover:text-red-400">
                                     Feed
                                 </span>
                             </Link>
