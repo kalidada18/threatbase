@@ -15,8 +15,8 @@ export function HeroSection({ scanInput, setScanInput, handleScan, statsData }: 
             <main className="relative overflow-hidden w-full min-h-[90vh] bg-slate-900 border-b border-white/10 shadow-2xl">
                 <ThreatMap />
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent via-slate-900/50 to-slate-900 pointer-events-none z-0" />
-                <section className="relative z-10 pt-24 md:pt-32">
-                    <div className="py-24 md:pb-32 lg:pb-36 lg:pt-32 relative">
+                <section className="relative z-10 pt-16 md:pt-20">
+                    <div className="py-12 md:pb-24 lg:pb-32 lg:pt-16 relative">
                         <div className="relative z-10 mx-auto flex max-w-7xl flex-col px-6 lg:block lg:px-12">
                             <div className="mx-auto max-w-2xl text-center lg:ml-0 lg:max-w-full lg:text-left relative">
                                 {/* Subtle radial gradient mask to improve text readability against the map dots */}
