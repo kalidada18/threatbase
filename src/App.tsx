@@ -1,15 +1,14 @@
 import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
-import Navbar from './components/Navbar'
-import Hero from './components/Hero'
+import { HeroSection } from './components/blocks/hero-section-5'
 import ReportScanner from './components/ReportScanner'
 import Stats from './components/Stats'
 import Feeds from './components/Feeds'
 import Analytics from './components/Analytics'
 import ReportIP from './components/ReportIP'
-import Footer from './components/Footer'
 import ToastContainer from './components/ToastContainer'
 import { getBaseUrl, formatSyncTime, animateValue } from './utils'
+import { scanIndicatorLogic } from './scanner'
 
 export default function App() {
   const [statsData, setStatsData] = useState(null)
@@ -32,6 +31,26 @@ export default function App() {
       setToasts((prev) => prev.filter((t) => t.id !== id))
     }, 4000)
   }, [])
+
+  const handleScan = useCallback(async () => {
+    const raw = scanInput.trim()
+    if (!raw) return
+
+    setIsScanning(true)
+    setShowReport(true)
+    setScanResult(null)
+
+    // Artificial delay for the scanning UI effect
+    const result = await scanIndicatorLogic(raw, feedVersion)
+    await new Promise((r) => setTimeout(r, 1600))
+
+    setScanResult(result)
+    setIsScanning(false)
+
+    // Smooth scroll to the report section
+    const section = document.getElementById('report-section')
+    if (section) section.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }, [scanInput, feedVersion])
 
 
   // Boot: fetch stats.json
@@ -76,29 +95,9 @@ export default function App() {
 
   return (
     <>
-      {/* Backdrop Blobs */}
-      <div className="blob-container" aria-hidden="true">
-        <div className="blob blob-1"></div>
-        <div className="blob blob-2"></div>
-        <div className="blob blob-3"></div>
-      </div>
-
-      {/* Skip Link */}
-      <a href="#main-content" className="skip-link">Skip to main content</a>
-
-      <Navbar syncTime={syncTime} />
+      <HeroSection scanInput={scanInput} setScanInput={setScanInput} handleScan={handleScan} />
 
       <main id="main-content">
-        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-          <Hero
-            scanInput={scanInput}
-            setScanInput={setScanInput}
-            setScanResult={setScanResult}
-            setIsScanning={setIsScanning}
-            setShowReport={setShowReport}
-            feedVersion={feedVersion}
-          />
-        </motion.div>
 
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2, duration: 0.5 }}>
           <ReportScanner
