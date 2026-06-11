@@ -17,7 +17,7 @@ export function HeroSection({ scanInput, setScanInput, handleScan }: any) {
                         <div className="relative z-10 mx-auto flex max-w-7xl flex-col px-6 lg:block lg:px-12">
                             <div className="mx-auto max-w-2xl text-center lg:ml-0 lg:max-w-full lg:text-left">
                                 <h1 className="mt-8 max-w-3xl text-balance text-5xl md:text-6xl font-semibold tracking-tight text-white lg:mt-16 xl:text-7xl">
-                                    Enterprise Threat Intelligence
+                                    Open Source Intelligence
                                 </h1>
                                 <p className="mt-6 max-w-2xl text-lg leading-relaxed text-slate-300">
                                     A highly customizable, real-time database of malicious IPs, domains, and signatures to secure your infrastructure against emerging global threats.

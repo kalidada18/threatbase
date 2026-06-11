@@ -113,7 +113,7 @@ export default function ThreatMap() {
             source: { x: srcProj[0], y: srcProj[1] },
             target: { x: tgtProj[0], y: tgtProj[1] },
             progress: 0,
-            speed: 0.005 + Math.random() * 0.01,
+            speed: 0.008 + Math.random() * 0.015, // Slightly faster
             color: colors[Math.floor(Math.random() * colors.length)]
           })
         }
@@ -122,12 +122,12 @@ export default function ThreatMap() {
         for (let i = 0; i < 5; i++) spawnAttack()
 
         const render = () => {
-          // Clear with slight trailing effect
-          ctx.fillStyle = 'rgba(15, 23, 42, 0.3)'
+          // Clear with heavier trailing effect (faster fade)
+          ctx.fillStyle = 'rgba(15, 23, 42, 0.15)'
           ctx.fillRect(0, 0, width, height)
           
-          // Draw map dots
-          ctx.fillStyle = '#334155' // slate-700
+          // Draw map dots with slightly lower opacity so attacks pop more
+          ctx.fillStyle = 'rgba(51, 65, 85, 0.6)' // slate-700
           dots.forEach(dot => {
             ctx.beginPath()
             ctx.arc(dot.x, dot.y, 1, 0, Math.PI * 2)
@@ -135,7 +135,7 @@ export default function ThreatMap() {
           })
 
           // Spawn new attacks randomly
-          if (Math.random() < 0.05 && attacks.length < 15) {
+          if (Math.random() < 0.04 && attacks.length < 20) {
             spawnAttack()
           }
 
@@ -167,21 +167,22 @@ export default function ThreatMap() {
             const currX = invT * invT * a.source.x + 2 * invT * t * midX + t * t * a.target.x
             const currY = invT * invT * a.source.y + 2 * invT * t * cpY + t * t * a.target.y
 
-            // Draw trail
-            ctx.beginPath()
-            ctx.moveTo(a.source.x, a.source.y)
-            ctx.quadraticCurveTo(midX, cpY, currX, currY)
-            ctx.strokeStyle = `rgba(${hexToRgb(a.color)}, 0.4)`
-            ctx.lineWidth = 1.5
-            ctx.stroke()
+            // Calculate previous frame position to draw a short segment (comet head)
+            const prevT = Math.max(0, t - a.speed)
+            const invPrevT = 1 - prevT
+            const prevX = invPrevT * invPrevT * a.source.x + 2 * invPrevT * prevT * midX + prevT * prevT * a.target.x
+            const prevY = invPrevT * invPrevT * a.source.y + 2 * invPrevT * prevT * cpY + prevT * prevT * a.target.y
 
-            // Draw moving particle
+            // Draw glowing comet head
             ctx.beginPath()
-            ctx.arc(currX, currY, 3, 0, Math.PI * 2)
-            ctx.fillStyle = a.color
-            ctx.shadowBlur = 15
+            ctx.moveTo(prevX, prevY)
+            ctx.lineTo(currX, currY)
+            ctx.strokeStyle = a.color
+            ctx.lineWidth = 3
+            ctx.lineCap = 'round'
+            ctx.shadowBlur = 12
             ctx.shadowColor = a.color
-            ctx.fill()
+            ctx.stroke()
             
             ctx.shadowBlur = 0
           }
