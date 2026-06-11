@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Flag, Globe, Tag, MessageSquare, Send, List, Inbox, ChevronLeft, ChevronRight, ShieldAlert, Activity, AlertTriangle } from 'lucide-react'
+import { Flag, Globe, Tag, MessageSquare, Send, List, Inbox, ChevronLeft, ChevronRight, ShieldAlert, Activity, AlertTriangle, ShieldCheck, CheckCircle2 } from 'lucide-react'
 import supabaseClient from '../supabaseClient'
 import { fmt, timeAgo } from '../utils'
 import { Button } from '@/components/ui/button'
@@ -13,6 +13,7 @@ export default function ReportIP({ addToast }: any) {
   const [category, setCategory] = useState('')
   const [comment, setComment] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [submitSuccess, setSubmitSuccess] = useState(false)
   const lastSubmitRef = useRef(0)
 
   // Reported IPs table state
@@ -112,7 +113,10 @@ export default function ReportIP({ addToast }: any) {
       if (error) throw error
 
       lastSubmitRef.current = Date.now()
-      addToast('Report submitted successfully!', 'success')
+      
+      // Show success screen instead of just a toast
+      setSubmitSuccess(true)
+      
       setIpValue('')
       setCategory('')
       setComment('')
@@ -126,11 +130,11 @@ export default function ReportIP({ addToast }: any) {
   }, [ipValue, category, comment, addToast, loadReportedIPs])
 
   const getCategoryColor = (cat: string) => {
-    if (cat.includes('Brute')) return 'bg-orange-500/10 text-orange-400 border-orange-500/20'
-    if (cat.includes('Malware')) return 'bg-red-500/10 text-red-400 border-red-500/20'
-    if (cat.includes('DDoS')) return 'bg-purple-500/10 text-purple-400 border-purple-500/20'
-    if (cat.includes('Phish')) return 'bg-blue-500/10 text-blue-400 border-blue-500/20'
-    return 'bg-slate-500/10 text-slate-300 border-slate-500/20'
+    if (cat.includes('Brute')) return 'bg-orange-500/10 text-orange-400 border-orange-500/30 shadow-[0_0_15px_rgba(249,115,22,0.2)]'
+    if (cat.includes('Malware')) return 'bg-red-500/10 text-red-400 border-red-500/30 shadow-[0_0_15px_rgba(239,68,68,0.2)]'
+    if (cat.includes('DDoS')) return 'bg-purple-500/10 text-purple-400 border-purple-500/30 shadow-[0_0_15px_rgba(168,85,247,0.2)]'
+    if (cat.includes('Phish')) return 'bg-blue-500/10 text-blue-400 border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.2)]'
+    return 'bg-slate-500/10 text-slate-300 border-slate-500/30'
   }
 
   return (
@@ -138,14 +142,14 @@ export default function ReportIP({ addToast }: any) {
       {/* Animated Abstract Background */}
       <div className="absolute inset-0 pointer-events-none z-0">
         <motion.div 
-          animate={{ scale: [1, 1.1, 1], opacity: [0.1, 0.15, 0.1] }} 
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute -top-[20%] -left-[10%] w-[70vw] h-[70vw] rounded-full bg-gradient-to-br from-red-900/40 via-red-950/0 to-transparent blur-[100px]"
+          animate={{ scale: [1, 1.15, 1], opacity: [0.15, 0.25, 0.15], rotate: [0, 90, 0] }} 
+          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute -top-[20%] -left-[10%] w-[70vw] h-[70vw] rounded-full bg-gradient-to-br from-red-600/30 via-rose-900/10 to-transparent blur-[120px]"
         />
         <motion.div 
-          animate={{ scale: [1, 1.2, 1], opacity: [0.05, 0.1, 0.05] }} 
-          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-          className="absolute top-[40%] -right-[20%] w-[60vw] h-[60vw] rounded-full bg-gradient-to-tl from-purple-900/30 via-slate-900/0 to-transparent blur-[120px]"
+          animate={{ scale: [1, 1.25, 1], opacity: [0.1, 0.2, 0.1], rotate: [0, -90, 0] }} 
+          transition={{ duration: 25, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+          className="absolute top-[30%] -right-[20%] w-[60vw] h-[60vw] rounded-full bg-gradient-to-tl from-indigo-900/40 via-purple-900/10 to-transparent blur-[140px]"
         />
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay"></div>
       </div>
@@ -157,13 +161,16 @@ export default function ReportIP({ addToast }: any) {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="mb-16 text-center"
+          className="mb-16 text-center relative"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900/80 border border-white/5 backdrop-blur-md shadow-xl text-xs font-bold uppercase tracking-widest mb-6 text-slate-300">
-            <Activity size={14} className="text-red-500" />
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-black/40 border border-white/10 backdrop-blur-xl shadow-2xl text-xs font-bold uppercase tracking-widest mb-6 text-slate-300">
+            <span className="relative flex h-2.5 w-2.5 mr-1">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+            </span>
             Active Threat Database
           </div>
-          <h1 className="text-5xl md:text-7xl font-extrabold flex flex-col items-center justify-center gap-2 text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400 tracking-tight drop-shadow-sm pb-2">
+          <h1 className="text-5xl md:text-7xl font-extrabold flex flex-col items-center justify-center gap-2 text-transparent bg-clip-text bg-gradient-to-b from-white via-white to-slate-400 tracking-tight drop-shadow-sm pb-2">
             Community Intel
           </h1>
           <p className="mt-4 text-slate-400 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed drop-shadow">
@@ -171,110 +178,151 @@ export default function ReportIP({ addToast }: any) {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 lg:gap-12">
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 lg:gap-12 items-start">
           
-          {/* Left Col: Submit Form */}
+          {/* Left Col: Submit Form or Success Screen */}
           <motion.div 
             initial={{ opacity: 0, x: -30 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
             className="xl:col-span-4"
           >
-            <div className="rounded-3xl border border-white/10 bg-slate-900/40 backdrop-blur-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] p-8 relative overflow-hidden group">
+            <div className="rounded-3xl border border-white/10 bg-slate-900/50 backdrop-blur-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] relative overflow-hidden group">
               <div className="absolute top-0 inset-x-0 h-[2px] w-full bg-gradient-to-r from-transparent via-red-500/80 to-transparent"></div>
-              <div className="absolute -inset-1 bg-gradient-to-r from-red-500/20 to-purple-500/20 rounded-3xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
+              <div className="absolute -inset-1 bg-gradient-to-r from-red-500/20 to-indigo-500/20 rounded-3xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
               
-              <div className="space-y-6 relative z-10">
-                <div className="mb-8">
-                  <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-                    <Flag className="text-red-500" size={24} /> File a Report
-                  </h2>
-                  <p className="text-slate-400 text-sm mt-2">All submissions are verified against global honeypots.</p>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-400 ml-1" htmlFor="rip-ip-input">
-                    IP Address
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <Globe size={18} className="text-slate-500" />
-                    </div>
-                    <input
-                      type="text"
-                      id="rip-ip-input"
-                      className="w-full h-14 rounded-2xl border border-white/5 bg-black/40 pl-11 pr-4 text-sm text-white placeholder:text-slate-600 focus-visible:outline-none focus-visible:border-red-500/50 focus-visible:ring-4 focus-visible:ring-red-500/10 transition-all shadow-inner"
-                      placeholder="e.g. 192.168.1.1"
-                      autoComplete="off"
-                      spellCheck="false"
-                      value={ipValue}
-                      onChange={(e) => setIpValue(e.target.value)}
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-400 ml-1" htmlFor="rip-category">
-                    Threat Category
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      <Tag size={18} className="text-slate-500" />
-                    </div>
-                    <select
-                      id="rip-category"
-                      className="w-full h-14 rounded-2xl border border-white/5 bg-black/40 pl-11 pr-4 text-sm text-white focus-visible:outline-none focus-visible:border-rose-500/50 focus-visible:ring-4 focus-visible:ring-rose-500/10 transition-all appearance-none shadow-inner"
-                      value={category}
-                      onChange={(e) => setCategory(e.target.value)}
+              <div className="p-8 relative z-10 min-h-[500px] flex flex-col justify-center">
+                <AnimatePresence mode="wait">
+                  {!submitSuccess ? (
+                    <motion.div 
+                      key="form"
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95, filter: "blur(10px)" }}
+                      transition={{ duration: 0.3 }}
+                      className="space-y-6"
                     >
-                      <option value="" disabled>Select category...</option>
-                      <option value="Brute Force">Brute Force</option>
-                      <option value="Port Scan">Port Scan</option>
-                      <option value="Phishing">Phishing</option>
-                      <option value="Malware / C2">Malware / C2</option>
-                      <option value="DDoS">DDoS</option>
-                      <option value="Spam">Spam</option>
-                      <option value="Exploit Attempt">Exploit Attempt</option>
-                      <option value="Other">Other</option>
-                    </select>
-                  </div>
-                </div>
+                      <div className="mb-8">
+                        <h2 className="text-2xl font-bold text-white flex items-center gap-3">
+                          <Flag className="text-red-500" size={24} /> File a Report
+                        </h2>
+                        <p className="text-slate-400 text-sm mt-2">All submissions are verified against global honeypots.</p>
+                      </div>
 
-                <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-slate-400 ml-1" htmlFor="rip-comment">
-                    Analyst Notes
-                  </label>
-                  <div className="relative">
-                    <div className="absolute top-4 left-0 pl-4 pointer-events-none">
-                      <MessageSquare size={18} className="text-slate-500" />
-                    </div>
-                    <textarea
-                      id="rip-comment"
-                      className="w-full min-h-[120px] rounded-2xl border border-white/5 bg-black/40 pl-11 pr-4 py-4 text-sm text-white placeholder:text-slate-600 focus-visible:outline-none focus-visible:border-orange-500/50 focus-visible:ring-4 focus-visible:ring-orange-500/10 transition-all shadow-inner resize-none"
-                      rows={3}
-                      placeholder="Describe the activity..."
-                      value={comment}
-                      onChange={(e) => setComment(e.target.value)}
-                    ></textarea>
-                  </div>
-                </div>
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold uppercase tracking-wider text-slate-400 ml-1" htmlFor="rip-ip-input">
+                          IP Address
+                        </label>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <Globe size={18} className="text-slate-500 group-focus-within:text-red-400 transition-colors" />
+                          </div>
+                          <input
+                            type="text"
+                            id="rip-ip-input"
+                            className="w-full h-14 rounded-2xl border border-white/5 bg-black/40 pl-11 pr-4 text-sm text-white placeholder:text-slate-600 focus-visible:outline-none focus-visible:border-red-500/50 focus-visible:ring-4 focus-visible:ring-red-500/10 transition-all shadow-inner"
+                            placeholder="e.g. 192.168.1.1"
+                            autoComplete="off"
+                            spellCheck="false"
+                            value={ipValue}
+                            onChange={(e) => setIpValue(e.target.value)}
+                          />
+                        </div>
+                      </div>
 
-                <Button
-                  className="w-full h-14 rounded-2xl bg-white text-slate-950 hover:bg-slate-200 font-bold text-base shadow-[0_0_20px_rgba(255,255,255,0.15)] hover:shadow-[0_0_25px_rgba(255,255,255,0.3)] transition-all mt-6"
-                  onClick={handleSubmit}
-                  disabled={submitting}
-                >
-                  {submitting ? (
-                    <span className="flex items-center gap-2">
-                      <span className="h-5 w-5 animate-spin rounded-full border-2 border-slate-950/30 border-t-slate-950" />
-                      Processing...
-                    </span>
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold uppercase tracking-wider text-slate-400 ml-1" htmlFor="rip-category">
+                          Threat Category
+                        </label>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <Tag size={18} className="text-slate-500 group-focus-within:text-rose-400 transition-colors" />
+                          </div>
+                          <select
+                            id="rip-category"
+                            className="w-full h-14 rounded-2xl border border-white/5 bg-black/40 pl-11 pr-4 text-sm text-white focus-visible:outline-none focus-visible:border-rose-500/50 focus-visible:ring-4 focus-visible:ring-rose-500/10 transition-all appearance-none shadow-inner"
+                            value={category}
+                            onChange={(e) => setCategory(e.target.value)}
+                          >
+                            <option value="" disabled>Select category...</option>
+                            <option value="Brute Force">Brute Force</option>
+                            <option value="Port Scan">Port Scan</option>
+                            <option value="Phishing">Phishing</option>
+                            <option value="Malware / C2">Malware / C2</option>
+                            <option value="DDoS">DDoS</option>
+                            <option value="Spam">Spam</option>
+                            <option value="Exploit Attempt">Exploit Attempt</option>
+                            <option value="Other">Other</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold uppercase tracking-wider text-slate-400 ml-1" htmlFor="rip-comment">
+                          Analyst Notes
+                        </label>
+                        <div className="relative">
+                          <div className="absolute top-4 left-0 pl-4 pointer-events-none">
+                            <MessageSquare size={18} className="text-slate-500 group-focus-within:text-orange-400 transition-colors" />
+                          </div>
+                          <textarea
+                            id="rip-comment"
+                            className="w-full min-h-[120px] rounded-2xl border border-white/5 bg-black/40 pl-11 pr-4 py-4 text-sm text-white placeholder:text-slate-600 focus-visible:outline-none focus-visible:border-orange-500/50 focus-visible:ring-4 focus-visible:ring-orange-500/10 transition-all shadow-inner resize-none"
+                            rows={3}
+                            placeholder="Describe the activity..."
+                            value={comment}
+                            onChange={(e) => setComment(e.target.value)}
+                          ></textarea>
+                        </div>
+                      </div>
+
+                      <Button
+                        className="w-full h-14 rounded-2xl bg-gradient-to-r from-white to-slate-200 text-slate-950 hover:from-slate-100 hover:to-slate-300 font-bold text-base shadow-[0_0_20px_rgba(255,255,255,0.15)] hover:shadow-[0_0_30px_rgba(255,255,255,0.3)] transition-all mt-6"
+                        onClick={handleSubmit}
+                        disabled={submitting}
+                      >
+                        {submitting ? (
+                          <span className="flex items-center gap-2">
+                            <span className="h-5 w-5 animate-spin rounded-full border-2 border-slate-950/30 border-t-slate-950" />
+                            Processing...
+                          </span>
+                        ) : (
+                          <span className="flex items-center gap-2">
+                            <Send size={18} className="mr-1" /> Transmit Intel
+                          </span>
+                        )}
+                      </Button>
+                    </motion.div>
                   ) : (
-                    <span className="flex items-center gap-2">
-                      <Send size={18} className="mr-1" /> Transmit Intel
-                    </span>
+                    <motion.div 
+                      key="success"
+                      initial={{ opacity: 0, scale: 0.9, filter: "blur(10px)" }}
+                      animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                      transition={{ duration: 0.5, type: "spring", bounce: 0.4 }}
+                      className="flex flex-col items-center justify-center text-center py-8"
+                    >
+                      <div className="relative mb-8">
+                        <div className="absolute inset-0 bg-green-500/20 rounded-full blur-2xl"></div>
+                        <div className="bg-gradient-to-b from-green-400 to-green-600 text-white p-5 rounded-full shadow-[0_0_30px_rgba(34,197,94,0.4)] relative">
+                          <ShieldCheck size={48} strokeWidth={2.5} />
+                        </div>
+                      </div>
+                      <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-b from-white to-green-200 mb-4">
+                        Thank You, Defender!
+                      </h2>
+                      <p className="text-slate-300 text-base leading-relaxed mb-8 px-4">
+                        Your contribution has been verified and permanently added to the global threat feed. You are actively making the internet a safer place.
+                      </p>
+                      
+                      <Button
+                        className="h-12 px-8 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm border border-white/10 transition-all backdrop-blur-md"
+                        onClick={() => setSubmitSuccess(false)}
+                      >
+                        Report Another IP
+                      </Button>
+                    </motion.div>
                   )}
-                </Button>
+                </AnimatePresence>
               </div>
             </div>
           </motion.div>
@@ -286,7 +334,7 @@ export default function ReportIP({ addToast }: any) {
             transition={{ duration: 0.6, delay: 0.4 }}
             className="xl:col-span-8 flex flex-col"
           >
-            <div className="rounded-3xl border border-white/10 bg-slate-900/40 backdrop-blur-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] flex flex-col overflow-hidden relative h-full">
+            <div className="rounded-3xl border border-white/10 bg-slate-900/50 backdrop-blur-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] flex flex-col overflow-hidden relative h-full">
               
               {/* Table Header Section */}
               <div className="p-6 md:px-8 flex items-center justify-between border-b border-white/5 bg-black/20">
@@ -320,7 +368,7 @@ export default function ReportIP({ addToast }: any) {
                   </div>
                 ) : (
                   <table className="w-full text-sm text-left">
-                    <thead className="text-[10px] uppercase bg-black/40 text-slate-500 font-bold border-b border-white/5">
+                    <thead className="text-[10px] uppercase bg-black/40 text-slate-400 font-extrabold border-b border-white/5">
                       <tr>
                         <th className="px-8 py-5 tracking-[0.2em] whitespace-nowrap">IP Address</th>
                         <th className="px-6 py-5 tracking-[0.2em] whitespace-nowrap">Category</th>
@@ -336,20 +384,22 @@ export default function ReportIP({ addToast }: any) {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: idx * 0.05 }}
                             key={row.id || row.created_at} 
-                            className="hover:bg-white/[0.02] transition-colors group"
+                            className="hover:bg-white/[0.04] transition-colors group"
                           >
-                            <td className="px-8 py-6 font-mono font-semibold text-slate-200 whitespace-nowrap flex items-center gap-3">
-                              <div className="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]"></div>
+                            <td className="px-8 py-6 font-mono font-bold text-slate-200 whitespace-nowrap flex items-center gap-3">
+                              <div className="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)] relative">
+                                <div className="absolute inset-0 rounded-full bg-red-500 animate-ping opacity-75"></div>
+                              </div>
                               {row.ip}
                             </td>
                             <td className="px-6 py-6 whitespace-nowrap">
-                              <span className={`inline-flex items-center px-3 py-1 rounded-lg text-[11px] font-bold tracking-wider uppercase border shadow-sm ${getCategoryColor(row.category)}`}>
+                              <span className={`inline-flex items-center px-3 py-1.5 rounded-lg text-[11px] font-extrabold tracking-wider uppercase border ${getCategoryColor(row.category)} transition-all`}>
                                 {row.category}
                               </span>
                             </td>
                             <td className="px-6 py-6 text-slate-400 truncate max-w-[200px] sm:max-w-xs font-medium" title={row.comment || ''}>
                               {row.comment ? (
-                                <span className="flex items-center gap-2">
+                                <span className="flex items-center gap-2 group-hover:text-slate-300 transition-colors">
                                   <AlertTriangle size={14} className="text-slate-500 flex-shrink-0" />
                                   <span className="truncate">{row.comment}</span>
                                 </span>
@@ -372,21 +422,21 @@ export default function ReportIP({ addToast }: any) {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-slate-400 hover:bg-white/5 hover:text-white rounded-xl transition-all font-semibold"
+                    className="text-slate-400 hover:bg-white/10 hover:text-white rounded-xl transition-all font-bold"
                     onClick={() => loadReportedIPs(page - 1)}
                     disabled={page === 0}
                   >
                     <ChevronLeft size={16} className="mr-1" /> Prev
                   </Button>
-                  <div className="flex gap-1.5">
+                  <div className="flex gap-2">
                     {[...Array(Math.min(totalPages, 5))].map((_, i) => (
-                      <div key={i} className={`h-1.5 w-1.5 rounded-full ${i === page ? 'bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]' : 'bg-slate-700'}`}></div>
+                      <div key={i} className={`transition-all duration-300 rounded-full ${i === page ? 'h-2 w-6 bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)]' : 'h-2 w-2 bg-slate-700 hover:bg-slate-500 cursor-pointer'}`}></div>
                     ))}
                   </div>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-slate-400 hover:bg-white/5 hover:text-white rounded-xl transition-all font-semibold"
+                    className="text-slate-400 hover:bg-white/10 hover:text-white rounded-xl transition-all font-bold"
                     onClick={() => loadReportedIPs(page + 1)}
                     disabled={page >= totalPages - 1}
                   >
