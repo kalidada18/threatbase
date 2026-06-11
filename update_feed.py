@@ -364,15 +364,6 @@ def fetch_feed(name: str, url: str) -> dict:
                 continue
             token = parts[0].split(",")[0].strip("\"';")
 
-            # Validate/filter ipsum hit count
-            if name.startswith("ipsum") and len(parts) >= 2:
-                try:
-                    count = int(parts[1])
-                    if count < 3:
-                        continue
-                except ValueError:
-                    pass
-
             if "/" in token:
                 try:
                     network = ipaddress.ip_network(token, strict=False)
