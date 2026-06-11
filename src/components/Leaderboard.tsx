@@ -70,11 +70,11 @@ export default function Leaderboard() {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: index * 0.1 }}
-            className="flex items-center justify-between p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-colors relative overflow-hidden group"
+            className="flex items-center justify-between p-3.5 rounded-lg bg-[#171C28] border border-white/5 hover:border-white/10 transition-colors relative overflow-hidden group"
           >
             {/* Top 3 Glow effect behind the row */}
             {index < 3 && (
-              <div className={`absolute inset-0 bg-gradient-to-r ${rank.color} opacity-0 group-hover:opacity-[0.05] transition-opacity`} />
+              <div className={`absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b ${rank.color}`} />
             )}
 
             <div className="flex items-center gap-4 relative z-10">
@@ -93,10 +93,10 @@ export default function Leaderboard() {
             </div>
 
             <div className="text-right relative z-10">
-              <div className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-500">
+              <div className="text-2xl font-black text-white">
                 {fmt(leader.reports_count)}
               </div>
-              <div className="text-xs uppercase tracking-widest text-slate-500 font-bold">
+              <div className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">
                 Intel Reports
               </div>
             </div>
