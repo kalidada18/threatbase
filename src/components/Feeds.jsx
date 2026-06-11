@@ -1,4 +1,5 @@
 import { Radar, Network, Fingerprint, Unlink, Layers, Server, Download } from 'lucide-react'
+import { motion } from 'framer-motion'
 
 const BASE = import.meta.env.BASE_URL
 
@@ -73,8 +74,16 @@ export default function Feeds() {
       </div>
 
       <div className="dl-grid">
-        {feeds.map((f) => (
-          <div className="dl-card" key={f.file} onMouseMove={handleSpotlight}>
+        {feeds.map((f, i) => (
+          <motion.div 
+            className="dl-card" 
+            key={f.file} 
+            onMouseMove={handleSpotlight}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.1 }}
+            whileHover={{ scale: 1.02, boxShadow: "0 0 20px rgba(34, 197, 94, 0.15)" }}
+          >
             <div className={`dl-glow ${f.glowClass}`}></div>
             <div className="dl-top">
               <div className={`dl-icon ${f.iconClass}`}>{f.icon}</div>
@@ -84,7 +93,7 @@ export default function Feeds() {
             <a href={`${BASE}ioc/${f.file}`} className="btn btn-outline" target="_blank" rel="noopener">
               <Download size={16} /> {f.file}
             </a>
-          </div>
+          </motion.div>
         ))}
       </div>
     </section>

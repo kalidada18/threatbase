@@ -1,21 +1,11 @@
 import { useEffect, useRef } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Search, ShieldAlert, ShieldCheck, AlertTriangle, AlertOctagon } from 'lucide-react'
 
 export default function ReportScanner({ scanResult, isScanning, showReport, scanInput }) {
   const progressRef = useRef(null)
 
-  // Animate progress bar when scanning starts
-  useEffect(() => {
-    if (isScanning && progressRef.current) {
-      const el = progressRef.current
-      el.style.width = '0%'
-      el.style.transition = 'none'
-      requestAnimationFrame(() => {
-        el.style.transition = 'width 1.5s cubic-bezier(0.1, 0.8, 0.3, 1)'
-        el.style.width = '100%'
-      })
-    }
-  }, [isScanning])
+  // Animate progress bar is now handled purely by framer-motion in the JSX
 
   if (!showReport) return null
 
@@ -59,7 +49,6 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
   return (
     <section className={`report-section${showReport ? ' show' : ''}`} id="report-section" aria-live="polite">
       <div className="report-container">
-        {/* Loading / Scanning State */}
         <div className={`scan-overlay${isScanning ? ' active' : ''}`} id="scan-overlay">
           <div className="minimal-scanner">
             <Search size={24} />
@@ -69,13 +58,28 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
           </div>
           <div className="scan-ip" id="scan-ip">{ip}</div>
           <div className="scan-progress-bar">
-            <div className="scan-progress-fill" ref={progressRef}></div>
+            {isScanning && (
+              <motion.div 
+                className="scan-progress-fill" 
+                initial={{ width: '0%' }}
+                animate={{ width: '100%' }}
+                transition={{ duration: 1.5, ease: [0.1, 0.8, 0.3, 1] }}
+              />
+            )}
           </div>
         </div>
 
         {/* Result Card */}
-        {scanResult && !isScanning && (
-          <div className="report-card show" id="report-card">
+        <AnimatePresence>
+          {scanResult && !isScanning && (
+            <motion.div 
+              className="report-card show" 
+              id="report-card"
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.4 }}
+            >
             <div className={`rc-glow rc-glow-${type}`} id="rc-glow"></div>
             <div className={`rc-header rc-header-${type}`} id="rc-header">
               <div className="rc-h-left">
@@ -147,10 +151,11 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
                     )}
                   </div>
                 </div>
+                </div>
               </div>
-            </div>
-          </div>
-        )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </section>
   )

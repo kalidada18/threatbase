@@ -1,7 +1,8 @@
 import { useState, useCallback } from 'react'
 import { Moon, Sun, Menu, X, LayoutDashboard, Server, TrendingUp, Flag, Github } from 'lucide-react'
+import { getBaseUrl } from '../utils'
 
-export default function Navbar({ theme, toggleTheme, syncTime }) {
+export default function Navbar({ syncTime }) {
   const [drawerOpen, setDrawerOpen] = useState(false)
 
   const openDrawer = useCallback(() => {
@@ -20,7 +21,7 @@ export default function Navbar({ theme, toggleTheme, syncTime }) {
         <div className="nav-inner">
           <a href="#" className="nav-brand" aria-label="HimalayaFeed Home">
             <img
-              src="https://raw.githubusercontent.com/kalidada18/himalayafeed/main/img/himalayafeed.png"
+              src={`${getBaseUrl()}img/himalayafeed.png`}
               alt=""
               aria-hidden="true"
             />
@@ -40,15 +41,6 @@ export default function Navbar({ theme, toggleTheme, syncTime }) {
               <div className="nav-dot" aria-hidden="true"></div>
               <span id="sync-status">{syncTime}</span>
             </div>
-
-            <button
-              id="theme-toggle"
-              className="theme-toggle-btn"
-              aria-label="Toggle Theme"
-              onClick={toggleTheme}
-            >
-              {theme === 'light' ? <Sun size={18} /> : <Moon size={18} />}
-            </button>
 
             <button
               id="mobile-menu-btn"

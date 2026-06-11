@@ -1,131 +1,79 @@
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap');
+
 /* ═══════════════════════════════════════════════════════════════
-   HimalayaFeed — Modern Minimal Design System
+   HimalayaFeed — Cyberpunk/Tech Noir Design System
    ═══════════════════════════════════════════════════════════════ */
 
 :root {
-  /* ── Surface ── */
-  --bg-base: #090a10;
-  --bg-card: rgba(255, 255, 255, 0.035);
-  --bg-raised: rgba(255, 255, 255, 0.05);
-  --bg-overlay: rgba(255, 255, 255, 0.07);
-  --bg-hover: rgba(255, 255, 255, 0.09);
+  /* ── Cyberpunk Typography ── */
+  --font: 'Fira Sans', system-ui, -apple-system, sans-serif;
+  --mono: 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-heading: 'Fira Sans', var(--font);
 
-  /* ── Glass Specifics ── */
-  --bg-glass: rgba(255, 255, 255, 0.035);
-  --bg-glass-hover: rgba(255, 255, 255, 0.075);
-  --border-glass: rgba(255, 255, 255, 0.08);
-  --border-glass-strong: rgba(255, 255, 255, 0.15);
+  /* ── Cyberpunk Palette (Dark Mode Only) ── */
+  --bg-base: #020617; /* Deep Slate/Black */
+  --bg-overlay: #0F172A; /* Surface */
+  --bg-glass: rgba(15, 23, 42, 0.65);
+  --bg-glass-hover: rgba(30, 41, 59, 0.75);
+  --bg-card: rgba(15, 23, 42, 0.65);
+  --bg-raised: rgba(30, 41, 59, 0.8);
+  --bg-hover: rgba(51, 65, 85, 0.6);
+  --nav-bg: rgba(2, 6, 23, 0.85);
+  
+  --text-primary: #F8FAFC;
+  --text-secondary: #CBD5E1;
+  --text-muted: #94A3B8;
+  --text-faint: #64748B;
+
+  --border-default: #1E293B;
+  --border-subtle: #0F172A;
+  --border-strong: #334155;
+  --border-glass: rgba(30, 41, 59, 0.8);
+  --border-glass-strong: rgba(51, 65, 85, 0.9);
+
+  /* Semantic Cyberpunk Accents */
+  --accent: #22C55E; /* Matrix Green for normal/safe UI elements */
+  --accent-hover: #16A34A;
+  --accent-glow: rgba(34, 197, 94, 0.3);
+  --accent-subtle: rgba(34, 197, 94, 0.1);
+
+  --red: #EF4444; /* Neon Red for Threats */
+  --green: #22C55E;
+  --amber: #EAB308;
+  --purple: #A855F7;
+  --blue: #3B82F6;
+
+  /* Subtle background colors for tags */
+  --red-subtle: rgba(239, 68, 68, 0.12);
+  --green-subtle: rgba(34, 197, 94, 0.12);
+  --amber-subtle: rgba(234, 179, 8, 0.12);
+  --purple-subtle: rgba(168, 85, 247, 0.12);
+  --blue-subtle: rgba(59, 130, 246, 0.12);
+
+  /* ── Shadows & Effects ── */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.4);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.5), 0 0 10px rgba(34, 197, 94, 0.05);
+  --shadow-lg: 0 12px 32px rgba(0,0,0,0.6), 0 0 20px rgba(34, 197, 94, 0.1);
   --glass-blur: 16px;
   --glass-saturate: 180%;
 
-  /* ── Borders ── */
-  --border-subtle: rgba(255, 255, 255, 0.06);
-  --border-default: rgba(255, 255, 255, 0.1);
-  --border-strong: rgba(255, 255, 255, 0.18);
-
-  /* ── Text ── */
-  --text-primary: #fafafa;
-  --text-secondary: #d4d4d8;
-  --text-muted: #a1a1aa;
-  --text-faint: #71717a;
-
-  /* ── Accents (Vibrant Red) ── */
-  --accent: #ef4444;
-  --accent-hover: #dc2626;
-  --accent-subtle: rgba(239, 68, 68, 0.12);
-  --accent-glow: rgba(239, 68, 68, 0.35);
-
-  --purple: #a855f7;
-  --purple-subtle: rgba(168, 85, 247, 0.12);
-
-  --amber: #f59e0b;
-  --amber-subtle: rgba(245, 158, 11, 0.12);
-
-  --blue: #3b82f6;
-  --blue-subtle: rgba(59, 130, 246, 0.12);
-
-  --green: #10b981;
-  --green-subtle: rgba(16, 185, 129, 0.12);
-  --red: #ef4444;
-
-  /* ── Nav ── */
-  --nav-bg: rgba(9, 10, 16, 0.68);
-
-  /* ── Typography ── */
-  --font: 'Inter', system-ui, -apple-system, sans-serif;
-  --font-heading: 'Inter', system-ui, sans-serif;
-  --mono: 'JetBrains Mono', 'Fira Code', monospace;
-
-  /* ── Spacing (8px base) ── */
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 24px;
-  --space-6: 32px;
-  --space-7: 48px;
-  --space-8: 64px;
-
-  /* ── Radius ── */
-  --radius-sm: 8px;
-  --radius-md: 14px;
-  --radius-lg: 20px;
+  /* ── Spatial ── */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
   --radius-full: 9999px;
 
-  /* ── Shadows ── */
-  --shadow-sm: 0 2px 4px rgba(0,0,0,0.25);
-  --shadow-md: 0 8px 32px rgba(0,0,0,0.3);
-  --shadow-lg: 0 20px 40px rgba(0,0,0,0.4);
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 16px;
+  --space-4: 24px;
+  --space-5: 32px;
+  --space-6: 48px;
+  --space-7: 64px;
+  --space-8: 96px;
 
-  /* ── Transitions ── */
+  --duration: 250ms;
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
-  --duration: 350ms;
-}
-
-/* ── Light Theme (Frosted Spatial Glass) ── */
-[data-theme="light"] {
-  --bg-base: #f8fafc;
-  --bg-card: rgba(255, 255, 255, 0.6);
-  --bg-raised: rgba(255, 255, 255, 0.8);
-  --bg-overlay: rgba(255, 255, 255, 0.9);
-  --bg-hover: #ffffff;
-
-  --bg-glass: rgba(255, 255, 255, 0.6);
-  --bg-glass-hover: rgba(255, 255, 255, 0.85);
-  --border-glass: rgba(255, 255, 255, 0.8);
-  --border-glass-strong: #ffffff;
-
-  --border-subtle: rgba(0, 0, 0, 0.05);
-  --border-default: rgba(0, 0, 0, 0.08);
-  --border-strong: rgba(0, 0, 0, 0.15);
-
-  --text-primary: #0f172a;
-  --text-secondary: #334155;
-  --text-muted: #475569;
-  --text-faint: #64748b;
-
-  --accent: #e11d48;
-  --accent-hover: #be123c;
-  --accent-subtle: rgba(225, 29, 72, 0.08);
-  --accent-glow: rgba(225, 29, 72, 0.18);
-
-  --purple: #8b5cf6;
-  --purple-subtle: rgba(139, 92, 246, 0.08);
-
-  --amber: #d97706;
-  --amber-subtle: rgba(217, 119, 6, 0.08);
-
-  --blue: #2563eb;
-  --blue-subtle: rgba(37, 99, 235, 0.08);
-
-  --green: #059669;
-  --green-subtle: rgba(5, 150, 105, 0.08);
-
-  --nav-bg: rgba(248, 250, 252, 0.8);
-
-  --shadow-sm: 0 2px 4px rgba(15, 23, 42, 0.03);
-  --shadow-md: 0 8px 32px rgba(15, 23, 42, 0.05);
-  --shadow-lg: 0 20px 40px rgba(15, 23, 42, 0.08);
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -149,12 +97,15 @@ body {
   font-size: 16px;
   line-height: 1.6;
   color: var(--text-primary);
-  background: var(--bg-base);
+  background-color: var(--bg-base);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
   overflow-x: hidden;
-  transition: background var(--duration) var(--ease), color var(--duration) var(--ease);
+  background-image: 
+    linear-gradient(rgba(2, 6, 23, 0.95), rgba(2, 6, 23, 0.95)),
+    repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(34, 197, 94, 0.03) 2px, rgba(34, 197, 94, 0.03) 4px);
+  background-attachment: fixed;
 }
 
 h1, h2, h3, h4, h5, h6 {

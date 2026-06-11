@@ -1,4 +1,5 @@
 import { useCallback, useRef } from 'react'
+import { motion } from 'framer-motion'
 import { Search, Database, Github } from 'lucide-react'
 import { scanIndicatorLogic } from '../scanner'
 
@@ -45,17 +46,31 @@ export default function Hero({
       <div className="hero-glow hero-glow-2"></div>
 
       <div className="hero-inner">
-        <h1>
+        <motion.h1 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+        >
           Tracking threats <br />
           <span className="hero-highlight">so you don't have to.</span>
-        </h1>
-        <p className="hero-sub">
+        </motion.h1>
+        <motion.p 
+          className="hero-sub"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3, duration: 0.6 }}
+        >
           HimalayaFeed aggregates and sanitizes global threat data into a lightweight,
           high-performance blocklist ready for immediate deployment.
-        </p>
+        </motion.p>
 
         {/* Search / Scan Module */}
-        <div className="hero-search-wrapper">
+        <motion.div 
+          className="hero-search-wrapper"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.4, duration: 0.5 }}
+        >
           <div className="hero-search" id="lookup">
             <div className="hero-search-row">
               <Search className="hero-search-icon" size={16} aria-hidden="true" />
@@ -82,7 +97,7 @@ export default function Hero({
               </button>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         <div className="hero-actions">
           <a href="#feeds" className="btn btn-primary">

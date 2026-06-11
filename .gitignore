@@ -7,6 +7,7 @@ dist/
 # Agent/IDE
 .agent/
 .gemini/
+design-system/
 
 # Python
 __pycache__/

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { motion } from 'framer-motion'
 import Navbar from './components/Navbar'
 import Hero from './components/Hero'
 import ReportScanner from './components/ReportScanner'
@@ -11,12 +12,6 @@ import ToastContainer from './components/ToastContainer'
 import { getBaseUrl, formatSyncTime, animateValue } from './utils'
 
 export default function App() {
-  const [theme, setTheme] = useState(() => {
-    const saved = localStorage.getItem('himalaya-theme')
-    if (saved) return saved
-    return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'
-  })
-
   const [statsData, setStatsData] = useState(null)
   const [feedVersion, setFeedVersion] = useState(Date.now())
   const [syncTime, setSyncTime] = useState('Live Mode')
@@ -38,19 +33,6 @@ export default function App() {
     }, 4000)
   }, [])
 
-  // Apply theme to document
-  useEffect(() => {
-    if (theme === 'light') {
-      document.documentElement.setAttribute('data-theme', 'light')
-    } else {
-      document.documentElement.removeAttribute('data-theme')
-    }
-    localStorage.setItem('himalaya-theme', theme)
-  }, [theme])
-
-  const toggleTheme = useCallback(() => {
-    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'))
-  }, [])
 
   // Boot: fetch stats.json
   useEffect(() => {
@@ -104,31 +86,40 @@ export default function App() {
       {/* Skip Link */}
       <a href="#main-content" className="skip-link">Skip to main content</a>
 
-      <Navbar theme={theme} toggleTheme={toggleTheme} syncTime={syncTime} />
+      <Navbar syncTime={syncTime} />
 
       <main id="main-content">
-        <Hero
-          scanInput={scanInput}
-          setScanInput={setScanInput}
-          setScanResult={setScanResult}
-          setIsScanning={setIsScanning}
-          setShowReport={setShowReport}
-          feedVersion={feedVersion}
-        />
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+          <Hero
+            scanInput={scanInput}
+            setScanInput={setScanInput}
+            setScanResult={setScanResult}
+            setIsScanning={setIsScanning}
+            setShowReport={setShowReport}
+            feedVersion={feedVersion}
+          />
+        </motion.div>
 
-        <ReportScanner
-          scanResult={scanResult}
-          isScanning={isScanning}
-          showReport={showReport}
-          scanInput={scanInput}
-        />
+        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2, duration: 0.5 }}>
+          <ReportScanner
+            scanResult={scanResult}
+            isScanning={isScanning}
+            showReport={showReport}
+            scanInput={scanInput}
+          />
+        </motion.div>
 
-        <div className="container">
+        <motion.div 
+          className="container"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4, duration: 0.6 }}
+        >
           <Stats statsData={statsData} />
           <Feeds />
-          <Analytics statsData={statsData} feedVersion={feedVersion} theme={theme} />
+          <Analytics statsData={statsData} feedVersion={feedVersion} />
           <ReportIP addToast={addToast} />
-        </div>
+        </motion.div>
       </main>
 
       <ToastContainer toasts={toasts} />

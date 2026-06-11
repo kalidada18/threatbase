@@ -25,7 +25,7 @@ function handleSpotlight(e) {
   e.currentTarget.style.setProperty('--mouse-y', `${y}px`)
 }
 
-export default function Analytics({ statsData, feedVersion, theme }) {
+export default function Analytics({ statsData, feedVersion }) {
   return (
     <section className="section" id="analytics">
       <div className="section-head">
@@ -40,7 +40,7 @@ export default function Analytics({ statsData, feedVersion, theme }) {
         <div className="glass-panel" onMouseMove={handleSpotlight}>
           <h3 className="panel-title">Volume Trend</h3>
           <div className="chart-wrap">
-            <HistoryChart feedVersion={feedVersion} theme={theme} />
+            <HistoryChart feedVersion={feedVersion} />
           </div>
         </div>
 
@@ -48,7 +48,7 @@ export default function Analytics({ statsData, feedVersion, theme }) {
           <h3 className="panel-title">Specialized Threat Categories</h3>
           <div className="chart-wrap donut-wrap">
             {statsData?.category_counts && (
-              <CategoryChart categories={statsData.category_counts} theme={theme} />
+              <CategoryChart categories={statsData.category_counts} />
             )}
           </div>
         </div>
@@ -57,7 +57,7 @@ export default function Analytics({ statsData, feedVersion, theme }) {
   )
 }
 
-function HistoryChart({ feedVersion, theme }) {
+function HistoryChart({ feedVersion }) {
   const chartRef = useRef(null)
   const [history, setHistory] = useState([])
 
@@ -102,10 +102,9 @@ function HistoryChart({ feedVersion, theme }) {
       .catch((e) => console.warn('history.json unavailable', e))
   }, [feedVersion])
 
-  const isLight = theme === 'light'
-  const accentColor = '#ef4444'
-  const gridColor = isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)'
-  const textColor = isLight ? '#475569' : '#94a3b8'
+  const accentColor = '#22C55E' // Neon Green
+  const gridColor = 'rgba(34, 197, 94, 0.05)'
+  const textColor = '#94a3b8'
 
   const labels = history.map((h) => {
     const d = new Date(h.date)
@@ -123,8 +122,8 @@ function HistoryChart({ feedVersion, theme }) {
         backgroundColor: (context) => {
           const ctx = context.chart.ctx
           const gradient = ctx.createLinearGradient(0, 0, 0, 350)
-          gradient.addColorStop(0, 'rgba(239, 68, 68, 0.22)')
-          gradient.addColorStop(1, 'rgba(239, 68, 68, 0)')
+          gradient.addColorStop(0, 'rgba(34, 197, 94, 0.22)')
+          gradient.addColorStop(1, 'rgba(34, 197, 94, 0)')
           return gradient
         },
         borderWidth: 2.5,
@@ -151,10 +150,10 @@ function HistoryChart({ feedVersion, theme }) {
         align: 'start',
       },
       tooltip: {
-        backgroundColor: isLight ? 'rgba(255, 255, 255, 0.95)' : 'rgba(10, 10, 11, 0.95)',
-        titleColor: isLight ? '#0a0a0b' : '#fafafa',
+        backgroundColor: 'rgba(10, 10, 11, 0.95)',
+        titleColor: '#fafafa',
         bodyColor: accentColor,
-        borderColor: isLight ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)',
+        borderColor: 'rgba(34, 197, 94, 0.1)',
         borderWidth: 1,
         padding: 12,
         displayColors: false,
@@ -181,10 +180,9 @@ function HistoryChart({ feedVersion, theme }) {
   return <Line ref={chartRef} data={data} options={options} />
 }
 
-function CategoryChart({ categories, theme }) {
-  const isLight = theme === 'light'
-  const textColor = isLight ? '#475569' : '#94a3b8'
-  const bgColors = ['#ef4444', '#10b981', '#a855f7', '#3b82f6', '#f59e0b', '#ec4899']
+function CategoryChart({ categories }) {
+  const textColor = '#94a3b8'
+  const bgColors = ['#EF4444', '#10b981', '#a855f7', '#3b82f6', '#f59e0b', '#ec4899']
 
   const sorted = Object.entries(categories)
     .filter(([k]) => k !== 'Mixed' && k !== 'Unknown')
@@ -199,7 +197,7 @@ function CategoryChart({ categories, theme }) {
         data: vals,
         backgroundColor: bgColors,
         borderWidth: 2,
-        borderColor: isLight ? '#ffffff' : '#090a10',
+        borderColor: '#090a10',
         hoverOffset: 4,
       },
     ],
@@ -215,10 +213,10 @@ function CategoryChart({ categories, theme }) {
         labels: { color: textColor, font: { size: 11 }, boxWidth: 12, padding: 16 },
       },
       tooltip: {
-        backgroundColor: isLight ? 'rgba(255, 255, 255, 0.95)' : 'rgba(10, 10, 11, 0.95)',
-        titleColor: isLight ? '#0a0a0b' : '#fafafa',
-        bodyColor: isLight ? '#3f3f46' : '#d4d4d8',
-        borderColor: isLight ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)',
+        backgroundColor: 'rgba(10, 10, 11, 0.95)',
+        titleColor: '#fafafa',
+        bodyColor: '#d4d4d8',
+        borderColor: 'rgba(255,255,255,0.1)',
         borderWidth: 1,
         padding: 12,
         callbacks: {

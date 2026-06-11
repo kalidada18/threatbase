@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { motion } from 'framer-motion'
 import { Radar, Network, Fingerprint, Unlink, Layers } from 'lucide-react'
 
 export default function Stats({ statsData }) {
@@ -60,7 +61,12 @@ export default function Stats({ statsData }) {
 
 function StatCard({ label, icon, iconClass, valueId, sub, trendId }) {
   return (
-    <div className="stat-card" onMouseMove={handleSpotlight}>
+    <motion.div 
+      className="stat-card" 
+      onMouseMove={handleSpotlight}
+      whileHover={{ scale: 1.02, boxShadow: "0 0 20px rgba(34, 197, 94, 0.15)" }}
+      transition={{ duration: 0.2 }}
+    >
       <div className="stat-top">
         <span className="stat-label">{label}</span>
         <div className={`stat-icon ${iconClass}`}>{icon}</div>
@@ -69,7 +75,7 @@ function StatCard({ label, icon, iconClass, valueId, sub, trendId }) {
       <div className="stat-sub">
         {sub} <span id={trendId} className="trend neutral"></span>
       </div>
-    </div>
+    </motion.div>
   )
 }
 
