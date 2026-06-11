@@ -20,7 +20,7 @@ export function HeroSection({ scanInput, setScanInput, handleScan, statsData }: 
                         <div className="relative z-10 mx-auto flex max-w-7xl flex-col px-6 lg:block lg:px-12">
                             <div className="mx-auto max-w-2xl text-center lg:ml-0 lg:max-w-full lg:text-left relative">
                                 {/* Subtle radial gradient mask to improve text readability against the map dots */}
-                                <div className="absolute -inset-x-10 -inset-y-10 z-0 bg-[radial-gradient(ellipse_at_center,rgba(15,23,42,0.85)_0%,rgba(15,23,42,0)_70%)] pointer-events-none lg:-inset-x-20 lg:-inset-y-20 rounded-full blur-2xl"></div>
+                                <div className="absolute -inset-x-10 -inset-y-10 z-0 bg-[radial-gradient(ellipse_at_center,rgba(15,23,42,0.6)_0%,rgba(15,23,42,0)_70%)] pointer-events-none lg:-inset-x-20 lg:-inset-y-20 rounded-full blur-2xl"></div>
                                 
                                 <div className="relative z-10">
                                     <h1 className="mt-8 max-w-4xl text-balance text-5xl md:text-6xl font-semibold tracking-tight text-white lg:mt-16 xl:text-7xl">

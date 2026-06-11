@@ -83,7 +83,7 @@ export default function ThreatMap() {
         // Scan hidden canvas to create the dotted effect
         const imageData = hiddenCtx.getImageData(0, 0, width, height).data
         const newDots = []
-        const step = 8 // Space between dots
+        const step = 7 // Space between dots
 
         for (let y = 0; y < height; y += step) {
           for (let x = 0; x < width; x += step) {
@@ -104,11 +104,11 @@ export default function ThreatMap() {
           dotCtx.beginPath()
           newDots.forEach(dot => {
             dotCtx.moveTo(dot.x, dot.y)
-            dotCtx.arc(dot.x, dot.y, 1.5, 0, Math.PI * 2)
+            dotCtx.arc(dot.x, dot.y, 1.6, 0, Math.PI * 2)
           })
-          dotCtx.shadowColor = 'rgba(255, 0, 0, 0.6)'
-          dotCtx.shadowBlur = 4
-          dotCtx.fillStyle = 'rgba(255, 30, 30, 0.9)'
+          dotCtx.shadowColor = 'rgba(255, 30, 30, 0.8)'
+          dotCtx.shadowBlur = 6
+          dotCtx.fillStyle = 'rgba(255, 60, 60, 0.95)'
           dotCtx.fill()
         }
 
