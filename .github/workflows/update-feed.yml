@@ -154,27 +154,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # ── 7. Backup to Supabase Storage ────────────────────────────────────────
-      - name: Upload Archive to Supabase Storage
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-        run: |
-          FILE_NAME=$(ls himalayafeed-archive-*.zip | head -n 1)
-          if [ -n "$FILE_NAME" ] && [ -n "$SUPABASE_URL" ] && [ -n "$SUPABASE_SERVICE_KEY" ]; then
-            echo "Uploading $FILE_NAME to Supabase Storage..."
-            
-            # Strip potential trailing newlines from secrets
-            CLEAN_URL=$(echo "$SUPABASE_URL" | tr -d '\n\r')
-            CLEAN_KEY=$(echo "$SUPABASE_SERVICE_KEY" | tr -d '\n\r')
-            
-            curl -X POST "${CLEAN_URL}/storage/v1/object/feed-backups/${FILE_NAME}" \
-              -H "Authorization: Bearer ${CLEAN_KEY}" \
-              -H "Content-Type: application/zip" \
-              --data-binary "@${FILE_NAME}" \
-              --fail --silent --show-error
-              
-            echo "✓ Backup complete."
-          else
-            echo "⚠ Missing ZIP file or Supabase credentials — skipping storage backup"
-          fi
+
