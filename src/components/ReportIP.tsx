@@ -115,6 +115,7 @@ export default function ReportIP({ addToast }: any) {
   const [submitSuccess, setSubmitSuccess] = useState(false)
   const [activeTab, setActiveTab] = useState<'feed' | 'leaderboard'>('feed')
   const [showOptional, setShowOptional] = useState(false)
+  const [showPolicyModal, setShowPolicyModal] = useState(false)
   const lastSubmitRef = useRef(0)
 
   // Real-time IP address status validation state
@@ -596,7 +597,7 @@ export default function ReportIP({ addToast }: any) {
                           Please abide by our{' '}
                           <button
                             type="button"
-                            onClick={() => addToast('Reporting Policy: Ensure reported IPs are public and show clear malicious activity. Spam reports will be blocked.', 'success')}
+                            onClick={() => setShowPolicyModal(true)}
                             className="text-cyan-400 hover:underline hover:text-cyan-300 font-bold transition-colors"
                           >
                             reporting policy
@@ -813,6 +814,99 @@ export default function ReportIP({ addToast }: any) {
           </motion.div>
         </div>
       </div>
+
+      {/* Reporting Policy Modal */}
+      <AnimatePresence>
+        {showPolicyModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowPolicyModal(false)}
+              className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm"
+            />
+            
+            {/* Modal Body */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              transition={{ type: 'spring', duration: 0.4 }}
+              className="relative bg-[#0E1322] border border-white/10 rounded-2xl max-w-xl w-full p-6 md:p-8 shadow-[0_25px_60px_rgba(0,0,0,0.8)] z-10 overflow-hidden"
+            >
+              {/* Glow Accent Stripe */}
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500" />
+              
+              <div className="space-y-6">
+                {/* Header */}
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    <ShieldCheck size={24} />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-white tracking-wide">Community Reporting Policy</h3>
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mt-0.5">HimalayaFeed Threat Intelligence Network</p>
+                  </div>
+                </div>
+
+                {/* Body Content */}
+                <div className="text-xs text-slate-300 space-y-4 leading-relaxed max-h-[350px] overflow-y-auto pr-1">
+                  <p className="font-semibold text-slate-400">
+                    By submitting Indicators of Compromise (IoCs) to our public database, you agree to comply with the following data integrity guidelines:
+                  </p>
+
+                  <div className="space-y-4 pt-2">
+                    <div className="flex gap-2.5 items-start">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-2 flex-shrink-0" />
+                      <div>
+                        <h4 className="font-bold text-white text-xs mb-0.5">1. Target Integrity</h4>
+                        <p className="text-slate-400">Only report public IP addresses that show verifiable, persistent malicious activity (e.g. brute-forcing, active scans, hosting phishing portals, command-and-control beacons).</p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2.5 items-start">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-2 flex-shrink-0" />
+                      <div>
+                        <h4 className="font-bold text-white text-xs mb-0.5">2. Infrastructure Exclusions</h4>
+                        <p className="text-slate-400">Do not report internal/private networks (RFC 1918, RFC 4193) or common public resolver services (Cloudflare, Google, Quad9, OpenDNS). Submissions matching these are automatically dropped.</p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2.5 items-start">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-2 flex-shrink-0" />
+                      <div>
+                        <h4 className="font-bold text-white text-xs mb-0.5">3. Prohibition of Abuse</h4>
+                        <p className="text-slate-400">Reporting benign infrastructure, testing setups, or spamming false-positives to pollute feed files is strictly prohibited. Offenders may have their reporter alias or source IP permanently blacklisted.</p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2.5 items-start">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-2 flex-shrink-0" />
+                      <div>
+                        <h4 className="font-bold text-white text-xs mb-0.5">4. Processing & Transparency</h4>
+                        <p className="text-slate-400">All reports undergo automated parsing, CIDR verification, and feed consolidation before being distributed. Submissions contain metadata associated with your optional analyst alias.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer Action */}
+                <div className="flex items-center justify-end pt-4 border-t border-white/5">
+                  <button
+                    type="button"
+                    onClick={() => setShowPolicyModal(false)}
+                    className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs tracking-wider transition-all select-none active:scale-[0.98] shadow-lg shadow-emerald-600/10 border border-emerald-500/10"
+                  >
+                    I UNDERSTAND & AGREE
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </main>
   )
 }
