@@ -5,7 +5,7 @@ import { InfiniteSlider } from '@/components/ui/infinite-slider'
 import { ProgressiveBlur } from '@/components/ui/progressive-blur'
 import { cn } from '@/lib/utils'
 import ThreatMap from '../ThreatMap'
-import { Menu, X, ChevronRight, Shield, Server, Database, Lock, Network, Cloud, Activity, Globe, Search } from 'lucide-react'
+import { Menu, X, ChevronRight, Shield, Server, Database, Lock, Network, Cloud, Activity, Globe, Search, Flame, MailX, GlobeLock, Bug, ShieldAlert, ShieldBan, Zap, Key, Crosshair, ShieldCheck, Binary, Snowflake } from 'lucide-react'
 import { useScroll, motion, useMotionValueEvent } from 'framer-motion'
 
 export function HeroSection({ scanInput, setScanInput, handleScan, statsData }: any) {
@@ -68,21 +68,44 @@ export function HeroSection({ scanInput, setScanInput, handleScan, statsData }: 
                                 {(() => {
                                     const rawSources = statsData?.ips_per_source ? Object.keys(statsData.ips_per_source) : []
                                     const sources = rawSources.length > 0 
-                                        ? rawSources.slice(0, 15).map(s => s.replace(/_/g, ' ')) 
-                                        : ['Honeypots', 'Dark Web', 'Malware Analysis', 'Sinkholes', 'OSINT', 'Sandboxes', 'Cloud Sensors', 'Spam Traps']
-                                    const icons = [Shield, Server, Database, Lock, Network, Cloud, Activity, Globe]
+                                        ? rawSources.slice(0, 20)
+                                        : []
+                                        
+                                    const fallbackSources = ['Honeypots', 'Dark Web', 'Malware Analysis', 'Sinkholes', 'OSINT', 'Sandboxes', 'Cloud Sensors', 'Spam Traps']
+                                    const fallbackIcons = [Shield, Server, Database, Lock, Network, Cloud, Activity, Globe]
+                                    
+                                    const getSourceIcon = (sourceName: string) => {
+                                        const s = sourceName.toLowerCase();
+                                        if (s.includes('firehol')) return Flame;
+                                        if (s.includes('spamhaus')) return MailX;
+                                        if (s.includes('tor')) return GlobeLock;
+                                        if (s.includes('feodo') || s.includes('bot')) return Bug;
+                                        if (s.includes('abuseipdb')) return ShieldAlert;
+                                        if (s.includes('blocklist_de')) return ShieldBan;
+                                        if (s.includes('emerging')) return Zap;
+                                        if (s.includes('bruteforce')) return Key;
+                                        if (s.includes('cins')) return Crosshair;
+                                        if (s.includes('dshield')) return ShieldCheck;
+                                        if (s.includes('binary_defense')) return Binary;
+                                        if (s.includes('greensnow')) return Snowflake;
+                                        return Shield;
+                                    }
+                                    
+                                    const displayItems = sources.length > 0 
+                                        ? sources.map(s => ({ name: s.replace(/_/g, ' '), icon: getSourceIcon(s) }))
+                                        : fallbackSources.map((s, i) => ({ name: s, icon: fallbackIcons[i % fallbackIcons.length] }))
                                     
                                     return (
                                         <InfiniteSlider
                                             speedOnHover={20}
                                             speed={40}
                                             gap={64}>
-                                            {sources.map((src, idx) => {
-                                                const Icon = icons[idx % icons.length]
+                                            {displayItems.map((item, idx) => {
+                                                const Icon = item.icon
                                                 return (
                                                     <div key={idx} className="flex items-center gap-2 text-slate-400">
-                                                        <Icon size={24}/> 
-                                                        <span className="font-bold tracking-wide uppercase text-sm">{src}</span>
+                                                        <Icon size={24} className="text-slate-500" /> 
+                                                        <span className="font-bold tracking-wide uppercase text-sm">{item.name}</span>
                                                     </div>
                                                 )
                                             })}
