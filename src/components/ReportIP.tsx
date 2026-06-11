@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { Flag, Globe, Tag, MessageSquare, Send, Database, ShieldAlert, AlertCircle, Clock, CheckCircle2 } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Flag, Globe, Tag, MessageSquare, Send, List, Inbox, ChevronLeft, ChevronRight, ShieldAlert, Activity, AlertTriangle } from 'lucide-react'
 import supabaseClient from '../supabaseClient'
 import { fmt, timeAgo } from '../utils'
+import { Button } from '@/components/ui/button'
 
-const REPORT_PAGE_SIZE = 15
+const REPORT_PAGE_SIZE = 10
 const SUBMIT_COOLDOWN = 15000
 
 export default function ReportIP({ addToast }: any) {
@@ -68,11 +70,9 @@ export default function ReportIP({ addToast }: any) {
     return () => clearTimeout(timer)
   }, [loadReportedIPs])
 
-  const handleSubmit = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault()
-    
+  const handleSubmit = useCallback(async () => {
     if (!supabaseClient) {
-      addToast('Database connection unavailable', 'error')
+      addToast('Supabase connection unavailable', 'error')
       return
     }
 
@@ -84,7 +84,7 @@ export default function ReportIP({ addToast }: any) {
     }
 
     if (!ipValue.trim()) {
-      addToast('IP Address is required', 'error')
+      addToast('Please enter an IP address', 'error')
       return
     }
 
@@ -93,12 +93,12 @@ export default function ReportIP({ addToast }: any) {
       (ipValue.includes(':') && /^[0-9a-fA-F:]+$/.test(ipValue.trim()))
 
     if (!isValidIP) {
-      addToast('Invalid IPv4 or IPv6 format', 'error')
+      addToast('Please enter a valid IPv4 or IPv6 address', 'error')
       return
     }
 
     if (!category) {
-      addToast('Threat category is required', 'error')
+      addToast('Please select a threat category', 'error')
       return
     }
 
@@ -112,7 +112,7 @@ export default function ReportIP({ addToast }: any) {
       if (error) throw error
 
       lastSubmitRef.current = Date.now()
-      addToast('Report submitted successfully', 'success')
+      addToast('Report submitted successfully!', 'success')
       setIpValue('')
       setCategory('')
       setComment('')
@@ -125,201 +125,277 @@ export default function ReportIP({ addToast }: any) {
     }
   }, [ipValue, category, comment, addToast, loadReportedIPs])
 
+  const getCategoryColor = (cat: string) => {
+    if (cat.includes('Brute')) return 'bg-orange-500/10 text-orange-400 border-orange-500/20'
+    if (cat.includes('Malware')) return 'bg-red-500/10 text-red-400 border-red-500/20'
+    if (cat.includes('DDoS')) return 'bg-purple-500/10 text-purple-400 border-purple-500/20'
+    if (cat.includes('Phish')) return 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+    return 'bg-slate-500/10 text-slate-300 border-slate-500/20'
+  }
+
   return (
-    <main className="min-h-screen pt-28 pb-20 bg-[#0A0A0A] text-slate-300 font-sans selection:bg-blue-500/30">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen pt-32 pb-24 relative bg-slate-950 overflow-hidden font-sans">
+      {/* Animated Abstract Background */}
+      <div className="absolute inset-0 pointer-events-none z-0">
+        <motion.div 
+          animate={{ scale: [1, 1.1, 1], opacity: [0.1, 0.15, 0.1] }} 
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute -top-[20%] -left-[10%] w-[70vw] h-[70vw] rounded-full bg-gradient-to-br from-red-900/40 via-red-950/0 to-transparent blur-[100px]"
+        />
+        <motion.div 
+          animate={{ scale: [1, 1.2, 1], opacity: [0.05, 0.1, 0.05] }} 
+          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+          className="absolute top-[40%] -right-[20%] w-[60vw] h-[60vw] rounded-full bg-gradient-to-tl from-purple-900/30 via-slate-900/0 to-transparent blur-[120px]"
+        />
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay"></div>
+      </div>
+
+      <div className="mx-auto max-w-7xl px-6 lg:px-12 relative z-10">
         
-        {/* Header */}
-        <div className="mb-10 border-b border-slate-800 pb-8">
-          <h1 className="text-3xl font-semibold text-slate-100 flex items-center gap-3">
-            <ShieldAlert className="text-blue-500" size={28} />
-            Report an IP
+        {/* Page Header */}
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="mb-16 text-center"
+        >
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900/80 border border-white/5 backdrop-blur-md shadow-xl text-xs font-bold uppercase tracking-widest mb-6 text-slate-300">
+            <Activity size={14} className="text-red-500" />
+            Active Threat Database
+          </div>
+          <h1 className="text-5xl md:text-7xl font-extrabold flex flex-col items-center justify-center gap-2 text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400 tracking-tight drop-shadow-sm pb-2">
+            Community Intel
           </h1>
-          <p className="mt-3 text-slate-400 max-w-3xl text-sm leading-relaxed">
-            Submit malicious IP addresses to the HimalayaFeed global database. Your reports help security teams and researchers identify and block active threats in real-time. Please provide accurate categories and context.
+          <p className="mt-4 text-slate-400 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed drop-shadow">
+            Help protect the global community. Report malicious IPs to our live feed and empower defenders worldwide.
           </p>
-        </div>
+        </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 lg:gap-12">
           
-          {/* Form Section */}
-          <div className="lg:col-span-4 bg-[#111111] border border-slate-800 rounded-lg p-6 shadow-sm">
-            <h2 className="text-lg font-medium text-slate-100 mb-6 flex items-center gap-2">
-              <Flag size={18} className="text-slate-500" /> Report Details
-            </h2>
-            
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5" htmlFor="rip-ip-input">
-                  IP Address <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <Globe size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-                  <input
-                    type="text"
-                    id="rip-ip-input"
-                    className="w-full h-10 bg-[#0A0A0A] border border-slate-700 rounded-md pl-10 pr-3 text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
-                    placeholder="e.g. 192.168.1.1"
-                    autoComplete="off"
-                    spellCheck="false"
-                    value={ipValue}
-                    onChange={(e) => setIpValue(e.target.value)}
-                  />
+          {/* Left Col: Submit Form */}
+          <motion.div 
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="xl:col-span-4"
+          >
+            <div className="rounded-3xl border border-white/10 bg-slate-900/40 backdrop-blur-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] p-8 relative overflow-hidden group">
+              <div className="absolute top-0 inset-x-0 h-[2px] w-full bg-gradient-to-r from-transparent via-red-500/80 to-transparent"></div>
+              <div className="absolute -inset-1 bg-gradient-to-r from-red-500/20 to-purple-500/20 rounded-3xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
+              
+              <div className="space-y-6 relative z-10">
+                <div className="mb-8">
+                  <h2 className="text-2xl font-bold text-white flex items-center gap-3">
+                    <Flag className="text-red-500" size={24} /> File a Report
+                  </h2>
+                  <p className="text-slate-400 text-sm mt-2">All submissions are verified against global honeypots.</p>
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5" htmlFor="rip-category">
-                  Categories <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <Tag size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-                  <select
-                    id="rip-category"
-                    className="w-full h-10 bg-[#0A0A0A] border border-slate-700 rounded-md pl-10 pr-3 text-sm text-slate-100 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors appearance-none"
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                  >
-                    <option value="" disabled>Select primary category...</option>
-                    <option value="Brute-Force">Brute-Force</option>
-                    <option value="Port Scan">Port Scan</option>
-                    <option value="Phishing">Phishing</option>
-                    <option value="Malware">Malware</option>
-                    <option value="C2 Server">C2 Server</option>
-                    <option value="DDoS Attack">DDoS Attack</option>
-                    <option value="Spam">Spam</option>
-                    <option value="Exploit Attempt">Exploit Attempt</option>
-                    <option value="Web Spam">Web Spam</option>
-                    <option value="IoT Targeted">IoT Targeted</option>
-                    <option value="Other">Other</option>
-                  </select>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-400 ml-1" htmlFor="rip-ip-input">
+                    IP Address
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <Globe size={18} className="text-slate-500" />
+                    </div>
+                    <input
+                      type="text"
+                      id="rip-ip-input"
+                      className="w-full h-14 rounded-2xl border border-white/5 bg-black/40 pl-11 pr-4 text-sm text-white placeholder:text-slate-600 focus-visible:outline-none focus-visible:border-red-500/50 focus-visible:ring-4 focus-visible:ring-red-500/10 transition-all shadow-inner"
+                      placeholder="e.g. 192.168.1.1"
+                      autoComplete="off"
+                      spellCheck="false"
+                      value={ipValue}
+                      onChange={(e) => setIpValue(e.target.value)}
+                    />
+                  </div>
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5" htmlFor="rip-comment">
-                  Comment
-                </label>
-                <div className="relative">
-                  <MessageSquare size={16} className="absolute left-3 top-3 text-slate-500" />
-                  <textarea
-                    id="rip-comment"
-                    className="w-full min-h-[100px] bg-[#0A0A0A] border border-slate-700 rounded-md pl-10 pr-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors resize-y"
-                    placeholder="Provide logs or context (scrub PII)..."
-                    value={comment}
-                    onChange={(e) => setComment(e.target.value)}
-                  ></textarea>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-400 ml-1" htmlFor="rip-category">
+                    Threat Category
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <Tag size={18} className="text-slate-500" />
+                    </div>
+                    <select
+                      id="rip-category"
+                      className="w-full h-14 rounded-2xl border border-white/5 bg-black/40 pl-11 pr-4 text-sm text-white focus-visible:outline-none focus-visible:border-rose-500/50 focus-visible:ring-4 focus-visible:ring-rose-500/10 transition-all appearance-none shadow-inner"
+                      value={category}
+                      onChange={(e) => setCategory(e.target.value)}
+                    >
+                      <option value="" disabled>Select category...</option>
+                      <option value="Brute Force">Brute Force</option>
+                      <option value="Port Scan">Port Scan</option>
+                      <option value="Phishing">Phishing</option>
+                      <option value="Malware / C2">Malware / C2</option>
+                      <option value="DDoS">DDoS</option>
+                      <option value="Spam">Spam</option>
+                      <option value="Exploit Attempt">Exploit Attempt</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
                 </div>
-                <p className="text-xs text-slate-500 mt-1.5">Do not include personal information in the comments.</p>
-              </div>
 
-              <div className="pt-2">
-                <button
-                  type="submit"
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-400 ml-1" htmlFor="rip-comment">
+                    Analyst Notes
+                  </label>
+                  <div className="relative">
+                    <div className="absolute top-4 left-0 pl-4 pointer-events-none">
+                      <MessageSquare size={18} className="text-slate-500" />
+                    </div>
+                    <textarea
+                      id="rip-comment"
+                      className="w-full min-h-[120px] rounded-2xl border border-white/5 bg-black/40 pl-11 pr-4 py-4 text-sm text-white placeholder:text-slate-600 focus-visible:outline-none focus-visible:border-orange-500/50 focus-visible:ring-4 focus-visible:ring-orange-500/10 transition-all shadow-inner resize-none"
+                      rows={3}
+                      placeholder="Describe the activity..."
+                      value={comment}
+                      onChange={(e) => setComment(e.target.value)}
+                    ></textarea>
+                  </div>
+                </div>
+
+                <Button
+                  className="w-full h-14 rounded-2xl bg-white text-slate-950 hover:bg-slate-200 font-bold text-base shadow-[0_0_20px_rgba(255,255,255,0.15)] hover:shadow-[0_0_25px_rgba(255,255,255,0.3)] transition-all mt-6"
+                  onClick={handleSubmit}
                   disabled={submitting}
-                  className="w-full h-10 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-md transition-colors flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                   {submitting ? (
-                    <>
-                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                      Submitting...
-                    </>
+                    <span className="flex items-center gap-2">
+                      <span className="h-5 w-5 animate-spin rounded-full border-2 border-slate-950/30 border-t-slate-950" />
+                      Processing...
+                    </span>
                   ) : (
-                    <>
-                      <Send size={16} /> Submit Report
-                    </>
+                    <span className="flex items-center gap-2">
+                      <Send size={18} className="mr-1" /> Transmit Intel
+                    </span>
                   )}
-                </button>
+                </Button>
               </div>
-            </form>
-          </div>
-
-          {/* Table Section */}
-          <div className="lg:col-span-8 bg-[#111111] border border-slate-800 rounded-lg shadow-sm flex flex-col">
-            <div className="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
-              <h3 className="text-base font-medium text-slate-100 flex items-center gap-2">
-                <Database size={18} className="text-slate-400" /> 
-                Recent Reports
-              </h3>
-              <span className="text-xs font-medium text-slate-400 bg-slate-800 px-2.5 py-1 rounded-md">
-                {reportCount > 0 ? `${fmt(reportCount)} Total` : 'Loading...'}
-              </span>
             </div>
+          </motion.div>
 
-            <div className="flex-1 overflow-x-auto min-h-[400px]">
-              {loading ? (
-                <div className="h-full flex flex-col items-center justify-center text-slate-500 py-20">
-                  <span className="h-8 w-8 animate-spin rounded-full border-2 border-slate-700 border-t-blue-500 mb-4" />
-                  <p className="text-sm">Fetching records...</p>
+          {/* Right Col: Reported IPs Table */}
+          <motion.div 
+            initial={{ opacity: 0, x: 30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="xl:col-span-8 flex flex-col"
+          >
+            <div className="rounded-3xl border border-white/10 bg-slate-900/40 backdrop-blur-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] flex flex-col overflow-hidden relative h-full">
+              
+              {/* Table Header Section */}
+              <div className="p-6 md:px-8 flex items-center justify-between border-b border-white/5 bg-black/20">
+                <h3 className="font-bold text-xl flex items-center gap-3 text-white">
+                  <List className="text-slate-400" size={20} /> 
+                  Global Intel Feed
+                </h3>
+                <div className="hidden sm:flex text-sm text-slate-300 font-bold bg-white/5 px-4 py-2 rounded-xl border border-white/5 shadow-inner items-center gap-2">
+                  <ShieldAlert size={16} className="text-red-400"/>
+                  {reportCount > 0 ? `${fmt(reportCount)} Submissions` : 'Live'}
                 </div>
-              ) : isEmpty ? (
-                <div className="h-full flex flex-col items-center justify-center text-slate-500 py-20 px-4 text-center">
-                  <CheckCircle2 size={32} className="text-slate-600 mb-3" />
-                  <p className="text-slate-300 font-medium mb-1">No Records Found</p>
-                  <p className="text-sm">The database is currently empty.</p>
-                </div>
-              ) : (
-                <table className="w-full text-sm text-left">
-                  <thead className="text-xs text-slate-400 bg-[#0A0A0A] border-b border-slate-800">
-                    <tr>
-                      <th className="px-5 py-3 font-medium">IP Address</th>
-                      <th className="px-5 py-3 font-medium">Category</th>
-                      <th className="px-5 py-3 font-medium">Comment</th>
-                      <th className="px-5 py-3 font-medium text-right flex justify-end items-center gap-1.5">
-                        <Clock size={14} /> Reported
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-800/50">
-                    {reports.map((row) => (
-                      <tr key={row.id || row.created_at} className="hover:bg-slate-800/30 transition-colors">
-                        <td className="px-5 py-3.5 whitespace-nowrap">
-                          <span className="font-mono text-blue-400 hover:text-blue-300 cursor-pointer">{row.ip}</span>
-                        </td>
-                        <td className="px-5 py-3.5 whitespace-nowrap">
-                          <span className="inline-block px-2 py-0.5 rounded text-[11px] font-medium bg-slate-800 text-slate-300 border border-slate-700">
-                            {row.category}
-                          </span>
-                        </td>
-                        <td className="px-5 py-3.5 text-slate-400 text-xs">
-                          <div className="truncate max-w-[250px] lg:max-w-sm" title={row.comment || ''}>
-                            {row.comment || <span className="text-slate-600 italic">No comment provided</span>}
-                          </div>
-                        </td>
-                        <td className="px-5 py-3.5 text-slate-500 text-xs whitespace-nowrap text-right">
-                          {timeAgo(row.created_at)}
-                        </td>
+              </div>
+
+              <div className="flex-1 overflow-x-auto">
+                {loading ? (
+                  <div className="h-full flex flex-col items-center justify-center text-slate-400 py-24">
+                    <div className="relative h-16 w-16 mb-6">
+                      <div className="absolute inset-0 rounded-full border-t-2 border-red-500 animate-spin"></div>
+                      <div className="absolute inset-2 rounded-full border-b-2 border-slate-500 animate-spin animation-delay-200"></div>
+                      <ShieldAlert className="absolute inset-0 m-auto text-slate-600" size={20} />
+                    </div>
+                    <p className="font-medium tracking-wide">Syncing with global database...</p>
+                  </div>
+                ) : isEmpty ? (
+                  <div className="h-full flex flex-col items-center justify-center text-slate-500 text-center py-24 px-6">
+                    <div className="bg-white/5 p-6 rounded-full mb-6 border border-white/5 shadow-inner">
+                      <Inbox size={48} className="opacity-50" />
+                    </div>
+                    <p className="text-xl font-bold text-white mb-2">No Reports Found</p>
+                    <p className="text-sm max-w-sm">The intel feed is currently clear. Submit the first malicious IP to start the database.</p>
+                  </div>
+                ) : (
+                  <table className="w-full text-sm text-left">
+                    <thead className="text-[10px] uppercase bg-black/40 text-slate-500 font-bold border-b border-white/5">
+                      <tr>
+                        <th className="px-8 py-5 tracking-[0.2em] whitespace-nowrap">IP Address</th>
+                        <th className="px-6 py-5 tracking-[0.2em] whitespace-nowrap">Category</th>
+                        <th className="px-6 py-5 tracking-[0.2em]">Context</th>
+                        <th className="px-8 py-5 tracking-[0.2em] whitespace-nowrap text-right">Time</th>
                       </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/5">
+                      <AnimatePresence>
+                        {reports.map((row, idx) => (
+                          <motion.tr 
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: idx * 0.05 }}
+                            key={row.id || row.created_at} 
+                            className="hover:bg-white/[0.02] transition-colors group"
+                          >
+                            <td className="px-8 py-6 font-mono font-semibold text-slate-200 whitespace-nowrap flex items-center gap-3">
+                              <div className="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]"></div>
+                              {row.ip}
+                            </td>
+                            <td className="px-6 py-6 whitespace-nowrap">
+                              <span className={`inline-flex items-center px-3 py-1 rounded-lg text-[11px] font-bold tracking-wider uppercase border shadow-sm ${getCategoryColor(row.category)}`}>
+                                {row.category}
+                              </span>
+                            </td>
+                            <td className="px-6 py-6 text-slate-400 truncate max-w-[200px] sm:max-w-xs font-medium" title={row.comment || ''}>
+                              {row.comment ? (
+                                <span className="flex items-center gap-2">
+                                  <AlertTriangle size={14} className="text-slate-500 flex-shrink-0" />
+                                  <span className="truncate">{row.comment}</span>
+                                </span>
+                              ) : '—'}
+                            </td>
+                            <td className="px-8 py-6 text-slate-500 whitespace-nowrap font-medium text-right group-hover:text-slate-300 transition-colors">
+                              {timeAgo(row.created_at)}
+                            </td>
+                          </motion.tr>
+                        ))}
+                      </AnimatePresence>
+                    </tbody>
+                  </table>
+                )}
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && !loading && !isEmpty && (
+                <div className="p-4 md:px-8 border-t border-white/5 flex items-center justify-between bg-black/20">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-slate-400 hover:bg-white/5 hover:text-white rounded-xl transition-all font-semibold"
+                    onClick={() => loadReportedIPs(page - 1)}
+                    disabled={page === 0}
+                  >
+                    <ChevronLeft size={16} className="mr-1" /> Prev
+                  </Button>
+                  <div className="flex gap-1.5">
+                    {[...Array(Math.min(totalPages, 5))].map((_, i) => (
+                      <div key={i} className={`h-1.5 w-1.5 rounded-full ${i === page ? 'bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]' : 'bg-slate-700'}`}></div>
                     ))}
-                  </tbody>
-                </table>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-slate-400 hover:bg-white/5 hover:text-white rounded-xl transition-all font-semibold"
+                    onClick={() => loadReportedIPs(page + 1)}
+                    disabled={page >= totalPages - 1}
+                  >
+                    Next <ChevronRight size={16} className="ml-1" />
+                  </Button>
+                </div>
               )}
             </div>
-
-            {/* Pagination */}
-            {totalPages > 1 && !loading && !isEmpty && (
-              <div className="px-5 py-3 border-t border-slate-800 bg-[#0A0A0A] flex items-center justify-between rounded-b-lg">
-                <button
-                  className="text-slate-400 hover:text-white disabled:opacity-30 disabled:hover:text-slate-400 transition-colors flex items-center text-sm"
-                  onClick={() => loadReportedIPs(page - 1)}
-                  disabled={page === 0}
-                >
-                  <ChevronLeft size={16} className="mr-0.5" /> Previous
-                </button>
-                <span className="text-xs text-slate-500">
-                  Page <span className="text-slate-300 font-medium">{page + 1}</span> of {totalPages}
-                </span>
-                <button
-                  className="text-slate-400 hover:text-white disabled:opacity-30 disabled:hover:text-slate-400 transition-colors flex items-center text-sm"
-                  onClick={() => loadReportedIPs(page + 1)}
-                  disabled={page >= totalPages - 1}
-                >
-                  Next <ChevronRight size={16} className="ml-0.5" />
-                </button>
-              </div>
-            )}
-          </div>
-
+          </motion.div>
         </div>
       </div>
     </main>
