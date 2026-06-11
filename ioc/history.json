@@ -227,5 +227,33 @@
       "romainmarcoux_outgoing_aa": 131072,
       "ipsum": 124567
     }
+  },
+  {
+    "date": "2026-06-11",
+    "total_unique_ips": 909830,
+    "total_unique_ipv6": 3513,
+    "total_unique_cidrs": 2453,
+    "total_unique_domains": 1643131,
+    "total_unique_hashes": 1095212,
+    "total_unique_urls": 31773,
+    "active_feeds": 34,
+    "category_counts": {
+      "Compromised": 16054,
+      "Malicious": 435248,
+      "Mixed": 1723231,
+      "Exploit": 9153,
+      "Tor": 8787,
+      "Malware": 8862,
+      "Brute-Force": 38416,
+      "C2": 7612,
+      "Spam": 198610
+    },
+    "top_sources": {
+      "firehol_level1": 551241,
+      "emerging_threats_fwrules": 189743,
+      "spamhaus_drop": 185166,
+      "romainmarcoux_outgoing_aa": 131072,
+      "ipsum": 126809
+    }
   }
 ]
