@@ -62,25 +62,25 @@ export function HeroSection({ scanInput, setScanInput, handleScan }: any) {
                     <div className="group relative m-auto max-w-7xl px-6">
                         <div className="flex flex-col items-center md:flex-row">
                             <div className="md:max-w-44 md:border-r md:pr-6 mb-6 md:mb-0">
-                                <p className="text-center md:text-end text-sm text-muted-foreground font-medium">Trusted integrations</p>
+                                <p className="text-center md:text-end text-sm text-slate-400 font-bold tracking-wider uppercase">Intelligence Sources</p>
                             </div>
                             <div className="relative py-6 md:w-[calc(100%-11rem)] overflow-hidden">
                                 <InfiniteSlider
                                     speedOnHover={20}
                                     speed={40}
                                     gap={64}>
-                                    <div className="flex items-center gap-2 text-muted-foreground"><Shield size={24}/> <span className="font-semibold tracking-wide uppercase text-sm">Firewalls</span></div>
-                                    <div className="flex items-center gap-2 text-muted-foreground"><Server size={24}/> <span className="font-semibold tracking-wide uppercase text-sm">SIEM</span></div>
-                                    <div className="flex items-center gap-2 text-muted-foreground"><Database size={24}/> <span className="font-semibold tracking-wide uppercase text-sm">Logstash</span></div>
-                                    <div className="flex items-center gap-2 text-muted-foreground"><Lock size={24}/> <span className="font-semibold tracking-wide uppercase text-sm">EDR</span></div>
-                                    <div className="flex items-center gap-2 text-muted-foreground"><Network size={24}/> <span className="font-semibold tracking-wide uppercase text-sm">DNS Sinkhole</span></div>
-                                    <div className="flex items-center gap-2 text-muted-foreground"><Cloud size={24}/> <span className="font-semibold tracking-wide uppercase text-sm">Cloud WAF</span></div>
-                                    <div className="flex items-center gap-2 text-muted-foreground"><Activity size={24}/> <span className="font-semibold tracking-wide uppercase text-sm">SOAR</span></div>
-                                    <div className="flex items-center gap-2 text-muted-foreground"><Globe size={24}/> <span className="font-semibold tracking-wide uppercase text-sm">Proxies</span></div>
+                                    <div className="flex items-center gap-2 text-slate-400"><Server size={24}/> <span className="font-bold tracking-wide uppercase text-sm">Honeypots</span></div>
+                                    <div className="flex items-center gap-2 text-slate-400"><Globe size={24}/> <span className="font-bold tracking-wide uppercase text-sm">Dark Web</span></div>
+                                    <div className="flex items-center gap-2 text-slate-400"><Activity size={24}/> <span className="font-bold tracking-wide uppercase text-sm">Malware Analysis</span></div>
+                                    <div className="flex items-center gap-2 text-slate-400"><Network size={24}/> <span className="font-bold tracking-wide uppercase text-sm">Sinkholes</span></div>
+                                    <div className="flex items-center gap-2 text-slate-400"><Shield size={24}/> <span className="font-bold tracking-wide uppercase text-sm">OSINT</span></div>
+                                    <div className="flex items-center gap-2 text-slate-400"><Database size={24}/> <span className="font-bold tracking-wide uppercase text-sm">Sandboxes</span></div>
+                                    <div className="flex items-center gap-2 text-slate-400"><Cloud size={24}/> <span className="font-bold tracking-wide uppercase text-sm">Cloud Sensors</span></div>
+                                    <div className="flex items-center gap-2 text-slate-400"><Lock size={24}/> <span className="font-bold tracking-wide uppercase text-sm">Spam Traps</span></div>
                                 </InfiniteSlider>
 
-                                <div className="bg-gradient-to-r from-background absolute inset-y-0 left-0 w-20 z-10 pointer-events-none"></div>
-                                <div className="bg-gradient-to-l from-background absolute inset-y-0 right-0 w-20 z-10 pointer-events-none"></div>
+                                <div className="bg-gradient-to-r from-slate-900 absolute inset-y-0 left-0 w-24 z-10 pointer-events-none"></div>
+                                <div className="bg-gradient-to-l from-slate-900 absolute inset-y-0 right-0 w-24 z-10 pointer-events-none"></div>
                                 <ProgressiveBlur
                                     className="pointer-events-none absolute left-0 top-0 h-full w-20 z-20"
                                     direction="left"
