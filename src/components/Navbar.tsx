@@ -46,7 +46,7 @@ export default function Navbar() {
                     "group fixed inset-x-0 top-0 z-50 transition-all duration-300",
                     scrolled 
                         ? "bg-slate-950/80 backdrop-blur-2xl border-b border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.5)] py-3" 
-                        : "bg-transparent border-b border-transparent py-6"
+                        : "bg-transparent border-b border-transparent py-3"
                 )}
             >
                 <div className="mx-auto max-w-7xl px-6 lg:px-12 w-full">
