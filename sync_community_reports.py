@@ -11,6 +11,7 @@ import json
 import os
 import sys
 import logging
+import ipaddress
 from datetime import datetime, timezone
 
 logging.basicConfig(
@@ -147,19 +148,51 @@ def main():
         return
 
     # 2. Extract valid IPs
-    import re
-    ipv4_pattern = re.compile(
-        r"^(?:(?:25[0-5]|2[0-4]\d|1\d{2}|[1-9]\d|\d)\.){3}"
-        r"(?:25[0-5]|2[0-4]\d|1\d{2}|[1-9]\d|\d)$"
-    )
+    _WHITELIST_CIDRS = [
+        "1.0.0.0/24",       # Cloudflare DNS
+        "1.1.1.0/24",       # Cloudflare DNS
+        "8.8.8.0/24",       # Google DNS
+        "8.8.4.0/24",       # Google DNS
+        "9.9.9.0/24",       # Quad9
+        "9.9.9.10/32",      # Quad9 ECS
+        "149.112.112.0/24", # Quad9
+        "208.67.222.0/24",  # OpenDNS
+        "208.67.220.0/24",  # OpenDNS
+        "4.4.4.4/32",       # Level3 DNS
+        "4.2.2.0/24",       # Level3 DNS
+        "94.140.14.0/24",   # AdGuard DNS
+        "94.140.15.0/24",   # AdGuard DNS
+    ]
+
+    parsed_whitelist = [ipaddress.ip_network(cidr) for cidr in _WHITELIST_CIDRS]
+
+    def is_valid_public_ip(ip_str: str) -> bool:
+        parts = ip_str.split('.')
+        if len(parts) != 4:
+            return False
+        try:
+            ip_obj = ipaddress.IPv4Address(ip_str)
+            if (ip_obj.is_private or 
+                ip_obj.is_multicast or 
+                ip_obj.is_loopback or 
+                ip_obj.is_link_local or 
+                ip_obj.is_reserved or 
+                ip_obj.is_unspecified):
+                return False
+            for net in parsed_whitelist:
+                if ip_obj in net:
+                    return False
+            return True
+        except Exception:
+            return False
 
     valid_ips = []
     for report in reports:
         ip = report.get("ip", "").strip()
-        if ipv4_pattern.match(ip):
+        if is_valid_public_ip(ip):
             valid_ips.append(ip)
         else:
-            log.warning(f"  Skipping invalid IP: {ip}")
+            log.warning(f"  Skipping invalid, private, or whitelisted IP: {ip}")
 
     log.info(f"  {len(valid_ips)} valid IPv4 addresses extracted")
 

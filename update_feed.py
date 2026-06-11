@@ -52,7 +52,6 @@ FEEDS: Dict[str, str] = {
     "blackbook": "https://raw.githubusercontent.com/stamparm/blackbook/master/blackbook.txt",
     "firehol_level1": "https://raw.githubusercontent.com/firehol/blocklist-ipsets/master/firehol_level1.netset",
     "firehol_level2": "https://raw.githubusercontent.com/firehol/blocklist-ipsets/master/firehol_level2.netset",
-    "firehol_level3": "https://raw.githubusercontent.com/firehol/blocklist-ipsets/master/firehol_level3.netset",
     "cins_army": "https://cinsscore.com/list/ci-badguys.txt",
     "emerging_threats": "https://rules.emergingthreats.net/blockrules/compromised-ips.txt",
     "emerging_threats_fwrules": "https://rules.emergingthreats.net/fwrules/emerging-Block-IPs.txt",
@@ -88,7 +87,6 @@ FEED_CATEGORIES: Dict[str, str] = {
     "blackbook": "Mixed",
     "firehol_level1": "Mixed",
     "firehol_level2": "Mixed",
-    "firehol_level3": "Mixed",
     "cins_army": "Compromised",
     "emerging_threats": "Compromised",
     "emerging_threats_fwrules": "Malicious",
@@ -178,6 +176,25 @@ _URL_PATTERN = re.compile(r'^https?://.+')
 
 
 
+_WHITELIST_CIDRS = [
+    "1.0.0.0/24",       # Cloudflare DNS
+    "1.1.1.0/24",       # Cloudflare DNS
+    "8.8.8.0/24",       # Google DNS
+    "8.8.4.0/24",       # Google DNS
+    "9.9.9.0/24",       # Quad9
+    "9.9.9.10/32",      # Quad9 ECS
+    "149.112.112.0/24", # Quad9
+    "208.67.222.0/24",  # OpenDNS
+    "208.67.220.0/24",  # OpenDNS
+    "4.4.4.4/32",       # Level3 DNS
+    "4.2.2.0/24",       # Level3 DNS
+    "94.140.14.0/24",   # AdGuard DNS
+    "94.140.15.0/24",   # AdGuard DNS
+]
+
+PARSED_WHITELIST_CIDRS = [ipaddress.ip_network(cidr) for cidr in _WHITELIST_CIDRS]
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Helpers
 # ─────────────────────────────────────────────────────────────────────────────
@@ -206,6 +223,9 @@ def is_valid_ipv4(ip: str) -> bool:
             ip_obj.is_reserved or 
             ip_obj.is_unspecified):
             return False
+        for net in PARSED_WHITELIST_CIDRS:
+            if ip_obj in net:
+                return False
         return True
     except Exception:
         return False
@@ -338,21 +358,28 @@ def fetch_feed(name: str, url: str) -> dict:
             if not line or line.startswith(("#", "//", "!", "/*")):
                 continue
             raw_lines += 1
-            token = line.split()[0].split(",")[0].strip("\"';")
+            
+            parts = line.split()
+            if not parts:
+                continue
+            token = parts[0].split(",")[0].strip("\"';")
+
+            # Validate/filter ipsum hit count
+            if name.startswith("ipsum") and len(parts) >= 2:
+                try:
+                    count = int(parts[1])
+                    if count < 3:
+                        continue
+                except ValueError:
+                    pass
 
             if "/" in token:
                 try:
                     network = ipaddress.ip_network(token, strict=False)
-                    if network.version == 4:
-                        if network.prefixlen >= 24:
-                            for ip in network.hosts():
-                                ip_str = str(ip)
-                                if is_valid_ipv4(ip_str):
-                                    ips.add(ip_str)
-                        else:
-                            cidrs.add(token)
-                    elif network.version == 6:
-                        cidrs.add(token)
+                    if network.version == 4 and network.prefixlen == 32:
+                        ip_str = str(network.network_address)
+                        if is_valid_ipv4(ip_str):
+                            ips.add(ip_str)
                 except ValueError:
                     pass
             elif is_valid_ipv4(token):
@@ -643,6 +670,75 @@ def write_history(stats: dict) -> None:
         log.error(f"Failed to write history.json: {e}")
 
 
+def filter_ips(ip_sources, custom_ips, existing_ips):
+    ip_to_feeds = {}
+    
+    for ip in custom_ips:
+        ip_to_feeds.setdefault(ip, set()).add("custom")
+    for ip in existing_ips:
+        ip_to_feeds.setdefault(ip, set()).add("historical")
+        
+    for feed_name, ips in ip_sources.items():
+        for ip in ips:
+            ip_to_feeds.setdefault(ip, set()).add(feed_name)
+            
+    FEED_TRUST_TIERS = {
+        "custom": "HIGH",
+        "historical": "HIGH",
+        "feodo_tracker": "HIGH",
+        "feodo_tracker_aggressive": "HIGH",
+        "abuseipdb": "HIGH",
+        "threatfox_recent": "HIGH",
+        "spamhaus_drop": "HIGH",
+        "spamhaus_edrop": "HIGH",
+        "cins_army": "HIGH",
+        "emerging_threats": "HIGH",
+        "emerging_threats_fwrules": "HIGH",
+        "greensnow": "HIGH",
+        "dshield_blocklist": "HIGH",
+        
+        "blocklist_de": "MEDIUM",
+        "blocklist_de_ssh": "MEDIUM",
+        "blocklist_de_mail": "MEDIUM",
+        "blocklist_de_apache": "MEDIUM",
+        "bruteforceblocker": "MEDIUM",
+        "criticalpath_security": "MEDIUM",
+        "dan_tor": "MEDIUM",
+        "tor_bulk_exit": "MEDIUM",
+        "bbcan177_ms1": "MEDIUM",
+        "botvrij": "MEDIUM",
+        "binary_defense": "MEDIUM",
+        
+        "firehol_level1": "LOW",
+        "firehol_level2": "LOW",
+        "ipsum": "LOW",
+        "ipsum_level2": "LOW",
+        "ipsum_level3": "LOW",
+        "ipsum_level4": "LOW",
+        "ipsum_level5": "LOW",
+        "blackbook": "LOW",
+        "romainmarcoux_outgoing_40k": "LOW",
+        "romainmarcoux_outgoing_aa": "LOW",
+        "romainmarcoux_outgoing_ab": "LOW",
+    }
+    
+    filtered_ip_count = {}
+    for ip, feeds in ip_to_feeds.items():
+        num_sources = len(feeds)
+        tiers = [FEED_TRUST_TIERS.get(f, "LOW") for f in feeds]
+        
+        if "HIGH" in tiers:
+            filtered_ip_count[ip] = num_sources
+        elif "MEDIUM" in tiers:
+            if num_sources >= 2:
+                filtered_ip_count[ip] = num_sources
+        else:
+            if num_sources >= 3:
+                filtered_ip_count[ip] = num_sources
+                
+    return filtered_ip_count
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Main
 # ─────────────────────────────────────────────────────────────────────────────
@@ -741,19 +837,27 @@ def main():
     log.info(f"All feeds fetched in {time.time()-t0:.1f}s")
     import sys; sys.stderr.flush()
 
-    # ── Merge IPs ────────────────────────────────────────────────────────────
-    log.info("Merging IOCs... (IPs)")
+    # ── Merge ThreatFox results into categories / sources first ─────────────
+    for name, tf in tf_results.items():
+        if tf["ips"]:
+            ip_sources[name] = tf["ips"]
+        if tf["domains"]:
+            domain_results[name] = domain_results.get(name, set()) | tf["domains"]
+        if tf["hashes"]:
+            hash_sources[name] = hash_sources.get(name, set()) | tf["hashes"]
+        if tf["urls"]:
+            url_sources[name] = url_sources.get(name, set()) | tf["urls"]
+
+    # ── Merge and Filter IPs using Trust Tiers ────────────────────────────────
+    log.info("Merging and filtering IPs by trust tiers...")
     sys.stderr.flush()
     t0 = time.time()
 
     from collections import Counter
-    ip_count = Counter()
-    ip_count.update(custom_iocs["ips"])
-    ip_count.update(existing_iocs["ips"])
-    for ips in ip_sources.values():
-        ip_count.update(ips)
+    filtered_ip_count = filter_ips(ip_sources, custom_iocs["ips"], existing_iocs["ips"])
+    ip_count = Counter(filtered_ip_count)
 
-    # ── Merge Domains
+    # ── Merge Domains ────────────────────────────────────────────────────────
     log.info("Merging Domains...")
     sys.stderr.flush()
     all_domains = set()
@@ -762,7 +866,7 @@ def main():
     for domains in domain_results.values():
         all_domains.update(domains)
 
-    # ── Merge IPv6 & CIDR
+    # ── Merge IPv6 & CIDR ────────────────────────────────────────────────────
     log.info("Merging IPv6 & CIDRs...")
     sys.stderr.flush()
     all_ipv6 = set()
@@ -774,18 +878,6 @@ def main():
     all_cidrs.update(existing_iocs["cidrs"])
     for cidrs in cidr_sources.values():
         all_cidrs.update(cidrs)
-
-    # ── Merge ThreatFox results into all categories
-    for name, tf in tf_results.items():
-        if tf["ips"]:
-            ip_sources[name] = tf["ips"]
-            ip_count.update(tf["ips"])
-        if tf["domains"]:
-            all_domains.update(tf["domains"])
-        if tf["hashes"]:
-            hash_sources[name] = hash_sources.get(name, set()) | tf["hashes"]
-        if tf["urls"]:
-            url_sources[name] = url_sources.get(name, set()) | tf["urls"]
 
 
 
