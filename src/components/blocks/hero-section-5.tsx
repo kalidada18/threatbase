@@ -46,9 +46,9 @@ export function HeroSection({ scanInput, setScanInput, handleScan, statsData }: 
                                         </Button>
                                     </div>
                                     <Button
-                                        variant="ghost"
+                                        variant="outline"
                                         size="lg"
-                                        className="h-12 rounded-full px-5 text-base"
+                                        className="h-12 rounded-full px-6 text-base border-white/20 text-white hover:bg-white/10 hover:text-white bg-white/5"
                                         asChild
                                     >
                                         <a href="#feeds">Browse Feeds</a>
