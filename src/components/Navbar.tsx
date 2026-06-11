@@ -49,7 +49,7 @@ export default function Navbar() {
                         : "bg-transparent border-b border-transparent py-3"
                 )}
             >
-                <div className="mx-auto max-w-7xl px-6 lg:px-12 w-full">
+                <div className="w-full px-4 lg:px-8">
                     <div className="relative flex items-center justify-between">
                         <div className="flex w-full items-center justify-between gap-10 lg:w-auto">
                             <Link
