@@ -5,7 +5,7 @@ import { InfiniteSlider } from '@/components/ui/infinite-slider'
 import { ProgressiveBlur } from '@/components/ui/progressive-blur'
 import { cn } from '@/lib/utils'
 import ThreatMap from '../ThreatMap'
-import { Menu, X, ChevronRight, Shield, Server, Database, Lock, Network, Cloud, Activity, Globe, Search, Flame, MailX, GlobeLock, Bug, ShieldAlert, ShieldBan, Zap, Key, Crosshair, ShieldCheck, Binary, Snowflake } from 'lucide-react'
+import { Menu, X, ChevronRight, Shield, Server, Database, Lock, Network, Cloud, Activity, Globe, Search, Flame, MailX, GlobeLock, Bug, ShieldAlert, ShieldBan, Zap, Key, Crosshair, ShieldCheck, Binary, Snowflake, Github } from 'lucide-react'
 import { useScroll, motion, useMotionValueEvent } from 'framer-motion'
 
 export function HeroSection({ scanInput, setScanInput, handleScan, statsData }: any) {
@@ -184,7 +184,7 @@ const HeroHeader = () => {
                             <a
                                 href="/"
                                 aria-label="home"
-                                className="flex items-center font-bold text-xl text-white tracking-tight">
+                                className="flex items-center font-bold text-2xl text-white tracking-tighter drop-shadow-md">
                                 Himalaya<span className="text-red-500">Feed</span>
                             </a>
 
@@ -202,7 +202,7 @@ const HeroHeader = () => {
                                         <li key={index}>
                                             <a
                                                 href={item.href}
-                                                className="text-slate-400 hover:text-white transition-colors duration-300 tracking-wide">
+                                                className="text-slate-300 hover:text-white transition-all duration-300 tracking-wide hover:drop-shadow-[0_0_12px_rgba(255,255,255,0.8)]">
                                                 {item.name}
                                             </a>
                                         </li>
@@ -230,9 +230,10 @@ const HeroHeader = () => {
                                 <Button
                                     asChild
                                     variant="outline"
-                                    className="border-white/10 bg-transparent text-slate-300 hover:bg-white/5 hover:text-white rounded-full px-5 h-9"
+                                    className="border-white/10 bg-white/5 text-white hover:bg-white/10 hover:border-white/20 hover:text-white rounded-full px-6 h-10 transition-all duration-300 hover:shadow-[0_0_20px_rgba(255,255,255,0.1)] gap-2"
                                     size="sm">
                                     <a href="https://github.com/kalidada18/himalayafeed" target="_blank" rel="noopener noreferrer">
+                                        <Github size={16} />
                                         GitHub
                                     </a>
                                 </Button>
