@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="img/himalayafeed.png" alt="HimalayaFeed Banner" width="250" style="border-radius: 50%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); margin-bottom: 20px;">
+  <img src="public/img/himalayafeed.png" alt="HimalayaFeed Banner" width="250" style="border-radius: 50%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); margin-bottom: 20px;">
   
   <h1>HimalayaFeed (v3)</h1>
   
@@ -8,19 +8,51 @@
       <img src="https://github.com/kalidada18/himalayafeed/actions/workflows/update-feed.yml/badge.svg" alt="Update Feed">
     </a>
     <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="Python 3.11+">
+    <img src="https://img.shields.io/badge/react-19.0-cyan" alt="React 19">
     <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
-    <img src="https://img.shields.io/badge/data-JSON%20%7C%20TXT-yellow" alt="Formats">
   </p>
   
-  <h3>A fully-automated, enterprise-grade Threat Intelligence Aggregator.</h3>
+  <h3>A fully-automated, enterprise-grade Threat Intelligence Aggregator & Dashboard.</h3>
   <p><em>Powered by curiosity and driven by community OSINT</em></p>
 </div>
 
 <br/>
 
-HimalayaFeed is a high-performance threat intelligence aggregator designed to collect, deduplicate, and curate malicious Indicators of Compromise (IOCs) from industry-leading open-source intelligence feeds. 
+HimalayaFeed is a high-performance threat intelligence ecosystem. It consists of two major components:
+1. **The Backend Intelligence Engine**: Automatically collects, deduplicates, and curates malicious Indicators of Compromise (IOCs) from industry-leading open-source feeds.
+2. **The Threat Dashboard**: A breathtaking, ultra-premium SaaS frontend built in React that allows defenders to view analytics, search indicators, and manually report live threats.
 
-It provides highly actionable IPv4, IPv6, CIDR blocks, Domains, Hashes, and URLs updated automatically every hour to seamlessly integrate into your SOC/SIEM and firewalls.
+---
+
+## ✨ Features
+
+- **Live Threat Scanner**: Instantly check IPs, domains, and hashes against our global database.
+- **Community Intel Feed**: A real-time feed of user-reported threats.
+- **Gamified Leaderboard**: Top contributors who report verified malicious IPs earn unique glowing ranks (Initiate, Guardian, Vanguard, Elite Defender).
+- **Automated OSINT Aggregation**: Pulls from 30+ blacklists every hour (AbuseIPDB, Spamhaus, FireHOL, etc.).
+- **Ultra-Premium UI**: Sleek, minimal glassmorphism design tailored for SOC analysts.
+
+---
+
+## 💻 Running the Dashboard Locally
+
+The dashboard is built using React, Vite, and TailwindCSS.
+
+```bash
+# Clone the repository
+git clone https://github.com/kalidada18/himalayafeed.git
+
+# Navigate into the directory
+cd himalayafeed
+
+# Install dependencies
+npm install
+
+# Start the development server
+npm run dev
+```
+
+Visit `http://localhost:5173` to view the live dashboard.
 
 ---
 
@@ -39,9 +71,11 @@ HimalayaFeed curates and deduplicates data from the following authoritative thre
 | **Hagezi** | DNS Blocklists (Malware/Ads) | Domains |
 | **Blocklist.de / GreenSnow** | SSH/FTP Bruteforcers | IPs |
 
+*See our [Acknowledgements](/src/components/ThanksPage.tsx) page in the app for a full list.*
+
 ---
 
-## 📄 Available Threat Feeds
+## 📄 Using the Threat Feeds directly
 
 All IOC files are committed directly to this repository and are served continuously via GitHub Raw.
 
@@ -59,51 +93,6 @@ Use these lists for DNS sinkholing (Pi-Hole, AdGuard) and web proxy blocking.
 ### 💀 File Hashes (SHA-256)
 Over 1,000,000+ malware samples for Endpoint Detection & Response (EDR) ingestion.
 - **[Malware Hashes](https://raw.githubusercontent.com/kalidada18/himalayafeed/main/ioc/malicious_hashes.txt)** (`malicious_hashes.txt`)
-
----
-
-## 🛡️ Integration Examples
-
-<details>
-<summary><b>🐧 Linux &mdash; iptables / ipset (IPv4)</b></summary>
-<br/>
-
-```bash
-# We highly recommend using IPSet for large blocklists
-ipset create himalaya_block hash:net
-curl -fsSL https://raw.githubusercontent.com/kalidada18/himalayafeed/main/ioc/malicious_ips.txt \
-  | grep -vE '^#' | while read IP; do ipset add himalaya_block $IP; done
-
-iptables -I INPUT -m set --match-set himalaya_block src -j DROP
-```
-</details>
-
-<details>
-<summary><b>🌐 NGINX &mdash; Web Deny List (IPv4/IPv6/CIDR)</b></summary>
-<br/>
-
-```bash
-# Fetch IPs, IPv6, and CIDRs and format them for Nginx
-curl -fsSL https://raw.githubusercontent.com/kalidada18/himalayafeed/main/ioc/malicious_ips.txt \
-  https://raw.githubusercontent.com/kalidada18/himalayafeed/main/ioc/malicious_ipv6.txt \
-  https://raw.githubusercontent.com/kalidada18/himalayafeed/main/ioc/malicious_cidrs.txt \
-  | grep -vE '^#' | sed 's/^/deny /; s/$/ ;/' > /etc/nginx/conf.d/himalayafeed-deny.conf
-  
-nginx -s reload
-```
-</details>
-
-<details>
-<summary><b>🕳️ Pi-Hole &mdash; DNS Sinkhole (Domains)</b></summary>
-<br/>
-
-To block malicious domains network-wide using Pi-Hole:
-1. Open Pi-Hole Admin Console
-2. Go to **Adlists**
-3. Add the following URL:
-   `https://raw.githubusercontent.com/kalidada18/himalayafeed/main/ioc/malicious_domains.txt`
-4. Update Gravity (`pihole -g`)
-</details>
 
 ---
 
