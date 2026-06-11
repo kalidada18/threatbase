@@ -614,7 +614,7 @@ export default function ReportIP({ addToast }: any) {
                         <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400 ml-1 flex items-center gap-1">
                           <Tag size={13} className="text-slate-500" /> Threat Category <span className="text-red-500">*</span>
                         </label>
-                        <div className="grid grid-cols-2 gap-2 max-h-[260px] overflow-y-auto pr-1 no-scrollbar select-none">
+                        <div className="grid grid-cols-2 gap-2.5 select-none">
                           {CATEGORIES.map((cat) => {
                             const IconComp = cat.icon
                             const isSelected = category === cat.id
@@ -623,17 +623,22 @@ export default function ReportIP({ addToast }: any) {
                                 key={cat.id}
                                 type="button"
                                 onClick={() => setCategory(cat.id)}
-                                className={`flex flex-col items-start text-left p-3 rounded-xl border transition-all duration-300 relative overflow-hidden group ${
+                                className={`flex flex-col items-start text-left p-3.5 rounded-xl border transition-all duration-300 relative overflow-hidden group active:scale-[0.97] ${
                                   isSelected
-                                    ? `${cat.selectedBgColor} ${cat.selectedBorderColor} ${cat.glowColor} text-white`
+                                    ? `${cat.selectedBgColor} ${cat.selectedBorderColor} ${cat.glowColor} text-white scale-[1.01]`
                                     : 'bg-slate-950/40 border-white/5 text-slate-400 hover:text-slate-200 hover:border-white/10 hover:bg-slate-950/60'
                                 }`}
                               >
-                                <div className="flex items-center gap-2 mb-1">
-                                  <IconComp size={14} className={`transition-colors duration-300 ${isSelected ? cat.textColor : 'text-slate-500'}`} />
-                                  <span className="text-[11px] font-bold tracking-wide">{cat.name}</span>
+                                <div className="flex items-center justify-between w-full mb-1.5">
+                                  <div className="flex items-center gap-2">
+                                    <IconComp size={14} className={`transition-colors duration-300 ${isSelected ? cat.textColor : 'text-slate-500'}`} />
+                                    <span className="text-[11px] font-bold tracking-wide">{cat.name}</span>
+                                  </div>
+                                  {isSelected && (
+                                    <CheckCircle2 size={12} className={cat.textColor} />
+                                  )}
                                 </div>
-                                <p className="text-[9px] leading-snug text-slate-500 font-medium group-hover:text-slate-400 transition-colors duration-300">
+                                <p className="text-[9.5px] leading-snug text-slate-500 font-medium group-hover:text-slate-400 transition-colors duration-300">
                                   {cat.description}
                                 </p>
                               </button>
@@ -654,7 +659,7 @@ export default function ReportIP({ addToast }: any) {
                           <input
                             type="text"
                             id="rip-alias"
-                            className="w-full h-11 rounded-xl border border-white/5 bg-slate-950/60 pl-8 pr-4 text-xs font-semibold text-slate-200 placeholder:text-slate-600 focus-visible:outline-none focus-visible:border-cyan-500/30 focus-visible:ring-1 focus-visible:ring-cyan-500/20 transition-all shadow-inner"
+                            className="w-full h-11 rounded-xl border border-white/5 bg-slate-950/60 pl-8 pr-4 text-xs font-semibold text-slate-200 placeholder:text-slate-600 focus-visible:outline-none focus-visible:border-red-500/30 focus-visible:ring-1 focus-visible:ring-red-500/20 transition-all shadow-inner"
                             placeholder="Anonymous Defender"
                             autoComplete="off"
                             spellCheck="false"
@@ -679,7 +684,7 @@ export default function ReportIP({ addToast }: any) {
                           <textarea
                             id="rip-comment"
                             maxLength={500}
-                            className="w-full min-h-[85px] rounded-xl border border-white/5 bg-slate-950/60 px-4 py-3 text-xs text-slate-200 placeholder:text-slate-600 focus-visible:outline-none focus-visible:border-cyan-500/30 focus-visible:ring-1 focus-visible:ring-cyan-500/20 transition-all shadow-inner resize-none font-medium leading-relaxed"
+                            className="w-full min-h-[85px] rounded-xl border border-white/5 bg-slate-950/60 px-4 py-3 text-xs text-slate-200 placeholder:text-slate-600 focus-visible:outline-none focus-visible:border-red-500/30 focus-visible:ring-1 focus-visible:ring-red-500/20 transition-all shadow-inner resize-none font-medium leading-relaxed"
                             rows={3}
                             placeholder="Provide observed activity, threat characteristics, logs..."
                             value={comment}
