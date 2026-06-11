@@ -20,10 +20,10 @@ export function HeroSection({ scanInput, setScanInput, handleScan, statsData }: 
                         <div className="relative z-10 mx-auto flex max-w-7xl flex-col px-6 lg:block lg:px-12">
                             <div className="mx-auto max-w-2xl text-center lg:ml-0 lg:max-w-full lg:text-left relative">
                                 <div className="relative z-10">
-                                    <h1 className="mt-8 max-w-4xl text-balance text-5xl md:text-6xl font-semibold tracking-tight text-white lg:mt-16 xl:text-7xl">
-                                        Built for Defenders. <span className="block bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400 bg-clip-text text-transparent mt-2 pb-2">Powered by Open Intelligence.</span>
+                                    <h1 className="mt-8 max-w-3xl text-balance text-4xl md:text-5xl font-bold tracking-tight text-white lg:mt-12 xl:text-6xl drop-shadow-md">
+                                        Built for Defenders. <span className="block text-white/90 font-semibold mt-1">Powered by Open Intelligence.</span>
                                     </h1>
-                                    <p className="mt-6 max-w-2xl text-lg leading-relaxed text-slate-300">
+                                    <p className="mt-5 max-w-2xl text-base leading-relaxed text-slate-300 drop-shadow">
                                         Access real-time threat data and indicators to proactively identify, investigate, and respond to cyber threats.
                                     </p>
 
