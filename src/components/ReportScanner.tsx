@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, ShieldAlert, ShieldCheck, AlertTriangle, AlertOctagon } from 'lucide-react'
+import { Search, ShieldAlert, ShieldCheck, AlertTriangle, AlertOctagon, ChevronRight } from 'lucide-react'
 
 export default function ReportScanner({ scanResult, isScanning, showReport, scanInput }: any) {
   if (!showReport) return null
@@ -47,10 +47,10 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
         {isScanning && (
           <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-slate-900/90 backdrop-blur-xl rounded-2xl border border-white/10 p-8 shadow-2xl">
             <div className="relative w-28 h-28 mb-8">
-              <div className="absolute inset-0 rounded-full border border-cyan-500/20 shadow-[0_0_30px_rgba(6,182,212,0.1)]"></div>
-              <div className="absolute inset-0 rounded-full border-t-2 border-cyan-400 animate-[spin_1s_linear_infinite]"></div>
-              <div className="absolute inset-3 rounded-full border border-cyan-500/20"></div>
-              <div className="absolute inset-3 rounded-full border-b-2 border-cyan-300 animate-[spin_1.5s_linear_infinite_reverse]"></div>
+              <div className="absolute inset-0 rounded-full border-2 border-cyan-500/10 shadow-[0_0_30px_rgba(6,182,212,0.1)]"></div>
+              <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-cyan-400 animate-spin"></div>
+              <div className="absolute inset-3 rounded-full border-2 border-cyan-500/10"></div>
+              <div className="absolute inset-3 rounded-full border-2 border-transparent border-b-cyan-300 animate-[spin_1.5s_linear_infinite_reverse]"></div>
               <div className="absolute inset-0 flex items-center justify-center text-cyan-400">
                 <Search size={32} className="animate-pulse shadow-[0_0_15px_rgba(6,182,212,0.5)]" />
               </div>
