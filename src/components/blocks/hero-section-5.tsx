@@ -3,61 +3,12 @@ import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { InfiniteSlider } from '@/components/ui/infinite-slider'
 import { ProgressiveBlur } from '@/components/ui/progressive-blur'
-import { PulseBeams } from '@/components/ui/pulse-beams'
 import { cn } from '@/lib/utils'
 import ThreatMap from '../ThreatMap'
 import { Menu, X, ChevronRight, Shield, Server, Database, Lock, Network, Cloud, Activity, Globe, Search, Flame, MailX, GlobeLock, Bug, ShieldAlert, ShieldBan, Zap, Key, Crosshair, ShieldCheck, Binary, Snowflake, Github } from 'lucide-react'
 import { useScroll, motion, useMotionValueEvent } from 'framer-motion'
 
 export function HeroSection({ scanInput, setScanInput, handleScan, statsData }: any) {
-    const beams = [
-        {
-          path: "M269 220.5H16.5C10.9772 220.5 6.5 224.977 6.5 230.5V398.5",
-          gradientConfig: {
-            initial: { x1: "0%", x2: "0%", y1: "80%", y2: "100%" },
-            animate: { x1: ["0%", "0%", "200%"], x2: ["0%", "0%", "180%"], y1: ["80%", "0%", "0%"], y2: ["100%", "20%", "20%"] },
-            transition: { duration: 2, repeat: Infinity, repeatType: "loop", ease: "linear", repeatDelay: 2, delay: 0.5 },
-          },
-          connectionPoints: [{ cx: 6.5, cy: 398.5, r: 6 }, { cx: 269, cy: 220.5, r: 6 }]
-        },
-        {
-          path: "M568 200H841C846.523 200 851 195.523 851 190V40",
-          gradientConfig: {
-            initial: { x1: "0%", x2: "0%", y1: "80%", y2: "100%" },
-            animate: { x1: ["20%", "100%", "100%"], x2: ["0%", "90%", "90%"], y1: ["80%", "80%", "-20%"], y2: ["100%", "100%", "0%"] },
-            transition: { duration: 2, repeat: Infinity, repeatType: "loop", ease: "linear", repeatDelay: 2, delay: 1.5 },
-          },
-          connectionPoints: [{ cx: 851, cy: 34, r: 6.5 }, { cx: 568, cy: 200, r: 6 }]
-        },
-        {
-          path: "M425.5 274V333C425.5 338.523 421.023 343 415.5 343H152C146.477 343 142 347.477 142 353V426.5",
-          gradientConfig: {
-            initial: { x1: "0%", x2: "0%", y1: "80%", y2: "100%" },
-            animate: { x1: ["20%", "100%", "100%"], x2: ["0%", "90%", "90%"], y1: ["80%", "80%", "-20%"], y2: ["100%", "100%", "0%"] },
-            transition: { duration: 2, repeat: Infinity, repeatType: "loop", ease: "linear", repeatDelay: 2, delay: 0.2 },
-          },
-          connectionPoints: [{ cx: 142, cy: 427, r: 6.5 }, { cx: 425.5, cy: 274, r: 6 }]
-        },
-        {
-          path: "M493 274V333.226C493 338.749 497.477 343.226 503 343.226H760C765.523 343.226 770 347.703 770 353.226V427",
-          gradientConfig: {
-            initial: { x1: "40%", x2: "50%", y1: "160%", y2: "180%" },
-            animate: { x1: "0%", x2: "10%", y1: "-40%", y2: "-20%" },
-            transition: { duration: 2, repeat: Infinity, repeatType: "loop", ease: "linear", repeatDelay: 2, delay: 1.1 },
-          },
-          connectionPoints: [{ cx: 770, cy: 427, r: 6.5 }, { cx: 493, cy: 274, r: 6 }]
-        },
-        {
-          path: "M380 168V17C380 11.4772 384.477 7 390 7H414",
-          gradientConfig: {
-            initial: { x1: "-40%", x2: "-10%", y1: "0%", y2: "20%" },
-            animate: { x1: ["40%", "0%", "0%"], x2: ["10%", "0%", "0%"], y1: ["0%", "0%", "180%"], y2: ["20%", "20%", "200%"] },
-            transition: { duration: 2, repeat: Infinity, repeatType: "loop", ease: "linear", repeatDelay: 2, delay: 0.8 },
-          },
-          connectionPoints: [{ cx: 420.5, cy: 6.5, r: 6 }, { cx: 380, cy: 168, r: 6 }]
-        }
-    ];
-
     return (
         <>
             <main className="relative overflow-hidden w-full min-h-[90vh] bg-slate-900 border-b border-white/10 shadow-2xl">
@@ -75,44 +26,33 @@ export function HeroSection({ scanInput, setScanInput, handleScan, statsData }: 
                                         Access real-time threat data and indicators to proactively identify, investigate, and respond to cyber threats.
                                     </p>
 
-                                    <div className="mt-6 relative w-full lg:w-[120%] lg:-ml-[10%]">
-                                        <PulseBeams
-                                            beams={beams}
-                                            gradientColors={{ start: "#06b6d4", middle: "#3b82f6", end: "#a855f7" }}
-                                            className="py-12"
-                                            baseColor="rgba(255,255,255,0.05)"
-                                            accentColor="rgba(6,182,212,0.5)"
+                                    <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row lg:justify-start">
+                                        <div className="relative w-full max-w-md flex items-center">
+                                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                                            <input 
+                                                type="text" 
+                                                placeholder="Scan IP, Domain, Hash (e.g. 223.252.176.131)" 
+                                                className="h-14 w-full rounded-full border border-white/10 bg-slate-900/60 backdrop-blur-xl pl-12 pr-32 text-sm text-white placeholder:text-slate-500 focus-visible:outline-none focus-visible:border-cyan-500/50 focus-visible:ring-1 focus-visible:ring-cyan-500/50 transition-all shadow-[0_0_20px_rgba(0,0,0,0.5)]"
+                                                value={scanInput}
+                                                onChange={(e) => setScanInput(e.target.value)}
+                                                onKeyDown={(e) => e.key === 'Enter' && handleScan()}
+                                            />
+                                            <Button
+                                                size="sm"
+                                                className="absolute right-1.5 top-1.5 bottom-1.5 h-11 rounded-full px-7 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold shadow-[0_0_15px_rgba(34,211,238,0.3)] hover:shadow-[0_0_20px_rgba(34,211,238,0.5)] transition-all border border-cyan-400/20"
+                                                onClick={handleScan}
+                                            >
+                                                Scan
+                                            </Button>
+                                        </div>
+                                        <Button
+                                            variant="outline"
+                                            size="lg"
+                                            className="h-14 rounded-full px-8 text-base border-white/10 bg-slate-900/50 backdrop-blur-md text-slate-200 hover:bg-white/10 hover:text-white hover:border-white/20 transition-all duration-300"
+                                            asChild
                                         >
-                                            <div className="flex flex-col items-center justify-center gap-4 sm:flex-row relative z-20">
-                                                <div className="relative w-full max-w-md flex items-center">
-                                                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-cyan-400" size={18} />
-                                                    <input 
-                                                        type="text" 
-                                                        placeholder="Scan IP, Domain, Hash (e.g. 223.252.176.131)" 
-                                                        className="h-14 w-full rounded-full border border-cyan-500/30 bg-slate-900/80 backdrop-blur-2xl pl-12 pr-32 text-sm text-white placeholder:text-slate-400 focus-visible:outline-none focus-visible:border-cyan-400 focus-visible:ring-1 focus-visible:ring-cyan-400 transition-all shadow-[0_0_25px_rgba(6,182,212,0.2)] hover:shadow-[0_0_30px_rgba(6,182,212,0.3)]"
-                                                        value={scanInput}
-                                                        onChange={(e) => setScanInput(e.target.value)}
-                                                        onKeyDown={(e) => e.key === 'Enter' && handleScan()}
-                                                    />
-                                                    <Button
-                                                        size="sm"
-                                                        className="absolute right-1.5 top-1.5 bottom-1.5 h-11 rounded-full px-7 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold shadow-[0_0_15px_rgba(34,211,238,0.4)] hover:shadow-[0_0_25px_rgba(34,211,238,0.6)] transition-all border border-cyan-400/30 group"
-                                                        onClick={handleScan}
-                                                    >
-                                                        Scan
-                                                        <Search size={14} className="ml-2 opacity-70 group-hover:opacity-100" />
-                                                    </Button>
-                                                </div>
-                                                <Button
-                                                    variant="outline"
-                                                    size="lg"
-                                                    className="h-14 rounded-full px-8 text-base border-white/10 bg-slate-900/50 backdrop-blur-md text-slate-200 hover:bg-white/10 hover:text-white hover:border-white/20 transition-all duration-300 z-20"
-                                                    asChild
-                                                >
-                                                    <a href="#feeds">Browse Feeds</a>
-                                                </Button>
-                                            </div>
-                                        </PulseBeams>
+                                            <a href="#feeds">Browse Feeds</a>
+                                        </Button>
                                     </div>
                                 </div>
                             </div>
