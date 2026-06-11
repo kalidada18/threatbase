@@ -1,6 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Flag, Globe, Tag, MessageSquare, Send, List, Inbox, ChevronLeft, ChevronRight, ShieldAlert, Activity, AlertTriangle, ShieldCheck, CheckCircle2, Trophy } from 'lucide-react'
+import { 
+  Flag, Globe, Tag, MessageSquare, Send, List, Inbox, ChevronLeft, ChevronRight, 
+  ShieldAlert, Activity, AlertTriangle, ShieldCheck, CheckCircle2, Trophy,
+  HelpCircle, User, Info, Check, Copy
+} from 'lucide-react'
 import supabaseClient from '../supabaseClient'
 import { fmt, timeAgo } from '../utils'
 import { Button } from '@/components/ui/button'
@@ -9,15 +13,112 @@ import Leaderboard from './Leaderboard'
 const REPORT_PAGE_SIZE = 10
 const SUBMIT_COOLDOWN = 15000
 
+// DNS Whitelist IP CIDRs
+const DNS_WHITELIST_CIDRS = [
+  "1.0.0.0/24",       // Cloudflare DNS
+  "1.1.1.0/24",       // Cloudflare DNS
+  "8.8.8.0/24",       // Google DNS
+  "8.8.4.0/24",       // Google DNS
+  "9.9.9.0/24",       // Quad9
+  "9.9.9.10/32",      // Quad9 ECS
+  "149.112.112.0/24", // Quad9
+  "208.67.222.0/24",  // OpenDNS
+  "208.67.220.0/24",  // OpenDNS
+  "4.4.4.4/32",       // Level3 DNS
+  "4.2.2.0/24",       // Level3 DNS
+  "94.140.14.0/24",   // AdGuard DNS
+  "94.140.15.0/24",   // AdGuard DNS
+]
+
+// RFC 1918, loopback, multicast, link-local and reserved IPv4 CIDRs
+const PRIVATE_RESERVED_CIDRS = [
+  "0.0.0.0/8",
+  "10.0.0.0/8",
+  "100.64.0.0/10",
+  "127.0.0.0/8",
+  "169.254.0.0/16",
+  "172.16.0.0/12",
+  "192.0.0.0/24",
+  "192.0.2.0/24",
+  "192.88.99.0/24",
+  "192.168.0.0/16",
+  "198.18.0.0/15",
+  "198.51.100.0/24",
+  "203.0.113.0/24",
+  "224.0.0.0/4",
+  "240.0.0.0/4",
+  "255.255.255.255/32"
+]
+
+function ipToLong(ip: string): number {
+  return ip.split('.').reduce((acc, octet) => (acc << 8) + parseInt(octet, 10), 0) >>> 0;
+}
+
+function inCidr(ip: string, cidr: string): boolean {
+  try {
+    const [baseIp, maskStr] = cidr.split('/');
+    const mask = parseInt(maskStr, 10);
+    const ipLong = ipToLong(ip);
+    const baseLong = ipToLong(baseIp);
+    if (mask === 0) return true;
+    const bitmask = mask === 0 ? 0 : (~0 << (32 - mask)) >>> 0;
+    return (ipLong & bitmask) === (baseLong & bitmask);
+  } catch (e) {
+    return false;
+  }
+}
+
+function isPrivateReservedIpv6(ip: string): boolean {
+  const norm = ip.toLowerCase().trim();
+  if (norm === '::1' || norm === '::' || norm.startsWith('::/')) return true;
+  if (/^(fc|fd)[0-9a-f]{2}:/i.test(norm)) return true;
+  if (/^fe[89ab][0-9a-f]:/i.test(norm)) return true;
+  if (/^ff[0-9a-f]{2}:/i.test(norm)) return true;
+  if (norm.startsWith('2001:db8:') || norm.startsWith('2001:0db8:')) return true;
+  if (norm.startsWith('100::') || norm.startsWith('0100::') || /^0100:0{0,3}:/i.test(norm)) return true;
+  return false;
+}
+
+// 23 threat categories exactly ordered row-by-row matching the 4-column mockup layout
+const THREAT_CATEGORIES = [
+  { id: 'dns_compromise', name: 'DNS Compromise', description: 'Domain Hijacking, unauthorized DNS record modifications.' },
+  { id: 'ddos_attack', name: 'DDoS Attack', description: 'Distributed denial of service traffic sourcing or botnet nodes.' },
+  { id: 'email_spam', name: 'Email Spam', description: 'IP is generating high volumes of unsolicited spam emails.' },
+  { id: 'brute_force', name: 'Brute-Force', description: 'General authentication brute-forcing across other protocols.' },
+  { id: 'dns_poisoning', name: 'DNS Poisoning', description: 'Spoofing DNS responses to redirect client traffic to malicious hosts.' },
+  { id: 'open_proxy', name: 'Open Proxy', description: 'IP hosts an open proxy server used to mask traffic origin.' },
+  { id: 'port_scan', name: 'Port Scan', description: 'Port scanning, service enumeration, or host scanning.' },
+  { id: 'bad_web_bot', name: 'Bad Web Bot', description: 'Aggressive web scraping, crawling, or vulnerability scanning bots.' },
+  { id: 'fraud_orders', name: 'Fraud Orders', description: 'Transactional fraud or credit card testing behavior.' },
+  { id: 'web_spam', name: 'Web Spam', description: 'Forum spam, automated comment submissions, or SEO spam.' },
+  { id: 'spoofing', name: 'Spoofing', description: 'IP spoofing or protocol header spoofing.' },
+  { id: 'exploited_host', name: 'Exploited Host', description: 'Host shows signs of active exploitation or backdoor beacons.' },
+  { id: 'web_app_attack', name: 'Web App Attack', description: 'Attacks targeting web applications (LFI, RFI, directory traversal).' },
+  { id: 'ftp_brute_force', name: 'FTP Brute-Force', description: 'FTP credential brute-forcing or automated file system probing.' },
+  { id: 'fraud_voip', name: 'Fraud VoIP', description: 'VoIP hacking, SIP brute forcing, or calling fraud.' },
+  { id: 'hacking', name: 'Hacking', description: 'Active hacking attempts, shell uploads, or payload staging.' },
+  { id: 'ssh', name: 'SSH', description: 'SSH credential brute-forcing or unauthorized access attempts.' },
+  { id: 'ping_of_death', name: 'Ping of Death', description: 'Malformed ICMP packet ping flooding attempts.' },
+  { id: 'blog_spam', name: 'Blog Spam', description: 'Blog comments, trackbacks, or guestbook spamming.' },
+  { id: 'sql_injection', name: 'SQL Injection', description: 'Database manipulation attempts using SQL injections.' },
+  { id: 'iot_targeted', name: 'IoT Targeted', description: 'Attacking smart devices, routers, cameras, or custom firmware.' },
+  { id: 'phishing', name: 'Phishing', description: 'Hosting phishing sites or harvesting login credentials.' },
+  { id: 'vpn_ip', name: 'VPN IP', description: 'IP belongs to a commercial VPN, Tor exit node, or proxy service.' }
+]
+
 export default function ReportIP({ addToast }: any) {
   const [ipValue, setIpValue] = useState('')
-  const [category, setCategory] = useState('')
+  const [selectedCats, setSelectedCats] = useState<string[]>([])
   const [comment, setComment] = useState('')
   const [alias, setAlias] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [submitSuccess, setSubmitSuccess] = useState(false)
   const [activeTab, setActiveTab] = useState<'feed' | 'leaderboard'>('feed')
+  const [showOptional, setShowOptional] = useState(false)
   const lastSubmitRef = useRef(0)
+
+  // Real-time IP address status validation state
+  const [ipStatus, setIpStatus] = useState<{ type: 'empty' | 'valid_v4' | 'valid_v6' | 'private' | 'whitelisted' | 'invalid', msg: string }>({ type: 'empty', msg: '' })
 
   // Reported IPs table state
   const [reports, setReports] = useState<any[]>([])
@@ -25,8 +126,74 @@ export default function ReportIP({ addToast }: any) {
   const [page, setPage] = useState(0)
   const [loading, setLoading] = useState(true)
   const [isEmpty, setIsEmpty] = useState(false)
+  const [copiedIp, setCopiedIp] = useState<string | null>(null)
 
   const totalPages = Math.ceil(reportCount / REPORT_PAGE_SIZE)
+
+  // Real-time IP checks
+  useEffect(() => {
+    const raw = ipValue.trim()
+    if (!raw) {
+      setIpStatus({ type: 'empty', msg: '' })
+      return
+    }
+    
+    const isV4 = /^((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)$/.test(raw)
+    const isV6 = raw.includes(':') && /^[0-9a-fA-F:]+$/.test(raw)
+    
+    if (isV4 || isV6) {
+      let isPrivate = false
+      let isWhitelisted = false
+      let whitelistProvider = ''
+
+      if (isV4) {
+        // Check private/reserved ranges
+        const ipLong = ipToLong(raw)
+        for (const cidr of PRIVATE_RESERVED_CIDRS) {
+          if (inCidr(raw, cidr)) {
+            isPrivate = true
+            break
+          }
+        }
+        
+        // Check DNS Whitelist CIDRs
+        for (const cidr of DNS_WHITELIST_CIDRS) {
+          if (inCidr(raw, cidr)) {
+            isWhitelisted = true
+            // Match provider string
+            if (cidr.includes("1.0.0.0") || cidr.includes("1.1.1.0")) whitelistProvider = "Cloudflare DNS"
+            else if (cidr.includes("8.8.8.0") || cidr.includes("8.8.4.0")) whitelistProvider = "Google DNS"
+            else if (cidr.includes("9.9.9.0") || cidr.includes("9.9.9.10") || cidr.includes("149.112.112.0")) whitelistProvider = "Quad9 DNS"
+            else if (cidr.includes("208.67.222.0") || cidr.includes("208.67.220.0")) whitelistProvider = "OpenDNS"
+            else if (cidr.includes("4.4.4.4") || cidr.includes("4.2.2.0")) whitelistProvider = "Level3 DNS"
+            else if (cidr.includes("94.140.14.0") || cidr.includes("94.140.15.0")) whitelistProvider = "AdGuard DNS"
+            break
+          }
+        }
+      } else if (isV6) {
+        isPrivate = isPrivateReservedIpv6(raw)
+      }
+      
+      if (isWhitelisted) {
+        setIpStatus({ 
+          type: 'whitelisted', 
+          msg: `Whitelisted IP detected (${whitelistProvider || 'DNS Provider'}). Submissions of safe infrastructure are blocked to prevent false-positives.` 
+        })
+      } else if (isPrivate) {
+        setIpStatus({ 
+          type: 'private', 
+          msg: 'Private/Reserved range warning. These addresses are local/special and are filtered out of public feeds.' 
+        })
+      } else {
+        setIpStatus({ 
+          type: isV4 ? 'valid_v4' : 'valid_v6', 
+          msg: `Public verified ${isV4 ? 'IPv4' : 'IPv6'} address structure recognized.` 
+        })
+      }
+    } else {
+      setIpStatus({ type: 'invalid', msg: 'Format must be a valid IPv4 (e.g. 8.8.8.8) or IPv6 address.' })
+    }
+  }, [ipValue])
 
   const loadReportedIPs = useCallback(async (pg = 0) => {
     if (!supabaseClient) return
@@ -74,6 +241,14 @@ export default function ReportIP({ addToast }: any) {
     return () => clearTimeout(timer)
   }, [loadReportedIPs])
 
+  const toggleCategory = (catName: string) => {
+    setSelectedCats(prev => 
+      prev.includes(catName)
+        ? prev.filter(c => c !== catName)
+        : [...prev, catName]
+    )
+  }
+
   const handleSubmit = useCallback(async () => {
     if (!supabaseClient) {
       addToast('Supabase connection unavailable', 'error')
@@ -92,38 +267,61 @@ export default function ReportIP({ addToast }: any) {
       return
     }
 
-    const isValidIP =
-      /^((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)$/.test(ipValue.trim()) ||
-      (ipValue.includes(':') && /^[0-9a-fA-F:]+$/.test(ipValue.trim()))
+    const raw = ipValue.trim()
+    const isV4 = /^((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)$/.test(raw)
+    const isV6 = raw.includes(':') && /^[0-9a-fA-F:]+$/.test(raw)
 
-    if (!isValidIP) {
+    if (!isV4 && !isV6) {
       addToast('Please enter a valid IPv4 or IPv6 address', 'error')
       return
     }
 
-    if (!category) {
-      addToast('Please select a threat category', 'error')
+    // Double check blacklist / whitelist client side to block transmission
+    let blockSubmit = false
+    if (isV4) {
+      for (const cidr of DNS_WHITELIST_CIDRS) {
+        if (inCidr(raw, cidr)) {
+          blockSubmit = true
+          break
+        }
+      }
+      for (const cidr of PRIVATE_RESERVED_CIDRS) {
+        if (inCidr(raw, cidr)) {
+          blockSubmit = true
+          break
+        }
+      }
+    } else if (isV6) {
+      blockSubmit = isPrivateReservedIpv6(raw)
+    }
+
+    if (blockSubmit) {
+      addToast('Submission blocked due to invalid, private, or whitelisted IP address', 'error')
+      return
+    }
+
+    if (selectedCats.length === 0) {
+      addToast('Please select at least one threat category', 'error')
       return
     }
 
     setSubmitting(true)
 
+    // Save multiple categories joined as a comma-separated string
+    const joinedCategories = selectedCats.join(', ')
+
     try {
       const { error } = await supabaseClient
         .from('reported_ips')
-        .insert([{ ip: ipValue.trim(), category, comment: comment.trim(), reporter_alias: alias.trim() || null }])
+        .insert([{ ip: raw, category: joinedCategories, comment: comment.trim(), reporter_alias: alias.trim() || null }])
 
       if (error) throw error
 
       lastSubmitRef.current = Date.now()
-      
-      // Show success screen instead of just a toast
       setSubmitSuccess(true)
-      
       setIpValue('')
-      setCategory('')
+      setSelectedCats([])
       setComment('')
-      // Don't clear alias so they don't have to re-type it every time
       loadReportedIPs(0)
     } catch (err: any) {
       console.error('Submit error:', err)
@@ -131,205 +329,310 @@ export default function ReportIP({ addToast }: any) {
     } finally {
       setSubmitting(false)
     }
-  }, [ipValue, category, comment, addToast, loadReportedIPs])
+  }, [ipValue, selectedCats, comment, alias, addToast, loadReportedIPs])
+
+  const handleCopyIp = (ip: string) => {
+    navigator.clipboard.writeText(ip)
+    setCopiedIp(ip)
+    addToast(`Copied ${ip} to clipboard!`, 'success')
+    setTimeout(() => setCopiedIp(null), 1500)
+  }
 
   const getCategoryColor = (cat: string) => {
-    if (cat.includes('Brute')) return 'bg-orange-500/10 text-orange-400 border-orange-500/20 shadow-[0_0_8px_rgba(249,115,22,0.1)]'
-    if (cat.includes('Malware')) return 'bg-red-500/10 text-red-400 border-red-500/20 shadow-[0_0_8px_rgba(239,68,68,0.1)]'
-    if (cat.includes('DDoS')) return 'bg-purple-500/10 text-purple-400 border-purple-500/20 shadow-[0_0_8px_rgba(168,85,247,0.1)]'
-    if (cat.includes('Phish')) return 'bg-blue-500/10 text-blue-400 border-blue-500/20 shadow-[0_0_8px_rgba(59,130,246,0.1)]'
-    return 'bg-slate-500/10 text-slate-300 border-slate-500/20'
+    if (cat.includes('Brute')) return 'bg-orange-500/10 text-orange-400 border border-orange-500/20'
+    if (cat.includes('Malware')) return 'bg-red-500/10 text-red-400 border border-red-500/20'
+    if (cat.includes('DDoS')) return 'bg-purple-500/10 text-purple-400 border border-purple-500/20'
+    if (cat.includes('Phish')) return 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
+    if (cat.includes('Scan')) return 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20'
+    if (cat.includes('Exploit')) return 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+    return 'bg-slate-500/10 text-slate-300 border border-slate-500/20'
   }
+
+  const canSubmit = ipStatus.type === 'valid_v4' || ipStatus.type === 'valid_v6'
 
   return (
     <main className="min-h-screen pt-28 pb-24 relative bg-[#0B0F19] overflow-hidden font-sans">
-      <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] mix-blend-overlay"></div>
+      <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.02] mix-blend-overlay"></div>
 
       <div className="mx-auto max-w-7xl px-6 lg:px-12 relative z-10">
         
         {/* Page Header */}
         <motion.div 
-          initial={{ opacity: 0, y: -20 }}
+          initial={{ opacity: 0, y: -15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="mb-16 text-center relative"
+          className="mb-12 text-center relative"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-black/40 border border-white/10 backdrop-blur-xl shadow-2xl text-xs font-bold uppercase tracking-widest mb-6 text-slate-300">
-            <span className="relative flex h-2.5 w-2.5 mr-1">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-black/40 border border-white/10 backdrop-blur-xl shadow-2xl text-[10px] font-bold uppercase tracking-widest mb-5 text-slate-300 select-none">
+            <span className="relative flex h-2 w-2 mr-1">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
             </span>
             Active Threat Database
           </div>
           <h1 className="text-4xl md:text-5xl font-semibold flex flex-col items-center justify-center gap-2 text-white tracking-tight pb-2">
             Community Intel
           </h1>
-          <p className="mt-4 text-slate-400/80 text-lg max-w-2xl mx-auto leading-relaxed">
-            Help protect the global community. Report malicious IPs to our live feed and empower defenders worldwide.
+          <p className="mt-3 text-slate-400 text-sm md:text-base max-w-xl mx-auto leading-relaxed">
+            Report malicious infrastructure. Submissions feed the community blacklist to defend networks globally.
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 lg:gap-12 items-start">
+        {/* Full Width Stacked Grid */}
+        <div className="space-y-10">
           
-          {/* Left Col: Submit Form or Success Screen */}
+          {/* Top Section: Form Card */}
           <motion.div 
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="xl:col-span-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.15 }}
+            className="w-full"
           >
-            <div className="rounded-xl border border-white/5 bg-white/[0.01] backdrop-blur-xl relative overflow-hidden group">
-              
-              <div className="p-6 relative z-10 min-h-[500px] flex flex-col">
+            <div className="rounded-2xl border border-white/[0.06] bg-slate-900/40 backdrop-blur-xl relative overflow-hidden group shadow-[0_12px_40px_rgba(0,0,0,0.5)]">
+              <div className="p-6 md:p-8 relative z-10 flex flex-col justify-between">
                 <AnimatePresence mode="wait">
                   {!submitSuccess ? (
                     <motion.div 
                       key="form"
-                      initial={{ opacity: 0, scale: 0.95 }}
+                      initial={{ opacity: 0, scale: 0.98 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95, filter: "blur(10px)" }}
+                      exit={{ opacity: 0, scale: 0.98, filter: "blur(8px)" }}
                       transition={{ duration: 0.3 }}
                       className="space-y-6"
                     >
-                      <div className="mb-8">
-                        <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-                          <Flag className="text-red-500" size={24} /> File a Report
-                        </h2>
-                        <p className="text-slate-400/80 text-sm mt-2">Reported IPs are sent to the cloud and later merged into the global intel feed.</p>
-                      </div>
-
+                      {/* IP Input with Verification */}
                       <div className="space-y-2">
-                        <label className="text-xs font-bold uppercase tracking-wider text-slate-400 ml-1" htmlFor="rip-ip-input">
-                          IP Address
+                        <label className="text-xs font-bold text-slate-300 ml-1" htmlFor="rip-ip-input">
+                          IP Address <span className="text-slate-500 font-normal lowercase">(ex. 8.8.8.8)</span>
                         </label>
                         <div className="relative">
-                          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <Globe size={16} className="text-slate-500 group-focus-within:text-red-400 transition-colors" />
-                          </div>
                           <input
                             type="text"
                             id="rip-ip-input"
-                            className="w-full h-11 rounded-lg border border-white/5 bg-black/40 pl-10 pr-4 text-sm text-white placeholder:text-slate-600 focus-visible:outline-none focus-visible:border-red-500/50 focus-visible:ring-1 focus-visible:ring-red-500/50 transition-all shadow-inner"
-                            placeholder="e.g. 192.168.1.1"
+                            className="w-full h-11 rounded-xl border border-white/5 bg-slate-950/60 pl-4 pr-10 text-sm font-mono text-slate-200 placeholder:text-slate-600 focus-visible:outline-none focus-visible:border-emerald-500/30 focus-visible:ring-1 focus-visible:ring-emerald-500/20 transition-all shadow-inner"
+                            placeholder="IP Address"
                             autoComplete="off"
                             spellCheck="false"
                             value={ipValue}
                             onChange={(e) => setIpValue(e.target.value)}
                           />
+                          <div className="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center">
+                            {ipStatus.type === 'valid_v4' || ipStatus.type === 'valid_v6' ? (
+                              <ShieldCheck className="text-emerald-400" size={16} />
+                            ) : ipStatus.type === 'private' ? (
+                              <AlertTriangle className="text-amber-400" size={16} />
+                            ) : ipStatus.type === 'whitelisted' ? (
+                              <Info className="text-rose-400" size={16} />
+                            ) : ipStatus.type === 'invalid' ? (
+                              <AlertTriangle className="text-rose-500" size={16} />
+                            ) : null}
+                          </div>
+                        </div>
+
+                        {/* Animated Validator Banner */}
+                        <AnimatePresence>
+                          {ipStatus.type !== 'empty' && (
+                            <motion.div
+                              initial={{ opacity: 0, height: 0, y: -6 }}
+                              animate={{ opacity: 1, height: 'auto', y: 0 }}
+                              exit={{ opacity: 0, height: 0, y: -6 }}
+                              className={`p-3 rounded-xl border text-[11px] font-medium leading-relaxed flex items-start gap-2.5 transition-all duration-300 overflow-hidden ${
+                                ipStatus.type === 'valid_v4' || ipStatus.type === 'valid_v6'
+                                  ? 'bg-emerald-500/5 border-emerald-500/15 text-emerald-400'
+                                  : ipStatus.type === 'private'
+                                  ? 'bg-amber-500/5 border-amber-500/15 text-amber-400'
+                                  : 'bg-rose-500/5 border-rose-500/15 text-rose-400'
+                              }`}
+                            >
+                              <div>
+                                <span className="font-bold uppercase tracking-widest block text-[9px] mb-0.5">
+                                  {ipStatus.type === 'valid_v4' && 'Verified Public IPv4'}
+                                  {ipStatus.type === 'valid_v6' && 'Verified Public IPv6'}
+                                  {ipStatus.type === 'private' && 'Local Address Warning'}
+                                  {ipStatus.type === 'whitelisted' && 'Safe DNS Blocked'}
+                                  {ipStatus.type === 'invalid' && 'IP Format Error'}
+                                </span>
+                                {ipStatus.msg}
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+
+                      {/* Mockup-Aligned Checkbox Grid */}
+                      <div className="space-y-3">
+                        <label className="text-xs font-bold text-slate-300 ml-1">
+                          Categories <span className="text-slate-500 font-normal lowercase">(at least one is required)</span>
+                        </label>
+                        
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-3 select-none">
+                          {THREAT_CATEGORIES.map((cat) => {
+                            const isChecked = selectedCats.includes(cat.name)
+                            return (
+                              <div 
+                                key={cat.id} 
+                                onClick={() => toggleCategory(cat.name)}
+                                className="flex items-center justify-between group cursor-pointer py-0.5"
+                              >
+                                <div className="flex items-center gap-2.5">
+                                  {/* Custom Checkbox Box */}
+                                  <div className={`w-4 h-4 rounded border flex items-center justify-center transition-all duration-200 ${
+                                    isChecked 
+                                      ? 'bg-emerald-500 border-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.25)]' 
+                                      : 'border-white/20 group-hover:border-white/40 bg-slate-950/40'
+                                  }`}>
+                                    {isChecked && (
+                                      <Check size={11} className="text-white" strokeWidth={3} />
+                                    )}
+                                  </div>
+                                  <span className={`text-xs font-semibold tracking-wide transition-colors ${
+                                    isChecked ? 'text-white' : 'text-slate-400 group-hover:text-slate-300'
+                                  }`}>
+                                    {cat.name}
+                                  </span>
+                                </div>
+
+                                {/* Hover tooltip */}
+                                <div className="relative group/tooltip flex items-center pr-2">
+                                  <HelpCircle size={13} className="text-sky-500 hover:text-sky-400 cursor-help transition-colors" />
+                                  <div className="absolute bottom-full right-0 mb-2 w-48 p-2 rounded-lg bg-slate-950 border border-white/10 text-[10px] text-slate-300 font-semibold leading-normal opacity-0 pointer-events-none group-hover/tooltip:opacity-100 transition-opacity z-50 shadow-xl text-center select-text">
+                                    {cat.description}
+                                    <div className="absolute top-full right-1.5 border-4 border-transparent border-t-slate-950"></div>
+                                  </div>
+                                </div>
+                              </div>
+                            )
+                          })}
                         </div>
                       </div>
 
+                      {/* Mockup-Aligned Text Area */}
                       <div className="space-y-2">
-                        <label className="text-xs font-bold uppercase tracking-wider text-slate-400 ml-1" htmlFor="rip-category">
-                          Threat Category
-                        </label>
-                        <div className="relative">
-                          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <Tag size={16} className="text-slate-500 group-focus-within:text-rose-400 transition-colors" />
-                          </div>
-                          <select
-                            id="rip-category"
-                            className="w-full h-11 rounded-lg border border-white/5 bg-black/40 pl-10 pr-4 text-sm text-white focus-visible:outline-none focus-visible:border-rose-500/50 focus-visible:ring-1 focus-visible:ring-rose-500/50 transition-all appearance-none shadow-inner"
-                            value={category}
-                            onChange={(e) => setCategory(e.target.value)}
+                        <div className="flex items-center justify-between">
+                          <label className="text-xs font-bold text-slate-300 ml-1" htmlFor="rip-comment">
+                            Comment
+                          </label>
+                          <span className="text-[10px] font-bold font-mono text-slate-500 tracking-wider">
+                            Characters left: {1024 - comment.length} / 1024
+                          </span>
+                        </div>
+                        <textarea
+                          id="rip-comment"
+                          maxLength={1024}
+                          className="w-full h-24 rounded-xl border border-white/5 bg-slate-950/60 px-4 py-3 text-xs text-slate-200 placeholder:text-slate-600 focus-visible:outline-none focus-visible:border-emerald-500/30 focus-visible:ring-1 focus-visible:ring-emerald-500/20 transition-all resize-none font-medium leading-relaxed"
+                          placeholder="Comment (server log snippets, abuse details, etc)"
+                          value={comment}
+                          onChange={(e) => setComment(e.target.value)}
+                        />
+                      </div>
+
+                      {/* Toggle Optional Information button */}
+                      <div className="pt-2">
+                        <button
+                          type="button"
+                          onClick={() => setShowOptional(!showOptional)}
+                          className="mx-auto block text-[9px] font-bold uppercase tracking-wider px-5 py-2.5 rounded-lg border border-white/5 bg-slate-900/40 hover:bg-slate-900/80 text-slate-400 hover:text-slate-200 transition-all select-none active:scale-[0.98]"
+                        >
+                          {showOptional ? 'Hide Optional Report Information' : 'Toggle Optional Report Information'}
+                        </button>
+                        
+                        <AnimatePresence>
+                          {showOptional && (
+                            <motion.div
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: 'auto' }}
+                              exit={{ opacity: 0, height: 0 }}
+                              transition={{ duration: 0.3 }}
+                              className="overflow-hidden space-y-4 pt-4"
+                            >
+                              <div className="space-y-2 max-w-md mx-auto">
+                                <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1 ml-1" htmlFor="rip-alias">
+                                  <User size={13} className="text-slate-500" /> Agent Alias <span className="text-slate-500 font-normal lowercase">(optional)</span>
+                                </label>
+                                <div className="relative">
+                                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                    <span className="text-slate-600 font-mono font-bold text-xs">@</span>
+                                  </div>
+                                  <input
+                                    type="text"
+                                    id="rip-alias"
+                                    className="w-full h-11 rounded-xl border border-white/5 bg-slate-950/60 pl-8 pr-4 text-xs font-semibold text-slate-200 placeholder:text-slate-600 focus-visible:outline-none focus-visible:border-emerald-500/30 focus-visible:ring-1 focus-visible:ring-emerald-500/20 transition-all shadow-inner"
+                                    placeholder="Anonymous Defender"
+                                    autoComplete="off"
+                                    spellCheck="false"
+                                    maxLength={24}
+                                    value={alias}
+                                    onChange={(e) => setAlias(e.target.value)}
+                                  />
+                                </div>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+
+                      {/* Mockup-Aligned Action Row */}
+                      <div className="flex flex-col sm:flex-row items-center gap-4 pt-4 border-t border-white/5">
+                        <Button
+                          className={`h-11 px-6 rounded-xl text-white font-bold text-xs tracking-wider transition-all shadow-lg flex items-center justify-center gap-2 border select-none ${
+                            canSubmit && selectedCats.length > 0
+                              ? 'bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 border-emerald-500/20 shadow-[0_4px_20px_rgba(16,185,129,0.15)] active:scale-[0.98]'
+                              : 'bg-slate-900 border-white/5 text-slate-600 cursor-not-allowed'
+                          }`}
+                          onClick={handleSubmit}
+                          disabled={submitting || !canSubmit || selectedCats.length === 0}
+                        >
+                          {submitting ? (
+                            <>
+                              <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                              <span>Reporting IP...</span>
+                            </>
+                          ) : (
+                            <span>REPORT IP ADDRESS</span>
+                          )}
+                        </Button>
+                        
+                        <p className="text-xs text-slate-500 font-semibold">
+                          Please abide by our{' '}
+                          <button
+                            type="button"
+                            onClick={() => addToast('Reporting Policy: Ensure reported IPs are public and show clear malicious activity. Spam reports will be blocked.', 'success')}
+                            className="text-cyan-400 hover:underline hover:text-cyan-300 font-bold transition-colors"
                           >
-                            <option value="" disabled>Select category...</option>
-                            <option value="Brute Force">Brute Force</option>
-                            <option value="Port Scan">Port Scan</option>
-                            <option value="Phishing">Phishing</option>
-                            <option value="Malware / C2">Malware / C2</option>
-                            <option value="DDoS">DDoS</option>
-                            <option value="Spam">Spam</option>
-                            <option value="Exploit Attempt">Exploit Attempt</option>
-                            <option value="Other">Other</option>
-                          </select>
-                        </div>
+                            reporting policy
+                          </button>
+                          .
+                        </p>
                       </div>
-
-                      <div className="space-y-2">
-                        <label className="text-xs font-bold uppercase tracking-wider text-slate-400 ml-1" htmlFor="rip-alias">
-                          Agent Alias (Optional)
-                        </label>
-                        <div className="relative">
-                          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <span className="text-slate-500 font-mono font-bold group-focus-within:text-cyan-400 transition-colors">@</span>
-                          </div>
-                          <input
-                            type="text"
-                            id="rip-alias"
-                            className="w-full h-11 rounded-lg border border-white/5 bg-black/40 pl-10 pr-4 text-sm text-white placeholder:text-slate-600 focus-visible:outline-none focus-visible:border-cyan-500/50 focus-visible:ring-1 focus-visible:ring-cyan-500/50 transition-all shadow-inner"
-                            placeholder="e.g. Neo"
-                            autoComplete="off"
-                            spellCheck="false"
-                            maxLength={24}
-                            value={alias}
-                            onChange={(e) => setAlias(e.target.value)}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <label className="text-xs font-bold uppercase tracking-wider text-slate-400 ml-1" htmlFor="rip-comment">
-                          Analyst Notes
-                        </label>
-                        <div className="relative">
-                          <div className="absolute top-4 left-0 pl-4 pointer-events-none">
-                            <MessageSquare size={18} className="text-slate-500 group-focus-within:text-orange-400 transition-colors" />
-                          </div>
-                          <textarea
-                            id="rip-comment"
-                            className="w-full min-h-[100px] rounded-lg border border-white/5 bg-black/40 pl-10 pr-4 py-3 text-sm text-white placeholder:text-slate-600 focus-visible:outline-none focus-visible:border-orange-500/50 focus-visible:ring-1 focus-visible:ring-orange-500/50 transition-all shadow-inner resize-none"
-                            rows={3}
-                            placeholder="Describe the activity..."
-                            value={comment}
-                            onChange={(e) => setComment(e.target.value)}
-                          ></textarea>
-                        </div>
-                      </div>
-
-                      <Button
-                        className="w-full h-11 rounded-lg bg-white/5 hover:bg-white/10 text-slate-200 font-semibold text-sm transition-colors duration-200 mt-4 border border-white/5 backdrop-blur-sm"
-                        onClick={handleSubmit}
-                        disabled={submitting}
-                      >
-                        {submitting ? (
-                          <span className="flex items-center gap-2">
-                            <span className="h-5 w-5 animate-spin rounded-full border-2 border-slate-950/30 border-t-slate-950" />
-                            Processing...
-                          </span>
-                        ) : (
-                          <span className="flex items-center gap-2">
-                            <Send size={18} className="mr-1" /> Transmit Intel
-                          </span>
-                        )}
-                      </Button>
                     </motion.div>
                   ) : (
                     <motion.div 
                       key="success"
-                      initial={{ opacity: 0, scale: 0.9, filter: "blur(10px)" }}
-                      animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-                      transition={{ duration: 0.5, type: "spring", bounce: 0.4 }}
-                      className="flex flex-col items-center justify-center text-center py-8"
+                      initial={{ opacity: 0, scale: 0.96 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.96, filter: "blur(8px)" }}
+                      transition={{ duration: 0.4 }}
+                      className="flex flex-col items-center justify-center text-center py-10"
                     >
-                      <div className="relative mb-8">
-                        <div className="absolute inset-0 bg-green-500/20 rounded-full blur-2xl"></div>
-                        <div className="bg-gradient-to-b from-green-400 to-green-600 text-white p-5 rounded-full shadow-[0_0_30px_rgba(34,197,94,0.4)] relative">
-                          <ShieldCheck size={48} strokeWidth={2.5} />
+                      <div className="relative mb-6">
+                        <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-2xl animate-pulse"></div>
+                        <div className="bg-gradient-to-b from-emerald-400 to-emerald-600 text-white p-5 rounded-full shadow-[0_0_30px_rgba(16,185,129,0.35)] relative">
+                          <ShieldCheck size={40} strokeWidth={2.5} />
                         </div>
                       </div>
-                      <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-b from-white to-green-200 mb-4">
-                        Thank You, Defender!
+                      <h2 className="text-2xl font-black text-white mb-2 tracking-tight">
+                        Intel Dispatched
                       </h2>
-                      <p className="text-slate-300 text-base leading-relaxed mb-8 px-4">
-                        Your report has been successfully submitted and added to the live community feed. Thank you for actively helping to make the internet a safer place!
+                      <p className="text-slate-400 text-xs leading-relaxed mb-8 px-4 max-w-xs font-medium">
+                        Your submission has been cataloged in our community log database. Our backend compiler evaluates reports every few hours to update live blocklists.
                       </p>
                       
                       <Button
-                        className="h-12 px-8 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm border border-white/10 transition-all backdrop-blur-md"
+                        className="h-11 px-6 rounded-xl bg-white/5 hover:bg-white/10 text-white font-bold text-xs border border-white/10 transition-all backdrop-blur-md flex items-center gap-2 active:scale-95 shadow-lg"
                         onClick={() => setSubmitSuccess(false)}
                       >
-                        Report Another IP
+                        <Send size={12} />
+                        Report Another Target
                       </Button>
                     </motion.div>
                   )}
@@ -338,34 +641,34 @@ export default function ReportIP({ addToast }: any) {
             </div>
           </motion.div>
 
-          {/* Right Col: Reported IPs Table */}
+          {/* Bottom Section: Database Table / Leaderboard */}
           <motion.div 
-            initial={{ opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="xl:col-span-8 flex flex-col"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="w-full flex flex-col"
           >
-            <div className="rounded-xl border border-white/5 bg-white/[0.01] backdrop-blur-xl flex flex-col overflow-hidden relative h-full group">
+            <div className="rounded-xl border border-white/5 bg-slate-900/40 backdrop-blur-xl flex flex-col overflow-hidden relative shadow-[0_12px_40px_rgba(0,0,0,0.5)]">
               
               {/* Table / Leaderboard Header Section */}
-              <div className="p-4 md:px-6 flex items-center justify-between border-b border-white/5 bg-white/[0.01] relative z-10">
+              <div className="p-4 md:px-6 flex items-center justify-between border-b border-white/5 bg-slate-950/20 relative z-10">
                 <div className="flex gap-6">
                   <button 
                     onClick={() => setActiveTab('feed')}
-                    className={`font-semibold text-sm flex items-center gap-2 transition-colors ${activeTab === 'feed' ? 'text-white' : 'text-slate-500 hover:text-slate-300'}`}
+                    className={`font-semibold text-xs py-1.5 rounded-lg flex items-center gap-2 transition-all ${activeTab === 'feed' ? 'text-white' : 'text-slate-400 hover:text-slate-200'}`}
                   >
-                    <List size={16} /> Global Intel Feed
+                    <List size={14} /> Submissions Feed
                   </button>
                   <button 
                     onClick={() => setActiveTab('leaderboard')}
-                    className={`font-semibold text-sm flex items-center gap-2 transition-colors ${activeTab === 'leaderboard' ? 'text-cyan-400' : 'text-slate-500 hover:text-slate-300'}`}
+                    className={`font-semibold text-xs py-1.5 rounded-lg flex items-center gap-2 transition-all ${activeTab === 'leaderboard' ? 'text-cyan-400 font-bold' : 'text-slate-400 hover:text-slate-200'}`}
                   >
-                    <Trophy size={16} className={activeTab === 'leaderboard' ? 'text-cyan-400' : ''} /> Top Contributors
+                    <Trophy size={14} /> Global Contributors
                   </button>
                 </div>
                 {activeTab === 'feed' && (
-                  <div className="hidden sm:flex text-sm text-slate-300 font-bold bg-white/5 px-4 py-2 rounded-xl border border-white/5 shadow-inner items-center gap-2">
-                    <ShieldAlert size={16} className="text-red-400"/>
+                  <div className="hidden sm:flex text-xs text-slate-300 font-bold bg-white/5 px-4 py-2 rounded-xl border border-white/5 shadow-inner items-center gap-2">
+                    <ShieldAlert size={14} className="text-red-400"/>
                     {reportCount > 0 ? `${fmt(reportCount)} Submissions` : 'Live'}
                   </div>
                 )}
@@ -380,29 +683,30 @@ export default function ReportIP({ addToast }: any) {
                   <div className="flex-1 overflow-x-auto">
                     {loading ? (
                       <div className="h-full flex flex-col items-center justify-center text-slate-400 py-24">
-                        <div className="relative h-16 w-16 mb-6">
-                          <div className="absolute inset-0 rounded-full border-t-2 border-red-500 animate-spin"></div>
-                          <div className="absolute inset-2 rounded-full border-b-2 border-slate-500 animate-spin animation-delay-200"></div>
-                          <ShieldAlert className="absolute inset-0 m-auto text-slate-600" size={20} />
+                        <div className="relative h-12 w-12 mb-4">
+                          <div className="absolute inset-0 rounded-full border-2 border-slate-800"></div>
+                          <div className="absolute inset-0 rounded-full border-2 border-red-500 border-t-transparent animate-spin"></div>
                         </div>
-                        <p className="font-medium tracking-wide">Syncing with global database...</p>
+                        <p className="font-semibold tracking-wider text-[10px] text-slate-500 uppercase">Syncing Live database...</p>
                       </div>
                     ) : isEmpty ? (
-                      <div className="h-full flex flex-col items-center justify-center text-slate-500 text-center py-24 px-6">
-                        <div className="bg-white/5 p-6 rounded-full mb-6 border border-white/5 shadow-inner">
-                          <Inbox size={48} className="opacity-50" />
+                      <div className="h-full flex flex-col items-center justify-center text-slate-500 text-center py-20 px-6">
+                        <div className="bg-white/5 p-5 rounded-full mb-4 border border-white/5">
+                          <Inbox size={40} className="opacity-40 animate-pulse" />
                         </div>
-                        <p className="text-xl font-bold text-white mb-2">No Reports Found</p>
-                        <p className="text-sm max-w-sm">The intel feed is currently clear. Submit the first malicious IP to start the database.</p>
+                        <p className="text-base font-bold text-white mb-1">No Reports Found</p>
+                        <p className="text-xs max-w-xs text-slate-400 leading-relaxed">
+                          The intel feed is currently clear. Submit the first malicious IP to start the database.
+                        </p>
                       </div>
                     ) : (
-                      <table className="w-full text-sm text-left">
-                        <thead className="text-[10px] uppercase bg-white/[0.02] text-slate-500 font-semibold border-b border-white/5">
+                      <table className="w-full text-xs text-left">
+                        <thead className="text-[9px] uppercase bg-white/[0.01] text-slate-500 font-bold border-b border-white/5 tracking-widest">
                           <tr>
-                            <th className="px-8 py-5 tracking-[0.2em] whitespace-nowrap">IP Address</th>
-                            <th className="px-6 py-5 tracking-[0.2em] whitespace-nowrap">Category</th>
-                            <th className="px-6 py-5 tracking-[0.2em]">Context</th>
-                            <th className="px-8 py-5 tracking-[0.2em] whitespace-nowrap text-right">Time</th>
+                            <th className="px-8 py-5">IP Address</th>
+                            <th className="px-6 py-5">Category</th>
+                            <th className="px-6 py-5">Context</th>
+                            <th className="px-8 py-5 text-right">Age</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5">
@@ -411,38 +715,56 @@ export default function ReportIP({ addToast }: any) {
                               <motion.tr 
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: idx * 0.05 }}
+                                transition={{ delay: idx * 0.03 }}
                                 key={row.id || row.created_at} 
-                                className="hover:bg-white/[0.04] transition-colors group"
+                                className="hover:bg-white/[0.015] transition-colors group"
                               >
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                  <div className="flex flex-col gap-1">
-                                    <div className="font-mono font-bold text-slate-200 flex items-center gap-2">
-                                      {row.ip}
+                                <td className="px-8 py-4.5 whitespace-nowrap">
+                                  <div className="flex flex-col gap-1.5">
+                                    <div className="font-mono font-bold text-slate-200 flex items-center gap-2 text-sm">
+                                      <span>{row.ip}</span>
+                                      
+                                      {/* Copy to Clipboard Trigger */}
+                                      <button
+                                        type="button"
+                                        onClick={() => handleCopyIp(row.ip)}
+                                        className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-white/5 text-slate-500 hover:text-slate-300 w-5 h-5 flex items-center justify-center"
+                                        title="Copy IP address"
+                                      >
+                                        {copiedIp === row.ip ? (
+                                          <Check size={12} className="text-emerald-400" />
+                                        ) : (
+                                          <Copy size={12} />
+                                        )}
+                                      </button>
                                     </div>
                                     {row.reporter_alias && (
-                                      <div className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">
-                                        By <span className="text-slate-300">@{row.reporter_alias}</span>
+                                      <div className="text-[9px] uppercase tracking-wider text-slate-500 font-bold">
+                                        By <span className="text-slate-400">@{row.reporter_alias}</span>
                                       </div>
                                     )}
                                   </div>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                  <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-medium tracking-wide text-slate-300 bg-white/5 border border-white/5">
-                                    {row.category}
-                                  </span>
+                                <td className="px-6 py-4.5">
+                                  <div className="flex flex-wrap gap-1.5 max-w-[240px]">
+                                    {row.category.split(', ').map((cat: string) => (
+                                      <span key={cat} className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold tracking-wider ${getCategoryColor(cat)}`}>
+                                        {cat}
+                                      </span>
+                                    ))}
+                                  </div>
                                 </td>
-                                <td className="px-6 py-5 text-slate-400 max-w-[280px] sm:max-w-md">
+                                <td className="px-6 py-4.5 text-slate-400 max-w-[200px] sm:max-w-xs md:max-w-md">
                                   {row.comment ? (
-                                    <span className="flex items-start gap-2.5 group-hover:text-slate-200 transition-colors">
-                                      <AlertTriangle size={14} className="text-slate-500 flex-shrink-0 mt-0.5" />
-                                      <span className="whitespace-normal leading-relaxed text-sm font-medium">{row.comment}</span>
+                                    <span className="flex items-start gap-1.5 group-hover:text-slate-300 transition-colors">
+                                      <AlertTriangle size={13} className="text-slate-500 flex-shrink-0 mt-0.5" />
+                                      <span className="whitespace-normal leading-relaxed text-slate-400 font-medium">{row.comment}</span>
                                     </span>
                                   ) : (
-                                    <span className="text-slate-600 italic">No context provided</span>
+                                    <span className="text-slate-600 italic text-[11px] font-medium">No Context Recorded</span>
                                   )}
                                 </td>
-                                <td className="px-6 py-4 text-slate-500 whitespace-nowrap font-medium text-right group-hover:text-slate-300 transition-colors">
+                                <td className="px-8 py-4.5 text-slate-500 whitespace-nowrap font-medium text-right group-hover:text-slate-400 transition-colors">
                                   {timeAgo(row.created_at)}
                                 </td>
                               </motion.tr>
@@ -455,29 +777,33 @@ export default function ReportIP({ addToast }: any) {
 
                   {/* Pagination */}
                   {totalPages > 1 && !loading && !isEmpty && (
-                    <div className="p-4 md:px-8 border-t border-white/5 flex items-center justify-between bg-white/[0.01]">
+                    <div className="p-4 md:px-8 border-t border-white/[0.05] flex items-center justify-between bg-slate-950/20 select-none">
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="text-slate-400 hover:bg-white/5 hover:text-white rounded-lg transition-colors font-medium"
+                        className="text-slate-400 hover:bg-white/5 hover:text-white rounded-lg transition-colors font-bold text-xs"
                         onClick={() => loadReportedIPs(page - 1)}
                         disabled={page === 0}
                       >
-                        <ChevronLeft size={16} className="mr-1" /> Prev
+                        <ChevronLeft size={14} className="mr-0.5" /> Prev
                       </Button>
-                      <div className="flex gap-2">
-                        {[...Array(Math.min(totalPages, 5))].map((_, i) => (
-                          <div key={i} className={`transition-all duration-300 rounded-full ${i === page ? 'h-2 w-6 bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)]' : 'h-2 w-2 bg-slate-700 hover:bg-slate-500 cursor-pointer'}`}></div>
+                      <div className="flex gap-1.5">
+                        {[...Array(totalPages)].map((_, i) => (
+                          <div 
+                            key={i} 
+                            onClick={() => loadReportedIPs(i)}
+                            className={`transition-all duration-300 rounded-full cursor-pointer ${i === page ? 'h-1.5 w-4.5 bg-white' : 'h-1.5 w-1.5 bg-slate-700 hover:bg-slate-500'}`}
+                          />
                         ))}
                       </div>
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="text-slate-400 hover:bg-white/10 hover:text-white rounded-xl transition-all font-bold"
+                        className="text-slate-400 hover:bg-white/5 hover:text-white rounded-lg transition-colors font-bold text-xs"
                         onClick={() => loadReportedIPs(page + 1)}
                         disabled={page >= totalPages - 1}
                       >
-                        Next <ChevronRight size={16} className="ml-1" />
+                        Next <ChevronRight size={14} className="ml-0.5" />
                       </Button>
                     </div>
                   )}
