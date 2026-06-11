@@ -148,11 +148,11 @@ const HeroHeader = () => {
                 animate={hidden ? "hidden" : "visible"}
                 transition={{ duration: 0.4, ease: "easeInOut" }}
                 data-state={menuState && 'active'}
-                className="group fixed z-50 w-full pt-2">
-                <div className={cn('mx-auto max-w-7xl rounded-full px-8 transition-all duration-500 lg:px-12 mt-6 border shadow-lg', scrolled ? 'bg-slate-900/80 backdrop-blur-2xl border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] py-3' : 'py-4 bg-white/5 backdrop-blur-md border-white/10')}>
+                className="group fixed z-50 w-full pt-4">
+                <div className={cn('mx-auto max-w-7xl rounded-full px-6 transition-all duration-500 lg:px-10 border shadow-lg', scrolled ? 'bg-slate-950/40 backdrop-blur-xl border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] py-2.5 mt-2' : 'py-3.5 bg-white/[0.03] backdrop-blur-sm border-white/5 mt-0')}>
                     <motion.div
                         className="relative flex flex-wrap items-center justify-between gap-6 lg:gap-0">
-                        <div className="flex w-full items-center justify-between gap-12 lg:w-auto">
+                        <div className="flex w-full items-center justify-between gap-10 lg:w-auto">
                             <a
                                 href="/"
                                 aria-label="home"
