@@ -43,13 +43,13 @@ export default function Navbar() {
                 transition={{ duration: 0.4, ease: "easeInOut" }}
                 data-state={menuState && 'active'}
                 className={cn(
-                    "group fixed z-50 transition-all duration-500",
+                    "group fixed inset-x-0 top-0 z-50 transition-all duration-300",
                     scrolled 
-                        ? "top-4 inset-x-4 lg:inset-x-auto lg:left-1/2 lg:-translate-x-1/2 lg:w-[1000px] rounded-full bg-slate-900/70 backdrop-blur-3xl border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] py-3 px-6" 
-                        : "inset-x-0 top-0 bg-transparent border-transparent py-8 px-6 lg:px-12"
+                        ? "bg-slate-950/80 backdrop-blur-2xl border-b border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.5)] py-3" 
+                        : "bg-transparent border-b border-transparent py-6"
                 )}
             >
-                <div className={cn("mx-auto w-full", scrolled ? "max-w-none" : "max-w-7xl")}>
+                <div className="mx-auto max-w-7xl px-6 lg:px-12 w-full">
                     <div className="relative flex items-center justify-between">
                         <div className="flex w-full items-center justify-between gap-10 lg:w-auto">
                             <Link
