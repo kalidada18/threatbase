@@ -189,7 +189,7 @@ export default function ReportIP({ addToast }: any) {
           >
             <div className="rounded-3xl border border-white/10 bg-slate-900/50 backdrop-blur-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] relative overflow-hidden group">
               <div className="absolute top-0 inset-x-0 h-[2px] w-full bg-gradient-to-r from-transparent via-red-500/80 to-transparent"></div>
-              <div className="absolute -inset-1 bg-gradient-to-r from-red-500/20 to-indigo-500/20 rounded-3xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
+              <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 mix-blend-overlay"></div>
               
               <div className="p-8 relative z-10 min-h-[500px] flex flex-col justify-center">
                 <AnimatePresence mode="wait">
@@ -277,7 +277,7 @@ export default function ReportIP({ addToast }: any) {
                       </div>
 
                       <Button
-                        className="w-full h-14 rounded-2xl bg-gradient-to-r from-white to-slate-200 text-slate-950 hover:from-slate-100 hover:to-slate-300 font-bold text-base shadow-[0_0_20px_rgba(255,255,255,0.15)] hover:shadow-[0_0_30px_rgba(255,255,255,0.3)] transition-all mt-6"
+                        className="w-full h-14 rounded-2xl bg-gradient-to-r from-white to-slate-200 text-slate-950 hover:from-white hover:to-white font-bold text-base shadow-[0_4px_20px_rgba(255,255,255,0.15)] hover:shadow-[0_4px_25px_rgba(255,255,255,0.3)] transition-all duration-300 transform hover:-translate-y-0.5 mt-6 border border-white/20"
                         onClick={handleSubmit}
                         disabled={submitting}
                       >
@@ -334,10 +334,11 @@ export default function ReportIP({ addToast }: any) {
             transition={{ duration: 0.6, delay: 0.4 }}
             className="xl:col-span-8 flex flex-col"
           >
-            <div className="rounded-3xl border border-white/10 bg-slate-900/50 backdrop-blur-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] flex flex-col overflow-hidden relative h-full">
+            <div className="rounded-3xl border border-white/10 bg-slate-900/50 backdrop-blur-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] flex flex-col overflow-hidden relative h-full group">
+              <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 mix-blend-overlay pointer-events-none"></div>
               
               {/* Table Header Section */}
-              <div className="p-6 md:px-8 flex items-center justify-between border-b border-white/5 bg-black/20">
+              <div className="p-6 md:px-8 flex items-center justify-between border-b border-white/5 bg-black/30 relative z-10">
                 <h3 className="font-bold text-xl flex items-center gap-3 text-white">
                   <List className="text-slate-400" size={20} /> 
                   Global Intel Feed
@@ -397,13 +398,15 @@ export default function ReportIP({ addToast }: any) {
                                 {row.category}
                               </span>
                             </td>
-                            <td className="px-6 py-6 text-slate-400 truncate max-w-[200px] sm:max-w-xs font-medium" title={row.comment || ''}>
+                            <td className="px-6 py-5 text-slate-400 max-w-[280px] sm:max-w-md">
                               {row.comment ? (
-                                <span className="flex items-center gap-2 group-hover:text-slate-300 transition-colors">
-                                  <AlertTriangle size={14} className="text-slate-500 flex-shrink-0" />
-                                  <span className="truncate">{row.comment}</span>
+                                <span className="flex items-start gap-2.5 group-hover:text-slate-200 transition-colors">
+                                  <AlertTriangle size={14} className="text-slate-500 flex-shrink-0 mt-0.5" />
+                                  <span className="whitespace-normal leading-relaxed text-sm font-medium">{row.comment}</span>
                                 </span>
-                              ) : '—'}
+                              ) : (
+                                <span className="text-slate-600 italic">No context provided</span>
+                              )}
                             </td>
                             <td className="px-8 py-6 text-slate-500 whitespace-nowrap font-medium text-right group-hover:text-slate-300 transition-colors">
                               {timeAgo(row.created_at)}
