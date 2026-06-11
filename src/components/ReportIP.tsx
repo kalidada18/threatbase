@@ -125,8 +125,11 @@ export default function ReportIP({ addToast }: any) {
   useEffect(() => {
     if (profile?.username) {
       setAlias(profile.username)
+    } else if (user) {
+      const fallback = user.user_metadata?.custom_claims?.global_name || user.email?.split('@')[0] || ''
+      setAlias(fallback.replace(/[^a-zA-Z0-9_-]/g, ''))
     }
-  }, [profile])
+  }, [profile, user])
 
   // Real-time IP address status validation state
   const [ipStatus, setIpStatus] = useState<{ type: 'empty' | 'valid_v4' | 'valid_v6' | 'private' | 'whitelisted' | 'invalid', msg: string }>({ type: 'empty', msg: '' })
@@ -581,7 +584,7 @@ export default function ReportIP({ addToast }: any) {
                                 </div>
                                 {user && (
                                   <p className="text-[10px] text-slate-500 font-semibold ml-1 mt-1">
-                                    Logged in as @{profile?.username || 'defender'}. Update your alias in your{' '}
+                                    Logged in as @{profile?.username || alias || 'defender'}. Update your alias in your{' '}
                                     <Link to="/profile" className="text-cyan-400 hover:underline hover:text-cyan-300">
                                       account settings
                                     </Link>

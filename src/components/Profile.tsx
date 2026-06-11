@@ -76,13 +76,18 @@ export default function Profile({ addToast }: any) {
       setUsername(profile.username || '')
       setBio(profile.bio || '')
       setWebsite(profile.website || '')
+    } else if (user) {
+      // Fallback pre-fill for new sign-ins
+      const fallback = user.user_metadata?.custom_claims?.global_name || user.email?.split('@')[0] || ''
+      setUsername(fallback.replace(/[^a-zA-Z0-9_-]/g, ''))
     }
-  }, [profile])
+  }, [profile, user])
 
   // Fetch reports submitted by this user alias
   useEffect(() => {
     async function loadMyReports() {
-      if (!supabaseClient || !profile?.username) {
+      const activeUsername = profile?.username || user?.email?.split('@')[0]
+      if (!supabaseClient || !activeUsername) {
         setLoadingReports(false)
         return
       }
@@ -91,7 +96,7 @@ export default function Profile({ addToast }: any) {
         const { data, error, count } = await supabaseClient
           .from('reported_ips')
           .select('*', { count: 'exact' })
-          .eq('reporter_alias', profile.username)
+          .eq('reporter_alias', activeUsername)
           .order('created_at', { ascending: false })
 
         if (error) throw error
@@ -107,7 +112,7 @@ export default function Profile({ addToast }: any) {
     }
 
     loadMyReports()
-  }, [profile])
+  }, [profile, user])
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -123,13 +128,15 @@ export default function Profile({ addToast }: any) {
     try {
       const { error } = await supabaseClient
         .from('profiles')
-        .update({
+        .upsert({
+          id: user.id,
           username: username.trim(),
           bio: bio.trim() || null,
           website: website.trim() || null,
+          full_name: profile?.full_name || user.user_metadata?.full_name || null,
+          avatar_url: profile?.avatar_url || user.user_metadata?.avatar_url || null,
           updated_at: new Date().toISOString()
         })
-        .eq('id', user.id)
 
       if (error) throw error
 
@@ -160,7 +167,7 @@ export default function Profile({ addToast }: any) {
     )
   }
 
-  if (!user || !profile) return null
+  if (!user) return null
 
   const rank = getRankInfo(reportsCount)
 
@@ -207,29 +214,29 @@ export default function Profile({ addToast }: any) {
               
               <div className="space-y-2">
                 <div className="flex flex-col md:flex-row items-center gap-2.5">
-                  <h2 className="text-2xl font-black text-white">{profile.full_name || 'Anonymous Defender'}</h2>
+                  <h2 className="text-2xl font-black text-white">{profile?.full_name || user.user_metadata?.full_name || 'Anonymous Defender'}</h2>
                   <span className={`inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest ${rank.badgeColor}`}>
                     {rank.icon}
                     <span>{rank.name}</span>
                   </span>
                 </div>
                 
-                <p className="text-sm font-bold text-slate-400 font-mono">@{profile.username}</p>
+                <p className="text-sm font-bold text-slate-400 font-mono">@{profile?.username || username || user.email?.split('@')[0]}</p>
                 
-                {profile.bio && (
-                  <p className="text-xs text-slate-400 max-w-md mt-1 leading-relaxed">{profile.bio}</p>
+                {(profile?.bio || bio) && (
+                  <p className="text-xs text-slate-400 max-w-md mt-1 leading-relaxed">{profile?.bio || bio}</p>
                 )}
 
                 <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-4 gap-y-1.5 pt-2 text-[11px] font-semibold text-slate-500">
                   <span className="flex items-center gap-1.5"><Mail size={12} /> {user.email}</span>
-                  {profile.website && (
+                  {(profile?.website || website) && (
                     <a 
-                      href={profile.website} 
+                      href={profile?.website || website} 
                       target="_blank" 
                       rel="noopener noreferrer" 
                       className="flex items-center gap-1.5 text-cyan-400 hover:underline hover:text-cyan-300"
                     >
-                      <Globe size={12} /> {profile.website.replace(/^https?:\/\//, '')}
+                      <Globe size={12} /> {(profile?.website || website).replace(/^https?:\/\//, '')}
                     </a>
                   )}
                   <span className="flex items-center gap-1.5">
@@ -371,7 +378,7 @@ export default function Profile({ addToast }: any) {
               <List size={14} className="text-emerald-400" /> Your Telemetry Logs
             </span>
             <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider font-mono">
-              Filtered by @{profile.username}
+              Filtered by @{profile?.username || username || user.email?.split('@')[0]}
             </span>
           </div>
 
@@ -386,7 +393,7 @@ export default function Profile({ addToast }: any) {
                 <ShieldAlert size={40} className="mx-auto mb-3 text-slate-600 opacity-40 animate-pulse" />
                 <h4 className="text-white font-bold text-sm mb-1">No Submissions Recorded</h4>
                 <p className="text-xs text-slate-400 max-w-xs mx-auto">
-                  You haven't reported any target IPs under your username alias @{profile.username} yet.
+                  You haven't reported any target IPs under your username alias @{profile?.username || username || user.email?.split('@')[0]} yet.
                 </p>
                 <Link 
                   to="/report" 
