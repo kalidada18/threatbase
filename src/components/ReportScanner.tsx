@@ -80,10 +80,10 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.4 }}
             >
-              <div className="p-8 flex items-start justify-between border-b border-white/5 bg-gradient-to-b from-white/[0.05] to-transparent">
+              <div className="p-8 flex items-start justify-between border-b border-white/5 bg-gradient-to-b from-white/[0.03] to-transparent">
                 <div className="flex items-center gap-6">
-                  <div className={`${type === 'danger' ? 'text-red-500 drop-shadow-[0_0_25px_rgba(239,68,68,0.8)]' : type === 'safe' ? 'text-emerald-400 drop-shadow-[0_0_25px_rgba(16,185,129,0.8)]' : 'text-amber-400 drop-shadow-[0_0_25px_rgba(245,158,11,0.8)]'}`}>
-                    <StatusIcon size={64} strokeWidth={1.5} />
+                  <div className={`${type === 'danger' ? 'text-red-500 drop-shadow-[0_0_10px_rgba(239,68,68,0.4)]' : type === 'safe' ? 'text-emerald-400 drop-shadow-[0_0_10px_rgba(16,185,129,0.4)]' : 'text-amber-400 drop-shadow-[0_0_10px_rgba(245,158,11,0.4)]'}`}>
+                    <StatusIcon size={56} strokeWidth={1.5} />
                   </div>
                   <div>
                     <h3 className={`font-black text-2xl tracking-widest uppercase ${type === 'danger' ? 'text-red-500' : type === 'safe' ? 'text-emerald-400' : 'text-amber-400'}`}>
@@ -92,7 +92,7 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
                     <div className="text-2xl font-mono mt-2 text-white/90">{ip}</div>
                   </div>
                 </div>
-                <div className={`px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest ${type === 'danger' ? 'bg-red-500 text-white shadow-[0_0_20px_rgba(239,68,68,0.5)]' : type === 'safe' ? 'bg-emerald-500 text-emerald-50 shadow-[0_0_20px_rgba(16,185,129,0.5)]' : 'bg-amber-500 text-amber-50 shadow-[0_0_20px_rgba(245,158,11,0.5)]'}`}>
+                <div className={`px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest ${type === 'danger' ? 'bg-red-500 text-white shadow-[0_0_10px_rgba(239,68,68,0.3)]' : type === 'safe' ? 'bg-emerald-500 text-emerald-50 shadow-[0_0_10px_rgba(16,185,129,0.3)]' : 'bg-amber-500 text-amber-50 shadow-[0_0_10px_rgba(245,158,11,0.3)]'}`}>
                   {type === 'danger' ? 'THREAT DETECTED' : type === 'safe' ? 'NOT LISTED' : 'WARNING'}
                 </div>
               </div>
