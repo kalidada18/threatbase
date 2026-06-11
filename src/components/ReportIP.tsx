@@ -311,7 +311,7 @@ export default function ReportIP({ addToast }: any) {
                         Thank You, Defender!
                       </h2>
                       <p className="text-slate-300 text-base leading-relaxed mb-8 px-4">
-                        Your contribution has been verified and permanently added to the global threat feed. You are actively making the internet a safer place.
+                        Your report has been successfully submitted and added to the live community feed. Thank you for actively helping to make the internet a safer place!
                       </p>
                       
                       <Button
