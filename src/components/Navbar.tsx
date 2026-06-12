@@ -147,7 +147,7 @@ export default function Navbar() {
                                  ) : !user ? (
                                      <Button
                                          onClick={signInWithGoogle}
-                                         className="bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 border border-emerald-500/25 text-white rounded-full px-5 h-10 transition-all duration-300 hover:shadow-[0_4px_15px_rgba(16,185,129,0.15)] flex items-center gap-2.5 text-xs font-bold active:scale-95 cursor-pointer"
+                                         className="bg-white hover:bg-slate-100 border border-white text-slate-900 rounded-full px-5 h-10 transition-all duration-300 hover:shadow-[0_4px_20px_rgba(255,255,255,0.15)] flex items-center gap-2.5 text-xs font-extrabold active:scale-95 cursor-pointer"
                                          size="sm">
                                          <svg className="w-3.5 h-3.5" viewBox="0 0 48 48">
                                              <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039L38.802 8.841C34.553 4.806 29.613 2.5 24 2.5C11.983 2.5 2.5 11.983 2.5 24s9.483 21.5 21.5 21.5S45.5 36.017 45.5 24c0-1.538-.135-3.022-.389-4.417z"></path>
