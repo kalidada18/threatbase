@@ -30,29 +30,22 @@ Threatbase is a high-performance threat intelligence ecosystem. It consists of t
 - **Community Intel Feed**: A real-time feed of user-reported threats.
 - **Gamified Leaderboard**: Top contributors who report verified malicious IPs earn unique glowing ranks (Initiate, Guardian, Vanguard, Elite Defender).
 - **Automated OSINT Aggregation**: Pulls from 30+ blacklists every hour (AbuseIPDB, Spamhaus, FireHOL, etc.).
+- **Mobile-First Responsive Design**: Flawlessly adapts to any screen size, complete with card-based data tables.
+- **Secure By Design**: Implements rigorous input sanitization via DOMPurify and UI-level rate limiting to defend against spam and injection attacks.
 - **Ultra-Premium UI**: Sleek, minimal glassmorphism design tailored for SOC analysts.
 
----
+<br/>
 
-## 💻 Running the Dashboard Locally
+<div align="center">
+  <h2>❤️ Our Mission</h2>
+  <p>
+    <em>Built with love ❤️ to secure cyber life.</em><br/><br/>
+    Threatbase is dedicated to empowering defenders worldwide by democratizing access to high-quality threat intelligence. <br/>
+    Our mission is to make the digital world a safer place, one indicator at a time.
+  </p>
+</div>
 
-The dashboard is built using React, Vite, and TailwindCSS.
-
-```bash
-# Clone the repository
-git clone https://github.com/kalidada18/threatbase.git
-
-# Navigate into the directory
-cd threatbase
-
-# Install dependencies
-npm install
-
-# Start the development server
-npm run dev
-```
-
-Visit `http://localhost:5173` to view the live dashboard.
+<br/>
 
 ---
 
