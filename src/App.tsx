@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Routes, Route, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { HeroSection } from './components/blocks/hero-section-5'
@@ -42,6 +42,8 @@ export default function App() {
 
   // Toast state
   const [toasts, setToasts] = useState([])
+  const lastScanTime = useRef(0)
+  const SCAN_COOLDOWN = 5000 // 5 seconds
 
   const addToast = useCallback((message: string, type = 'success') => {
     const id = Date.now() + Math.random()
@@ -52,8 +54,25 @@ export default function App() {
   }, [])
 
   const handleScan = useCallback(async () => {
-    const raw = scanInput.trim()
+    let raw = scanInput.trim()
     if (!raw) return
+
+    const now = Date.now()
+    if (now - lastScanTime.current < SCAN_COOLDOWN) {
+      const remaining = Math.ceil((SCAN_COOLDOWN - (now - lastScanTime.current)) / 1000)
+      addToast(`Please wait ${remaining}s before scanning again.`, 'error')
+      return
+    }
+
+    if (raw.length > 255) {
+      addToast('Input is too long. Please enter a valid indicator.', 'error')
+      return
+    }
+
+    lastScanTime.current = now
+
+    // Basic sanitization
+    raw = raw.replace(/[<>"'&]/g, '')
 
     setIsScanning(true)
     setShowReport(true)

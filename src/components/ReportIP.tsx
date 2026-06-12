@@ -12,6 +12,7 @@ import Leaderboard from './Leaderboard'
 import { useAuth } from '../AuthContext'
 import { useSEO } from '@/useSEO'
 import { MatrixText } from '@/components/ui/matrix-text'
+import DOMPurify from 'dompurify'
 
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -257,7 +258,19 @@ export default function ReportIP({ addToast }: any) {
       return addToast('Please fill all required fields', 'error')
     }
 
+    // Input sanitization and secure coding constraints
     const raw = ipValue.trim()
+    const rawComment = comment.trim()
+    const rawAlias = alias.trim()
+
+    if (rawComment.length > 1000) {
+      return addToast('Comment is too long (max 1000 characters)', 'error')
+    }
+    
+    if (rawAlias.length > 50) {
+      return addToast('Alias is too long (max 50 characters)', 'error')
+    }
+
     const canSubmit = ipStatus.type === 'valid_v4' || ipStatus.type === 'valid_v6'
     
     if (!canSubmit) {
@@ -268,11 +281,15 @@ export default function ReportIP({ addToast }: any) {
 
     // Translate value back to label for database consistency
     const catLabel = THREAT_CATEGORIES.find(c => c.value === category)?.label || category
+    
+    // Sanitize user inputs before insertion
+    const safeComment = DOMPurify.sanitize(rawComment)
+    const safeAlias = DOMPurify.sanitize(rawAlias)
 
     try {
       const { error } = await supabaseClient
         .from('reported_ips')
-        .insert([{ ip: raw, category: catLabel, comment: comment.trim(), reporter_alias: alias.trim() || null }])
+        .insert([{ ip: raw, category: catLabel, comment: safeComment, reporter_alias: safeAlias || null }])
 
       if (error) throw error
 
