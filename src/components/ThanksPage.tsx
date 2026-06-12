@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { ExternalLink, ShieldCheck, Heart, HeartHandshake } from 'lucide-react'
+import { ExternalLink, Heart, HeartHandshake } from 'lucide-react'
 
 const intelSources = [
   { name: 'FireHOL', desc: 'Aggregated blocklists analyzing cyber threats, attacks, and malware.', url: 'https://iplists.firehol.org/' },
@@ -95,7 +95,11 @@ export default function ThanksPage() {
               </div>
               <div className="flex items-center gap-4 mb-5 relative z-10">
                 <div className="w-12 h-12 rounded-xl bg-black/40 border border-white/5 flex items-center justify-center group-hover:border-cyan-500/40 group-hover:shadow-[0_0_15px_rgba(34,211,238,0.2)] transition-all duration-500">
-                  <ShieldCheck size={24} className="text-slate-500 group-hover:text-cyan-400 transition-colors duration-500" />
+                  <svg className="h-6 w-6 text-slate-500 group-hover:text-cyan-400 transition-colors duration-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="currentColor" fillOpacity="0.05" />
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M9 11l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
                 </div>
                 <h3 className="font-extrabold text-xl tracking-tight text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-cyan-200 transition-all duration-500">
                   {source.name}

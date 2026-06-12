@@ -1,99 +1,249 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
-  User, Shield, Mail, Globe, Calendar, Edit3, Save, AlertTriangle, 
-  Trash2, ShieldCheck, Trophy, Star, Medal, ArrowLeft, Loader2, List, ShieldAlert,
-  Copy, Check
+  Globe, Edit3, Save, Copy, Check, ExternalLink, ArrowLeft, Loader2
 } from 'lucide-react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, useParams } from 'react-router-dom'
 import { useAuth } from '../AuthContext'
 import supabaseClient from '../supabaseClient'
 import { Button } from '@/components/ui/button'
 import { fmt, timeAgo } from '../utils'
 
-// Ranks based on number of reports
-const getRankInfo = (count: number) => {
-  if (count >= 50) {
-    return {
-      name: 'Elite Defender',
-      color: 'from-amber-400 via-yellow-500 to-amber-600',
-      badgeColor: 'bg-amber-500/10 text-amber-400 border border-amber-500/20',
-      icon: <Trophy size={16} className="text-amber-400" />
-    }
+const getUserBadges = (profile: any, reportsCount: number, joinIndex: number | null) => {
+  const badges = [];
+
+  // 1. Join Order Badges (First, Second, Third Blood)
+  if (joinIndex === 0) {
+    badges.push({
+      id: 'first-blood',
+      name: 'First Blood',
+      desc: 'First user to join ThreatBase',
+      style: 'from-rose-500/20 to-red-600/30 text-rose-400 border-rose-500/30 shadow-[0_0_15px_rgba(244,63,94,0.15)]',
+      icon: (
+        <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="currentColor" fillOpacity="0.2" />
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" strokeWidth="1.5" />
+          <path d="M12 7v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+      )
+    });
+  } else if (joinIndex === 1) {
+    badges.push({
+      id: 'second-blood',
+      name: 'Second Blood',
+      desc: 'Second user to join ThreatBase',
+      style: 'from-orange-500/20 to-amber-600/30 text-orange-400 border-orange-500/30 shadow-[0_0_15px_rgba(249,115,22,0.15)]',
+      icon: (
+        <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2z" fill="currentColor" fillOpacity="0.2" />
+          <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" />
+          <path d="M12 8v8M8 12h8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        </svg>
+      )
+    });
+  } else if (joinIndex === 2) {
+    badges.push({
+      id: 'third-blood',
+      name: 'Third Blood',
+      desc: 'Third user to join ThreatBase',
+      style: 'from-amber-500/20 to-yellow-600/30 text-amber-400 border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.15)]',
+      icon: (
+        <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="currentColor" fillOpacity="0.2" />
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" strokeWidth="1.5" />
+        </svg>
+      )
+    });
   }
-  if (count >= 15) {
-    return {
-      name: 'Vanguard',
-      color: 'from-purple-400 via-purple-500 to-indigo-600',
-      badgeColor: 'bg-purple-500/10 text-purple-400 border border-purple-500/20',
-      icon: <Star size={16} className="text-purple-400" />
-    }
+
+  // 2. Activity Badges (Legend, Elite, Pro, Defender, Initiate)
+  if (reportsCount >= 500) {
+    badges.push({
+      id: 'legend',
+      name: 'Legend',
+      desc: 'Submitted 500+ threat reports',
+      style: 'from-yellow-300/20 via-amber-400/20 to-yellow-600/30 text-yellow-400 border-yellow-500/30 shadow-[0_0_20px_rgba(234,179,8,0.25)]',
+      icon: (
+        <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="currentColor" fillOpacity="0.2" />
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+        </svg>
+      )
+    });
+  } else if (reportsCount >= 300) {
+    badges.push({
+      id: 'elite',
+      name: 'Elite',
+      desc: 'Submitted 300+ threat reports',
+      style: 'from-purple-500/20 to-fuchsia-600/30 text-purple-400 border-purple-500/30 shadow-[0_0_15px_rgba(168,85,247,0.25)]',
+      icon: (
+        <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2L2 12l10 10 10-10L12 2z" fill="currentColor" fillOpacity="0.2" />
+          <path d="M12 2L2 12l10 10 10-10L12 2z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+        </svg>
+      )
+    });
+  } else if (reportsCount >= 100) {
+    badges.push({
+      id: 'pro',
+      name: 'Pro',
+      desc: 'Submitted 100+ threat reports',
+      style: 'from-cyan-500/20 to-blue-600/30 text-cyan-400 border-cyan-500/30 shadow-[0_0_15px_rgba(34,211,238,0.25)]',
+      icon: (
+        <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="currentColor" fillOpacity="0.2" />
+          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+        </svg>
+      )
+    });
+  } else if (reportsCount >= 50) {
+    badges.push({
+      id: 'defender',
+      name: 'Defender',
+      desc: 'Submitted 50+ threat reports',
+      style: 'from-emerald-500/20 to-teal-600/30 text-emerald-400 border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.25)]',
+      icon: (
+        <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="currentColor" fillOpacity="0.2" />
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" strokeWidth="1.5" />
+          <path d="M9 11l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      )
+    });
+  } else {
+    badges.push({
+      id: 'initiate',
+      name: 'Initiate',
+      desc: 'Starting threat intelligence contributor',
+      style: 'from-slate-800/40 to-slate-900/40 text-slate-400 border-slate-800',
+      icon: (
+        <svg className="h-3.5 w-3.5 text-slate-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="10" fill="currentColor" fillOpacity="0.1" />
+          <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" />
+        </svg>
+      )
+    });
   }
-  if (count >= 5) {
-    return {
-      name: 'Guardian',
-      color: 'from-cyan-400 via-cyan-500 to-blue-600',
-      badgeColor: 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20',
-      icon: <Shield size={16} className="text-cyan-400" />
-    }
+
+  // 3. Community Helper Badge
+  const isHelper = profile?.is_helper === true || 
+                   profile?.role === 'helper' || 
+                   profile?.username === 'kalidada18' || 
+                   profile?.username?.toLowerCase().includes('admin') ||
+                   profile?.username?.toLowerCase().includes('helper') ||
+                   profile?.bio?.toLowerCase().includes('helper') ||
+                   profile?.bio?.toLowerCase().includes('moderator');
+  if (isHelper) {
+    badges.push({
+      id: 'helper',
+      name: 'Community Helper',
+      desc: 'Recognized community helper',
+      style: 'from-pink-500/20 to-rose-600/30 text-pink-400 border-pink-500/30 shadow-[0_0_15px_rgba(244,63,94,0.25)]',
+      icon: (
+        <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="currentColor" fillOpacity="0.2" />
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" stroke="currentColor" strokeWidth="1.5" />
+        </svg>
+      )
+    });
   }
-  return {
-    name: 'Initiate',
-    color: 'from-slate-400 to-slate-600',
-    badgeColor: 'bg-slate-500/10 text-slate-400 border border-slate-500/20',
-    icon: <Medal size={16} className="text-slate-400" />
-  }
+
+  return badges;
 }
 
 export default function Profile({ addToast }: any) {
   const navigate = useNavigate()
-  const { user, profile, loading: authLoading, refreshProfile, signOut } = useAuth()
+  const { username: paramUsername } = useParams<{ username?: string }>()
+  const { user, profile: authProfile, loading: authLoading, refreshProfile, signOut } = useAuth()
+
+  // Profile Data
+  const [viewedProfile, setViewedProfile] = useState<any>(null)
+  const [loadingProfile, setLoadingProfile] = useState(true)
+  const [profileNotFound, setProfileNotFound] = useState(false)
+  const isOwnProfile = !paramUsername || (authProfile?.username === paramUsername)
 
   // Profile Edit fields
-  const [username, setUsername] = useState('')
-  const [bio, setBio] = useState('')
-  const [website, setWebsite] = useState('')
+  const [editUsername, setEditUsername] = useState('')
+  const [editBio, setEditBio] = useState('')
+  const [editWebsite, setEditWebsite] = useState('')
   const [saving, setSaving] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
 
   // Submissions state
-  const [myReports, setMyReports] = useState<any[]>([])
+  const [reports, setReports] = useState<any[]>([])
   const [reportsCount, setReportsCount] = useState(0)
   const [loadingReports, setLoadingReports] = useState(true)
   const [copiedIp, setCopiedIp] = useState<string | null>(null)
+  
+  // Join index for badges
+  const [joinIndex, setJoinIndex] = useState<number | null>(null)
 
   // Account Deletion state
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleteInput, setDeleteInput] = useState('')
   const [deleting, setDeleting] = useState(false)
 
-  // Block anonymous access
+  // Block anonymous access if trying to view own profile
   useEffect(() => {
-    if (!authLoading && !user) {
+    if (!authLoading && !paramUsername && !user) {
       addToast('Please sign in to access your profile account', 'error')
       navigate('/')
     }
-  }, [user, authLoading, navigate, addToast])
+  }, [user, authLoading, paramUsername, navigate, addToast])
 
-  // Sync state values on profile load
+  // Fetch Public or Private Profile
   useEffect(() => {
-    if (profile) {
-      setUsername(profile.username || '')
-      setBio(profile.bio || '')
-      setWebsite(profile.website || '')
-    } else if (user) {
-      // Fallback pre-fill for new sign-ins
-      const fallback = user.user_metadata?.custom_claims?.global_name || user.email?.split('@')[0] || ''
-      setUsername(fallback.replace(/[^a-zA-Z0-9_-]/g, ''))
+    async function loadProfile() {
+      if (authLoading) return
+      
+      if (!paramUsername) {
+        if (user) {
+          setViewedProfile(authProfile)
+          setLoadingProfile(false)
+        }
+        return
+      }
+
+      setLoadingProfile(true)
+      try {
+        const { data, error } = await supabaseClient
+          .from('profiles')
+          .select('*')
+          .eq('username', paramUsername)
+          .single()
+
+        if (error) throw error
+        setViewedProfile(data)
+      } catch (err) {
+        console.error('Failed to load profile:', err)
+        setProfileNotFound(true)
+      } finally {
+        setLoadingProfile(false)
+      }
     }
-  }, [profile, user])
+    loadProfile()
+  }, [paramUsername, authLoading, authProfile, user])
 
-  // Fetch reports submitted by this user alias
+  // Sync state values on profile load for editing
   useEffect(() => {
-    async function loadMyReports() {
-      const activeUsername = profile?.username || user?.email?.split('@')[0]
-      if (!supabaseClient || !activeUsername) {
-        setLoadingReports(false)
+    if (isOwnProfile) {
+      if (authProfile) {
+        setEditUsername(authProfile.username || '')
+        setEditBio(authProfile.bio || '')
+        setEditWebsite(authProfile.website || '')
+      } else if (user) {
+        const fallback = user.user_metadata?.custom_claims?.global_name || user.email?.split('@')[0] || ''
+        setEditUsername(fallback.replace(/[^a-zA-Z0-9_-]/g, ''))
+      }
+    }
+  }, [authProfile, user, isOwnProfile])
+
+  // Fetch reports submitted by this user
+  useEffect(() => {
+    async function loadReports() {
+      const targetUsername = paramUsername || authProfile?.username || user?.email?.split('@')[0]
+      if (!supabaseClient || !targetUsername || loadingProfile) {
+        if (!loadingProfile) setLoadingReports(false)
         return
       }
       setLoadingReports(true)
@@ -101,12 +251,12 @@ export default function Profile({ addToast }: any) {
         const { data, error, count } = await supabaseClient
           .from('reported_ips')
           .select('*', { count: 'exact' })
-          .eq('reporter_alias', activeUsername)
+          .eq('reporter_alias', targetUsername)
           .order('created_at', { ascending: false })
 
         if (error) throw error
         if (data) {
-          setMyReports(data)
+          setReports(data)
           setReportsCount(count || data.length)
         }
       } catch (err) {
@@ -116,14 +266,37 @@ export default function Profile({ addToast }: any) {
       }
     }
 
-    loadMyReports()
-  }, [profile, user])
+    loadReports()
+  }, [paramUsername, authProfile, user, loadingProfile])
+
+  // Fetch join order to identify First/Second/Third Blood
+  useEffect(() => {
+    async function loadJoinOrder() {
+      if (!supabaseClient || !viewedProfile?.id) return
+      try {
+        const { data, error } = await supabaseClient
+          .from('profiles')
+          .select('id')
+          .order('created_at', { ascending: true })
+        if (error) throw error
+        if (data) {
+          const idx = data.findIndex((p: any) => p.id === viewedProfile.id)
+          if (idx !== -1) {
+            setJoinIndex(idx)
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load join order:', err)
+      }
+    }
+    loadJoinOrder()
+  }, [viewedProfile])
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!supabaseClient || !user) return
 
-    if (username.trim().length < 3) {
+    if (editUsername.trim().length < 3) {
       addToast('Username alias must be at least 3 characters long', 'error')
       return
     }
@@ -135,11 +308,11 @@ export default function Profile({ addToast }: any) {
         .from('profiles')
         .upsert({
           id: user.id,
-          username: username.trim(),
-          bio: bio.trim() || null,
-          website: website.trim() || null,
-          full_name: profile?.full_name || user.user_metadata?.full_name || null,
-          avatar_url: profile?.avatar_url || user.user_metadata?.avatar_url || null,
+          username: editUsername.trim(),
+          bio: editBio.trim() || null,
+          website: editWebsite.trim() || null,
+          full_name: authProfile?.full_name || user.user_metadata?.full_name || null,
+          avatar_url: authProfile?.avatar_url || user.user_metadata?.avatar_url || null,
           updated_at: new Date().toISOString()
         })
 
@@ -183,109 +356,132 @@ export default function Profile({ addToast }: any) {
     }
   }
 
-  if (authLoading) {
+  if (authLoading || loadingProfile) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-[#0B0F19] text-slate-400">
-        <Loader2 className="animate-spin text-emerald-500 mb-4" size={36} />
-        <p className="text-sm font-bold tracking-widest uppercase text-slate-500">Syncing Profile details...</p>
+        <Loader2 className="animate-spin text-slate-600 mb-4" size={24} />
+        <p className="text-xs font-semibold tracking-widest uppercase text-slate-500">Loading Profile...</p>
       </div>
     )
   }
 
-  if (!user) return null
+  if (profileNotFound) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#0B0F19] text-slate-400">
+        <h2 className="text-2xl font-bold text-white mb-2">Profile Not Found</h2>
+        <p className="text-sm text-slate-500">The user you are looking for does not exist.</p>
+        <Button onClick={() => navigate(-1)} className="mt-6 border border-white/10 bg-white/5 hover:bg-white/10 text-white" variant="outline">
+          Go Back
+        </Button>
+      </div>
+    )
+  }
 
-  const rank = getRankInfo(reportsCount)
+  const activeProfile = viewedProfile || authProfile || { user_metadata: user?.user_metadata, email: user?.email }
+  const usernameDisplay = activeProfile?.username || editUsername || activeProfile?.email?.split('@')[0]
 
   const getCategoryColor = (cat: string) => {
-    if (cat.includes('Brute')) return 'bg-orange-500/10 text-orange-400 border border-orange-500/20'
-    if (cat.includes('Malware')) return 'bg-red-500/10 text-red-400 border border-red-500/20'
-    if (cat.includes('DDoS')) return 'bg-purple-500/10 text-purple-400 border border-purple-500/20'
-    if (cat.includes('Phish')) return 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
-    if (cat.includes('Scan')) return 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20'
-    if (cat.includes('Exploit')) return 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-    return 'bg-slate-500/10 text-slate-300 border border-slate-500/20'
+    if (!cat) return 'text-slate-300'
+    if (cat.includes('Brute')) return 'text-orange-400'
+    if (cat.includes('Malware')) return 'text-red-400'
+    if (cat.includes('DDoS')) return 'text-purple-400'
+    if (cat.includes('Phish')) return 'text-blue-400'
+    if (cat.includes('Scan')) return 'text-cyan-400'
+    if (cat.includes('Exploit')) return 'text-amber-400'
+    return 'text-slate-300'
   }
 
   return (
-    <main className="min-h-screen pt-28 pb-24 relative bg-[#0B0F19] overflow-hidden font-sans">
-      <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.02] mix-blend-overlay"></div>
-
-      <div className="mx-auto max-w-5xl px-6 relative z-10 space-y-8">
+    <main className="min-h-screen pt-28 pb-24 relative bg-[#0B0F19] font-sans selection:bg-slate-800">
+      <div className="mx-auto max-w-5xl px-6 relative z-10 space-y-6">
         
         {/* Navigation back */}
-        <Link 
-          to="/report" 
-          className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-white transition-colors"
+        <button 
+          onClick={() => navigate(-1)}
+          className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:text-white transition-colors"
         >
-          <ArrowLeft size={14} /> Back to Threat Feed
-        </Link>
+          <ArrowLeft size={14} /> Back
+        </button>
 
         {/* Profile Card Summary */}
         <motion.div
-          initial={{ opacity: 0, y: 15 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-2xl border border-white/[0.06] bg-slate-900/40 backdrop-blur-xl p-6 md:p-8 shadow-2xl relative overflow-hidden"
+          className="rounded-xl border border-white/[0.05] bg-black/40 backdrop-blur-md p-6 md:p-10 relative overflow-hidden"
         >
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500" />
-          
-          <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-6">
+          <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-8">
             <div className="flex flex-col md:flex-row items-center md:items-start gap-6 text-center md:text-left">
               {/* Profile Avatar */}
               <img 
-                src={profile.avatar_url || user.user_metadata?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80'} 
+                src={activeProfile?.avatar_url || activeProfile?.user_metadata?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80'} 
                 alt="Profile Avatar"
-                className="w-20 h-20 rounded-2xl object-cover border-2 border-white/10 shadow-xl"
+                className="w-24 h-24 rounded-full object-cover border border-white/10"
               />
               
-              <div className="space-y-2">
-                <div className="flex flex-col md:flex-row items-center gap-2.5">
-                  <h2 className="text-2xl font-black text-white">{profile?.full_name || user.user_metadata?.full_name || 'Anonymous Defender'}</h2>
-                  <span className={`inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest ${rank.badgeColor}`}>
-                    {rank.icon}
-                    <span>{rank.name}</span>
-                  </span>
+              <div className="space-y-3">
+                <div className="flex flex-col md:flex-row items-center gap-3">
+                  <h2 className="text-2xl font-bold text-white tracking-tight">{activeProfile?.full_name || activeProfile?.user_metadata?.full_name || 'Anonymous'}</h2>
                 </div>
                 
-                <p className="text-sm font-bold text-slate-400 font-mono">@{profile?.username || username || user.email?.split('@')[0]}</p>
+                {/* Earned Badges Row */}
+                <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 pt-1">
+                  {getUserBadges(activeProfile, reportsCount, joinIndex).map((badge) => (
+                    <div
+                      key={badge.id}
+                      title={badge.desc}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider border bg-gradient-to-r ${badge.style} cursor-help transition-all duration-300 hover:scale-[1.03] select-none`}
+                    >
+                      {badge.icon}
+                      <span>
+                        {badge.name}
+                      </span>
+                    </div>
+                  ))}
+                </div>
                 
-                {(profile?.bio || bio) && (
-                  <p className="text-xs text-slate-400 max-w-md mt-1 leading-relaxed">{profile?.bio || bio}</p>
+                <p className="text-sm font-semibold text-slate-500 font-mono">@{usernameDisplay}</p>
+                
+                {(activeProfile?.bio || editBio) && (
+                  <p className="text-sm text-slate-400 max-w-lg leading-relaxed">{activeProfile?.bio || editBio}</p>
                 )}
 
-                <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-4 gap-y-1.5 pt-2 text-[11px] font-semibold text-slate-500">
-                  <span className="flex items-center gap-1.5"><Mail size={12} /> {user.email}</span>
-                  {(profile?.website || website) && (
+                <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-6 gap-y-2 pt-2 text-[11px] font-medium text-slate-500">
+                  {isOwnProfile && <span className="flex items-center gap-1.5">{activeProfile?.email}</span>}
+                  {(activeProfile?.website || editWebsite) && (
                     <a 
-                      href={profile?.website || website} 
+                      href={activeProfile?.website || editWebsite} 
                       target="_blank" 
                       rel="noopener noreferrer" 
-                      className="flex items-center gap-1.5 text-cyan-400 hover:underline hover:text-cyan-300"
+                      className="flex items-center gap-1.5 text-slate-300 hover:text-white transition-colors"
                     >
-                      <Globe size={12} /> {(profile?.website || website).replace(/^https?:\/\//, '')}
+                      <Globe size={12} /> {(activeProfile?.website || editWebsite).replace(/^https?:\/\//, '')}
                     </a>
                   )}
-                  <span className="flex items-center gap-1.5">
-                    <Calendar size={12} /> Joined {new Date(user.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long' })}
-                  </span>
+                  {activeProfile?.created_at && (
+                    <span className="flex items-center gap-1.5 text-slate-600">
+                      Joined {new Date(activeProfile.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long' })}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
 
             <div className="text-center md:text-right flex-shrink-0">
-              <div className="text-4xl font-black text-emerald-400 font-mono tracking-tight">
+              <div className="text-5xl font-light text-white tracking-tighter">
                 {fmt(reportsCount)}
               </div>
-              <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500 mt-1">
-                Your Logged Intel
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-500 mt-2">
+                Intel Reports
               </p>
               
-              {!isEditing && (
+              {isOwnProfile && !isEditing && (
                 <Button 
                   onClick={() => setIsEditing(true)}
-                  className="mt-5 border border-white/10 bg-white/5 hover:bg-white/10 text-white rounded-xl px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-all"
+                  className="mt-6 w-full border border-white/10 bg-white/5 hover:bg-white/10 text-white rounded text-[10px] font-bold uppercase tracking-wider transition-colors"
+                  variant="ghost"
                   size="sm"
                 >
-                  <Edit3 size={11} className="mr-1.5" /> Edit Profile
+                  Edit Profile
                 </Button>
               )}
             </div>
@@ -294,92 +490,76 @@ export default function Profile({ addToast }: any) {
 
         {/* Edit profile form sliding drawer */}
         <AnimatePresence>
-          {isEditing && (
+          {isEditing && isOwnProfile && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
               className="overflow-hidden"
             >
-              <div className="rounded-2xl border border-white/[0.06] bg-slate-900/40 p-6 shadow-xl">
-                <form onSubmit={handleSaveProfile} className="space-y-4 max-w-xl">
-                  <h3 className="text-sm font-bold uppercase tracking-widest text-white border-b border-white/5 pb-2">
-                    Update Details
+              <div className="rounded-xl border border-white/[0.05] bg-black/40 p-6">
+                <form onSubmit={handleSaveProfile} className="space-y-5 max-w-2xl">
+                  <h3 className="text-sm font-semibold text-white">
+                    Profile Settings
                   </h3>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400" htmlFor="prof-username">
-                        Username (Agent Alias)
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div className="space-y-2">
+                      <label className="text-[11px] font-semibold text-slate-400" htmlFor="prof-username">
+                        Username Alias
                       </label>
-                      <div className="relative">
-                        <span className="absolute inset-y-0 left-3.5 flex items-center text-slate-500 font-mono text-xs">@</span>
-                        <input
-                          type="text"
-                          id="prof-username"
-                          value={username}
-                          onChange={(e) => setUsername(e.target.value.replace(/[^a-zA-Z0-9_-]/g, ''))}
-                          placeholder="alias"
-                          className="w-full h-10 rounded-xl border border-white/5 bg-slate-950/60 pl-8 pr-4 text-xs font-semibold text-slate-200 placeholder:text-slate-600 focus-visible:outline-none focus-visible:border-emerald-500/30 focus-visible:ring-1 focus-visible:ring-emerald-500/20 transition-all"
-                          required
-                        />
-                      </div>
+                      <input
+                        type="text"
+                        id="prof-username"
+                        value={editUsername}
+                        onChange={(e) => setEditUsername(e.target.value.replace(/[^a-zA-Z0-9_-]/g, ''))}
+                        className="w-full h-10 rounded-md border border-white/10 bg-transparent px-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-slate-400 transition-colors"
+                        required
+                      />
                     </div>
 
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400" htmlFor="prof-website">
+                    <div className="space-y-2">
+                      <label className="text-[11px] font-semibold text-slate-400" htmlFor="prof-website">
                         Website URL
                       </label>
                       <input
                         type="url"
                         id="prof-website"
-                        value={website}
-                        onChange={(e) => setWebsite(e.target.value)}
-                        placeholder="https://example.com"
-                        className="w-full h-10 rounded-xl border border-white/5 bg-slate-950/60 px-4 text-xs font-semibold text-slate-200 placeholder:text-slate-600 focus-visible:outline-none focus-visible:border-emerald-500/30 focus-visible:ring-1 focus-visible:ring-emerald-500/20 transition-all"
+                        value={editWebsite}
+                        onChange={(e) => setEditWebsite(e.target.value)}
+                        placeholder="https://"
+                        className="w-full h-10 rounded-md border border-white/10 bg-transparent px-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-slate-400 transition-colors"
                       />
                     </div>
                   </div>
 
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <div className="flex justify-between items-center">
-                      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400" htmlFor="prof-bio">
-                        Short Bio
+                      <label className="text-[11px] font-semibold text-slate-400" htmlFor="prof-bio">
+                        Bio
                       </label>
-                      <span className="text-[9px] font-mono font-bold text-slate-500">{bio.length} / 160</span>
+                      <span className="text-[10px] text-slate-600">{editBio.length}/160</span>
                     </div>
                     <textarea
                       id="prof-bio"
-                      value={bio}
-                      onChange={(e) => setBio(e.target.value.substring(0, 160))}
-                      placeholder="Security researcher, web defender..."
-                      className="w-full h-16 rounded-xl border border-white/5 bg-slate-950/60 px-4 py-2 text-xs text-slate-200 placeholder:text-slate-600 focus-visible:outline-none focus-visible:border-emerald-500/30 focus-visible:ring-1 focus-visible:ring-emerald-500/20 transition-all resize-none leading-relaxed"
+                      value={editBio}
+                      onChange={(e) => setEditBio(e.target.value.substring(0, 160))}
+                      className="w-full h-20 rounded-md border border-white/10 bg-transparent px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-slate-400 transition-colors resize-none"
                     />
                   </div>
 
                   <div className="flex gap-3 pt-2">
                     <Button 
                       type="submit"
-                      className="h-9 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 active:scale-95 shadow-md shadow-emerald-600/10 border border-emerald-500/10"
+                      className="h-9 px-6 rounded-md bg-white hover:bg-slate-200 text-black text-xs font-semibold"
                       disabled={saving}
                     >
-                      {saving ? (
-                        <>
-                          <Loader2 className="animate-spin" size={12} />
-                          <span>Saving...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Save size={12} />
-                          <span>Save Changes</span>
-                        </>
-                      )}
+                      {saving ? 'Saving...' : 'Save Changes'}
                     </Button>
                     <Button 
                       type="button"
                       onClick={() => setIsEditing(false)}
-                      className="h-9 px-5 rounded-xl bg-slate-850 hover:bg-slate-850 text-slate-400 text-[10px] font-bold uppercase tracking-wider active:scale-95 border border-white/5"
-                      size="sm"
+                      className="h-9 px-6 rounded-md bg-transparent hover:bg-white/5 text-slate-300 text-xs font-semibold border border-white/10"
                     >
                       Cancel
                     </Button>
@@ -392,95 +572,68 @@ export default function Profile({ addToast }: any) {
 
         {/* User's Reports Table logs */}
         <motion.div
-          initial={{ opacity: 0, y: 15 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="rounded-2xl border border-white/[0.06] bg-slate-900/40 backdrop-blur-xl flex flex-col overflow-hidden shadow-2xl"
+          transition={{ delay: 0.1 }}
+          className="rounded-xl border border-white/[0.05] bg-black/40 flex flex-col overflow-hidden"
         >
-          {/* Header */}
-          <div className="p-4 md:px-6 border-b border-white/5 bg-slate-950/20 flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-widest text-slate-300 flex items-center gap-2">
-              <List size={14} className="text-emerald-400" /> Your Telemetry Logs
-            </span>
-            <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider font-mono">
-              Filtered by @{profile?.username || username || user.email?.split('@')[0]}
-            </span>
+          <div className="p-5 border-b border-white/[0.05] flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-white">
+              Submissions Log
+            </h3>
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto min-h-[200px]">
             {loadingReports ? (
-              <div className="py-20 flex flex-col items-center justify-center text-slate-400">
-                <Loader2 className="animate-spin text-emerald-500 mb-3" size={24} />
-                <p className="text-[10px] tracking-wider text-slate-500 font-bold uppercase">Retrieving your feed...</p>
+              <div className="py-24 flex flex-col items-center justify-center text-slate-500">
+                <Loader2 className="animate-spin mb-3" size={20} />
+                <p className="text-xs">Loading records...</p>
               </div>
-            ) : myReports.length === 0 ? (
-              <div className="py-16 text-center text-slate-500">
-                <ShieldAlert size={40} className="mx-auto mb-3 text-slate-600 opacity-40 animate-pulse" />
-                <h4 className="text-white font-bold text-sm mb-1">No Submissions Recorded</h4>
-                <p className="text-xs text-slate-400 max-w-xs mx-auto">
-                  You haven't reported any target IPs under your username alias @{profile?.username || username || user.email?.split('@')[0]} yet.
-                </p>
-                <Link 
-                  to="/report" 
-                  className="inline-flex items-center gap-1 text-[11px] font-bold uppercase text-cyan-400 hover:text-cyan-300 mt-4 hover:underline"
-                >
-                  Submit your first IP
-                </Link>
+            ) : reports.length === 0 ? (
+              <div className="py-24 text-center text-slate-500 flex flex-col items-center">
+                <p className="text-sm text-slate-400">No submissions found for this user.</p>
               </div>
             ) : (
               <table className="w-full text-xs text-left">
-                <thead className="text-[9px] uppercase bg-white/[0.01] text-slate-500 font-bold border-b border-white/5 tracking-widest select-none">
+                <thead className="text-[10px] uppercase text-slate-500 font-semibold border-b border-white/[0.05]">
                   <tr>
-                    <th className="px-6 py-4.5">IP Address</th>
-                    <th className="px-6 py-4.5">Category</th>
-                    <th className="px-6 py-4.5">Context</th>
-                    <th className="px-6 py-4.5 text-right">Submitted</th>
+                    <th className="px-6 py-4 font-normal">Indicator</th>
+                    <th className="px-6 py-4 font-normal">Category</th>
+                    <th className="px-6 py-4 font-normal">Context</th>
+                    <th className="px-6 py-4 text-right font-normal">Date</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5">
-                  {myReports.map((row, idx) => (
+                <tbody className="divide-y divide-white/[0.02]">
+                  {reports.map((row) => (
                     <tr 
                       key={row.id || row.created_at} 
-                      className="hover:bg-white/[0.01] transition-colors group"
+                      className="hover:bg-white/[0.02] transition-colors group"
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="font-mono font-bold text-slate-200 flex items-center gap-2 text-sm">
+                        <div className="font-mono text-slate-200 flex items-center gap-2">
                           <span>{row.ip}</span>
-                          
                           <button
                             type="button"
                             onClick={() => handleCopyIp(row.ip)}
-                            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-white/5 text-slate-500 hover:text-slate-300 w-5 h-5 flex items-center justify-center"
-                            title="Copy IP address"
+                            className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-500 hover:text-white"
                           >
-                            {copiedIp === row.ip ? (
-                              <Check size={11} className="text-emerald-400" />
-                            ) : (
-                              <Copy size={11} />
-                            )}
+                            {copiedIp === row.ip ? <Check size={12} /> : <Copy size={12} />}
                           </button>
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="flex flex-wrap gap-1 max-w-[200px]">
-                          {row.category.split(', ').map((cat: string) => (
-                            <span key={cat} className={`inline-flex items-center px-2 py-0.5 rounded text-[9.5px] font-bold tracking-wider ${getCategoryColor(cat)}`}>
+                        <div className="flex flex-wrap gap-2">
+                          {(row.category || 'Other').split(', ').map((cat: string) => (
+                            <span key={cat} className={`text-[11px] ${getCategoryColor(cat)}`}>
                               {cat}
                             </span>
                           ))}
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-slate-400 max-w-[200px] sm:max-w-xs md:max-w-sm">
-                        {row.comment ? (
-                          <span className="flex items-start gap-1.5 text-slate-400">
-                            <AlertTriangle size={13} className="text-slate-500 flex-shrink-0 mt-0.5" />
-                            <span className="whitespace-normal leading-relaxed font-medium">{row.comment}</span>
-                          </span>
-                        ) : (
-                          <span className="text-slate-600 italic text-[11px] font-medium">No Context Recorded</span>
-                        )}
+                      <td className="px-6 py-4 text-slate-400 max-w-sm truncate">
+                        {row.comment || <span className="text-slate-600 italic">No context</span>}
                       </td>
-                      <td className="px-6 py-4 text-slate-500 whitespace-nowrap font-medium text-right group-hover:text-slate-400 transition-colors">
+                      <td className="px-6 py-4 text-slate-500 text-right whitespace-nowrap">
                         {timeAgo(row.created_at)}
                       </td>
                     </tr>
@@ -492,35 +645,33 @@ export default function Profile({ addToast }: any) {
         </motion.div>
 
         {/* Danger Zone */}
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="rounded-2xl border border-red-500/10 bg-red-950/5 backdrop-blur-xl p-6 md:p-8 shadow-2xl relative overflow-hidden"
-        >
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500/30 via-rose-500/40 to-red-500/30" />
-          
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-            <div className="space-y-2">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-red-400 flex items-center gap-2">
-                <ShieldAlert size={16} /> Danger Zone
-              </h3>
-              <p className="text-xs font-semibold text-slate-300">
-                Permanently delete your account
-              </p>
-              <p className="text-[11px] text-slate-400 max-w-md leading-relaxed">
-                This action is irreversible. It will delete your profile data, avatar references, and remove your username alias from all reported telemetry logs.
-              </p>
+        {isOwnProfile && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="rounded-xl border border-red-500/10 bg-red-500/5 p-6 md:p-8"
+          >
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+              <div className="space-y-1">
+                <h3 className="text-sm font-semibold text-red-400">
+                  Delete Account
+                </h3>
+                <p className="text-xs text-slate-400 max-w-md">
+                  Permanently remove your profile and detach your alias from all logs.
+                </p>
+              </div>
+              
+              <Button
+                onClick={() => setShowDeleteConfirm(true)}
+                variant="outline"
+                className="border-red-500/20 text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded text-xs"
+              >
+                Delete Account
+              </Button>
             </div>
-            
-            <Button
-              onClick={() => setShowDeleteConfirm(true)}
-              className="bg-red-950/40 hover:bg-red-900/40 border border-red-500/20 hover:border-red-500/40 text-red-200 hover:text-white rounded-xl px-5 h-10 text-xs font-bold transition-all duration-300 active:scale-95 cursor-pointer"
-            >
-              <Trash2 size={13} className="mr-1.5" /> Delete Account
-            </Button>
-          </div>
-        </motion.div>
+          </motion.div>
+        )}
 
       </div>
 
@@ -528,7 +679,6 @@ export default function Profile({ addToast }: any) {
       <AnimatePresence>
         {showDeleteConfirm && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            {/* Backdrop */}
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -537,71 +687,50 @@ export default function Profile({ addToast }: any) {
               className="absolute inset-0 bg-black/80 backdrop-blur-sm"
             />
             
-            {/* Modal Content */}
             <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-md rounded-2xl border border-red-500/20 bg-slate-900/90 p-6 md:p-8 shadow-2xl backdrop-blur-xl space-y-6"
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="relative w-full max-w-md rounded-xl border border-white/10 bg-[#0B0F19] p-6 md:p-8 shadow-2xl"
             >
-              <div className="flex items-center gap-3 border-b border-white/5 pb-4">
-                <div className="bg-red-500/10 text-red-400 p-2 rounded-xl border border-red-500/20">
-                  <Trash2 size={20} />
-                </div>
+              <div className="space-y-6">
                 <div>
-                  <h4 className="text-sm font-bold uppercase tracking-wider text-white">Confirm Account Deletion</h4>
-                  <p className="text-[10px] text-slate-500 font-semibold font-mono">THIS ACTION IS PERMANENT</p>
+                  <h4 className="text-lg font-semibold text-white">Delete Account</h4>
+                  <p className="text-sm text-slate-400 mt-2 leading-relaxed">
+                    This action is permanent. Any reports associated with <span className="text-white font-mono">@{usernameDisplay}</span> will be detached.
+                  </p>
                 </div>
-              </div>
-              
-              <div className="space-y-3">
-                <p className="text-xs text-slate-300 leading-relaxed font-medium">
-                  Are you absolutely sure you want to delete your defender account? 
-                  Any reports and statistics associated with <span className="font-bold text-red-400 font-mono">@{profile?.username || username}</span> will be permanently detached.
-                </p>
-                <div className="p-3.5 rounded-xl border border-red-500/10 bg-red-950/10 text-[11px] text-red-300 leading-relaxed font-semibold">
-                  To confirm, type <span className="font-bold font-mono text-white underline select-all">delete my account</span> in the box below.
+                
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-slate-400">
+                    Type "delete my account" to confirm
+                  </label>
+                  <input
+                    type="text"
+                    value={deleteInput}
+                    onChange={(e) => setDeleteInput(e.target.value)}
+                    className="w-full h-10 rounded-md border border-white/10 bg-transparent px-3 text-sm text-white focus:outline-none focus:border-red-500/50 transition-colors"
+                  />
                 </div>
-              </div>
-              
-              <div className="space-y-1.5">
-                <input
-                  type="text"
-                  value={deleteInput}
-                  onChange={(e) => setDeleteInput(e.target.value)}
-                  placeholder="delete my account"
-                  className="w-full h-10 rounded-xl border border-red-500/10 focus:border-red-500/30 bg-slate-950/60 px-4 text-xs font-semibold text-slate-200 placeholder:text-slate-600 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-red-500/20 transition-all font-mono"
-                />
-              </div>
-              
-              <div className="flex gap-3 pt-2">
-                <Button 
-                  onClick={handleDeleteAccount}
-                  className="h-10 flex-1 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed border border-red-500/15 cursor-pointer"
-                  disabled={deleteInput !== 'delete my account' || deleting}
-                >
-                  {deleting ? (
-                    <>
-                      <Loader2 className="animate-spin" size={12} />
-                      <span>Deleting...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Trash2 size={12} />
-                      <span>Permanently Delete</span>
-                    </>
-                  )}
-                </Button>
-                <Button 
-                  onClick={() => {
-                    setShowDeleteConfirm(false)
-                    setDeleteInput('')
-                  }}
-                  className="h-10 px-5 rounded-xl bg-slate-800 hover:bg-slate-750 text-slate-400 hover:text-slate-200 text-xs font-bold uppercase tracking-wider active:scale-95 border border-white/5 cursor-pointer"
-                  disabled={deleting}
-                >
-                  Cancel
-                </Button>
+                
+                <div className="flex gap-3 pt-4">
+                  <Button 
+                    onClick={handleDeleteAccount}
+                    className="h-10 flex-1 rounded-md bg-red-500 hover:bg-red-600 text-white text-sm font-semibold"
+                    disabled={deleteInput !== 'delete my account' || deleting}
+                  >
+                    {deleting ? 'Deleting...' : 'Delete'}
+                  </Button>
+                  <Button 
+                    onClick={() => {
+                      setShowDeleteConfirm(false)
+                      setDeleteInput('')
+                    }}
+                    className="h-10 flex-1 rounded-md bg-transparent hover:bg-white/5 border border-white/10 text-white text-sm font-semibold"
+                  >
+                    Cancel
+                  </Button>
+                </div>
               </div>
             </motion.div>
           </div>

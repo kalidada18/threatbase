@@ -13,14 +13,11 @@ import GradientBarsBackground from '@/components/ui/gradient-bars-background'
 export function HeroSection({ scanInput, setScanInput, handleScan, statsData }: any) {
     return (
         <>
-            <GradientBarsBackground 
-                className="relative overflow-hidden w-full min-h-[90vh] bg-black border-b border-white/10 shadow-2xl"
-                numBars={30}
-                gradientFrom="rgba(255, 60, 0, 0.15)"
-                animationDuration={6}
+            <div 
+                className="relative overflow-hidden w-full min-h-[90vh] bg-[#0A0C10]"
             >
                 <ThreatMap />
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/50 to-black pointer-events-none z-0" />
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0A0C10]/50 to-[#0A0C10] pointer-events-none z-0" />
                 <section className="relative z-10 pt-16 md:pt-20">
                     <div className="py-12 md:pb-24 lg:pb-32 lg:pt-16 relative">
                         <div className="relative z-10 mx-auto flex max-w-7xl flex-col px-6 lg:block lg:px-12">
@@ -66,82 +63,8 @@ export function HeroSection({ scanInput, setScanInput, handleScan, statsData }: 
                         </div>
                     </div>
                 </section>
-                <section className="bg-white/[0.01] backdrop-blur-xl border-y border-white/5 pb-4 pt-4 mt-8 relative z-20">
-                    <div className="group relative m-auto max-w-7xl px-6">
-                        <div className="flex flex-col items-center md:flex-row">
-                            <div className="md:max-w-56 md:border-r border-white/10 md:pr-8 mb-6 md:mb-0 flex items-center justify-center md:justify-end gap-3">
-                                <span className="relative flex h-2 w-2">
-                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
-                                  <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
-                                </span>
-                                <p className="text-center md:text-end text-xs text-transparent bg-clip-text bg-gradient-to-r from-slate-300 to-slate-500 font-extrabold tracking-[0.2em] uppercase">Intelligence Sources</p>
-                            </div>
-                            <div className="relative py-2 md:w-[calc(100%-14rem)] overflow-hidden">
-                                {(() => {
-                                    const rawSources = statsData?.ips_per_source ? Object.keys(statsData.ips_per_source) : []
-                                    const sources = rawSources.length > 0 
-                                        ? rawSources.slice(0, 20)
-                                        : []
-                                        
-                                    const fallbackSources = ['Honeypots', 'Dark Web', 'Malware Analysis', 'Sinkholes', 'OSINT', 'Sandboxes', 'Cloud Sensors', 'Spam Traps']
-                                    const fallbackIcons = [Shield, Server, Database, Lock, Network, Cloud, Activity, Globe]
-                                    
-                                    const getSourceIcon = (sourceName: string) => {
-                                        const s = sourceName.toLowerCase();
-                                        if (s.includes('firehol')) return Flame;
-                                        if (s.includes('spamhaus')) return MailX;
-                                        if (s.includes('tor')) return GlobeLock;
-                                        if (s.includes('feodo') || s.includes('bot')) return Bug;
-                                        if (s.includes('abuseipdb')) return ShieldAlert;
-                                        if (s.includes('blocklist_de')) return ShieldBan;
-                                        if (s.includes('emerging')) return Zap;
-                                        if (s.includes('bruteforce')) return Key;
-                                        if (s.includes('cins')) return Crosshair;
-                                        if (s.includes('dshield')) return ShieldCheck;
-                                        if (s.includes('binary_defense')) return Binary;
-                                        if (s.includes('greensnow')) return Snowflake;
-                                        return Shield;
-                                    }
-                                    
-                                    const displayItems = sources.length > 0 
-                                        ? sources.map(s => ({ name: s.replace(/_/g, ' '), icon: getSourceIcon(s) }))
-                                        : fallbackSources.map((s, i) => ({ name: s, icon: fallbackIcons[i % fallbackIcons.length] }))
-                                    
-                                    return (
-                                        <InfiniteSlider
-                                            speedOnHover={20}
-                                            speed={40}
-                                            gap={24}>
-                                            {displayItems.map((item, idx) => {
-                                                const Icon = item.icon
-                                                return (
-                                                    <div key={idx} className="flex items-center gap-3 text-slate-300 bg-white/[0.03] hover:bg-white/[0.06] border border-white/5 rounded-full px-5 py-2.5 transition-all duration-300 cursor-default hover:border-white/10 hover:shadow-[0_0_15px_rgba(34,211,238,0.1)] group">
-                                                        <Icon size={18} className="text-cyan-500/70 group-hover:text-cyan-400 transition-colors" /> 
-                                                        <span className="font-bold tracking-widest uppercase text-[11px]">{item.name}</span>
-                                                    </div>
-                                                )
-                                            })}
-                                        </InfiniteSlider>
-                                    )
-                                })()}
 
-                                <div className="bg-gradient-to-r from-black absolute inset-y-0 left-0 w-24 z-10 pointer-events-none"></div>
-                                <div className="bg-gradient-to-l from-black absolute inset-y-0 right-0 w-24 z-10 pointer-events-none"></div>
-                                <ProgressiveBlur
-                                    className="pointer-events-none absolute left-0 top-0 h-full w-20 z-20"
-                                    direction="left"
-                                    blurIntensity={1}
-                                />
-                                <ProgressiveBlur
-                                    className="pointer-events-none absolute right-0 top-0 h-full w-20 z-20"
-                                    direction="right"
-                                    blurIntensity={1}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            </GradientBarsBackground>
+            </div>
         </>
     )
 }

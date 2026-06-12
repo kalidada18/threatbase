@@ -8,6 +8,7 @@ import { useAuth } from '../AuthContext'
 
 const menuItems = [
     { name: 'Dashboard', href: '/#dashboard' },
+    { name: 'About Us', href: '/about' },
     { name: 'Threat Feeds', href: '/#feeds' },
     { name: 'Report IP', href: '/report' }
 ]
@@ -54,10 +55,10 @@ export default function Navbar() {
                 transition={{ duration: 0.4, ease: "easeInOut" }}
                 data-state={menuState && 'active'}
                 className={cn(
-                    "group fixed inset-x-0 top-0 z-50 transition-all duration-300 border-b",
+                    "group fixed z-50 transition-all duration-300 w-full",
                     scrolled 
-                        ? "bg-black/80 backdrop-blur-2xl border-[rgba(0,255,157,0.15)] shadow-[0_4px_30px_rgba(0,0,0,0.5)] py-3" 
-                        : "bg-transparent border-transparent py-3"
+                        ? "bg-[#0A0C10]/60 backdrop-blur-xl border-b border-white/[0.05] shadow-[0_8px_30px_rgb(0,0,0,0.5)] py-3" 
+                        : "bg-transparent border-b border-transparent py-5"
                 )}
             >
                 <div className="w-full px-4 lg:px-8">
@@ -91,10 +92,10 @@ export default function Navbar() {
                                                 <Link
                                                     to={item.href}
                                                     className={cn(
-                                                        "transition-all duration-300 tracking-wide font-semibold py-1",
+                                                        "transition-all duration-300 tracking-wide font-bold text-sm px-4 py-2 rounded-full",
                                                         isActive 
-                                                            ? "text-[#00ff9d] border-b-2 border-[#00ff9d]"
-                                                            : "text-slate-300 hover:text-white hover:drop-shadow-[0_0_12px_rgba(255,255,255,0.8)]"
+                                                            ? "bg-white/10 text-white shadow-[0_0_15px_rgba(255,255,255,0.1)]"
+                                                            : "text-slate-400 hover:text-white hover:bg-white/5"
                                                     )}>
                                                     {item.name}
                                                 </Link>
@@ -105,7 +106,7 @@ export default function Navbar() {
                                         <li>
                                             <Link
                                                 to="/profile"
-                                                className="text-slate-300 hover:text-white transition-all duration-300 tracking-wide font-semibold hover:drop-shadow-[0_0_12px_rgba(255,255,255,0.8)]">
+                                                className="transition-all duration-300 tracking-wide font-bold text-sm px-4 py-2 rounded-full text-slate-400 hover:text-white hover:bg-white/5">
                                                 My Account
                                             </Link>
                                         </li>
@@ -125,8 +126,8 @@ export default function Navbar() {
                                                     to={item.href}
                                                     onClick={() => setMenuState(false)}
                                                     className={cn(
-                                                        "block transition-colors duration-150",
-                                                        isActive ? "text-[#00ff9d] font-bold" : "text-slate-400 hover:text-white"
+                                                        "block transition-all duration-200 px-4 py-2 rounded-xl text-center",
+                                                        isActive ? "bg-white/10 text-white font-bold" : "text-slate-400 hover:text-white hover:bg-white/5 font-semibold"
                                                     )}>
                                                     {item.name}
                                                 </Link>
@@ -138,7 +139,7 @@ export default function Navbar() {
                                             <Link
                                                 to="/profile"
                                                 onClick={() => setMenuState(false)}
-                                                className="text-slate-400 hover:text-white block transition-colors duration-150">
+                                                className="block transition-all duration-200 px-4 py-2 rounded-xl text-center text-slate-400 hover:text-white hover:bg-white/5 font-semibold">
                                                 My Account
                                             </Link>
                                         </li>

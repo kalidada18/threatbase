@@ -1,15 +1,75 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Trophy, Medal, Star, Shield, ShieldAlert, Award } from 'lucide-react'
+import { Award } from 'lucide-react'
 import supabaseClient from '../supabaseClient'
 import { fmt } from '../utils'
 
 // Ranks based on number of reports
 const getRankInfo = (count: number) => {
-  if (count >= 50) return { name: 'Elite Defender', color: 'from-yellow-300 via-yellow-500 to-amber-600', shadow: 'shadow-[0_0_20px_rgba(234,179,8,0.5)]', icon: <Trophy size={16} className="text-yellow-100" /> }
-  if (count >= 15) return { name: 'Vanguard', color: 'from-purple-400 via-purple-500 to-indigo-600', shadow: 'shadow-[0_0_15px_rgba(168,85,247,0.4)]', icon: <Star size={16} className="text-purple-100" /> }
-  if (count >= 5) return { name: 'Guardian', color: 'from-cyan-400 via-cyan-500 to-blue-600', shadow: 'shadow-[0_0_15px_rgba(6,182,212,0.4)]', icon: <Shield size={16} className="text-cyan-100" /> }
-  return { name: 'Initiate', color: 'from-slate-400 to-slate-600', shadow: 'shadow-sm', icon: <Medal size={16} className="text-slate-200" /> }
+  if (count >= 500) {
+    return {
+      name: 'Legend',
+      color: 'from-yellow-300 via-amber-400 to-yellow-600',
+      shadow: 'shadow-[0_0_20px_rgba(234,179,8,0.5)]',
+      icon: (
+        <svg className="h-4 w-4 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="currentColor" fillOpacity="0.2" />
+          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+        </svg>
+      )
+    }
+  }
+  if (count >= 300) {
+    return {
+      name: 'Elite',
+      color: 'from-purple-400 via-fuchsia-500 to-purple-600',
+      shadow: 'shadow-[0_0_15px_rgba(168,85,247,0.4)]',
+      icon: (
+        <svg className="h-4 w-4 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2L2 12l10 10 10-10L12 2z" fill="currentColor" fillOpacity="0.2" />
+          <path d="M12 2L2 12l10 10 10-10L12 2z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+        </svg>
+      )
+    }
+  }
+  if (count >= 100) {
+    return {
+      name: 'Pro',
+      color: 'from-cyan-400 via-blue-500 to-indigo-600',
+      shadow: 'shadow-[0_0_15px_rgba(34,211,238,0.4)]',
+      icon: (
+        <svg className="h-4 w-4 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="currentColor" fillOpacity="0.2" />
+          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+        </svg>
+      )
+    }
+  }
+  if (count >= 50) {
+    return {
+      name: 'Defender',
+      color: 'from-emerald-400 via-emerald-500 to-teal-600',
+      shadow: 'shadow-[0_0_15px_rgba(16,185,129,0.4)]',
+      icon: (
+        <svg className="h-4 w-4 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="currentColor" fillOpacity="0.2" />
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" strokeWidth="1.5" />
+          <path d="M9 11l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      )
+    }
+  }
+  return {
+    name: 'Initiate',
+    color: 'from-slate-400 to-slate-600',
+    shadow: 'shadow-sm',
+    icon: (
+      <svg className="h-4 w-4 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="12" r="10" fill="currentColor" fillOpacity="0.1" />
+        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" />
+      </svg>
+    )
+  }
 }
 
 export default function Leaderboard() {

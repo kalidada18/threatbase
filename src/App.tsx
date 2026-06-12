@@ -3,6 +3,7 @@ import { Routes, Route, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { HeroSection } from './components/blocks/hero-section-5'
 import ReportScanner from './components/ReportScanner'
+import AboutPage from './components/AboutPage'
 import Stats from './components/Stats'
 import Feeds from './components/Feeds'
 import Analytics from './components/Analytics'
@@ -122,7 +123,7 @@ export default function App() {
             </motion.div>
 
             <motion.div 
-              className="flex flex-col gap-8 md:gap-12"
+              className="flex flex-col"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.6, staggerChildren: 0.2 }}
@@ -134,8 +135,9 @@ export default function App() {
           </main>
         } />
         
+        <Route path="/about" element={<AboutPage />} />
         <Route path="/report" element={<ReportIP addToast={addToast} />} />
-        <Route path="/profile" element={<Profile addToast={addToast} />} />
+        <Route path="/profile/:username?" element={<Profile addToast={addToast} />} />
         <Route path="/thanks" element={<ThanksPage />} />
       </Routes>
 

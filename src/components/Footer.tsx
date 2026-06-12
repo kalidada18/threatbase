@@ -5,8 +5,9 @@ const BASE = import.meta.env.BASE_URL
 
 export default function Footer() {
   return (
-    <footer className="border-t border-white/20 dark:border-white/10 bg-white/30 dark:bg-slate-900/40 backdrop-blur-md mt-12">
-      <Footer7 
+    <footer className="relative border-t border-white/20 dark:border-white/10 overflow-hidden">
+      <div className="relative z-10 bg-white/30 dark:bg-slate-900/40 backdrop-blur-md">
+        <Footer7 
         logo={{
           url: "/",
           src: `${BASE}img/threatbase.png`,
@@ -40,6 +41,7 @@ export default function Footer() {
           { name: "Privacy Policy", href: "/privacy.txt" },
         ]}
       />
+      </div>
     </footer>
   )
 }
