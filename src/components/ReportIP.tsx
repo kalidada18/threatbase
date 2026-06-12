@@ -369,7 +369,7 @@ export default function ReportIP({ addToast }: any) {
     <GradientBarsBackground 
       className="min-h-screen pt-28 pb-24 relative overflow-hidden font-sans bg-black"
       numBars={30}
-      gradientFrom="rgba(16, 185, 129, 0.05)"
+      gradientFrom="rgba(255, 60, 0, 0.15)"
       animationDuration={5}
     >
       <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.02] mix-blend-overlay"></div>

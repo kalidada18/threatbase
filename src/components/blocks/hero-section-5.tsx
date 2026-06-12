@@ -16,7 +16,7 @@ export function HeroSection({ scanInput, setScanInput, handleScan, statsData }: 
             <GradientBarsBackground 
                 className="relative overflow-hidden w-full min-h-[90vh] bg-black border-b border-white/10 shadow-2xl"
                 numBars={30}
-                gradientFrom="rgba(0, 255, 157, 0.05)"
+                gradientFrom="rgba(255, 60, 0, 0.15)"
                 animationDuration={6}
             >
                 <ThreatMap />
