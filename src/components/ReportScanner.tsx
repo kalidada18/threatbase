@@ -8,8 +8,6 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
   const [reports, setReports] = useState<any[]>([])
   const [loadingReports, setLoadingReports] = useState(false)
 
-  if (!showReport) return null
-
   const ip = scanResult?.ip || scanInput?.trim() || ''
   const isMalicious = scanResult?.isMalicious
   const type = scanResult
@@ -64,6 +62,8 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
   }
 
   const StatusIcon = type === 'danger' ? Bug : type === 'safe' ? ShieldCheck : AlertTriangle
+
+  if (!showReport) return null;
 
   return (
     <section className="py-12" id="report-section" aria-live="polite">
