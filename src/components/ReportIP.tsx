@@ -2,17 +2,17 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Flag, Globe, Tag, MessageSquare, Send, List, Inbox, ChevronLeft, ChevronRight,
-  ShieldAlert, Activity, AlertTriangle, ShieldCheck, CheckCircle2, Trophy,
+  ShieldAlert, Activity, AlertTriangle, ShieldCheck, Trophy,
   HelpCircle, User, Info, Check, Copy, Lock
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import GradientBarsBackground from '@/components/ui/gradient-bars-background'
 import supabaseClient from '../supabaseClient'
 import { fmt, timeAgo } from '../utils'
 import { Button } from '@/components/ui/button'
 import { Typewriter } from '@/components/ui/typewriter'
 import Leaderboard from './Leaderboard'
 import { useAuth } from '../AuthContext'
-import { SignInPage } from '@/components/ui/sign-in-flow-1'
 
 const REPORT_PAGE_SIZE = 10
 const SUBMIT_COOLDOWN = 15000
@@ -111,7 +111,7 @@ const THREAT_CATEGORIES = [
 ]
 
 export default function ReportIP({ addToast }: any) {
-  const { user, profile, signInWithGoogle } = useAuth()
+  const { user, profile } = useAuth()
   const [ipValue, setIpValue] = useState('')
   const [selectedCats, setSelectedCats] = useState<string[]>([])
   const [comment, setComment] = useState('')
@@ -164,7 +164,6 @@ export default function ReportIP({ addToast }: any) {
 
       if (isV4) {
         // Check private/reserved ranges
-        const ipLong = ipToLong(raw)
         for (const cidr of PRIVATE_RESERVED_CIDRS) {
           if (inCidr(raw, cidr)) {
             isPrivate = true
@@ -364,12 +363,15 @@ export default function ReportIP({ addToast }: any) {
     return 'bg-slate-500/10 text-slate-300 border border-slate-500/20'
   }
 
-  // Removed explicit sign-in block to allow guest reporting
-
   const canSubmit = ipStatus.type === 'valid_v4' || ipStatus.type === 'valid_v6'
 
   return (
-    <main className="min-h-screen pt-28 pb-24 relative bg-[#0B0F19] overflow-hidden font-sans bg-cyber-grid-green bg-scanlines">
+    <GradientBarsBackground 
+      className="min-h-screen pt-28 pb-24 relative overflow-hidden font-sans bg-black"
+      numBars={30}
+      gradientFrom="rgba(16, 185, 129, 0.05)"
+      animationDuration={5}
+    >
       <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.02] mix-blend-overlay"></div>
 
       <div className="mx-auto max-w-7xl px-6 lg:px-12 relative z-10">
@@ -936,6 +938,6 @@ export default function ReportIP({ addToast }: any) {
           </div>
         )}
       </AnimatePresence>
-    </main>
+      </GradientBarsBackground>
   )
 }
