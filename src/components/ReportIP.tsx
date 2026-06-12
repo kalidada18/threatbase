@@ -364,9 +364,7 @@ export default function ReportIP({ addToast }: any) {
     return 'bg-slate-500/10 text-slate-300 border border-slate-500/20'
   }
 
-  if (!user) {
-    return <SignInPage />
-  }
+  // Removed explicit sign-in block to allow guest reporting
 
   const canSubmit = ipStatus.type === 'valid_v4' || ipStatus.type === 'valid_v6'
 
