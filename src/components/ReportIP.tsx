@@ -387,8 +387,8 @@ export default function ReportIP({ addToast }: any) {
             <span className="h-2 w-2 rounded-full bg-red-500 animate-blink mr-1"></span>
             Active Threat Database
           </div>
-          <h1 className="text-4xl md:text-5xl font-semibold flex items-center justify-center gap-2 text-white tracking-tight pb-2 font-mono">
-            Community Intel<span className="cursor text-[#00ff9d] animate-blink font-sans">_</span>
+          <h1 className="text-5xl md:text-6xl font-black flex items-center justify-center gap-2 text-white tracking-tighter pb-2">
+            Community <span className="bg-gradient-to-r from-emerald-300 to-cyan-300 bg-clip-text text-transparent">Intel</span>
           </h1>
           <p className="mt-3 text-slate-400 text-sm md:text-base max-w-xl mx-auto leading-relaxed">
             Report malicious infrastructure. Submissions feed the community blacklist to defend networks globally.
@@ -405,7 +405,7 @@ export default function ReportIP({ addToast }: any) {
             transition={{ duration: 0.5 }}
             className="w-full"
           >
-            <div className="rounded-2xl bg-slate-900/40 bg-cyber-grid bg-dot-grid backdrop-blur-xl relative overflow-hidden group border-cyber-glow">
+            <div className="rounded-[32px] bg-slate-950/40 backdrop-blur-3xl relative overflow-hidden group border border-white/[0.05] shadow-[0_0_80px_rgba(16,185,129,0.03)]">
                   <div className="p-6 md:p-8 relative z-10 flex flex-col justify-between">
                     <AnimatePresence mode="wait">
                       {!submitSuccess ? (
@@ -426,7 +426,7 @@ export default function ReportIP({ addToast }: any) {
                               <input
                                 type="text"
                                 id="rip-ip-input"
-                                className="w-full h-11 rounded-xl border border-white/5 bg-slate-950/60 pl-4 pr-10 text-sm font-mono text-slate-200 placeholder:text-slate-600 focus-visible:outline-none focus-visible:border-emerald-500/40 focus-visible:ring-1 focus-visible:ring-emerald-500/20 focus-visible:shadow-[0_0_15px_rgba(16,185,129,0.05)] transition-all shadow-inner"
+                                className="w-full h-14 rounded-2xl border border-white/[0.05] bg-white/[0.02] pl-5 pr-12 text-sm font-mono font-medium text-white placeholder:text-slate-600 focus-visible:outline-none focus-visible:border-emerald-500/40 focus-visible:bg-emerald-500/[0.02] transition-all shadow-inner"
                                 placeholder="IP Address"
                                 autoComplete="off"
                                 spellCheck="false"
@@ -482,47 +482,30 @@ export default function ReportIP({ addToast }: any) {
                             </AnimatePresence>
                           </div>
 
-                          {/* Mockup-Aligned Checkbox Grid */}
+                          {/* Premium Chips Grid for Categories */}
                           <div className="space-y-3">
-                            <label className="text-xs font-bold text-slate-300 ml-1">
-                              Categories <span className="text-slate-500 font-normal lowercase">(at least one is required)</span>
+                            <label className="text-xs font-medium text-slate-300 ml-1">
+                              Threat Tags <span className="text-slate-500 font-normal lowercase">(Select all that apply)</span>
                             </label>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 select-none">
+                            <div className="flex flex-wrap gap-2 select-none">
                               {THREAT_CATEGORIES.map((cat) => {
                                 const isChecked = selectedCats.includes(cat.name)
                                 return (
                                   <div
                                     key={cat.id}
                                     onClick={() => toggleCategory(cat.name)}
-                                    className={`flex items-center justify-between group cursor-pointer p-3 rounded-xl border transition-all duration-300 ${isChecked
-                                        ? 'bg-emerald-500/10 border-emerald-500/40 shadow-[0_0_15px_rgba(16,185,129,0.08)]'
-                                        : 'border-white/[0.04] bg-slate-950/40 hover:bg-slate-900/30 hover:border-white/10'
+                                    className={`relative group cursor-pointer px-3.5 py-1.5 rounded-full border text-xs font-medium transition-all duration-300 flex items-center gap-2 ${isChecked
+                                        ? 'bg-emerald-500/15 border-emerald-500/50 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.15)]'
+                                        : 'bg-white/[0.02] border-white/[0.05] text-slate-400 hover:text-slate-200 hover:bg-white/[0.05] hover:border-white/[0.1]'
                                       }`}
                                   >
-                                    <div className="flex items-center gap-2.5 min-w-0">
-                                      {/* Custom Checkbox Box */}
-                                      <div className={`w-4 h-4 rounded border flex items-center justify-center transition-all duration-200 flex-shrink-0 ${isChecked
-                                          ? 'bg-emerald-500 border-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.25)]'
-                                          : 'border-white/20 group-hover:border-white/40 bg-slate-950/60'
-                                        }`}>
-                                        {isChecked && (
-                                          <Check size={11} className="text-white" strokeWidth={3} />
-                                        )}
-                                      </div>
-                                      <span className={`text-xs font-semibold tracking-wide transition-colors truncate ${isChecked ? 'text-white font-bold' : 'text-slate-400 group-hover:text-slate-300'
-                                        }`}>
-                                        {cat.name}
-                                      </span>
-                                    </div>
-
-                                    {/* Hover tooltip */}
-                                    <div className="relative group/tooltip flex items-center pr-1 flex-shrink-0">
-                                      <HelpCircle size={13} className="text-slate-500 hover:text-slate-300 cursor-help transition-colors" />
-                                      <div className="absolute bottom-full right-0 mb-2 w-48 p-2.5 rounded-lg bg-slate-950 border border-white/10 text-[10px] text-slate-300 font-semibold leading-normal opacity-0 pointer-events-none group-hover/tooltip:opacity-100 transition-opacity z-50 shadow-xl text-center select-text">
-                                        {cat.description}
-                                        <div className="absolute top-full right-1.5 border-4 border-transparent border-t-slate-950"></div>
-                                      </div>
+                                    <span>{cat.name}</span>
+                                    
+                                    {/* Hover tooltip for pill */}
+                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2.5 rounded-lg bg-slate-900 border border-white/10 text-[10px] text-slate-300 leading-relaxed opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50 shadow-2xl text-center backdrop-blur-xl">
+                                      {cat.description}
+                                      <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900"></div>
                                     </div>
                                   </div>
                                 )
@@ -531,19 +514,19 @@ export default function ReportIP({ addToast }: any) {
                           </div>
 
                           {/* Mockup-Aligned Text Area */}
-                          <div className="space-y-2">
+                          <div className="space-y-2 mt-2">
                             <div className="flex items-center justify-between">
-                              <label className="text-xs font-bold text-slate-300 ml-1" htmlFor="rip-comment">
-                                Comment
+                              <label className="text-xs font-medium text-slate-300 ml-1" htmlFor="rip-comment">
+                                Context
                               </label>
-                              <span className="text-[10px] font-bold font-mono text-slate-500 tracking-wider">
-                                Characters left: {1024 - comment.length} / 1024
+                              <span className="text-[10px] font-medium text-slate-500 tracking-wider">
+                                {1024 - comment.length} remaining
                               </span>
                             </div>
                             <textarea
                               id="rip-comment"
                               maxLength={1024}
-                              className="w-full h-24 rounded-xl border border-white/5 bg-slate-950/60 px-4 py-3 text-xs font-mono text-slate-200 placeholder:text-slate-600 focus-visible:outline-none focus-visible:border-emerald-500/30 focus-visible:ring-1 focus-visible:ring-emerald-500/20 transition-all resize-none leading-relaxed"
+                              className="w-full h-28 rounded-2xl border border-white/[0.05] bg-white/[0.02] px-5 py-4 text-sm text-slate-200 placeholder:text-slate-600 focus-visible:outline-none focus-visible:border-emerald-500/30 focus-visible:bg-emerald-500/[0.02] transition-all resize-none leading-relaxed"
                               placeholder="Comment (server log snippets, abuse details, etc)"
                               value={comment}
                               onChange={(e) => setComment(e.target.value)}
@@ -574,13 +557,13 @@ export default function ReportIP({ addToast }: any) {
                                       <User size={13} className="text-slate-500" /> Agent Alias <span className="text-slate-500 font-normal lowercase">(optional)</span>
                                     </label>
                                     <div className="relative">
-                                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                                        <span className="text-slate-600 font-mono font-bold text-xs">@</span>
+                                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                        <span className="text-slate-600 font-bold text-sm">@</span>
                                       </div>
                                       <input
                                         type="text"
                                         id="rip-alias"
-                                        className={`w-full h-11 rounded-xl border border-white/5 bg-slate-950/60 pl-8 pr-4 text-xs font-semibold text-slate-200 placeholder:text-slate-600 focus-visible:outline-none transition-all shadow-inner ${user ? 'opacity-60 cursor-not-allowed' : 'focus-visible:border-emerald-500/30 focus-visible:ring-1 focus-visible:ring-emerald-500/20'
+                                        className={`w-full h-12 rounded-2xl border border-white/[0.05] bg-white/[0.02] pl-9 pr-4 text-sm font-medium text-white placeholder:text-slate-600 focus-visible:outline-none transition-all shadow-inner ${user ? 'opacity-60 cursor-not-allowed' : 'focus-visible:border-emerald-500/30 focus-visible:bg-emerald-500/[0.02]'
                                           }`}
                                         placeholder="Anonymous Defender"
                                         autoComplete="off"
@@ -606,12 +589,12 @@ export default function ReportIP({ addToast }: any) {
                             </AnimatePresence>
                           </div>
 
-                          {/* Mockup-Aligned Action Row */}
-                          <div className="flex flex-col sm:flex-row items-center gap-4 pt-4 border-t border-white/5">
+                          {/* Premium Action Row */}
+                          <div className="flex flex-col sm:flex-row items-center gap-4 pt-6 mt-4 border-t border-white/[0.02]">
                             <Button
-                              className={`h-11 px-6 rounded-xl text-white font-bold text-xs tracking-wider transition-all shadow-lg flex items-center justify-center gap-2 border select-none ${canSubmit && selectedCats.length > 0
-                                  ? 'bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 border-emerald-500/20 shadow-[0_4px_20px_rgba(16,185,129,0.15)] active:scale-[0.98]'
-                                  : 'bg-slate-900 border-white/5 text-slate-600 cursor-not-allowed'
+                              className={`h-14 px-8 rounded-2xl text-white font-bold text-sm tracking-wide transition-all duration-300 flex items-center justify-center gap-2 border select-none ${canSubmit && selectedCats.length > 0
+                                  ? 'bg-emerald-500 hover:bg-emerald-400 border-transparent shadow-[0_0_30px_rgba(16,185,129,0.2)] active:scale-[0.98] text-slate-950'
+                                  : 'bg-white/[0.02] border-white/[0.05] text-slate-500 cursor-not-allowed'
                                 }`}
                               onClick={handleSubmit}
                               disabled={submitting || !canSubmit || selectedCats.length === 0}
@@ -682,7 +665,7 @@ export default function ReportIP({ addToast }: any) {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="w-full flex flex-col"
           >
-            <div className="rounded-xl bg-slate-900/40 bg-cyber-grid bg-dot-grid backdrop-blur-xl flex flex-col overflow-hidden relative border-cyber-glow">
+            <div className="rounded-[32px] bg-slate-950/40 backdrop-blur-2xl flex flex-col overflow-hidden relative border border-white/[0.05] shadow-2xl">
 
               {/* Table / Leaderboard Header Section */}
               <div className="p-4 md:px-6 flex items-center justify-between border-b border-white/5 bg-slate-950/25 relative z-10">
