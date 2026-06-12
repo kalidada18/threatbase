@@ -53,7 +53,13 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
       vtHref = 'https://www.virustotal.com/gui/file/' + ip
       showVt = true
     } else if (isURL) {
-      vtHref = 'https://www.virustotal.com/gui/search/' + encodeURIComponent(ip)
+      // VirusTotal uses base64url without padding for URLs
+      try {
+        const b64 = btoa(unescape(encodeURIComponent(ip))).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_')
+        vtHref = 'https://www.virustotal.com/gui/url/' + b64
+      } catch(e) {
+        vtHref = 'https://www.virustotal.com/gui/search/' + encodeURIComponent(ip)
+      }
       showVt = true
     } else if (isDomain) {
       vtHref = 'https://www.virustotal.com/gui/domain/' + ip
