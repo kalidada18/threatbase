@@ -14,10 +14,10 @@ export function HeroSection({ scanInput, setScanInput, handleScan, statsData }: 
     return (
         <>
             <div 
-                className="relative overflow-hidden w-full min-h-[90vh] bg-[#070A13]"
+                className="relative overflow-hidden w-full min-h-[90vh] bg-[#0B0F19]"
             >
                 <ThreatMap />
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#070A13]/50 to-[#070A13] pointer-events-none z-0" />
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0B0F19]/50 to-[#0B0F19] pointer-events-none z-0" />
                 <section className="relative z-10 pt-16 md:pt-20">
                     <div className="py-12 md:pb-24 lg:pb-32 lg:pt-16 relative">
                         <div className="relative z-10 mx-auto flex max-w-7xl flex-col px-6 lg:block lg:px-12">

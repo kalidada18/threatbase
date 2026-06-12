@@ -221,7 +221,7 @@ export default function ThreatMap() {
   return (
     <canvas
       ref={canvasRef}
-      className="absolute inset-0 pointer-events-none z-0 w-full h-full bg-[#070A13]"
+      className="absolute inset-0 pointer-events-none z-0 w-full h-full bg-[#0B0F19]"
     />
   )
 }
