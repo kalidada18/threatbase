@@ -495,7 +495,7 @@ export default function ReportIP({ addToast }: any) {
                                   <div
                                     key={cat.id}
                                     onClick={() => toggleCategory(cat.name)}
-                                    className={`relative group cursor-pointer px-3.5 py-1.5 rounded-full border text-xs font-medium transition-all duration-300 flex items-center gap-2 ${isChecked
+                                    className={`relative group/pill cursor-pointer px-3.5 py-1.5 rounded-full border text-xs font-medium transition-all duration-300 flex items-center gap-2 ${isChecked
                                         ? 'bg-emerald-500/15 border-emerald-500/50 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.15)]'
                                         : 'bg-white/[0.02] border-white/[0.05] text-slate-400 hover:text-slate-200 hover:bg-white/[0.05] hover:border-white/[0.1]'
                                       }`}
@@ -503,7 +503,7 @@ export default function ReportIP({ addToast }: any) {
                                     <span>{cat.name}</span>
                                     
                                     {/* Hover tooltip for pill */}
-                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2.5 rounded-lg bg-slate-900 border border-white/10 text-[10px] text-slate-300 leading-relaxed opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50 shadow-2xl text-center backdrop-blur-xl">
+                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2.5 rounded-lg bg-slate-900 border border-white/10 text-[10px] text-slate-300 leading-relaxed opacity-0 pointer-events-none group-hover/pill:opacity-100 transition-opacity z-50 shadow-2xl text-center backdrop-blur-xl">
                                       {cat.description}
                                       <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900"></div>
                                     </div>
