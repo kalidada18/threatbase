@@ -1,11 +1,11 @@
 <div align="center">
-  <img src="public/img/himalayafeed.png" alt="HimalayaFeed Banner" width="250" style="border-radius: 50%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); margin-bottom: 20px;">
+  <img src="public/img/threatbase.png" alt="Threatbase Banner" width="250" style="border-radius: 50%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); margin-bottom: 20px;">
   
-  <h1>HimalayaFeed (v3)</h1>
+  <h1>Threatbase (v3)</h1>
   
   <p>
-    <a href="https://github.com/kalidada18/himalayafeed/actions/workflows/update-feed.yml">
-      <img src="https://github.com/kalidada18/himalayafeed/actions/workflows/update-feed.yml/badge.svg" alt="Update Feed">
+    <a href="https://github.com/kalidada18/threatbase/actions/workflows/update-feed.yml">
+      <img src="https://github.com/kalidada18/threatbase/actions/workflows/update-feed.yml/badge.svg" alt="Update Feed">
     </a>
     <img src="https://img.shields.io/badge/python-3.11%2B-blue" alt="Python 3.11+">
     <img src="https://img.shields.io/badge/react-19.0-cyan" alt="React 19">
@@ -18,7 +18,7 @@
 
 <br/>
 
-HimalayaFeed is a high-performance threat intelligence ecosystem. It consists of two major components:
+Threatbase is a high-performance threat intelligence ecosystem. It consists of two major components:
 1. **The Backend Intelligence Engine**: Automatically collects, deduplicates, and curates malicious Indicators of Compromise (IOCs) from industry-leading open-source feeds.
 2. **The Threat Dashboard**: A breathtaking, ultra-premium SaaS frontend built in React that allows defenders to view analytics, search indicators, and manually report live threats.
 
@@ -40,10 +40,10 @@ The dashboard is built using React, Vite, and TailwindCSS.
 
 ```bash
 # Clone the repository
-git clone https://github.com/kalidada18/himalayafeed.git
+git clone https://github.com/kalidada18/threatbase.git
 
 # Navigate into the directory
-cd himalayafeed
+cd threatbase
 
 # Install dependencies
 npm install
@@ -58,7 +58,7 @@ Visit `http://localhost:5173` to view the live dashboard.
 
 ## 📡 Upstream Intelligence Sources
 
-HimalayaFeed curates and deduplicates data from the following authoritative threat intelligence providers:
+Threatbase curates and deduplicates data from the following authoritative threat intelligence providers:
 
 | Provider | Focus Area | Aggregated IOC Types |
 | :--- | :--- | :--- |
@@ -81,24 +81,24 @@ All IOC files are committed directly to this repository and are served continuou
 
 ### 🌐 Network Blocklists (IPs & CIDRs)
 Use these lists directly in firewall and Edge routing tables.
-- **[IPv4 Blocklist](https://raw.githubusercontent.com/kalidada18/himalayafeed/main/ioc/malicious_ips.txt)** (`malicious_ips.txt`)
-- **[IPv6 Blocklist](https://raw.githubusercontent.com/kalidada18/himalayafeed/main/ioc/malicious_ipv6.txt)** (`malicious_ipv6.txt`)
-- **[CIDR Blocklist](https://raw.githubusercontent.com/kalidada18/himalayafeed/main/ioc/malicious_cidrs.txt)** (`malicious_cidrs.txt`)
+- **[IPv4 Blocklist](https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/malicious_ips.txt)** (`malicious_ips.txt`)
+- **[IPv6 Blocklist](https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/malicious_ipv6.txt)** (`malicious_ipv6.txt`)
+- **[CIDR Blocklist](https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/malicious_cidrs.txt)** (`malicious_cidrs.txt`)
 
 ### 🕸️ DNS & Web Blocklists (Domains & URLs)
 Use these lists for DNS sinkholing (Pi-Hole, AdGuard) and web proxy blocking.
-- **[Domain Blocklist](https://raw.githubusercontent.com/kalidada18/himalayafeed/main/ioc/malicious_domains.txt)** (`malicious_domains.txt`)
-- **[URL Blocklist](https://raw.githubusercontent.com/kalidada18/himalayafeed/main/ioc/malicious_urls.txt)** (`malicious_urls.txt`)
+- **[Domain Blocklist](https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/malicious_domains.txt)** (`malicious_domains.txt`)
+- **[URL Blocklist](https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/malicious_urls.txt)** (`malicious_urls.txt`)
 
 ### 💀 File Hashes (SHA-256)
 Over 1,000,000+ malware samples for Endpoint Detection & Response (EDR) ingestion.
-- **[Malware Hashes](https://raw.githubusercontent.com/kalidada18/himalayafeed/main/ioc/malicious_hashes.txt)** (`malicious_hashes.txt`)
+- **[Malware Hashes](https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/malicious_hashes.txt)** (`malicious_hashes.txt`)
 
 ---
 
 ## 🗄️ Historical Archives
 
-A zip archive of the complete feed is published daily to the **[Releases](https://github.com/kalidada18/himalayafeed/releases)** page. These historical snapshots are ideal for retrospective SIEM hunting and academic research.
+A zip archive of the complete feed is published daily to the **[Releases](https://github.com/kalidada18/threatbase/releases)** page. These historical snapshots are ideal for retrospective SIEM hunting and academic research.
 
 ---
 

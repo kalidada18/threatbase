@@ -84,7 +84,7 @@ export default function Feeds() {
                 </p>
               </div>
               <a 
-                href={`https://raw.githubusercontent.com/kalidada18/himalayafeed/main/public/ioc/${f.file}`} 
+                href={`https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/${f.file}`} 
                 className="inline-flex items-center justify-center gap-2 w-full px-5 py-3 text-sm font-bold transition-all duration-300 border border-white/10 rounded-full bg-white/5 text-white hover:bg-white/10 hover:border-white/30 focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-slate-900 shadow-sm" 
                 target="_blank" 
                 rel="noopener noreferrer"

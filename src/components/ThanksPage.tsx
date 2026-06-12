@@ -68,7 +68,7 @@ export default function ThanksPage() {
             Intel Sources
           </h1>
           <p className="mt-4 text-slate-400 text-lg max-w-2xl mx-auto leading-relaxed drop-shadow">
-            HimalayaFeed is powered by the tireless work of the global cybersecurity community. We extend our deepest gratitude to the following organizations and open-source projects for providing free, high-quality threat intelligence.
+            Threatbase is powered by the tireless work of the global cybersecurity community. We extend our deepest gratitude to the following organizations and open-source projects for providing free, high-quality threat intelligence.
           </p>
         </motion.div>
 

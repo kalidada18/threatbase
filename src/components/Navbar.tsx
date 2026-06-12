@@ -3,7 +3,7 @@ import { Menu, X, Github, LogIn, LogOut, User as UserIcon, ChevronDown } from 'l
 import { useScroll, motion, AnimatePresence, useMotionValueEvent } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../AuthContext'
 
 const menuItems = [
@@ -14,6 +14,8 @@ const menuItems = [
 
 export default function Navbar() {
     const navigate = useNavigate()
+    const location = useLocation()
+    const isReportActive = location.pathname === '/report'
     const { user, profile, loading, signInWithGoogle, signOut } = useAuth()
     const [dropdownOpen, setDropdownOpen] = React.useState(false)
     const [menuState, setMenuState] = React.useState(false)
@@ -52,10 +54,10 @@ export default function Navbar() {
                 transition={{ duration: 0.4, ease: "easeInOut" }}
                 data-state={menuState && 'active'}
                 className={cn(
-                    "group fixed inset-x-0 top-0 z-50 transition-all duration-300",
+                    "group fixed inset-x-0 top-0 z-50 transition-all duration-300 border-b",
                     scrolled 
-                        ? "bg-slate-950/80 backdrop-blur-2xl border-b border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.5)] py-3" 
-                        : "bg-transparent border-b border-transparent py-3"
+                        ? "bg-slate-950/80 backdrop-blur-2xl border-[rgba(0,255,157,0.15)] shadow-[0_4px_30px_rgba(0,0,0,0.5)] py-3" 
+                        : "bg-transparent border-transparent py-3"
                 )}
             >
                 <div className="w-full px-4 lg:px-8">
@@ -66,8 +68,8 @@ export default function Navbar() {
                                 aria-label="home"
                                 className="flex items-center group relative z-10">
                                 <img 
-                                    src={`${import.meta.env.BASE_URL}img/himalayafeed.png`} 
-                                    alt="HimalayaFeed" 
+                                    src={`${import.meta.env.BASE_URL}img/threatbase.png`} 
+                                    alt="Threatbase" 
                                     className="w-12 h-12 md:w-14 md:h-14 rounded-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.12] group-hover:rotate-6"
                                 />
                             </Link>
@@ -82,15 +84,23 @@ export default function Navbar() {
 
                             <div className="hidden lg:block">
                                 <ul className="flex gap-8 text-sm font-medium">
-                                    {menuItems.map((item, index) => (
-                                        <li key={index}>
-                                            <Link
-                                                to={item.href}
-                                                className="text-slate-300 hover:text-white transition-all duration-300 tracking-wide font-semibold hover:drop-shadow-[0_0_12px_rgba(255,255,255,0.8)]">
-                                                {item.name}
-                                            </Link>
-                                        </li>
-                                    ))}
+                                    {menuItems.map((item, index) => {
+                                        const isActive = item.name === 'Report IP' && isReportActive
+                                        return (
+                                            <li key={index} className="flex items-center">
+                                                <Link
+                                                    to={item.href}
+                                                    className={cn(
+                                                        "transition-all duration-300 tracking-wide font-semibold py-1",
+                                                        isActive 
+                                                            ? "text-[#00ff9d] border-b-2 border-[#00ff9d]"
+                                                            : "text-slate-300 hover:text-white hover:drop-shadow-[0_0_12px_rgba(255,255,255,0.8)]"
+                                                    )}>
+                                                    {item.name}
+                                                </Link>
+                                            </li>
+                                        )
+                                    })}
                                     {user && (
                                         <li>
                                             <Link
@@ -107,16 +117,22 @@ export default function Navbar() {
                         <div className="bg-slate-900/95 backdrop-blur-xl border border-white/10 group-data-[state=active]:block lg:group-data-[state=active]:flex mb-6 hidden w-full flex-wrap items-center justify-end space-y-8 rounded-3xl p-6 shadow-2xl md:flex-nowrap lg:m-0 lg:flex lg:w-fit lg:gap-6 lg:space-y-0 lg:border-transparent lg:bg-transparent lg:p-0 lg:shadow-none">
                             <div className="lg:hidden">
                                 <ul className="space-y-6 text-base font-medium">
-                                    {menuItems.map((item, index) => (
-                                        <li key={index}>
-                                            <Link
-                                                to={item.href}
-                                                onClick={() => setMenuState(false)}
-                                                className="text-slate-400 hover:text-white block transition-colors duration-150">
-                                                {item.name}
-                                            </Link>
-                                        </li>
-                                    ))}
+                                    {menuItems.map((item, index) => {
+                                        const isActive = item.name === 'Report IP' && isReportActive
+                                        return (
+                                            <li key={index}>
+                                                <Link
+                                                    to={item.href}
+                                                    onClick={() => setMenuState(false)}
+                                                    className={cn(
+                                                        "block transition-colors duration-150",
+                                                        isActive ? "text-[#00ff9d] font-bold" : "text-slate-400 hover:text-white"
+                                                    )}>
+                                                    {item.name}
+                                                </Link>
+                                            </li>
+                                        )
+                                    })}
                                     {user && (
                                         <li>
                                             <Link
@@ -136,7 +152,7 @@ export default function Navbar() {
                                     variant="outline"
                                     className="border-white/10 bg-white/5 text-white hover:bg-white/10 hover:border-white/20 hover:text-white rounded-full px-5 h-10 transition-all duration-300 hover:shadow-[0_0_15px_rgba(255,255,255,0.05)] gap-2 text-xs font-semibold"
                                     size="sm">
-                                    <a href="https://github.com/kalidada18/himalayafeed" target="_blank" rel="noopener noreferrer">
+                                    <a href="https://github.com/kalidada18/threatbase" target="_blank" rel="noopener noreferrer">
                                         <Github size={14} />
                                         GitHub
                                     </a>
@@ -144,20 +160,7 @@ export default function Navbar() {
 
                                  {loading ? (
                                      <div className="h-9 w-9 rounded-full border border-white/5 bg-slate-900/60 animate-pulse" />
-                                 ) : !user ? (
-                                     <Button
-                                         onClick={signInWithGoogle}
-                                         className="bg-white hover:bg-slate-100 border border-white text-slate-900 rounded-full px-5 h-10 transition-all duration-300 hover:shadow-[0_4px_20px_rgba(255,255,255,0.15)] flex items-center gap-2.5 text-xs font-extrabold active:scale-95 cursor-pointer"
-                                         size="sm">
-                                         <svg className="w-3.5 h-3.5" viewBox="0 0 48 48">
-                                             <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039L38.802 8.841C34.553 4.806 29.613 2.5 24 2.5C11.983 2.5 2.5 11.983 2.5 24s9.483 21.5 21.5 21.5S45.5 36.017 45.5 24c0-1.538-.135-3.022-.389-4.417z"></path>
-                                             <path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12.5 24 12.5c3.059 0 5.842 1.154 7.961 3.039l5.839-5.841C34.553 4.806 29.613 2.5 24 2.5C16.318 2.5 9.642 6.723 6.306 14.691z"></path>
-                                             <path fill="#4CAF50" d="M24 45.5c5.613 0 10.553-2.306 14.802-6.341l-5.839-5.841C30.842 35.846 27.059 38 24 38c-5.039 0-9.345-2.608-11.124-6.481l-6.571 4.819C9.642 41.277 16.318 45.5 24 45.5z"></path>
-                                             <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-.792 2.237-2.231 4.166-4.087 5.571l5.839 5.841C44.196 35.123 45.5 29.837 45.5 24c0-1.538-.135-3.022-.389-4.417z"></path>
-                                         </svg>
-                                         Sign In with Google
-                                     </Button>
-                                 ) : (
+                                 ) : user ? (
                                     <div className="relative">
                                         <button
                                             onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -214,7 +217,7 @@ export default function Navbar() {
                                             )}
                                         </AnimatePresence>
                                     </div>
-                                )}
+                                ) : null}
                             </div>
                         </div>
                     </div>

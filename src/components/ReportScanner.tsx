@@ -1,7 +1,13 @@
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Bug, ShieldCheck, AlertTriangle, AlertOctagon, ChevronRight, Search } from 'lucide-react'
+import { Bug, ShieldCheck, AlertTriangle, AlertOctagon, ChevronRight, Search, Check } from 'lucide-react'
+import supabaseClient from '../supabaseClient'
+import { timeAgo } from '../utils'
 
 export default function ReportScanner({ scanResult, isScanning, showReport, scanInput }: any) {
+  const [reports, setReports] = useState<any[]>([])
+  const [loadingReports, setLoadingReports] = useState(false)
+
   if (!showReport) return null
 
   const ip = scanResult?.ip || scanInput?.trim() || ''
@@ -13,6 +19,25 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
         ? 'warn'
         : 'safe'
     : null
+
+  useEffect(() => {
+    if (scanResult && (scanResult.isIP || scanResult.isIPv6) && ip) {
+      setLoadingReports(true)
+      supabaseClient
+        .from('reported_ips')
+        .select('*')
+        .eq('ip', ip)
+        .order('created_at', { ascending: false })
+        .limit(100)
+        .then(({ data }) => {
+          if (data) setReports(data)
+          setLoadingReports(false)
+        })
+        .catch(() => setLoadingReports(false))
+    } else {
+      setReports([])
+    }
+  }, [scanResult, ip])
 
   // Build external links
   let vtHref = '#'
@@ -42,7 +67,7 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
 
   return (
     <section className="py-12" id="report-section" aria-live="polite">
-      <div className="mx-auto max-w-4xl px-6 lg:px-12 relative">
+      <div className="mx-auto max-w-5xl px-6 lg:px-12 relative">
         <AnimatePresence mode="wait">
           {isScanning && (
             <motion.div 
@@ -66,7 +91,7 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
           {scanResult && !isScanning && (
             <motion.div 
               key="result"
-              className="overflow-hidden rounded-2xl border border-white/10 bg-slate-950/60 backdrop-blur-xl shadow-2xl"
+              className="overflow-hidden rounded-2xl border border-white/10 bg-slate-950/60 backdrop-blur-xl shadow-2xl mb-12"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.98 }}
@@ -97,12 +122,12 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
                   {type === 'danger' ? (
                     <p className="text-slate-300 leading-relaxed text-sm">
                       The indicator <code className="px-1.5 py-0.5 rounded bg-slate-800 border border-white/5 font-mono text-red-400">{ip}</code> has been positively identified as malicious by the
-                      HimalayaFeed global sensor network. It is currently active in our threat intelligence blocklists.
+                      Threatbase global sensor network. It is currently active in our threat intelligence blocklists.
                     </p>
                   ) : type === 'safe' ? (
                     <p className="text-slate-300 leading-relaxed text-sm">
                       The indicator <code className="px-1.5 py-0.5 rounded bg-slate-800 border border-white/5 font-mono text-emerald-400">{ip}</code> is <strong>not currently listed</strong> in the active
-                      HimalayaFeed threat database.
+                      Threatbase threat database.
                     </p>
                   ) : (
                     <p className="text-slate-300 leading-relaxed text-sm">Please enter a valid IPv4 address, Domain, SHA-256 Hash, or URL.</p>
@@ -138,6 +163,76 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
               </div>
             </motion.div>
           )}
+
+          {reports.length > 0 && !isScanning && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="w-full"
+            >
+              <h3 className="text-[22px] text-[#FFB300] mb-5 text-center font-sans tracking-wide">
+                IP Abuse Reports for <span className="font-bold">{ip}</span>:
+              </h3>
+              
+              <p className="text-[13px] text-slate-200 mb-5 px-2 font-sans tracking-wide">
+                This IP address has been reported a total of <span className="font-bold">{reports.length.toLocaleString()}</span> times from distinct sources. {ip} was first reported on {new Date(reports[reports.length - 1].created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric'})}, and the most recent report was <span className="font-bold">{timeAgo(reports[0].created_at)}</span>.
+              </p>
+
+              <div className="bg-[#EFA034] text-white px-4 py-3.5 rounded text-[13px] mb-6 shadow-lg flex gap-3 items-start md:items-center">
+                <AlertTriangle size={18} className="shrink-0 mt-0.5 md:mt-0 opacity-90" strokeWidth={2.5} />
+                <span>
+                  <strong>Recent Reports:</strong> We have received reports of abusive activity from this IP address within the last week. It is potentially still actively engaged in abusive activities.
+                </span>
+              </div>
+
+              <div className="overflow-x-auto border border-[#333] bg-[#0E0E0E]">
+                <table className="w-full text-left border-collapse min-w-[800px] font-sans">
+                  <thead>
+                    <tr className="border-b border-[#333] bg-black">
+                      <th className="px-5 py-3.5 font-bold text-white text-[13px] w-[20%]">Reporter</th>
+                      <th className="px-5 py-3.5 font-bold text-white text-[13px] w-[25%] flex items-center gap-1.5">
+                        IoA Timestamp (UTC) 
+                        <span className="text-[#3273dc] text-[10px] font-bold ml-0.5 bg-[#3273dc]/10 rounded-full w-3.5 h-3.5 inline-flex items-center justify-center cursor-help">?</span>
+                      </th>
+                      <th className="px-5 py-3.5 font-bold text-white text-[13px] w-[35%]">Comment</th>
+                      <th className="px-5 py-3.5 font-bold text-white text-[13px] w-[20%]">Categories</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {reports.map((row, idx) => (
+                      <tr key={idx} className={`border-b border-[#333] ${idx % 2 === 0 ? 'bg-[#181818]' : 'bg-[#222222]'}`}>
+                        <td className="px-5 py-4 text-[13px] align-top">
+                          <div className="flex items-center gap-1.5">
+                            <Check size={14} className="text-[#32CD32] shrink-0" strokeWidth={3} />
+                            <span className="text-base leading-none">🇺🇸</span>
+                            <span className="text-[#3273dc] hover:text-[#23527c] hover:underline cursor-pointer">{row.reporter_alias || 'Anonymous'}</span>
+                          </div>
+                        </td>
+                        <td className="px-5 py-4 text-[13px] text-[#ddd] align-top">
+                          <div>{row.created_at.replace('T', ' ').substring(0, 19)}</div>
+                          <div className="text-[#999] text-[12px] mt-1">({timeAgo(row.created_at)})</div>
+                        </td>
+                        <td className="px-5 py-4 text-[13px] text-[#ddd] align-top max-w-[300px]">
+                          <div className="truncate">{row.comment || 'No context provided.'}</div>
+                          {row.comment && <div className="text-[#3273dc] hover:text-[#23527c] hover:underline text-[12px] mt-2 cursor-pointer text-right w-full block">show more</div>}
+                        </td>
+                        <td className="px-5 py-4 align-top">
+                          <div className="flex flex-wrap gap-1.5 justify-end">
+                            {row.category.split(', ').map((cat: string) => (
+                              <span key={cat} className="bg-[#777] border border-[#555] text-white text-[11px] px-1.5 py-0.5 rounded shadow-sm whitespace-nowrap">
+                                {cat}
+                              </span>
+                            ))}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </motion.div>
+          )}
+
         </AnimatePresence>
       </div>
     </section>

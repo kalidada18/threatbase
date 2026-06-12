@@ -16,9 +16,9 @@ export function animateValue(el, end, dur = 1600) {
 /** Get the base URL for IOC data files */
 export function getBaseUrl() {
   if (window.location.hostname === 'kalidada18.github.io') {
-    return 'https://kalidada18.github.io/himalayafeed/ioc/'
+    return 'https://kalidada18.github.io/threatbase/ioc/'
   } else if (window.location.protocol === 'file:') {
-    return 'https://raw.githubusercontent.com/kalidada18/himalayafeed/main/ioc/'
+    return 'https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/'
   }
   return import.meta.env.BASE_URL + 'ioc/'
 }

@@ -1,16 +1,18 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  Flag, Globe, Tag, MessageSquare, Send, List, Inbox, ChevronLeft, ChevronRight, 
+import {
+  Flag, Globe, Tag, MessageSquare, Send, List, Inbox, ChevronLeft, ChevronRight,
   ShieldAlert, Activity, AlertTriangle, ShieldCheck, CheckCircle2, Trophy,
-  HelpCircle, User, Info, Check, Copy
+  HelpCircle, User, Info, Check, Copy, Lock
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import supabaseClient from '../supabaseClient'
 import { fmt, timeAgo } from '../utils'
 import { Button } from '@/components/ui/button'
+import { Typewriter } from '@/components/ui/typewriter'
 import Leaderboard from './Leaderboard'
 import { useAuth } from '../AuthContext'
+import { SignInPage } from '@/components/ui/sign-in-flow-1'
 
 const REPORT_PAGE_SIZE = 10
 const SUBMIT_COOLDOWN = 15000
@@ -151,10 +153,10 @@ export default function ReportIP({ addToast }: any) {
       setIpStatus({ type: 'empty', msg: '' })
       return
     }
-    
+
     const isV4 = /^((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)$/.test(raw)
     const isV6 = raw.includes(':') && /^[0-9a-fA-F:]+$/.test(raw)
-    
+
     if (isV4 || isV6) {
       let isPrivate = false
       let isWhitelisted = false
@@ -169,7 +171,7 @@ export default function ReportIP({ addToast }: any) {
             break
           }
         }
-        
+
         // Check DNS Whitelist CIDRs
         for (const cidr of DNS_WHITELIST_CIDRS) {
           if (inCidr(raw, cidr)) {
@@ -187,21 +189,21 @@ export default function ReportIP({ addToast }: any) {
       } else if (isV6) {
         isPrivate = isPrivateReservedIpv6(raw)
       }
-      
+
       if (isWhitelisted) {
-        setIpStatus({ 
-          type: 'whitelisted', 
-          msg: `Whitelisted IP detected (${whitelistProvider || 'DNS Provider'}). Submissions of safe infrastructure are blocked to prevent false-positives.` 
+        setIpStatus({
+          type: 'whitelisted',
+          msg: `Whitelisted IP detected (${whitelistProvider || 'DNS Provider'}). Submissions of safe infrastructure are blocked to prevent false-positives.`
         })
       } else if (isPrivate) {
-        setIpStatus({ 
-          type: 'private', 
-          msg: 'Private/Reserved range warning. These addresses are local/special and are filtered out of public feeds.' 
+        setIpStatus({
+          type: 'private',
+          msg: 'Private/Reserved range warning. These addresses are local/special and are filtered out of public feeds.'
         })
       } else {
-        setIpStatus({ 
-          type: isV4 ? 'valid_v4' : 'valid_v6', 
-          msg: `Public verified ${isV4 ? 'IPv4' : 'IPv6'} address structure recognized.` 
+        setIpStatus({
+          type: isV4 ? 'valid_v4' : 'valid_v6',
+          msg: `Public verified ${isV4 ? 'IPv4' : 'IPv6'} address structure recognized.`
         })
       }
     } else {
@@ -256,7 +258,7 @@ export default function ReportIP({ addToast }: any) {
   }, [loadReportedIPs])
 
   const toggleCategory = (catName: string) => {
-    setSelectedCats(prev => 
+    setSelectedCats(prev =>
       prev.includes(catName)
         ? prev.filter(c => c !== catName)
         : [...prev, catName]
@@ -362,364 +364,336 @@ export default function ReportIP({ addToast }: any) {
     return 'bg-slate-500/10 text-slate-300 border border-slate-500/20'
   }
 
+  if (!user) {
+    return <SignInPage />
+  }
+
   const canSubmit = ipStatus.type === 'valid_v4' || ipStatus.type === 'valid_v6'
 
   return (
-    <main className="min-h-screen pt-28 pb-24 relative bg-[#0B0F19] overflow-hidden font-sans">
+    <main className="min-h-screen pt-28 pb-24 relative bg-[#0B0F19] overflow-hidden font-sans bg-cyber-grid-green bg-scanlines">
       <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.02] mix-blend-overlay"></div>
 
       <div className="mx-auto max-w-7xl px-6 lg:px-12 relative z-10">
-        
+
         {/* Page Header */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: -15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           className="mb-12 text-center relative"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-black/40 border border-white/10 backdrop-blur-xl shadow-2xl text-[10px] font-bold uppercase tracking-widest mb-5 text-slate-300 select-none">
-            <span className="relative flex h-2 w-2 mr-1">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-            </span>
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-black/40 text-emerald-400 backdrop-blur-xl shadow-2xl text-[10px] uppercase select-none badge-cyber mb-5">
+            <span className="h-2 w-2 rounded-full bg-red-500 animate-blink mr-1"></span>
             Active Threat Database
           </div>
-          <h1 className="text-4xl md:text-5xl font-semibold flex flex-col items-center justify-center gap-2 text-white tracking-tight pb-2">
-            Community Intel
+          <h1 className="text-4xl md:text-5xl font-semibold flex items-center justify-center gap-2 text-white tracking-tight pb-2 font-mono">
+            Community Intel<span className="cursor text-[#00ff9d] animate-blink font-sans">_</span>
           </h1>
           <p className="mt-3 text-slate-400 text-sm md:text-base max-w-xl mx-auto leading-relaxed">
             Report malicious infrastructure. Submissions feed the community blacklist to defend networks globally.
           </p>
         </motion.div>
 
-        {/* Full Width Stacked Grid */}
+        {/* Top Section: Form Card / Lock Screen */}
         <div className="space-y-10">
-          
-          {/* Top Section: Form Card */}
-          <motion.div 
+          <motion.div
+            key="form-container"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.15 }}
+            exit={{ opacity: 0, y: -20, filter: "blur(8px)" }}
+            transition={{ duration: 0.5 }}
             className="w-full"
           >
-            <div className="rounded-2xl border border-white/[0.06] bg-slate-900/40 backdrop-blur-xl relative overflow-hidden group shadow-[0_12px_40px_rgba(0,0,0,0.5)]">
-              <div className="p-6 md:p-8 relative z-10 flex flex-col justify-between">
-                <AnimatePresence mode="wait">
-                  {!user ? (
-                    <motion.div 
-                      key="auth-locked"
-                      initial={{ opacity: 0, scale: 0.98 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.98, filter: "blur(8px)" }}
-                      transition={{ duration: 0.3 }}
-                      className="flex flex-col items-center justify-center text-center py-10 space-y-6"
-                    >
-                      <div className="relative">
-                        <div className="absolute inset-0 bg-emerald-500/10 rounded-full blur-2xl animate-pulse"></div>
-                        <div className="bg-slate-950/60 text-emerald-400 p-5 rounded-full border border-white/10 relative">
-                          <User size={36} strokeWidth={2} />
-                        </div>
-                      </div>
-                      <div className="space-y-2 max-w-sm">
-                        <h3 className="text-xl font-bold text-white tracking-tight">Authentication Required</h3>
-                        <p className="text-xs text-slate-400 leading-relaxed font-semibold">
-                          You must be signed in to submit threat intel. Please connect your Google account to log target IPs.
-                        </p>
-                      </div>
-                      <Button
-                        onClick={signInWithGoogle}
-                        className="bg-white hover:bg-slate-100 border border-white text-slate-900 rounded-full px-6 h-11 transition-all duration-300 hover:shadow-[0_4px_20px_rgba(255,255,255,0.15)] flex items-center gap-2.5 text-xs font-extrabold active:scale-95 cursor-pointer"
-                      >
-                        <svg className="w-4.5 h-4.5" viewBox="0 0 48 48">
-                          <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039L38.802 8.841C34.553 4.806 29.613 2.5 24 2.5C11.983 2.5 2.5 11.983 2.5 24s9.483 21.5 21.5 21.5S45.5 36.017 45.5 24c0-1.538-.135-3.022-.389-4.417z"></path>
-                          <path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12.5 24 12.5c3.059 0 5.842 1.154 7.961 3.039l5.839-5.841C34.553 4.806 29.613 2.5 24 2.5C16.318 2.5 9.642 6.723 6.306 14.691z"></path>
-                          <path fill="#4CAF50" d="M24 45.5c5.613 0 10.553-2.306 14.802-6.341l-5.839-5.841C30.842 35.846 27.059 38 24 38c-5.039 0-9.345-2.608-11.124-6.481l-6.571 4.819C9.642 41.277 16.318 45.5 24 45.5z"></path>
-                          <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-.792 2.237-2.231 4.166-4.087 5.571l5.839 5.841C44.196 35.123 45.5 29.837 45.5 24c0-1.538-.135-3.022-.389-4.417z"></path>
-                        </svg>
-                        Sign In with Google
-                      </Button>
-                    </motion.div>
-                  ) : !submitSuccess ? (
-                    <motion.div 
-                      key="form"
-                      initial={{ opacity: 0, scale: 0.98 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.98, filter: "blur(8px)" }}
-                      transition={{ duration: 0.3 }}
-                      className="space-y-6"
-                    >
-                      {/* IP Input with Verification */}
-                      <div className="space-y-2">
-                        <label className="text-xs font-bold text-slate-300 ml-1" htmlFor="rip-ip-input">
-                          IP Address <span className="text-slate-500 font-normal lowercase">(ex. 8.8.8.8)</span>
-                        </label>
-                        <div className="relative">
-                          <input
-                            type="text"
-                            id="rip-ip-input"
-                            className="w-full h-11 rounded-xl border border-white/5 bg-slate-950/60 pl-4 pr-10 text-sm font-mono text-slate-200 placeholder:text-slate-600 focus-visible:outline-none focus-visible:border-emerald-500/30 focus-visible:ring-1 focus-visible:ring-emerald-500/20 transition-all shadow-inner"
-                            placeholder="IP Address"
-                            autoComplete="off"
-                            spellCheck="false"
-                            value={ipValue}
-                            onChange={(e) => setIpValue(e.target.value)}
-                          />
-                          <div className="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center">
-                            {ipStatus.type === 'valid_v4' || ipStatus.type === 'valid_v6' ? (
-                              <ShieldCheck className="text-emerald-400" size={16} />
-                            ) : ipStatus.type === 'private' ? (
-                              <AlertTriangle className="text-amber-400" size={16} />
-                            ) : ipStatus.type === 'whitelisted' ? (
-                              <Info className="text-rose-400" size={16} />
-                            ) : ipStatus.type === 'invalid' ? (
-                              <AlertTriangle className="text-rose-500" size={16} />
-                            ) : null}
-                          </div>
-                        </div>
-
-                        {/* Animated Validator Banner */}
-                        <AnimatePresence>
-                          {ipStatus.type !== 'empty' && (
-                            <motion.div
-                              initial={{ opacity: 0, height: 0, y: -6 }}
-                              animate={{ opacity: 1, height: 'auto', y: 0 }}
-                              exit={{ opacity: 0, height: 0, y: -6 }}
-                              className={`p-3 rounded-xl border text-[11px] font-medium leading-relaxed flex items-start gap-2.5 transition-all duration-300 overflow-hidden ${
-                                ipStatus.type === 'valid_v4' || ipStatus.type === 'valid_v6'
-                                  ? 'bg-emerald-500/5 border-emerald-500/15 text-emerald-400'
-                                  : ipStatus.type === 'private'
-                                  ? 'bg-amber-500/5 border-amber-500/15 text-amber-400'
-                                  : 'bg-rose-500/5 border-rose-500/15 text-rose-400'
-                              }`}
-                            >
-                              <div>
-                                <span className="font-bold uppercase tracking-widest block text-[9px] mb-0.5">
-                                  {ipStatus.type === 'valid_v4' && 'Verified Public IPv4'}
-                                  {ipStatus.type === 'valid_v6' && 'Verified Public IPv6'}
-                                  {ipStatus.type === 'private' && 'Local Address Warning'}
-                                  {ipStatus.type === 'whitelisted' && 'Safe DNS Blocked'}
-                                  {ipStatus.type === 'invalid' && 'IP Format Error'}
-                                </span>
-                                {ipStatus.msg}
+            <div className="rounded-2xl bg-slate-900/40 bg-cyber-grid bg-dot-grid backdrop-blur-xl relative overflow-hidden group border-cyber-glow">
+                  <div className="p-6 md:p-8 relative z-10 flex flex-col justify-between">
+                    <AnimatePresence mode="wait">
+                      {!submitSuccess ? (
+                        <motion.div
+                          key="form"
+                          initial={{ opacity: 0, scale: 0.98 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.98, filter: "blur(8px)" }}
+                          transition={{ duration: 0.3 }}
+                          className="space-y-6"
+                        >
+                          {/* IP Input with Verification */}
+                          <div className="space-y-2">
+                            <label className="text-xs font-bold text-slate-300 ml-1" htmlFor="rip-ip-input">
+                              IP Address <span className="text-slate-500 font-normal lowercase">(ex. 8.8.8.8)</span>
+                            </label>
+                            <div className="relative">
+                              <input
+                                type="text"
+                                id="rip-ip-input"
+                                className="w-full h-11 rounded-xl border border-white/5 bg-slate-950/60 pl-4 pr-10 text-sm font-mono text-slate-200 placeholder:text-slate-600 focus-visible:outline-none focus-visible:border-emerald-500/40 focus-visible:ring-1 focus-visible:ring-emerald-500/20 focus-visible:shadow-[0_0_15px_rgba(16,185,129,0.05)] transition-all shadow-inner"
+                                placeholder="IP Address"
+                                autoComplete="off"
+                                spellCheck="false"
+                                value={ipValue}
+                                onChange={(e) => setIpValue(e.target.value)}
+                              />
+                              <div className="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center">
+                                {ipStatus.type === 'valid_v4' || ipStatus.type === 'valid_v6' ? (
+                                  <ShieldCheck className="text-emerald-400" size={16} />
+                                ) : ipStatus.type === 'private' ? (
+                                  <AlertTriangle className="text-amber-400" size={16} />
+                                ) : ipStatus.type === 'whitelisted' ? (
+                                  <Info className="text-rose-400" size={16} />
+                                ) : ipStatus.type === 'invalid' ? (
+                                  <AlertTriangle className="text-rose-500" size={16} />
+                                ) : null}
                               </div>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </div>
+                            </div>
 
-                      {/* Mockup-Aligned Checkbox Grid */}
-                      <div className="space-y-3">
-                        <label className="text-xs font-bold text-slate-300 ml-1">
-                          Categories <span className="text-slate-500 font-normal lowercase">(at least one is required)</span>
-                        </label>
-                        
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-3 select-none">
-                          {THREAT_CATEGORIES.map((cat) => {
-                            const isChecked = selectedCats.includes(cat.name)
-                            return (
-                              <div 
-                                key={cat.id} 
-                                onClick={() => toggleCategory(cat.name)}
-                                className="flex items-center justify-between group cursor-pointer py-0.5"
-                              >
-                                <div className="flex items-center gap-2.5">
-                                  {/* Custom Checkbox Box */}
-                                  <div className={`w-4 h-4 rounded border flex items-center justify-center transition-all duration-200 ${
-                                    isChecked 
-                                      ? 'bg-emerald-500 border-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.25)]' 
-                                      : 'border-white/20 group-hover:border-white/40 bg-slate-950/40'
-                                  }`}>
-                                    {isChecked && (
-                                      <Check size={11} className="text-white" strokeWidth={3} />
+                            {/* Animated Validator Banner */}
+                            <AnimatePresence>
+                              {ipStatus.type !== 'empty' && (
+                                <motion.div
+                                  initial={{ opacity: 0, height: 0, y: -6 }}
+                                  animate={{ opacity: 1, height: 'auto', y: 0 }}
+                                  exit={{ opacity: 0, height: 0, y: -6 }}
+                                  className={`p-3.5 rounded-xl border text-[11px] font-semibold leading-relaxed flex items-start gap-2.5 transition-all duration-300 overflow-hidden ${ipStatus.type === 'valid_v4' || ipStatus.type === 'valid_v6'
+                                      ? 'bg-emerald-500/5 border-emerald-500/15 text-emerald-400 shadow-[inset_0_1px_0_rgba(16,185,129,0.05)]'
+                                      : ipStatus.type === 'private'
+                                        ? 'bg-amber-500/5 border-amber-500/15 text-amber-400 shadow-[inset_0_1px_0_rgba(245,158,11,0.05)]'
+                                        : 'bg-rose-500/5 border-rose-500/15 text-rose-400 shadow-[inset_0_1px_0_rgba(244,63,94,0.05)]'
+                                    }`}
+                                >
+                                  <div className="flex-shrink-0 mt-0.5">
+                                    {ipStatus.type === 'valid_v4' || ipStatus.type === 'valid_v6' ? (
+                                      <ShieldCheck size={14} />
+                                    ) : (
+                                      <AlertTriangle size={14} />
                                     )}
                                   </div>
-                                  <span className={`text-xs font-semibold tracking-wide transition-colors ${
-                                    isChecked ? 'text-white' : 'text-slate-400 group-hover:text-slate-300'
-                                  }`}>
-                                    {cat.name}
-                                  </span>
-                                </div>
-
-                                {/* Hover tooltip */}
-                                <div className="relative group/tooltip flex items-center pr-2">
-                                  <HelpCircle size={13} className="text-sky-500 hover:text-sky-400 cursor-help transition-colors" />
-                                  <div className="absolute bottom-full right-0 mb-2 w-48 p-2 rounded-lg bg-slate-950 border border-white/10 text-[10px] text-slate-300 font-semibold leading-normal opacity-0 pointer-events-none group-hover/tooltip:opacity-100 transition-opacity z-50 shadow-xl text-center select-text">
-                                    {cat.description}
-                                    <div className="absolute top-full right-1.5 border-4 border-transparent border-t-slate-950"></div>
+                                  <div>
+                                    <span className="font-bold uppercase tracking-widest block text-[9px] mb-0.5">
+                                      {ipStatus.type === 'valid_v4' && 'Verified Public IPv4'}
+                                      {ipStatus.type === 'valid_v6' && 'Verified Public IPv6'}
+                                      {ipStatus.type === 'private' && 'Local Address Warning'}
+                                      {ipStatus.type === 'whitelisted' && 'Safe DNS Blocked'}
+                                      {ipStatus.type === 'invalid' && 'IP Format Error'}
+                                    </span>
+                                    {ipStatus.msg}
                                   </div>
-                                </div>
-                              </div>
-                            )
-                          })}
-                        </div>
-                      </div>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </div>
 
-                      {/* Mockup-Aligned Text Area */}
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <label className="text-xs font-bold text-slate-300 ml-1" htmlFor="rip-comment">
-                            Comment
-                          </label>
-                          <span className="text-[10px] font-bold font-mono text-slate-500 tracking-wider">
-                            Characters left: {1024 - comment.length} / 1024
-                          </span>
-                        </div>
-                        <textarea
-                          id="rip-comment"
-                          maxLength={1024}
-                          className="w-full h-24 rounded-xl border border-white/5 bg-slate-950/60 px-4 py-3 text-xs text-slate-200 placeholder:text-slate-600 focus-visible:outline-none focus-visible:border-emerald-500/30 focus-visible:ring-1 focus-visible:ring-emerald-500/20 transition-all resize-none font-medium leading-relaxed"
-                          placeholder="Comment (server log snippets, abuse details, etc)"
-                          value={comment}
-                          onChange={(e) => setComment(e.target.value)}
-                        />
-                      </div>
+                          {/* Mockup-Aligned Checkbox Grid */}
+                          <div className="space-y-3">
+                            <label className="text-xs font-bold text-slate-300 ml-1">
+                              Categories <span className="text-slate-500 font-normal lowercase">(at least one is required)</span>
+                            </label>
 
-                      {/* Toggle Optional Information button */}
-                      <div className="pt-2">
-                        <button
-                          type="button"
-                          onClick={() => setShowOptional(!showOptional)}
-                          className="mx-auto block text-[9px] font-bold uppercase tracking-wider px-5 py-2.5 rounded-lg border border-white/5 bg-slate-900/40 hover:bg-slate-900/80 text-slate-400 hover:text-slate-200 transition-all select-none active:scale-[0.98]"
-                        >
-                          {showOptional ? 'Hide Optional Report Information' : 'Toggle Optional Report Information'}
-                        </button>
-                        
-                        <AnimatePresence>
-                          {showOptional && (
-                            <motion.div
-                              initial={{ opacity: 0, height: 0 }}
-                              animate={{ opacity: 1, height: 'auto' }}
-                              exit={{ opacity: 0, height: 0 }}
-                              transition={{ duration: 0.3 }}
-                              className="overflow-hidden space-y-4 pt-4"
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 select-none">
+                              {THREAT_CATEGORIES.map((cat) => {
+                                const isChecked = selectedCats.includes(cat.name)
+                                return (
+                                  <div
+                                    key={cat.id}
+                                    onClick={() => toggleCategory(cat.name)}
+                                    className={`flex items-center justify-between group cursor-pointer p-3 rounded-xl border transition-all duration-300 ${isChecked
+                                        ? 'bg-emerald-500/10 border-emerald-500/40 shadow-[0_0_15px_rgba(16,185,129,0.08)]'
+                                        : 'border-white/[0.04] bg-slate-950/40 hover:bg-slate-900/30 hover:border-white/10'
+                                      }`}
+                                  >
+                                    <div className="flex items-center gap-2.5 min-w-0">
+                                      {/* Custom Checkbox Box */}
+                                      <div className={`w-4 h-4 rounded border flex items-center justify-center transition-all duration-200 flex-shrink-0 ${isChecked
+                                          ? 'bg-emerald-500 border-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.25)]'
+                                          : 'border-white/20 group-hover:border-white/40 bg-slate-950/60'
+                                        }`}>
+                                        {isChecked && (
+                                          <Check size={11} className="text-white" strokeWidth={3} />
+                                        )}
+                                      </div>
+                                      <span className={`text-xs font-semibold tracking-wide transition-colors truncate ${isChecked ? 'text-white font-bold' : 'text-slate-400 group-hover:text-slate-300'
+                                        }`}>
+                                        {cat.name}
+                                      </span>
+                                    </div>
+
+                                    {/* Hover tooltip */}
+                                    <div className="relative group/tooltip flex items-center pr-1 flex-shrink-0">
+                                      <HelpCircle size={13} className="text-slate-500 hover:text-slate-300 cursor-help transition-colors" />
+                                      <div className="absolute bottom-full right-0 mb-2 w-48 p-2.5 rounded-lg bg-slate-950 border border-white/10 text-[10px] text-slate-300 font-semibold leading-normal opacity-0 pointer-events-none group-hover/tooltip:opacity-100 transition-opacity z-50 shadow-xl text-center select-text">
+                                        {cat.description}
+                                        <div className="absolute top-full right-1.5 border-4 border-transparent border-t-slate-950"></div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                )
+                              })}
+                            </div>
+                          </div>
+
+                          {/* Mockup-Aligned Text Area */}
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <label className="text-xs font-bold text-slate-300 ml-1" htmlFor="rip-comment">
+                                Comment
+                              </label>
+                              <span className="text-[10px] font-bold font-mono text-slate-500 tracking-wider">
+                                Characters left: {1024 - comment.length} / 1024
+                              </span>
+                            </div>
+                            <textarea
+                              id="rip-comment"
+                              maxLength={1024}
+                              className="w-full h-24 rounded-xl border border-white/5 bg-slate-950/60 px-4 py-3 text-xs font-mono text-slate-200 placeholder:text-slate-600 focus-visible:outline-none focus-visible:border-emerald-500/30 focus-visible:ring-1 focus-visible:ring-emerald-500/20 transition-all resize-none leading-relaxed"
+                              placeholder="Comment (server log snippets, abuse details, etc)"
+                              value={comment}
+                              onChange={(e) => setComment(e.target.value)}
+                            />
+                          </div>
+
+                          {/* Toggle Optional Information button */}
+                          <div className="pt-2">
+                            <button
+                              type="button"
+                              onClick={() => setShowOptional(!showOptional)}
+                              className="mx-auto block text-[9px] font-bold uppercase tracking-wider px-5 py-2.5 rounded-lg border border-white/5 bg-slate-900/40 hover:bg-slate-900/80 text-slate-400 hover:text-slate-200 transition-all select-none active:scale-[0.98]"
                             >
-                              <div className="space-y-2 max-w-md mx-auto">
-                                <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1 ml-1" htmlFor="rip-alias">
-                                  <User size={13} className="text-slate-500" /> Agent Alias <span className="text-slate-500 font-normal lowercase">(optional)</span>
-                                </label>
-                                <div className="relative">
-                                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                                    <span className="text-slate-600 font-mono font-bold text-xs">@</span>
-                                  </div>
-                                  <input
-                                    type="text"
-                                    id="rip-alias"
-                                    className={`w-full h-11 rounded-xl border border-white/5 bg-slate-950/60 pl-8 pr-4 text-xs font-semibold text-slate-200 placeholder:text-slate-600 focus-visible:outline-none transition-all shadow-inner ${
-                                      user ? 'opacity-60 cursor-not-allowed' : 'focus-visible:border-emerald-500/30 focus-visible:ring-1 focus-visible:ring-emerald-500/20'
-                                    }`}
-                                    placeholder="Anonymous Defender"
-                                    autoComplete="off"
-                                    spellCheck="false"
-                                    maxLength={24}
-                                    value={alias}
-                                    onChange={(e) => setAlias(e.target.value)}
-                                    disabled={!!user}
-                                  />
-                                </div>
-                                {user && (
-                                  <p className="text-[10px] text-slate-500 font-semibold ml-1 mt-1">
-                                    Logged in as @{profile?.username || alias || 'defender'}. Update your alias in your{' '}
-                                    <Link to="/profile" className="text-cyan-400 hover:underline hover:text-cyan-300">
-                                      account settings
-                                    </Link>
-                                    .
-                                  </p>
-                                )}
-                              </div>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </div>
+                              {showOptional ? 'Hide Optional Report Information' : 'Toggle Optional Report Information'}
+                            </button>
 
-                      {/* Mockup-Aligned Action Row */}
-                      <div className="flex flex-col sm:flex-row items-center gap-4 pt-4 border-t border-white/5">
-                        <Button
-                          className={`h-11 px-6 rounded-xl text-white font-bold text-xs tracking-wider transition-all shadow-lg flex items-center justify-center gap-2 border select-none ${
-                            canSubmit && selectedCats.length > 0
-                              ? 'bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 border-emerald-500/20 shadow-[0_4px_20px_rgba(16,185,129,0.15)] active:scale-[0.98]'
-                              : 'bg-slate-900 border-white/5 text-slate-600 cursor-not-allowed'
-                          }`}
-                          onClick={handleSubmit}
-                          disabled={submitting || !canSubmit || selectedCats.length === 0}
+                            <AnimatePresence>
+                              {showOptional && (
+                                <motion.div
+                                  initial={{ opacity: 0, height: 0 }}
+                                  animate={{ opacity: 1, height: 'auto' }}
+                                  exit={{ opacity: 0, height: 0 }}
+                                  transition={{ duration: 0.3 }}
+                                  className="overflow-hidden space-y-4 pt-4"
+                                >
+                                  <div className="space-y-2 max-w-md mx-auto">
+                                    <label className="text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1 ml-1" htmlFor="rip-alias">
+                                      <User size={13} className="text-slate-500" /> Agent Alias <span className="text-slate-500 font-normal lowercase">(optional)</span>
+                                    </label>
+                                    <div className="relative">
+                                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                        <span className="text-slate-600 font-mono font-bold text-xs">@</span>
+                                      </div>
+                                      <input
+                                        type="text"
+                                        id="rip-alias"
+                                        className={`w-full h-11 rounded-xl border border-white/5 bg-slate-950/60 pl-8 pr-4 text-xs font-semibold text-slate-200 placeholder:text-slate-600 focus-visible:outline-none transition-all shadow-inner ${user ? 'opacity-60 cursor-not-allowed' : 'focus-visible:border-emerald-500/30 focus-visible:ring-1 focus-visible:ring-emerald-500/20'
+                                          }`}
+                                        placeholder="Anonymous Defender"
+                                        autoComplete="off"
+                                        spellCheck="false"
+                                        maxLength={24}
+                                        value={alias}
+                                        onChange={(e) => setAlias(e.target.value)}
+                                        disabled={!!user}
+                                      />
+                                    </div>
+                                    {user && (
+                                      <p className="text-[10px] text-slate-500 font-semibold ml-1 mt-1">
+                                        Logged in as @{profile?.username || alias || 'defender'}. Update your alias in your{' '}
+                                        <Link to="/profile" className="text-cyan-400 hover:underline hover:text-cyan-300">
+                                          account settings
+                                        </Link>
+                                        .
+                                      </p>
+                                    )}
+                                  </div>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </div>
+
+                          {/* Mockup-Aligned Action Row */}
+                          <div className="flex flex-col sm:flex-row items-center gap-4 pt-4 border-t border-white/5">
+                            <Button
+                              className={`h-11 px-6 rounded-xl text-white font-bold text-xs tracking-wider transition-all shadow-lg flex items-center justify-center gap-2 border select-none ${canSubmit && selectedCats.length > 0
+                                  ? 'bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 border-emerald-500/20 shadow-[0_4px_20px_rgba(16,185,129,0.15)] active:scale-[0.98]'
+                                  : 'bg-slate-900 border-white/5 text-slate-600 cursor-not-allowed'
+                                }`}
+                              onClick={handleSubmit}
+                              disabled={submitting || !canSubmit || selectedCats.length === 0}
+                            >
+                              {submitting ? (
+                                <>
+                                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                                  <span>Reporting IP...</span>
+                                </>
+                              ) : (
+                                <span>REPORT IP ADDRESS</span>
+                              )}
+                            </Button>
+
+                            <p className="text-xs text-slate-500 font-semibold">
+                              Please abide by our{' '}
+                              <button
+                                type="button"
+                                onClick={() => setShowPolicyModal(true)}
+                                className="text-cyan-400 hover:underline hover:text-cyan-300 font-bold transition-colors"
+                              >
+                                reporting policy
+                              </button>
+                              .
+                            </p>
+                          </div>
+                        </motion.div>
+                      ) : (
+                        <motion.div
+                          key="success"
+                          initial={{ opacity: 0, scale: 0.96 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.96, filter: "blur(8px)" }}
+                          transition={{ duration: 0.4 }}
+                          className="flex flex-col items-center justify-center text-center py-10"
                         >
-                          {submitting ? (
-                            <>
-                              <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                              <span>Reporting IP...</span>
-                            </>
-                          ) : (
-                            <span>REPORT IP ADDRESS</span>
-                          )}
-                        </Button>
-                        
-                        <p className="text-xs text-slate-500 font-semibold">
-                          Please abide by our{' '}
-                          <button
-                            type="button"
-                            onClick={() => setShowPolicyModal(true)}
-                            className="text-cyan-400 hover:underline hover:text-cyan-300 font-bold transition-colors"
+                          <div className="relative mb-6">
+                            <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-2xl animate-pulse"></div>
+                            <div className="bg-gradient-to-b from-emerald-400 to-emerald-600 text-white p-5 rounded-full shadow-[0_0_30px_rgba(16,185,129,0.35)] relative">
+                              <ShieldCheck size={40} strokeWidth={2.5} />
+                            </div>
+                          </div>
+                          <h2 className="text-2xl font-black text-white mb-2 tracking-tight">
+                            Intel Dispatched
+                          </h2>
+                          <p className="text-slate-400 text-xs leading-relaxed mb-8 px-4 max-w-xs font-medium">
+                            Your submission has been cataloged in our community log database. Our backend compiler evaluates reports every few hours to update live blocklists.
+                          </p>
+
+                          <Button
+                            className="h-11 px-6 rounded-xl bg-white/5 hover:bg-white/10 text-white font-bold text-xs border border-white/10 transition-all backdrop-blur-md flex items-center gap-2 active:scale-95 shadow-lg"
+                            onClick={() => setSubmitSuccess(false)}
                           >
-                            reporting policy
-                          </button>
-                          .
-                        </p>
-                      </div>
-                    </motion.div>
-                  ) : (
-                    <motion.div 
-                      key="success"
-                      initial={{ opacity: 0, scale: 0.96 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.96, filter: "blur(8px)" }}
-                      transition={{ duration: 0.4 }}
-                      className="flex flex-col items-center justify-center text-center py-10"
-                    >
-                      <div className="relative mb-6">
-                        <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-2xl animate-pulse"></div>
-                        <div className="bg-gradient-to-b from-emerald-400 to-emerald-600 text-white p-5 rounded-full shadow-[0_0_30px_rgba(16,185,129,0.35)] relative">
-                          <ShieldCheck size={40} strokeWidth={2.5} />
-                        </div>
-                      </div>
-                      <h2 className="text-2xl font-black text-white mb-2 tracking-tight">
-                        Intel Dispatched
-                      </h2>
-                      <p className="text-slate-400 text-xs leading-relaxed mb-8 px-4 max-w-xs font-medium">
-                        Your submission has been cataloged in our community log database. Our backend compiler evaluates reports every few hours to update live blocklists.
-                      </p>
-                      
-                      <Button
-                        className="h-11 px-6 rounded-xl bg-white/5 hover:bg-white/10 text-white font-bold text-xs border border-white/10 transition-all backdrop-blur-md flex items-center gap-2 active:scale-95 shadow-lg"
-                        onClick={() => setSubmitSuccess(false)}
-                      >
-                        <Send size={12} />
-                        Report Another Target
-                      </Button>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            </div>
-          </motion.div>
+                            <Send size={12} />
+                            Report Another Target
+                          </Button>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </div>
+              </motion.div>
 
           {/* Bottom Section: Database Table / Leaderboard */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
             className="w-full flex flex-col"
           >
-            <div className="rounded-xl border border-white/5 bg-slate-900/40 backdrop-blur-xl flex flex-col overflow-hidden relative shadow-[0_12px_40px_rgba(0,0,0,0.5)]">
-              
+            <div className="rounded-xl bg-slate-900/40 bg-cyber-grid bg-dot-grid backdrop-blur-xl flex flex-col overflow-hidden relative border-cyber-glow">
+
               {/* Table / Leaderboard Header Section */}
-              <div className="p-4 md:px-6 flex items-center justify-between border-b border-white/5 bg-slate-950/20 relative z-10">
+              <div className="p-4 md:px-6 flex items-center justify-between border-b border-white/5 bg-slate-950/25 relative z-10">
                 <div className="flex gap-6">
-                  <button 
+                  <button
                     onClick={() => setActiveTab('feed')}
                     className={`font-semibold text-xs py-1.5 rounded-lg flex items-center gap-2 transition-all ${activeTab === 'feed' ? 'text-white' : 'text-slate-400 hover:text-slate-200'}`}
                   >
                     <List size={14} /> Submissions Feed
                   </button>
-                  <button 
+                  <button
                     onClick={() => setActiveTab('leaderboard')}
                     className={`font-semibold text-xs py-1.5 rounded-lg flex items-center gap-2 transition-all ${activeTab === 'leaderboard' ? 'text-cyan-400 font-bold' : 'text-slate-400 hover:text-slate-200'}`}
                   >
@@ -728,7 +702,7 @@ export default function ReportIP({ addToast }: any) {
                 </div>
                 {activeTab === 'feed' && (
                   <div className="hidden sm:flex text-xs text-slate-300 font-bold bg-white/5 px-4 py-2 rounded-xl border border-white/5 shadow-inner items-center gap-2">
-                    <ShieldAlert size={14} className="text-red-400"/>
+                    <ShieldAlert size={14} className="text-red-400" />
                     {reportCount > 0 ? `${fmt(reportCount)} Submissions` : 'Live'}
                   </div>
                 )}
@@ -761,7 +735,7 @@ export default function ReportIP({ addToast }: any) {
                       </div>
                     ) : (
                       <table className="w-full text-xs text-left">
-                        <thead className="text-[9px] uppercase bg-white/[0.01] text-slate-500 font-bold border-b border-white/5 tracking-widest">
+                        <thead className="text-[10px] uppercase bg-slate-950/45 text-slate-400 font-bold border-b border-white/5 tracking-widest">
                           <tr>
                             <th className="px-8 py-5">IP Address</th>
                             <th className="px-6 py-5">Category</th>
@@ -772,23 +746,24 @@ export default function ReportIP({ addToast }: any) {
                         <tbody className="divide-y divide-white/5">
                           <AnimatePresence>
                             {reports.map((row, idx) => (
-                              <motion.tr 
+                              <motion.tr
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: idx * 0.03 }}
-                                key={row.id || row.created_at} 
+                                key={row.id || row.created_at}
                                 className="hover:bg-white/[0.015] transition-colors group"
                               >
                                 <td className="px-8 py-4.5 whitespace-nowrap">
                                   <div className="flex flex-col gap-1.5">
                                     <div className="font-mono font-bold text-slate-200 flex items-center gap-2 text-sm">
+                                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse flex-shrink-0" />
                                       <span>{row.ip}</span>
-                                      
+
                                       {/* Copy to Clipboard Trigger */}
                                       <button
                                         type="button"
                                         onClick={() => handleCopyIp(row.ip)}
-                                        className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-white/5 text-slate-500 hover:text-slate-300 w-5 h-5 flex items-center justify-center"
+                                        className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-white/5 text-slate-500 hover:text-slate-300 w-5 h-5 flex items-center justify-center cursor-pointer"
                                         title="Copy IP address"
                                       >
                                         {copiedIp === row.ip ? (
@@ -799,7 +774,7 @@ export default function ReportIP({ addToast }: any) {
                                       </button>
                                     </div>
                                     {row.reporter_alias && (
-                                      <div className="text-[9px] uppercase tracking-wider text-slate-500 font-bold">
+                                      <div className="text-[9px] uppercase tracking-wider text-slate-500 font-bold pl-4">
                                         By <span className="text-slate-400">@{row.reporter_alias}</span>
                                       </div>
                                     )}
@@ -849,8 +824,8 @@ export default function ReportIP({ addToast }: any) {
                       </Button>
                       <div className="flex gap-1.5">
                         {[...Array(totalPages)].map((_, i) => (
-                          <div 
-                            key={i} 
+                          <div
+                            key={i}
                             onClick={() => loadReportedIPs(i)}
                             className={`transition-all duration-300 rounded-full cursor-pointer ${i === page ? 'h-1.5 w-4.5 bg-white' : 'h-1.5 w-1.5 bg-slate-700 hover:bg-slate-500'}`}
                           />
@@ -886,7 +861,7 @@ export default function ReportIP({ addToast }: any) {
               onClick={() => setShowPolicyModal(false)}
               className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm"
             />
-            
+
             {/* Modal Body */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 15 }}
@@ -897,7 +872,7 @@ export default function ReportIP({ addToast }: any) {
             >
               {/* Glow Accent Stripe */}
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500" />
-              
+
               <div className="space-y-6">
                 {/* Header */}
                 <div className="flex items-center gap-3">
@@ -906,7 +881,7 @@ export default function ReportIP({ addToast }: any) {
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-white tracking-wide">Community Reporting Policy</h3>
-                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mt-0.5">HimalayaFeed Threat Intelligence Network</p>
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mt-0.5">Threatbase Threat Intelligence Network</p>
                   </div>
                 </div>
 
