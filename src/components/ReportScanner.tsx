@@ -225,8 +225,8 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
 
               <div className="overflow-hidden rounded-xl border border-white/[0.05] bg-slate-950/40 backdrop-blur-md shadow-2xl">
                 <div className="overflow-x-auto">
-                  <table className="w-full text-xs text-left min-w-[800px]">
-                    <thead className="text-[10px] uppercase bg-slate-950/45 text-slate-400 font-bold border-b border-white/5 tracking-widest">
+                  <table className="w-full text-xs text-left block md:table">
+                    <thead className="hidden md:table-header-group text-[10px] uppercase bg-slate-950/45 text-slate-400 font-bold border-b border-white/5 tracking-widest">
                       <tr>
                         <th className="px-6 py-5 w-[20%]">Reporter</th>
                         <th className="px-6 py-5 w-[25%]">
@@ -239,7 +239,7 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
                         <th className="px-6 py-5 text-right w-[20%]">Categories</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-white/5">
+                    <tbody className="block md:table-row-group p-4 md:p-0 space-y-4 md:space-y-0 md:divide-y md:divide-white/5">
                       {reports.map((row, idx) => {
                         const createdAt = row.created_at || new Date().toISOString();
                         const reporter = row.reporter_alias || 'Anonymous';
@@ -247,22 +247,24 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
                         const categories = (row.category || 'Other').split(', ');
                         
                         return (
-                          <tr key={idx} className="hover:bg-white/[0.015] transition-colors group">
-                            <td className="px-6 py-4 whitespace-nowrap">
+                          <tr key={idx} className="block md:table-row bg-slate-900/50 md:bg-transparent hover:bg-white/[0.015] transition-colors group border border-white/10 md:border-0 rounded-xl md:rounded-none p-4 md:p-0">
+                            <td className="block md:table-cell px-0 py-1 md:px-6 md:py-4 whitespace-nowrap">
                               <div className="flex items-center gap-2">
                                 <Check size={14} className="text-emerald-400 shrink-0" strokeWidth={2.5} />
                                 <span className="font-bold text-slate-300">@{reporter}</span>
                               </div>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-slate-400">
-                              <div>{createdAt.replace('T', ' ').substring(0, 19)}</div>
-                              <div className="text-[10px] text-slate-500 font-medium mt-1">({timeAgo(createdAt)})</div>
+                            <td className="block md:table-cell px-0 py-1 md:px-6 md:py-4 whitespace-nowrap text-slate-400">
+                              <div className="flex items-center gap-2 md:block">
+                                <div>{createdAt.replace('T', ' ').substring(0, 19)}</div>
+                                <div className="text-[10px] text-slate-500 font-medium md:mt-1">({timeAgo(createdAt)})</div>
+                              </div>
                             </td>
-                            <td className="px-6 py-4 text-slate-300 max-w-[300px]">
-                              <div className="leading-relaxed font-medium line-clamp-2" title={comment}>{comment}</div>
+                            <td className="block md:table-cell px-0 py-3 md:px-6 md:py-4 text-slate-300 md:max-w-[300px] border-t border-b border-white/5 md:border-0 my-3 md:my-0">
+                              <div className="leading-relaxed font-medium md:line-clamp-2" title={comment}>{comment}</div>
                             </td>
-                            <td className="px-6 py-4 text-right">
-                              <div className="flex flex-wrap gap-1.5 justify-end">
+                            <td className="block md:table-cell px-0 py-1 md:px-6 md:py-4 text-right">
+                              <div className="flex flex-wrap md:justify-end gap-1.5 pt-1 md:pt-0">
                                 {categories.map((cat: string) => (
                                   <span key={cat} className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold tracking-wider ${getCategoryColor(cat)}`}>
                                     {cat}

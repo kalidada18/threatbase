@@ -569,8 +569,8 @@ export default function ReportIP({ addToast }: any) {
                   </div>
                 </div>
               ) : (
-                <table className="w-full text-left font-sans">
-                  <thead className="bg-black/40 backdrop-blur-sm text-white border-b border-white/[0.08]">
+                <table className="w-full text-left font-sans block md:table">
+                  <thead className="hidden md:table-header-group bg-black/40 backdrop-blur-sm text-white border-b border-white/[0.08]">
                     <tr>
                       <th className="px-4 py-3 text-[13px] font-bold tracking-wide w-[12%]">IP Address</th>
                       <th className="px-4 py-3 text-[13px] font-bold tracking-wide w-[15%]">Reporter</th>
@@ -584,7 +584,7 @@ export default function ReportIP({ addToast }: any) {
                       <th className="px-4 py-3 text-[13px] font-bold tracking-wide text-right w-[15%]">Categories</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="block md:table-row-group space-y-4 md:space-y-0 p-4 md:p-0">
                     <AnimatePresence>
                       {reports.map((row, idx) => {
                         const dateObj = new Date(row.created_at);
@@ -597,17 +597,17 @@ export default function ReportIP({ addToast }: any) {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: idx * 0.03 }}
                             key={row.id || row.created_at}
-                            className="bg-white/[0.02] even:bg-transparent hover:bg-white/[0.04] transition-colors group border-b border-white/[0.02] last:border-0"
+                            className="block md:table-row bg-slate-900/50 md:bg-white/[0.02] md:even:bg-transparent hover:bg-white/[0.04] transition-colors group border border-white/10 md:border-0 md:border-b md:border-white/[0.02] last:border-0 rounded-xl md:rounded-none p-4 md:p-0"
                           >
                             {/* IP Address */}
-                            <td className="px-4 py-3 align-top whitespace-nowrap">
-                              <span className="text-slate-300 font-mono text-[13px] font-medium">
+                            <td className="block md:table-cell px-0 py-1.5 md:px-4 md:py-3 align-top whitespace-nowrap">
+                              <span className="text-slate-300 font-mono text-[15px] md:text-[13px] font-bold md:font-medium">
                                 {row.ip}
                               </span>
                             </td>
 
                             {/* Reporter */}
-                            <td className="px-4 py-3 align-top whitespace-nowrap">
+                            <td className="block md:table-cell px-0 py-1 md:px-4 md:py-3 align-top whitespace-nowrap">
                               <div className="flex items-center gap-1.5">
                                 <Check size={14} strokeWidth={3} className="text-[#10b981]" />
                                 <span className="text-[#3b82f6] hover:underline cursor-pointer text-[13px] font-medium">
@@ -623,19 +623,21 @@ export default function ReportIP({ addToast }: any) {
                             </td>
 
                             {/* Timestamp */}
-                            <td className="px-4 py-3 align-top whitespace-nowrap">
-                              <div className="text-[13px] text-slate-200 font-medium">{fullDate}</div>
-                              <div className="text-[11px] text-slate-500 mt-0.5">({timeAgo(row.created_at)})</div>
+                            <td className="block md:table-cell px-0 py-1 md:px-4 md:py-3 align-top whitespace-nowrap">
+                              <div className="flex items-center gap-2 md:block">
+                                <div className="text-[13px] text-slate-200 font-medium">{fullDate}</div>
+                                <div className="text-[11px] text-slate-500 md:mt-0.5">({timeAgo(row.created_at)})</div>
+                              </div>
                             </td>
 
                             {/* Comment */}
-                            <td className="px-4 py-3 align-top">
+                            <td className="block md:table-cell px-0 py-3 md:px-4 md:py-3 align-top border-t border-b border-white/5 md:border-0 my-3 md:my-0">
                               <CommentCell comment={row.comment} />
                             </td>
 
                             {/* Categories */}
-                            <td className="px-4 py-3 align-top">
-                              <div className="flex flex-col items-end gap-1.5">
+                            <td className="block md:table-cell px-0 py-1 md:px-4 md:py-3 align-top">
+                              <div className="flex flex-wrap md:flex-col items-start md:items-end gap-1.5 pt-1 md:pt-0">
                                 {categories.map(cat => (
                                   <span key={cat} className="inline-block px-2 py-0.5 bg-white/10 text-white text-[10px] rounded-[3px] font-medium whitespace-nowrap border border-white/[0.05]">
                                     {cat}

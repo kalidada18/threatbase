@@ -62,7 +62,7 @@ export default function Navbar() {
                 )}
             >
                 <div className="w-full px-4 lg:px-8">
-                    <div className="relative flex items-center justify-between">
+                    <div className="relative flex flex-wrap items-center justify-between">
                         <div className="flex w-full items-center justify-between gap-10 lg:w-auto">
                             <Link
                                 to="/"
@@ -115,8 +115,8 @@ export default function Navbar() {
                             </div>
                         </div>
 
-                        <div className="bg-black/95 backdrop-blur-xl border border-white/10 group-data-[state=active]:block lg:group-data-[state=active]:flex mb-6 hidden w-full flex-wrap items-center justify-end space-y-8 rounded-3xl p-6 shadow-2xl md:flex-nowrap lg:m-0 lg:flex lg:w-fit lg:gap-6 lg:space-y-0 lg:border-transparent lg:bg-transparent lg:p-0 lg:shadow-none">
-                            <div className="lg:hidden">
+                        <div className="bg-black/95 backdrop-blur-xl border border-white/10 group-data-[state=active]:flex lg:group-data-[state=active]:flex mb-4 hidden w-full flex-col lg:flex-row flex-wrap items-center justify-center lg:justify-end space-y-8 lg:space-y-0 rounded-3xl p-6 shadow-2xl md:flex-nowrap lg:m-0 lg:flex lg:w-fit lg:gap-6 lg:border-transparent lg:bg-transparent lg:p-0 lg:shadow-none mt-4 lg:mt-0 transition-all duration-300">
+                            <div className="lg:hidden w-full">
                                 <ul className="space-y-6 text-base font-medium">
                                     {menuItems.map((item, index) => {
                                         const isActive = item.name === 'Report IP' && isReportActive
@@ -147,7 +147,7 @@ export default function Navbar() {
                                 </ul>
                             </div>
                             
-                            <div className="flex w-full flex-col space-y-3 sm:flex-row sm:items-center sm:gap-4 sm:space-y-0 md:w-fit relative">
+                            <div className="flex w-full flex-col space-y-4 sm:flex-row sm:items-center sm:justify-center lg:justify-end sm:gap-4 sm:space-y-0 md:w-fit relative mt-6 lg:mt-0">
                                 <Button
                                     asChild
                                     variant="outline"
