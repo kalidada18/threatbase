@@ -9,10 +9,10 @@ const getRankInfo = (count: number) => {
   if (count >= 500) {
     return {
       name: 'Legend',
-      color: 'from-yellow-300 via-amber-400 to-yellow-600',
-      shadow: 'shadow-[0_0_20px_rgba(234,179,8,0.5)]',
+      style: 'from-yellow-500/20 to-amber-500/30 text-yellow-400 border-yellow-500/30',
+      shadow: 'shadow-[0_0_20px_rgba(234,179,8,0.25)]',
       icon: (
-        <svg className="h-4 w-4 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg className="h-3.5 w-3.5 text-yellow-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="currentColor" fillOpacity="0.2" />
           <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
         </svg>
@@ -22,10 +22,10 @@ const getRankInfo = (count: number) => {
   if (count >= 300) {
     return {
       name: 'Elite',
-      color: 'from-purple-400 via-fuchsia-500 to-purple-600',
-      shadow: 'shadow-[0_0_15px_rgba(168,85,247,0.4)]',
+      style: 'from-purple-500/20 to-fuchsia-600/30 text-purple-400 border-purple-500/30',
+      shadow: 'shadow-[0_0_15px_rgba(168,85,247,0.2)]',
       icon: (
-        <svg className="h-4 w-4 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg className="h-3.5 w-3.5 text-purple-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M12 2L2 12l10 10 10-10L12 2z" fill="currentColor" fillOpacity="0.2" />
           <path d="M12 2L2 12l10 10 10-10L12 2z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
         </svg>
@@ -35,10 +35,9 @@ const getRankInfo = (count: number) => {
   if (count >= 100) {
     return {
       name: 'Pro',
-      color: 'from-cyan-400 via-blue-500 to-indigo-600',
-      shadow: 'shadow-[0_0_15px_rgba(34,211,238,0.4)]',
+      style: 'from-cyan-500/20 to-blue-600/30 text-cyan-400 border-cyan-500/30 shadow-[0_0_15px_rgba(34,211,238,0.2)]',
       icon: (
-        <svg className="h-4 w-4 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg className="h-3.5 w-3.5 text-cyan-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="currentColor" fillOpacity="0.2" />
           <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
         </svg>
@@ -48,10 +47,9 @@ const getRankInfo = (count: number) => {
   if (count >= 50) {
     return {
       name: 'Defender',
-      color: 'from-emerald-400 via-emerald-500 to-teal-600',
-      shadow: 'shadow-[0_0_15px_rgba(16,185,129,0.4)]',
+      style: 'from-emerald-500/20 to-teal-600/30 text-emerald-400 border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.2)]',
       icon: (
-        <svg className="h-4 w-4 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg className="h-3.5 w-3.5 text-emerald-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="currentColor" fillOpacity="0.2" />
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" strokeWidth="1.5" />
           <path d="M9 11l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -61,10 +59,10 @@ const getRankInfo = (count: number) => {
   }
   return {
     name: 'Initiate',
-    color: 'from-slate-400 to-slate-600',
+    style: 'from-slate-800/40 to-slate-900/60 text-slate-400 border-slate-800/80',
     shadow: 'shadow-sm',
     icon: (
-      <svg className="h-4 w-4 text-white" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg className="h-3.5 w-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <circle cx="12" cy="12" r="10" fill="currentColor" fillOpacity="0.1" />
         <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.5" />
       </svg>
@@ -143,9 +141,9 @@ export default function Leaderboard() {
               </div>
               <div>
                 <h4 className="font-semibold text-slate-200 text-base tracking-wide">@{leader.reporter_alias}</h4>
-                <div className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full mt-1.5 bg-gradient-to-r ${rank.color} ${rank.shadow}`}>
+                <div className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full mt-1.5 border bg-gradient-to-r ${rank.style} ${rank.shadow}`}>
                   {rank.icon}
-                  <span className="text-[10px] uppercase font-bold tracking-widest text-white/90 drop-shadow-sm">
+                  <span className="text-[10px] uppercase font-bold tracking-widest drop-shadow-sm">
                     {rank.name}
                   </span>
                 </div>
