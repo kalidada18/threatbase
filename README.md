@@ -53,7 +53,7 @@ Threatbase curates and deduplicates data from the following authoritative threat
 | **Hagezi** | DNS Blocklists (Malware/Ads) | Domains |
 | **Blocklist.de / GreenSnow** | SSH/FTP Bruteforcers | IPs |
 
-*See our [Acknowledgements](/src/components/ThanksPage.tsx) page in the app for a full list.*
+*See our [Acknowledgements](https://threatbase.qzz.io/thanks) page in the app for a full list.*
 
 ---
 
