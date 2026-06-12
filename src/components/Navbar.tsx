@@ -83,8 +83,8 @@ export default function Navbar() {
                                 <X className="group-data-[state=active]:rotate-0 group-data-[state=active]:scale-100 group-data-[state=active]:opacity-100 absolute inset-0 m-auto size-6 -rotate-180 scale-0 opacity-0 duration-200" />
                             </button>
 
-                            <div className="hidden lg:block">
-                                <ul className="flex gap-8 text-sm font-medium">
+                            <div className="hidden lg:flex lg:items-center">
+                                <ul className="flex items-center gap-8 text-sm font-medium">
                                     {menuItems.map((item, index) => {
                                         const isActive = item.name === 'Report IP' && isReportActive
                                         return (
@@ -92,7 +92,7 @@ export default function Navbar() {
                                                 <Link
                                                     to={item.href}
                                                     className={cn(
-                                                        "transition-all duration-300 tracking-wide font-bold text-sm px-4 py-2 rounded-full",
+                                                        "transition-all duration-300 tracking-wide font-bold text-sm px-4 py-2 rounded-full flex items-center justify-center",
                                                         isActive 
                                                             ? "bg-white/10 text-white shadow-[0_0_15px_rgba(255,255,255,0.1)]"
                                                             : "text-slate-400 hover:text-white hover:bg-white/5"
@@ -103,10 +103,10 @@ export default function Navbar() {
                                         )
                                     })}
                                     {user && (
-                                        <li>
+                                        <li className="flex items-center">
                                             <Link
                                                 to="/profile"
-                                                className="transition-all duration-300 tracking-wide font-bold text-sm px-4 py-2 rounded-full text-slate-400 hover:text-white hover:bg-white/5">
+                                                className="transition-all duration-300 tracking-wide font-bold text-sm px-4 py-2 rounded-full text-slate-400 hover:text-white hover:bg-white/5 flex items-center justify-center">
                                                 My Account
                                             </Link>
                                         </li>

@@ -65,32 +65,51 @@ export default function ThreatMap() {
           .fitSize([width, height * 1.4], land as any) // Scale slightly larger
           .translate([width / 2, height / 2 + 80])
 
-        // Cache map lines/grid to an offscreen canvas for extreme performance
+        // Create a hidden canvas to draw the solid map
+        const hiddenCanvas = document.createElement('canvas')
+        hiddenCanvas.width = width
+        hiddenCanvas.height = height
+        const hiddenCtx = hiddenCanvas.getContext('2d')
+        if (!hiddenCtx) return
+
+        const path = d3.geoPath().projection(projection).context(hiddenCtx)
+        hiddenCtx.fillStyle = 'black'
+        hiddenCtx.fillRect(0, 0, width, height)
+        hiddenCtx.fillStyle = 'white'
+        hiddenCtx.beginPath()
+        path(land as any)
+        hiddenCtx.fill()
+
+        // Scan hidden canvas to create the dotted effect
+        const imageData = hiddenCtx.getImageData(0, 0, width, height).data
+        const newDots = []
+        const step = 7 // Space between dots
+
+        for (let y = 0; y < height; y += step) {
+          for (let x = 0; x < width; x += step) {
+            const index = (y * width + x) * 4
+            // If the pixel is white (land)
+            if (imageData[index] > 128) {
+              newDots.push({ x, y })
+            }
+          }
+        }
+        
+        // Cache map dots to an offscreen canvas for extreme performance
         const dotCanvas = document.createElement('canvas')
         dotCanvas.width = width
         dotCanvas.height = height
         const dotCtx = dotCanvas.getContext('2d')
         if (dotCtx) {
-          const path = d3.geoPath().projection(projection).context(dotCtx)
-
-          // 1. Draw subtle graticule grid lines (latitude/longitude grid lines)
-          const graticule = d3.geoGraticule()
           dotCtx.beginPath()
-          path(graticule())
-          dotCtx.lineWidth = 0.8
-          dotCtx.strokeStyle = 'rgba(148, 163, 184, 0.05)' // very faint grid lines
-          dotCtx.stroke()
-
-          // 2. Fill the land area with a very subtle slate-blue tone
-          dotCtx.beginPath()
-          path(land as any)
-          dotCtx.fillStyle = 'rgba(15, 23, 42, 0.2)' // subtle continent backing
+          newDots.forEach(dot => {
+            dotCtx.moveTo(dot.x, dot.y)
+            dotCtx.arc(dot.x, dot.y, 1.6, 0, Math.PI * 2)
+          })
+          dotCtx.shadowColor = 'rgba(255, 30, 30, 0.8)'
+          dotCtx.shadowBlur = 6
+          dotCtx.fillStyle = 'rgba(255, 60, 60, 0.95)'
           dotCtx.fill()
-
-          // 3. Draw continent border outlines
-          dotCtx.lineWidth = 1.0
-          dotCtx.strokeStyle = 'rgba(148, 163, 184, 0.15)' // sleek border lines
-          dotCtx.stroke()
         }
 
         const colors = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b']
@@ -202,7 +221,7 @@ export default function ThreatMap() {
   return (
     <canvas
       ref={canvasRef}
-      className="absolute inset-0 pointer-events-none z-0 w-full h-full bg-transparent"
+      className="absolute inset-0 pointer-events-none z-0 w-full h-full bg-slate-900"
     />
   )
 }
