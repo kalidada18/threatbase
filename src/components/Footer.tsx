@@ -14,7 +14,7 @@ export default function Footer() {
           alt: "Threatbase Logo",
           title: "Threatbase",
         }}
-        description="Advanced Threat Intelligence Platform. Fully automated, zero infrastructure, zero cost. Special thanks to all open-source intelligence contributors including Spamhaus, FireHOL, AbuseIPDB, Emerging Threats, and the wider infosec community."
+        description="Advanced Threat Intelligence Platform. Fully automated, curiosity, zero cost. Special thanks to all open-source intelligence contributors including Spamhaus, FireHOL, AbuseIPDB, Emerging Threats, and the wider infosec community."
         sections={[
           {
             title: "Product",
