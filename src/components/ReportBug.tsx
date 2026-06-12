@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
-  Bug, AlertTriangle, ShieldCheck, Copy, Check, ExternalLink, 
-  Mail, Send, Sparkles, Terminal, Code, Info, ArrowRight, CornerDownRight
+  Bug, ShieldCheck, Copy, Check, ExternalLink, 
+  Mail, Terminal, Info, CornerDownRight
 } from 'lucide-react'
 import { useAuth } from '../AuthContext'
 import { Link } from 'react-router-dom'
@@ -10,43 +10,15 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import supabaseClient from '../supabaseClient'
-
-const SEVERITIES = [
-  { value: 'low', label: 'Low (UI glitch, typo, visual misalignment)', color: 'text-slate-400 border-slate-500/20 bg-slate-500/5' },
-  { value: 'medium', label: 'Medium (Broken functionality, logic error)', color: 'text-yellow-400 border-yellow-500/20 bg-yellow-500/5' },
-  { value: 'high', label: 'High (Auth bypass, sensitive data leak, crash)', color: 'text-orange-400 border-orange-500/20 bg-orange-500/5' },
-  { value: 'critical', label: 'Critical (RCE, database deletion, hijack)', color: 'text-rose-400 border-rose-500/20 bg-rose-500/5' },
-  { value: 'suggestion', label: 'Suggestion (Security hardening, recommendation)', color: 'text-cyan-400 border-cyan-500/20 bg-cyan-500/5' }
-]
-
-const COMPONENTS = [
-  { value: 'frontend', label: 'Frontend UI & Pages' },
-  { value: 'backend', label: 'Backend / Supabase Auth' },
-  { value: 'python-scanners', label: 'Python Feed Scanners (update_feed.py)' },
-  { value: 'build-system', label: 'Vite Build & Bundling' },
-  { value: 'other', label: 'Other / Unknown' }
-]
 
 export default function ReportBug({ addToast }: { addToast: (msg: string, type?: string) => void }) {
   const { user, profile } = useAuth()
   
-  // Form fields
+  // Streamlined Form fields
   const [alias, setAlias] = useState('')
   const [contact, setContact] = useState('')
-  const [title, setTitle] = useState('')
-  const [severity, setSeverity] = useState('medium')
-  const [component, setComponent] = useState('frontend')
-  const [description, setDescription] = useState('')
-  const [steps, setSteps] = useState('')
-  const [poc, setPoc] = useState('')
+  const [message, setMessage] = useState('')
   
   // Agreement state
   const [agreementChecked, setAgreementChecked] = useState(false)
@@ -66,37 +38,24 @@ export default function ReportBug({ addToast }: { addToast: (msg: string, type?:
     }
   }, [profile, user])
 
-  // Compute live markdown representation of the report
+  // Compute live markdown representation of the report from the single message field
   const generateMarkdownReport = () => {
-    const componentLabel = COMPONENTS.find(c => c.value === component)?.label || component
-    const severityLabel = SEVERITIES.find(s => s.value === severity)?.label || severity
-    
     return `### 🛡️ ETHICAL DISCLOSURE: GOOD GUY BUG REPORT
 
 **Reporter:** @${alias || 'anonymous'}
 **Contact Info:** ${contact || 'Not provided'}
-**Severity:** ${severityLabel.toUpperCase()}
-**Component:** ${componentLabel}
 
 ---
 
-#### 📝 Description
-${description || '*(No description provided yet)*'}
-
-#### 🚶 Steps to Reproduce
-${steps || '*(No steps provided yet)*'}
-
-${poc ? `#### 💻 Proof of Concept (PoC) / Details\n\`\`\`\n${poc}\n\`\`\`` : ''}
+#### 📝 Bug Details
+${message || '*(Please enter your bug details in the message field)*'}
 
 ---
 *Reported responsibly via ThreatBase "Good Guy" disclosure program.*`
   }
 
   const isFormValid = () => {
-    return title.trim().length > 0 && 
-           description.trim().length > 0 && 
-           steps.trim().length > 0 && 
-           agreementChecked
+    return message.trim().length > 0 && agreementChecked
   }
 
   const handleCopyMarkdown = () => {
@@ -110,41 +69,35 @@ ${poc ? `#### 💻 Proof of Concept (PoC) / Details\n\`\`\`\n${poc}\n\`\`\`` : '
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!isFormValid()) {
-      addToast('Please fill all required fields and accept the ethical agreement', 'error')
+      addToast('Please write a bug message and accept the ethical agreement', 'error')
       return
     }
 
     setIsSubmitting(true)
     
-    // We try to save to supabase but handle failure gracefully.
     try {
       if (supabaseClient) {
-        // We'll write to supabase if a general logs or reports table exists, or we write to a custom log
-        // To be extremely safe and avoid DB errors blocking users, we'll try a generic insert and if it fails,
-        // we'll fallback to local state success.
         const { error } = await supabaseClient
           .from('bug_reports')
           .insert([{
             reporter: alias.trim() || 'anonymous',
             contact: contact.trim() || null,
-            title: title.trim(),
-            severity: severity,
-            component: component,
-            description: description.trim(),
-            steps: steps.trim(),
-            poc: poc.trim() || null
+            title: `Bug Report by @${alias || 'anonymous'}`,
+            description: message.trim(),
+            severity: 'unspecified',
+            component: 'unspecified',
+            steps: 'Provided in main message',
+            poc: null
           }])
         
         if (error) {
-          // If the bug_reports table doesn't exist yet, we log it but proceed to success state
-          console.warn('Supabase insert failed (possibly table does not exist):', error.message)
+          console.warn('Supabase bug_reports insert failed:', error.message)
         }
       }
     } catch (dbErr) {
-      console.warn('Database error:', dbErr)
+      console.warn('Database connection error:', dbErr)
     }
 
-    // Always succeed so the UI experience is flawless and "good guy" reports are completed
     setIsSubmitting(false)
     setSubmitSuccess(true)
     addToast('Bug report successfully generated!', 'success')
@@ -154,13 +107,13 @@ ${poc ? `#### 💻 Proof of Concept (PoC) / Details\n\`\`\`\n${poc}\n\`\`\`` : '
   const gitHubIssueUrl = () => {
     const baseUrl = 'https://github.com/kalidada18/threatbase/issues/new'
     const bodyText = encodeURIComponent(generateMarkdownReport())
-    const titleText = encodeURIComponent(`[BUG][${severity.toUpperCase()}] ${title}`)
+    const titleText = encodeURIComponent(`[BUG] Security/Bug Report by @${alias || 'anonymous'}`)
     return `${baseUrl}?title=${titleText}&body=${bodyText}`
   }
 
   const mailToUrl = () => {
     const bodyText = encodeURIComponent(generateMarkdownReport())
-    const subjectText = encodeURIComponent(`[ThreatBase Bug Report] ${title}`)
+    const subjectText = encodeURIComponent(`[ThreatBase Bug Report] From @${alias || 'anonymous'}`)
     return `mailto:developers@threatbase.org?subject=${subjectText}&body=${bodyText}`
   }
 
@@ -184,7 +137,7 @@ ${poc ? `#### 💻 Proof of Concept (PoC) / Details\n\`\`\`\n${poc}\n\`\`\`` : '
               transition={{ duration: 0.5 }}
               className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start"
             >
-              {/* Left Column: Form Info & Fields */}
+              {/* Left Column: Simple Message Input Form */}
               <div className="lg:col-span-7 space-y-6">
                 <div>
                   <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-bold uppercase tracking-widest mb-4">
@@ -194,14 +147,14 @@ ${poc ? `#### 💻 Proof of Concept (PoC) / Details\n\`\`\`\n${poc}\n\`\`\`` : '
                     Report a <span className="bg-gradient-to-r from-rose-400 to-amber-300 bg-clip-text text-transparent">Vulnerability</span>
                   </h1>
                   <p className="mt-3 text-slate-400 text-sm md:text-base leading-relaxed max-w-xl">
-                    ThreatBase is built for defenders. If you've found a bug, alignment issue, logic error, or vulnerability, help us protect the community by filing a friendly report directly to the developers.
+                    ThreatBase is built for defenders. If you've found a bug, alignment issue, or vulnerability, write a friendly message below to let the developers know.
                   </p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-5 rounded-2xl border border-white/5 bg-slate-900/40 p-6 md:p-8 backdrop-blur-xl shadow-2xl relative">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <Label htmlFor="alias" className="text-xs font-bold text-slate-300">Hacker / Reporter Alias</Label>
+                      <Label htmlFor="alias" className="text-xs font-bold text-slate-300">Reporter Alias</Label>
                       <Input
                         id="alias"
                         placeholder="e.g. DefenderX"
@@ -224,92 +177,16 @@ ${poc ? `#### 💻 Proof of Concept (PoC) / Details\n\`\`\`\n${poc}\n\`\`\`` : '
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                      <Label htmlFor="severity" className="text-xs font-bold text-slate-300">Severity Level</Label>
-                      <Select value={severity} onValueChange={setSeverity}>
-                        <SelectTrigger className="bg-black/60 border-white/10 text-slate-200 rounded-xl h-10 text-xs font-semibold">
-                          <SelectValue placeholder="Select severity" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-slate-950 border-white/10 text-white text-xs font-semibold">
-                          {SEVERITIES.map((s) => (
-                            <SelectItem key={s.value} value={s.value} className="focus:bg-white/5 cursor-pointer">
-                              {s.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <Label htmlFor="component" className="text-xs font-bold text-slate-300">Affected Component</Label>
-                      <Select value={component} onValueChange={setComponent}>
-                        <SelectTrigger className="bg-black/60 border-white/10 text-slate-200 rounded-xl h-10 text-xs font-semibold">
-                          <SelectValue placeholder="Select component" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-slate-950 border-white/10 text-white text-xs font-semibold">
-                          {COMPONENTS.map((c) => (
-                            <SelectItem key={c.value} value={c.value} className="focus:bg-white/5 cursor-pointer">
-                              {c.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
                   <div className="space-y-1.5">
-                    <Label htmlFor="title" className="text-xs font-bold text-slate-300">Bug Title *</Label>
-                    <Input
-                      id="title"
-                      placeholder="Brief headline of the issue"
-                      required
-                      className="bg-black/60 border-white/10 text-white rounded-xl focus:border-rose-500/40 h-10 text-xs font-semibold"
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label htmlFor="description" className="text-xs font-bold text-slate-300">Description *</Label>
+                    <Label htmlFor="message" className="text-xs font-bold text-slate-300">Your Bug Message *</Label>
                     <Textarea
-                      id="description"
-                      placeholder="What is the bug? What is the expected behavior?"
+                      id="message"
+                      placeholder="Describe the bug, tell us where it happened, or write the reproduction steps here..."
                       required
-                      rows={3}
-                      className="bg-black/60 border-white/10 text-white rounded-xl focus:border-rose-500/40 text-xs font-semibold resize-none"
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label htmlFor="steps" className="text-xs font-bold text-slate-300">Steps to Reproduce *</Label>
-                    <Textarea
-                      id="steps"
-                      placeholder="1. Go to page...&#10;2. Click on...&#10;3. See error..."
-                      required
-                      rows={3}
-                      className="bg-black/60 border-white/10 text-white rounded-xl focus:border-rose-500/40 text-xs font-semibold resize-none"
-                      value={steps}
-                      onChange={(e) => setSteps(e.target.value)}
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="poc" className="text-xs font-bold text-slate-300">PoC / Error Details (Optional)</Label>
-                      <span className="text-[10px] text-slate-500 font-mono flex items-center gap-1">
-                        <Code size={12} /> Markdown supported
-                      </span>
-                    </div>
-                    <Textarea
-                      id="poc"
-                      placeholder="Paste logs, stack traces, code snippets, or payload here"
-                      rows={3}
-                      className="bg-black/60 border-white/10 text-slate-300 font-mono rounded-xl focus:border-rose-500/40 text-xs resize-none"
-                      value={poc}
-                      onChange={(e) => setPoc(e.target.value)}
+                      rows={8}
+                      className="bg-black/60 border-white/10 text-slate-200 rounded-xl focus:border-rose-500/40 text-xs font-medium resize-none leading-relaxed"
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
                     />
                   </div>
 
@@ -323,7 +200,7 @@ ${poc ? `#### 💻 Proof of Concept (PoC) / Details\n\`\`\`\n${poc}\n\`\`\`` : '
                         className="mt-1 accent-rose-500 rounded border-white/10 bg-black/40 h-4 w-4 cursor-pointer"
                       />
                       <span className="text-[11px] font-medium text-slate-300 leading-normal">
-                        I am acting as a <strong className="text-rose-400">Good Guy</strong>. I agree to keep this report friendly, constructve, avoid taking actions that crash or vandalize the platform, and will share information to protect other defenders.
+                        I am acting as a <strong className="text-rose-400">Good Guy</strong>. I agree to keep this report friendly, constructive, avoid taking actions that crash or vandalize the platform, and will share information to protect other defenders.
                       </span>
                     </label>
                   </div>
@@ -356,19 +233,19 @@ ${poc ? `#### 💻 Proof of Concept (PoC) / Details\n\`\`\`\n${poc}\n\`\`\`` : '
                   <div className="flex items-center justify-between border-b border-white/5 pb-3.5">
                     <div className="flex items-center gap-2">
                       <Terminal size={14} className="text-rose-400" />
-                      <span className="text-xs font-bold text-slate-200 uppercase tracking-wider">Message Preview</span>
+                      <span className="text-xs font-bold text-slate-200 uppercase tracking-wider">Developer Message Preview</span>
                     </div>
                     <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                   </div>
 
-                  <div className="text-[11px] font-mono text-slate-400 leading-relaxed max-h-[420px] overflow-y-auto pr-1 bg-black/30 p-4 rounded-xl border border-white/5 space-y-2 whitespace-pre-wrap select-text">
+                  <div className="text-[11px] font-mono text-slate-400 leading-relaxed max-h-[350px] overflow-y-auto pr-1 bg-black/30 p-4 rounded-xl border border-white/5 space-y-2 whitespace-pre-wrap select-text">
                     {generateMarkdownReport()}
                   </div>
 
                   <div className="flex items-start gap-3 p-3.5 rounded-xl bg-white/[0.02] border border-white/5">
                     <Info size={16} className="text-slate-400 flex-shrink-0 mt-0.5" />
                     <p className="text-[11px] text-slate-400 leading-relaxed">
-                      This preview updates in real-time as you type. Submitting will register it locally, and give you immediate links to paste this report directly to developers.
+                      This preview updates in real-time as you write. Submitting will prepare direct quick-action links to GitHub issues or developer email!
                     </p>
                   </div>
                 </div>
@@ -385,10 +262,6 @@ ${poc ? `#### 💻 Proof of Concept (PoC) / Details\n\`\`\`\n${poc}\n\`\`\`` : '
                     <li className="flex gap-2">
                       <CornerDownRight size={12} className="text-rose-500 flex-shrink-0 mt-0.5" />
                       <span>Earn defenders' respect and recognition on the platform.</span>
-                    </li>
-                    <li className="flex gap-2">
-                      <CornerDownRight size={12} className="text-rose-500 flex-shrink-0 mt-0.5" />
-                      <span>Helps secure open indicators and malicious IP databases.</span>
                     </li>
                   </ul>
                 </div>
@@ -415,7 +288,7 @@ ${poc ? `#### 💻 Proof of Concept (PoC) / Details\n\`\`\`\n${poc}\n\`\`\`` : '
                   Thank You, Good Guy!
                 </h1>
                 <p className="text-slate-400 text-sm md:text-base max-w-lg mx-auto leading-relaxed">
-                  Your vulnerability details have been formatted into a standard disclosure message. Help us finish the process by sending it using one of the actions below:
+                  Your bug message has been formatted. Help us finish the process by sending it using one of the actions below:
                 </p>
               </div>
 
@@ -459,7 +332,7 @@ ${poc ? `#### 💻 Proof of Concept (PoC) / Details\n\`\`\`\n${poc}\n\`\`\`` : '
               {/* Text Summary Card & Clipboard Option */}
               <div className="w-full max-w-xl bg-black/60 rounded-2xl border border-white/5 p-6 text-left space-y-4">
                 <div className="flex items-center justify-between border-b border-white/5 pb-3">
-                  <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">Generated Report Markdown</span>
+                  <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">Generated Message Markdown</span>
                   <Button
                     onClick={handleCopyMarkdown}
                     className="h-8 rounded-lg text-[10px] font-bold border-white/10 bg-white/5 hover:bg-white/10 hover:text-white px-3"
@@ -487,14 +360,11 @@ ${poc ? `#### 💻 Proof of Concept (PoC) / Details\n\`\`\`\n${poc}\n\`\`\`` : '
                 <Button
                   onClick={() => {
                     setSubmitSuccess(false)
-                    setTitle('')
-                    setDescription('')
-                    setSteps('')
-                    setPoc('')
+                    setMessage('')
                   }}
                   className="bg-white/5 border border-white/10 hover:bg-white/10 text-slate-300 font-semibold px-6 rounded-full text-xs h-10 transition-all"
                 >
-                  Report Another Bug
+                  Write Another Message
                 </Button>
                 
                 <Button
