@@ -10,6 +10,7 @@ import { fmt, timeAgo } from '../utils'
 import { Typewriter } from '@/components/ui/typewriter'
 import Leaderboard from './Leaderboard'
 import { useAuth } from '../AuthContext'
+import { useSEO } from '@/useSEO'
 
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -95,6 +96,11 @@ const THREAT_CATEGORIES = [
 
 export default function ReportIP({ addToast }: any) {
   const { user, profile, signInWithGoogle } = useAuth()
+  useSEO({
+    title: 'Report Malicious IP — Threatbase Community Intel',
+    description: 'Submit malicious IP addresses to the Threatbase community intelligence feed. Help defend networks globally by reporting threats, malware, phishing, DDoS attacks, and more.',
+    path: '/report',
+  })
   const [ipValue, setIpValue] = useState('')
   const [category, setCategory] = useState('')
   const [comment, setComment] = useState('')

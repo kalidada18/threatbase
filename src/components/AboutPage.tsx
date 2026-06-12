@@ -2,8 +2,14 @@ import React from 'react'
 import IsoLevelWarp from '@/components/ui/isometric-wave-grid-background'
 import { motion } from 'framer-motion'
 import { Database, Target, Zap } from 'lucide-react'
+import { useSEO } from '@/useSEO'
 
 export default function AboutPage() {
+  useSEO({
+    title: 'About — Threatbase | Community-Driven Threat Intelligence',
+    description: 'Learn about Threatbase, a community-driven threat intelligence platform for researchers, analysts, and cybersecurity enthusiasts. Discover IOCs, track threats, and transform security data into actionable intelligence.',
+    path: '/about',
+  })
   const features = [
     {
       icon: <Database size={24} />,

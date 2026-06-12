@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { ExternalLink, Heart, HeartHandshake } from 'lucide-react'
+import { useSEO } from '@/useSEO'
 
 const intelSources = [
   { name: 'FireHOL', desc: 'Aggregated blocklists analyzing cyber threats, attacks, and malware.', url: 'https://iplists.firehol.org/' },
@@ -23,6 +24,11 @@ const intelSources = [
 ]
 
 export default function ThanksPage() {
+  useSEO({
+    title: 'Intel Sources — Threatbase | Open Source Threat Intelligence Credits',
+    description: 'Threatbase is powered by the global cybersecurity community. Credits to Spamhaus, FireHOL, Emerging Threats, Abuse.ch, SANS DShield, and 15+ open-source threat intelligence providers.',
+    path: '/thanks',
+  })
   return (
     <main className="min-h-screen pt-32 pb-32 relative bg-[#0B0F19] overflow-hidden font-sans">
       {/* Immersive Abstract Background */}

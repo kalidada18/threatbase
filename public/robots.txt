@@ -1,0 +1,10 @@
+# Threatbase Robots.txt
+# https://threatbase.qzz.io
+
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /profile/
+
+# Sitemap
+Sitemap: https://threatbase.qzz.io/sitemap.xml

@@ -16,11 +16,20 @@ import Profile from './components/Profile'
 import { AuthProvider } from './AuthContext'
 import { getBaseUrl, formatSyncTime, animateValue } from './utils'
 import { scanIndicatorLogic } from './scanner'
+import { useSEO } from './useSEO'
 
 export default function App() {
   const [statsData, setStatsData] = useState(null)
   const [feedVersion, setFeedVersion] = useState(Date.now())
   const [syncTime, setSyncTime] = useState('Live Mode')
+
+  // SEO for homepage
+  const location = useLocation()
+  useSEO({
+    title: 'Threatbase — Real-Time Threat Intelligence & IOC Blocklists',
+    description: 'Access real-time threat data, scan IPs and domains, and deploy high-performance blocklists. Community-driven threat intelligence platform for cybersecurity defenders.',
+    path: location.pathname,
+  })
 
   // Scan state (shared between Hero and ReportScanner)
   const [scanInput, setScanInput] = useState('')
@@ -90,7 +99,6 @@ export default function App() {
   }, [])
 
   // Scroll to hash on page load or navigation
-  const location = useLocation()
   useEffect(() => {
     if (location.hash) {
       const element = document.getElementById(location.hash.substring(1))
