@@ -11,9 +11,9 @@ import { useScroll, motion, useMotionValueEvent } from 'framer-motion'
 export function HeroSection({ scanInput, setScanInput, handleScan, statsData }: any) {
     return (
         <>
-            <main className="relative overflow-hidden w-full min-h-[90vh] bg-slate-900 border-b border-white/10 shadow-2xl">
+            <main className="relative overflow-hidden w-full min-h-[90vh] bg-black border-b border-white/10 shadow-2xl">
                 <ThreatMap />
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-slate-900/50 to-slate-900 pointer-events-none z-0" />
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/50 to-black pointer-events-none z-0" />
                 <section className="relative z-10 pt-16 md:pt-20">
                     <div className="py-12 md:pb-24 lg:pb-32 lg:pt-16 relative">
                         <div className="relative z-10 mx-auto flex max-w-7xl flex-col px-6 lg:block lg:px-12">
@@ -45,11 +45,11 @@ export function HeroSection({ scanInput, setScanInput, handleScan, statsData }: 
                                                 Scan
                                             </Button>
                                         </div>
-                                        <Button
-                                            variant="outline"
-                                            size="lg"
-                                            className="h-14 rounded-full px-8 text-base border-white/10 bg-slate-900/50 backdrop-blur-md text-slate-200 hover:bg-white/10 hover:text-white hover:border-white/20 transition-all duration-300"
-                                            asChild
+                                            <Button
+                                                variant="outline"
+                                                size="lg"
+                                                className="h-14 rounded-full px-8 text-base border-white/10 bg-black/50 backdrop-blur-md text-slate-200 hover:bg-white/10 hover:text-white hover:border-white/20 transition-all duration-300"
+                                                asChild
                                         >
                                             <a href="#feeds">Browse Feeds</a>
                                         </Button>
@@ -118,8 +118,8 @@ export function HeroSection({ scanInput, setScanInput, handleScan, statsData }: 
                                     )
                                 })()}
 
-                                <div className="bg-gradient-to-r from-slate-900 absolute inset-y-0 left-0 w-24 z-10 pointer-events-none"></div>
-                                <div className="bg-gradient-to-l from-slate-900 absolute inset-y-0 right-0 w-24 z-10 pointer-events-none"></div>
+                                <div className="bg-gradient-to-r from-black absolute inset-y-0 left-0 w-24 z-10 pointer-events-none"></div>
+                                <div className="bg-gradient-to-l from-black absolute inset-y-0 right-0 w-24 z-10 pointer-events-none"></div>
                                 <ProgressiveBlur
                                     className="pointer-events-none absolute left-0 top-0 h-full w-20 z-20"
                                     direction="left"

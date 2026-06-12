@@ -56,7 +56,7 @@ export default function Navbar() {
                 className={cn(
                     "group fixed inset-x-0 top-0 z-50 transition-all duration-300 border-b",
                     scrolled 
-                        ? "bg-slate-950/80 backdrop-blur-2xl border-[rgba(0,255,157,0.15)] shadow-[0_4px_30px_rgba(0,0,0,0.5)] py-3" 
+                        ? "bg-black/80 backdrop-blur-2xl border-[rgba(0,255,157,0.15)] shadow-[0_4px_30px_rgba(0,0,0,0.5)] py-3" 
                         : "bg-transparent border-transparent py-3"
                 )}
             >
@@ -114,7 +114,7 @@ export default function Navbar() {
                             </div>
                         </div>
 
-                        <div className="bg-slate-900/95 backdrop-blur-xl border border-white/10 group-data-[state=active]:block lg:group-data-[state=active]:flex mb-6 hidden w-full flex-wrap items-center justify-end space-y-8 rounded-3xl p-6 shadow-2xl md:flex-nowrap lg:m-0 lg:flex lg:w-fit lg:gap-6 lg:space-y-0 lg:border-transparent lg:bg-transparent lg:p-0 lg:shadow-none">
+                        <div className="bg-black/95 backdrop-blur-xl border border-white/10 group-data-[state=active]:block lg:group-data-[state=active]:flex mb-6 hidden w-full flex-wrap items-center justify-end space-y-8 rounded-3xl p-6 shadow-2xl md:flex-nowrap lg:m-0 lg:flex lg:w-fit lg:gap-6 lg:space-y-0 lg:border-transparent lg:bg-transparent lg:p-0 lg:shadow-none">
                             <div className="lg:hidden">
                                 <ul className="space-y-6 text-base font-medium">
                                     {menuItems.map((item, index) => {
@@ -159,12 +159,12 @@ export default function Navbar() {
                                 </Button>
 
                                  {loading ? (
-                                     <div className="h-9 w-9 rounded-full border border-white/5 bg-slate-900/60 animate-pulse" />
+                                     <div className="h-9 w-9 rounded-full border border-white/5 bg-black/60 animate-pulse" />
                                  ) : user ? (
                                     <div className="relative">
                                         <button
                                             onClick={() => setDropdownOpen(!dropdownOpen)}
-                                            className="flex items-center gap-2.5 p-1 pr-3 rounded-full border border-white/10 bg-slate-900/80 hover:bg-slate-900 transition-all focus:outline-none select-none active:scale-[0.98] cursor-pointer"
+                                            className="flex items-center gap-2.5 p-1 pr-3 rounded-full border border-white/10 bg-black/80 hover:bg-black transition-all focus:outline-none select-none active:scale-[0.98] cursor-pointer"
                                         >
                                             <img
                                                 src={profile?.avatar_url || user.user_metadata?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=80&auto=format&fit=crop&q=60'}
@@ -188,7 +188,7 @@ export default function Navbar() {
                                                         animate={{ opacity: 1, scale: 1, y: 0 }}
                                                         exit={{ opacity: 0, scale: 0.95, y: 10 }}
                                                         transition={{ duration: 0.15 }}
-                                                        className="absolute right-0 mt-2.5 w-48 rounded-2xl border border-white/10 bg-slate-900/95 backdrop-blur-2xl p-2.5 shadow-2xl z-50 flex flex-col gap-1 select-none"
+                                                        className="absolute right-0 mt-2.5 w-48 rounded-2xl border border-white/10 bg-black/95 backdrop-blur-2xl p-2.5 shadow-2xl z-50 flex flex-col gap-1 select-none"
                                                     >
                                                         <div className="px-3 py-2 border-b border-white/5 mb-1 text-left">
                                                             <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Logged In As</p>
