@@ -388,9 +388,23 @@ export default function ReportIP({ addToast }: any) {
           <h1 className="text-5xl md:text-6xl font-black flex items-center justify-center gap-2 text-white tracking-tighter pb-2">
             Community <span className="bg-gradient-to-r from-emerald-300 to-cyan-300 bg-clip-text text-transparent">Intel</span>
           </h1>
-          <p className="mt-3 text-slate-400 text-sm md:text-base max-w-xl mx-auto leading-relaxed">
-            Report malicious infrastructure. Submissions feed the community blacklist to defend networks globally.
-          </p>
+          <div className="mt-3 text-slate-400 text-sm md:text-base max-w-xl mx-auto leading-relaxed flex flex-wrap items-center justify-center min-h-[28px]">
+            <span>{"Submissions feed the blacklist to "}</span>
+            <Typewriter
+              text={[
+                "defend networks globally.",
+                "track threat actors.",
+                "identify malicious infrastructure.",
+                "protect the community.",
+                "stop advanced persistent threats.",
+              ]}
+              speed={60}
+              className="text-emerald-400 ml-1.5 font-medium"
+              waitTime={2500}
+              deleteSpeed={30}
+              cursorChar={"_"}
+            />
+          </div>
         </motion.div>
 
         {/* Top Section: Form Card / Lock Screen */}
