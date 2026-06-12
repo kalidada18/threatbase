@@ -8,6 +8,8 @@ interface AuthContextType {
   profile: any | null
   loading: boolean
   signInWithGoogle: () => Promise<void>
+  signInWithEmail: (email: string, password: string) => Promise<void>
+  signUpWithEmail: (email: string, password: string) => Promise<void>
   signOut: () => Promise<void>
   refreshProfile: () => Promise<void>
 }
@@ -100,6 +102,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (error) throw error
   }
 
+  const signInWithEmail = async (email: string, password: string) => {
+    if (!supabaseClient) return
+    const { error } = await supabaseClient.auth.signInWithPassword({
+      email,
+      password,
+    })
+    if (error) throw error
+  }
+
+  const signUpWithEmail = async (email: string, password: string) => {
+    if (!supabaseClient) return
+    const { error } = await supabaseClient.auth.signUp({
+      email,
+      password,
+    })
+    if (error) throw error
+  }
+
   const signOut = async () => {
     if (!supabaseClient) return
     const { error } = await supabaseClient.auth.signOut()
@@ -114,6 +134,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         profile,
         loading,
         signInWithGoogle,
+        signInWithEmail,
+        signUpWithEmail,
         signOut,
         refreshProfile,
       }}

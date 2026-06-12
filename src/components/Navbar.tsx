@@ -146,11 +146,13 @@ export default function Navbar() {
                                     <div className="h-9 w-9 rounded-full border border-white/5 bg-slate-900/60 animate-pulse" />
                                 ) : !user ? (
                                     <Button
-                                        onClick={signInWithGoogle}
+                                        asChild
                                         className="bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 border border-emerald-500/25 text-white rounded-full px-5 h-10 transition-all duration-300 hover:shadow-[0_4px_15px_rgba(16,185,129,0.15)] flex items-center gap-2 text-xs font-bold active:scale-95 cursor-pointer"
                                         size="sm">
-                                        <LogIn size={13} />
-                                        Sign In
+                                        <Link to="/login">
+                                            <LogIn size={13} />
+                                            Sign In
+                                        </Link>
                                     </Button>
                                 ) : (
                                     <div className="relative">
