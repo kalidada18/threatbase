@@ -8,10 +8,17 @@ import ThreatMap from '../ThreatMap'
 import { Menu, X, ChevronRight, Shield, Server, Database, Lock, Network, Cloud, Activity, Globe, Search, Flame, MailX, GlobeLock, Bug, ShieldAlert, ShieldBan, Zap, Key, Crosshair, ShieldCheck, Binary, Snowflake, Github } from 'lucide-react'
 import { useScroll, motion, useMotionValueEvent } from 'framer-motion'
 
+import GradientBarsBackground from '@/components/ui/gradient-bars-background'
+
 export function HeroSection({ scanInput, setScanInput, handleScan, statsData }: any) {
     return (
         <>
-            <main className="relative overflow-hidden w-full min-h-[90vh] bg-black border-b border-white/10 shadow-2xl">
+            <GradientBarsBackground 
+                className="relative overflow-hidden w-full min-h-[90vh] bg-black border-b border-white/10 shadow-2xl"
+                numBars={30}
+                gradientFrom="rgba(0, 255, 157, 0.05)"
+                animationDuration={6}
+            >
                 <ThreatMap />
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/50 to-black pointer-events-none z-0" />
                 <section className="relative z-10 pt-16 md:pt-20">
@@ -134,7 +141,7 @@ export function HeroSection({ scanInput, setScanInput, handleScan, statsData }: 
                         </div>
                     </div>
                 </section>
-            </main>
+            </GradientBarsBackground>
         </>
     )
 }
