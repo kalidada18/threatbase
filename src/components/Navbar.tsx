@@ -159,7 +159,7 @@ export default function Navbar() {
                                     <div className="relative">
                                         <button
                                             onClick={() => setDropdownOpen(!dropdownOpen)}
-                                            className="flex items-center gap-2.5 p-1 pr-3 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-all focus:outline-none select-none active:scale-[0.98] cursor-pointer shadow-sm"
+                                            className="flex items-center gap-2.5 p-1 pr-3 rounded-full border border-white/10 bg-slate-900/40 backdrop-blur-md hover:bg-slate-800/60 hover:border-white/20 transition-all duration-300 focus:outline-none select-none active:scale-[0.98] cursor-pointer shadow-[0_0_15px_rgba(255,255,255,0.02)]"
                                         >
                                             <img
                                                 src={profile?.avatar_url || user.user_metadata?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=80&auto=format&fit=crop&q=60'}
@@ -183,7 +183,7 @@ export default function Navbar() {
                                                         animate={{ opacity: 1, scale: 1, y: 0 }}
                                                         exit={{ opacity: 0, scale: 0.95, y: 10 }}
                                                         transition={{ duration: 0.15 }}
-                                                        className="absolute right-0 mt-2.5 w-48 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.5)] z-50 flex flex-col gap-1 select-none"
+                                                        className="absolute right-0 mt-2.5 w-48 rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-xl p-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.5)] ring-1 ring-white/5 z-50 flex flex-col gap-1 select-none"
                                                     >
                                                         <div className="px-3 py-2 border-b border-white/5 mb-1 text-left">
                                                             <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Logged In As</p>
