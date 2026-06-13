@@ -1,4 +1,5 @@
 import { getBaseUrl } from './utils'
+import supabaseClient from './supabaseClient'
 
 const feedCache = {}
 
@@ -108,6 +109,9 @@ export async function scanIndicatorLogic(rawInput, feedVersion) {
     }
 
     const result = binarySearchArray(list, ip, compareFn)
+    let isDisputed = false
+    let disputeCount = 0
+
     if (result) {
       isMalicious = true
       if (isIP) {
@@ -117,10 +121,29 @@ export async function scanIndicatorLogic(rawInput, feedVersion) {
           riskScore = parts[2]
         }
       }
+
+      if (supabaseClient) {
+        try {
+          const { count } = await supabaseClient
+            .from('disputes')
+            .select('*', { count: 'exact', head: true })
+            .eq('ip', ip)
+
+          if (count !== null) {
+            disputeCount = count
+            if (count >= 3) {
+              isMalicious = false
+              isDisputed = true
+            }
+          }
+        } catch (err) {
+          console.error('Failed to check disputes:', err)
+        }
+      }
     }
   } catch (e) {
     console.error(e)
   }
 
-  return { type: scanType, ip, isIP, isDomain, isHash, isURL, isIPv6, isCIDR, isMalicious, riskScore, feedCount }
+  return { type: scanType, ip, isIP, isDomain, isHash, isURL, isIPv6, isCIDR, isMalicious, riskScore, feedCount, isDisputed, disputeCount }
 }

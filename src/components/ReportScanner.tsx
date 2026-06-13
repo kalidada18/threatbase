@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Bug, ShieldCheck, AlertTriangle, AlertOctagon, ChevronRight, Search, Check } from 'lucide-react'
+import { Bug, ShieldCheck, AlertTriangle, AlertOctagon, ChevronRight, Search, Check, ShieldAlert } from 'lucide-react'
 import supabaseClient from '../supabaseClient'
 import { timeAgo, getCategoryIconPath } from '../utils'
+import { useAuth } from '../AuthContext'
 
 const getCategoryColor = (cat: string) => {
   if (!cat) return 'bg-slate-500/10 text-slate-300 border border-slate-500/20'
@@ -16,18 +17,24 @@ const getCategoryColor = (cat: string) => {
   return 'bg-slate-500/10 text-slate-300 border border-slate-500/20'
 }
 
-export default function ReportScanner({ scanResult, isScanning, showReport, scanInput }: any) {
+export default function ReportScanner({ scanResult, isScanning, showReport, scanInput, addToast }: any) {
   const [reports, setReports] = useState<any[]>([])
   const [loadingReports, setLoadingReports] = useState(false)
+  const [isDisputing, setIsDisputing] = useState(false)
+  const { user } = useAuth()
 
   const ip = scanResult?.ip || scanInput?.trim() || ''
   const isMalicious = scanResult?.isMalicious
+  const isDisputed = scanResult?.isDisputed
+
   const type = scanResult
     ? isMalicious
       ? 'danger'
-      : scanResult.type === 'invalid'
-        ? 'warn'
-        : 'safe'
+      : isDisputed
+        ? 'disputed'
+        : scanResult.type === 'invalid'
+          ? 'warn'
+          : 'safe'
     : null
 
   useEffect(() => {
@@ -79,7 +86,36 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
     }
   }
 
-  const StatusIcon = type === 'danger' ? Bug : type === 'safe' ? ShieldCheck : AlertTriangle
+  const handleDispute = async () => {
+    if (!user) return addToast('Please sign in to report a false positive.', 'error')
+    if (!supabaseClient) return addToast('Database connection unavailable.', 'error')
+    
+    setIsDisputing(true)
+    try {
+      const alias = user.user_metadata?.username || user.user_metadata?.full_name || user.email?.split('@')[0]
+      const { error } = await supabaseClient.from('disputes').insert([{
+        ip,
+        reporter_alias: alias
+      }])
+      
+      if (error) {
+        if (error.code === '23505') {
+          addToast('You have already disputed this indicator.', 'error')
+        } else {
+          throw error
+        }
+      } else {
+        addToast('False positive report submitted! Thank you for helping the community.', 'success')
+      }
+    } catch (err: any) {
+      console.error(err)
+      addToast('Failed to submit dispute: ' + err.message, 'error')
+    } finally {
+      setIsDisputing(false)
+    }
+  }
+
+  const StatusIcon = type === 'danger' ? Bug : type === 'safe' ? ShieldCheck : type === 'disputed' ? ShieldAlert : AlertTriangle
 
   if (!showReport) return null;
 
@@ -118,18 +154,29 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
               {/* Header */}
               <div className="p-6 md:p-8 flex items-start justify-between border-b border-white/5 bg-white/[0.02]">
                 <div className="flex items-center gap-5">
-                  <div className={`p-3 rounded-xl ${type === 'danger' ? 'bg-red-500/10 text-red-400' : type === 'safe' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}`}>
+                  <div className={`p-3 rounded-xl ${type === 'danger' ? 'bg-red-500/10 text-red-400' : type === 'safe' ? 'bg-emerald-500/10 text-emerald-400' : type === 'disputed' ? 'bg-amber-500/10 text-amber-500' : 'bg-amber-500/10 text-amber-400'}`}>
                     <StatusIcon size={32} strokeWidth={2} />
                   </div>
                   <div>
                     <h3 className="font-semibold text-lg text-slate-200">
-                      {type === 'danger' ? 'Malicious Indicator' : type === 'safe' ? 'Clean / Not Listed' : 'Invalid Format'}
+                      {type === 'danger' ? 'Malicious Indicator' : type === 'safe' ? 'Clean / Not Listed' : type === 'disputed' ? 'Community Disputed' : 'Invalid Format'}
                     </h3>
                     <div className="text-sm font-mono mt-1 text-slate-400">{ip}</div>
                   </div>
                 </div>
-                <div className={`px-3 py-1.5 rounded-md text-[11px] font-bold uppercase tracking-widest border ${type === 'danger' ? 'bg-red-500/10 text-red-400 border-red-500/20' : type === 'safe' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20'}`}>
-                  {type === 'danger' ? 'Threat Detected' : type === 'safe' ? 'Not Listed' : 'Warning'}
+                <div className="flex items-center gap-4">
+                  {type === 'danger' && (
+                    <button
+                      onClick={handleDispute}
+                      disabled={isDisputing}
+                      className="px-4 py-1.5 rounded-lg text-xs font-bold text-slate-400 border border-white/10 hover:bg-white/5 hover:text-white transition-all disabled:opacity-50"
+                    >
+                      {isDisputing ? 'Submitting...' : 'Report False Positive'}
+                    </button>
+                  )}
+                  <div className={`px-3 py-1.5 rounded-md text-[11px] font-bold uppercase tracking-widest border ${type === 'danger' ? 'bg-red-500/10 text-red-400 border-red-500/20' : type === 'safe' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : type === 'disputed' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20'}`}>
+                    {type === 'danger' ? 'Threat Detected' : type === 'safe' ? 'Not Listed' : type === 'disputed' ? 'False Positive' : 'Warning'}
+                  </div>
                 </div>
               </div>
 
@@ -146,6 +193,10 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
                     <p className="text-slate-300 leading-relaxed text-sm">
                       The indicator <code className="px-1.5 py-0.5 rounded bg-slate-800 border border-white/5 font-mono text-emerald-400">{ip}</code> is <strong>not currently listed</strong> in the active
                       Threatbase threat database.
+                    </p>
+                  ) : type === 'disputed' ? (
+                    <p className="text-slate-300 leading-relaxed text-sm">
+                      The indicator <code className="px-1.5 py-0.5 rounded bg-slate-800 border border-white/5 font-mono text-amber-400">{ip}</code> was originally flagged by threat intelligence feeds, but has been <strong>marked as a False Positive</strong> by the Threatbase community.
                     </p>
                   ) : (
                     <p className="text-slate-300 leading-relaxed text-sm">Please enter a valid IPv4 address, Domain, SHA-256 Hash, or URL.</p>
