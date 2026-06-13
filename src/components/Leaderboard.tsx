@@ -99,7 +99,7 @@ export default function Leaderboard() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
-            className="flex items-center justify-between p-5 rounded-2xl bg-white/[0.02] border border-white/[0.05] hover:border-white/10 hover:bg-white/[0.04] shadow-[0_4px_24px_-8px_rgba(0,0,0,0.5)] backdrop-blur-sm transition-all relative overflow-hidden group gap-4"
+            className="flex items-center justify-between py-4 px-6 rounded-2xl bg-[#1A1C23]/90 border border-white/[0.03] hover:border-white/[0.08] hover:bg-[#22252F]/90 shadow-lg backdrop-blur-sm transition-all duration-300 relative overflow-hidden group gap-4"
           >
             <div className="flex items-center gap-4 relative z-10 flex-1 min-w-0">
               <div className={`flex items-center justify-center flex-shrink-0 w-12 h-12 rounded-full font-bold font-elegant border transition-all duration-500 ${

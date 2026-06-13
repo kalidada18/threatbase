@@ -22,6 +22,7 @@ import { getBaseUrl, formatSyncTime, animateValue } from './utils'
 import { scanIndicatorLogic } from './scanner'
 import { useSEO } from './useSEO'
 import TurnstileModal from './components/TurnstileModal'
+import InitialVerification from './components/InitialVerification'
 
 export default function App() {
   const [statsData, setStatsData] = useState(null)
@@ -38,15 +39,17 @@ export default function App() {
 
   // Scan state (shared between Hero and ReportScanner)
   const [scanInput, setScanInput] = useState('')
-  const [scanResult, setScanResult] = useState(null)
+  const [scanResult, setScanResult] = useState<any>(null)
   const [isScanning, setIsScanning] = useState(false)
   const [showReport, setShowReport] = useState(false)
-  const [isVerifying, setIsVerifying] = useState(false)
+  const lastScanTime = useRef<number>(0)
+  const SCAN_COOLDOWN = 3000 // 3 seconds
+
+  // Initial verification
+  const [isHumanVerified, setIsHumanVerified] = useState(() => sessionStorage.getItem('human_verified') === 'true')
 
   // Toast state
   const [toasts, setToasts] = useState([])
-  const lastScanTime = useRef(0)
-  const SCAN_COOLDOWN = 5000 // 5 seconds
 
   const addToast = useCallback((message: string, type = 'success') => {
     const id = Date.now() + Math.random()
@@ -74,12 +77,11 @@ export default function App() {
 
     lastScanTime.current = now
 
-    // Show Turnstile modal instead of scanning directly
-    setIsVerifying(true)
+    // Perform scan directly without Turnstile
+    performScan()
   }, [scanInput, addToast])
 
-  const performScan = useCallback(async (token: string) => {
-    setIsVerifying(false)
+  const performScan = useCallback(async () => {
     let raw = scanInput.trim().replace(/[<>"'&]/g, '')
     
     setIsScanning(true)
@@ -142,7 +144,14 @@ export default function App() {
     } else {
       window.scrollTo(0, 0)
     }
-  }, [location])
+  }, [location.hash])
+
+  if (!isHumanVerified) {
+    return <InitialVerification onSuccess={(token) => {
+      sessionStorage.setItem('human_verified', 'true')
+      setIsHumanVerified(true)
+    }} />
+  }
 
   return (
     <AuthProvider>
@@ -187,11 +196,6 @@ export default function App() {
 
       <ToastContainer toasts={toasts} />
       <Footer />
-      <TurnstileModal 
-        isOpen={isVerifying} 
-        onClose={() => setIsVerifying(false)} 
-        onSuccess={performScan} 
-      />
     </AuthProvider>
   )
 }

@@ -103,15 +103,7 @@ export default function Navbar() {
                                             </li>
                                         )
                                     })}
-                                    {user && (
-                                        <li className="flex items-center">
-                                            <Link
-                                                to="/profile"
-                                                className="transition-all duration-300 tracking-wide font-bold text-sm px-4 py-2 rounded-full text-slate-400 hover:text-white hover:bg-white/5">
-                                                My Account
-                                            </Link>
-                                        </li>
-                                    )}
+
                                 </ul>
                             </div>
                         </div>
@@ -135,16 +127,7 @@ export default function Navbar() {
                                             </li>
                                         )
                                     })}
-                                    {user && (
-                                        <li>
-                                            <Link
-                                                to="/profile"
-                                                onClick={() => setMenuState(false)}
-                                                className="block transition-all duration-200 px-4 py-2 rounded-xl text-center text-slate-400 hover:text-white hover:bg-white/5 font-semibold">
-                                                My Account
-                                            </Link>
-                                        </li>
-                                    )}
+
                                 </ul>
                             </div>
                             
@@ -183,8 +166,8 @@ export default function Navbar() {
                                                 alt="User Avatar"
                                                 className="w-7 h-7 rounded-full object-cover border border-white/20"
                                             />
-                                            <span className="text-xs font-bold text-slate-300 max-w-[85px] truncate block">
-                                                @{profile?.username || user.email?.split('@')[0]}
+                                            <span className="text-xs font-bold text-slate-300 block">
+                                                My Account
                                             </span>
                                             <ChevronDown size={12} className={cn("text-slate-500 transition-transform duration-300", dropdownOpen && "rotate-180")} />
                                         </button>

@@ -4,6 +4,7 @@ import Leaderboard from './Leaderboard'
 import { useSEO } from '../useSEO'
 import { MatrixText } from '@/components/ui/matrix-text'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
+import AnoAI from '@/components/ui/animated-shader-background'
 
 export default function ContributorsPage() {
   useSEO({
@@ -15,7 +16,11 @@ export default function ContributorsPage() {
   return (
     <main className="bg-[#0B0F19] min-h-screen">
       <div className="pt-28 pb-24 relative overflow-hidden font-sans">
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.02] mix-blend-overlay pointer-events-none"></div>
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.02] mix-blend-overlay pointer-events-none z-10"></div>
+        <div className="absolute inset-0 z-0 opacity-80 mix-blend-screen">
+          <AnoAI />
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0B0F19]/20 via-[#0B0F19]/60 to-[#0B0F19] z-0 pointer-events-none"></div>
 
         <div className="mx-auto max-w-4xl px-4 lg:px-8 relative z-10 space-y-10">
           <motion.div
@@ -25,7 +30,7 @@ export default function ContributorsPage() {
             className="text-center relative"
           >
             <h1 className="text-4xl md:text-5xl font-black flex items-center justify-center gap-2 text-white tracking-tighter pb-2">
-              <MatrixText text="Top Contributors" className="font-mono text-white" />
+              <span className="text-liquid-red drop-shadow-md">Top Contributors</span>
             </h1>
             <p className="mt-2 text-slate-400 text-sm md:text-base max-w-xl mx-auto leading-relaxed">
               Recognizing the community leaders who help defend networks globally.
