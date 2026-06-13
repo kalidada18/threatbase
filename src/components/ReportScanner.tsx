@@ -21,6 +21,8 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
   const [reports, setReports] = useState<any[]>([])
   const [loadingReports, setLoadingReports] = useState(false)
   const [isDisputing, setIsDisputing] = useState(false)
+  const [showDisputeForm, setShowDisputeForm] = useState(false)
+  const [disputeReason, setDisputeReason] = useState('')
   const { user } = useAuth()
 
   const ip = scanResult?.ip || scanInput?.trim() || ''
@@ -89,13 +91,15 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
   const handleDispute = async () => {
     if (!user) return addToast('Please sign in to report a false positive.', 'error')
     if (!supabaseClient) return addToast('Database connection unavailable.', 'error')
+    if (!disputeReason.trim()) return addToast('Please provide a reason.', 'error')
     
     setIsDisputing(true)
     try {
       const alias = user.user_metadata?.username || user.user_metadata?.full_name || user.email?.split('@')[0]
       const { error } = await supabaseClient.from('disputes').insert([{
         ip,
-        reporter_alias: alias
+        reporter_alias: alias,
+        reason: disputeReason.trim()
       }])
       
       if (error) {
@@ -106,6 +110,8 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
         }
       } else {
         addToast('False positive report submitted! Thank you for helping the community.', 'success')
+        setShowDisputeForm(false)
+        setDisputeReason('')
       }
     } catch (err: any) {
       console.error(err)
@@ -165,13 +171,12 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
-                  {(type === 'danger' || type === 'disputed') && (
+                  {(type === 'danger' || type === 'disputed') && !showDisputeForm && (
                     <button
-                      onClick={handleDispute}
-                      disabled={isDisputing}
-                      className="px-4 py-1.5 rounded-lg text-xs font-bold text-slate-400 border border-white/10 hover:bg-white/5 hover:text-white transition-all disabled:opacity-50"
+                      onClick={() => setShowDisputeForm(true)}
+                      className="px-4 py-1.5 rounded-lg text-xs font-bold text-slate-400 border border-white/10 hover:bg-white/5 hover:text-white transition-all"
                     >
-                      {isDisputing ? 'Submitting...' : 'Report False Positive'}
+                      Report False Positive
                     </button>
                   )}
                   <div className={`px-3 py-1.5 rounded-md text-[11px] font-bold uppercase tracking-widest border ${type === 'danger' ? 'bg-red-500/10 text-red-400 border-red-500/20' : type === 'safe' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : type === 'disputed' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20'}`}>
@@ -200,6 +205,25 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
                     </p>
                   ) : (
                     <p className="text-slate-300 leading-relaxed text-sm">Please enter a valid IPv4 address, Domain, SHA-256 Hash, or URL.</p>
+                  )}
+
+                  {showDisputeForm && (
+                    <motion.div initial={{opacity:0, height:0}} animate={{opacity:1, height:'auto'}} className="mt-6 p-4 rounded-xl border border-white/10 bg-black/20 overflow-hidden">
+                      <h5 className="text-sm font-semibold text-slate-300 mb-2">Why is this a false positive?</h5>
+                      <textarea
+                        value={disputeReason}
+                        onChange={e => setDisputeReason(e.target.value)}
+                        className="w-full bg-slate-900/50 border border-white/10 rounded-lg p-3 text-sm text-slate-300 focus:outline-none focus:border-cyan-500/50 resize-none"
+                        rows={3}
+                        placeholder="Please provide details (e.g. 'This is a public DNS resolver', 'Internal proxy')..."
+                      ></textarea>
+                      <div className="flex items-center gap-3 mt-3 justify-end">
+                        <button onClick={() => setShowDisputeForm(false)} className="px-4 py-1.5 text-xs font-medium text-slate-400 hover:text-white transition-colors">Cancel</button>
+                        <button onClick={handleDispute} disabled={isDisputing} className="px-4 py-1.5 rounded-lg text-xs font-bold bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 transition-colors border border-amber-500/30 disabled:opacity-50">
+                          {isDisputing ? 'Submitting...' : 'Submit Dispute'}
+                        </button>
+                      </div>
+                    </motion.div>
                   )}
                 </div>
 
