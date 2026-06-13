@@ -26,8 +26,6 @@ const intelSources = [
 ]
 
 export default function ThanksPage() {
-  const { user, profile } = useAuth()
-  const displayName = profile?.username || user?.email?.split('@')[0] || 'Contributor'
   useSEO({
     title: 'Intel Sources — Threatbase | Open Source Threat Intelligence Credits',
     description: 'Threatbase is powered by the global cybersecurity community. Credits to Spamhaus, FireHOL, Emerging Threats, Abuse.ch, SANS DShield, and 15+ open-source threat intelligence providers.',
@@ -63,7 +61,7 @@ export default function ThanksPage() {
             Intel Sources
           </h1>
           <p className="mt-4 text-slate-400 text-lg max-w-2xl mx-auto leading-relaxed drop-shadow">
-            Thank you, <strong className="text-white">@{displayName}</strong>, for your contribution! Threatbase is powered by the global cybersecurity community. We extend our deepest gratitude to you and the following open-source projects for providing free, high-quality threat intelligence.
+            Threatbase is powered by the tireless work of the global cybersecurity community. We extend our deepest gratitude to the following organizations and open-source projects for providing free, high-quality threat intelligence.
           </p>
         </motion.div>
 
