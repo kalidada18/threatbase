@@ -369,6 +369,15 @@ export default function Profile({ addToast }: any) {
     if (deleteInput !== 'delete my account' || !supabaseClient || !user) return
     setDeleting(true)
     try {
+      // Preserve reports by assigning them to 'deletedaccount' before wiping the profile
+      const oldUsername = authProfile?.username || user?.email?.split('@')[0]
+      if (oldUsername) {
+        await supabaseClient
+          .from('reported_ips')
+          .update({ reporter_alias: 'deletedaccount' })
+          .eq('reporter_alias', oldUsername)
+      }
+
       const { error } = await supabaseClient.rpc('delete_user')
       if (error) throw error
 
