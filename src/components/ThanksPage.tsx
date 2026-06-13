@@ -1,8 +1,33 @@
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useSEO } from '@/useSEO'
 import { ParticleCanvas } from '@/components/ui/particle-canvas-1'
+import supabaseClient from '@/supabaseClient'
 
 export default function ThanksPage() {
+  const [topReporter, setTopReporter] = useState<string | null>(null)
+
+  useEffect(() => {
+    async function fetchTopReporter() {
+      if (!supabaseClient) return
+      try {
+        const { data, error } = await supabaseClient
+          .from('top_contributors')
+          .select('reporter_alias')
+          .order('reports_count', { ascending: false })
+          .limit(1)
+          .single()
+
+        if (!error && data) {
+          setTopReporter(data.reporter_alias)
+        }
+      } catch (err) {
+        console.error('Failed to fetch top reporter:', err)
+      }
+    }
+    fetchTopReporter()
+  }, [])
+
   useSEO({
     title: 'Intel Sources — Threatbase | Open Source Threat Intelligence Credits',
     description: 'Threatbase is powered by the global cybersecurity community. Credits to Spamhaus, FireHOL, Emerging Threats, Abuse.ch, SANS DShield, and 15+ open-source threat intelligence providers.',
@@ -39,6 +64,11 @@ export default function ThanksPage() {
           </h1>
           <p className="mt-4 text-slate-400 text-lg md:text-xl max-w-4xl mx-auto leading-relaxed drop-shadow">
             A sincere thank you to all the threat intelligence feed maintainers and contributors whose hard work makes this project possible. By continuously collecting, analyzing, and sharing malicious IP indicators, you help security professionals and organizations around the world detect threats faster and strengthen their defenses. We are grateful to the teams behind FireHOL, AbuseIPDB, Blocklist.de, IPsum, CINS Army, ThreatFox, Binary Defense, Feodo Tracker, DShield, TOR lists, GreenSnow, Emerging Threats, and many other community-driven projects. Your dedication to open threat intelligence helps make the internet a safer place for everyone.
+            {topReporter && (
+              <span className="block mt-4 text-white font-medium">
+                We also extend a very special thanks to our #1 top contributor, <span className="text-yellow-400 font-bold font-elegant tracking-wide">@{topReporter}</span>, for leading the charge in reporting malicious IPs!
+              </span>
+            )}
           </p>
         </motion.div>
 
