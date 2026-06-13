@@ -96,5 +96,26 @@
     "category": "Brute Force",
     "comment": "SSH brute force attack",
     "created_at": "2026-06-12T15:07:35.267596+00:00"
+  },
+  {
+    "id": "0aba9738-1965-426e-943f-eaab5d906e66",
+    "ip": "223.243.24.178",
+    "category": "Spam",
+    "comment": "Spamming emails to SMTP server",
+    "created_at": "2026-06-13T03:24:19.605853+00:00"
+  },
+  {
+    "id": "41f9d451-bba0-4502-b02a-bd417cb47c81",
+    "ip": "191.96.110.39",
+    "category": "Brute Force",
+    "comment": "SSH Bruteforce",
+    "created_at": "2026-06-13T03:25:01.067846+00:00"
+  },
+  {
+    "id": "47aeb986-9cb3-4d22-9f37-2d356ce3468b",
+    "ip": "209.99.189.177",
+    "category": "Brute Force",
+    "comment": "SSH brute-force detected From this IP",
+    "created_at": "2026-06-13T03:26:08.966326+00:00"
   }
 ]
