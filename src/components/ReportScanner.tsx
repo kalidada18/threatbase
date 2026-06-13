@@ -20,6 +20,8 @@ const getCategoryColor = (cat: string) => {
 export default function ReportScanner({ scanResult, isScanning, showReport, scanInput, addToast }: any) {
   const [reports, setReports] = useState<any[]>([])
   const [loadingReports, setLoadingReports] = useState(false)
+  const [ipInfo, setIpInfo] = useState<any>(null)
+  const [loadingIpInfo, setLoadingIpInfo] = useState(false)
   const [isDisputing, setIsDisputing] = useState(false)
   const [showDisputeForm, setShowDisputeForm] = useState(false)
   const [disputeReason, setDisputeReason] = useState('')
@@ -42,6 +44,8 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
   useEffect(() => {
     if (scanResult && (scanResult.isIP || scanResult.isIPv6) && ip) {
       setLoadingReports(true)
+      setLoadingIpInfo(true)
+      
       supabaseClient
         .from('reported_ips')
         .select('*')
@@ -53,8 +57,31 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
           setLoadingReports(false)
         })
         .catch(() => setLoadingReports(false))
+
+      fetch(`https://get.geojs.io/v1/ip/geo/${ip}.json`)
+        .then(r => r.json())
+        .then(data => {
+          if (data && data.ip) {
+            setIpInfo({
+              country: data.country,
+              city: data.city,
+              isp: data.organization_name || data.organization,
+              asn: data.asn ? `AS${data.asn}` : null,
+              country_flag: data.country_code ? `https://flagcdn.com/w20/${data.country_code.toLowerCase()}.png` : null
+            })
+          } else {
+            setIpInfo(null)
+          }
+          setLoadingIpInfo(false)
+        })
+        .catch((err) => {
+          console.error("IP lookup failed:", err);
+          setIpInfo(null)
+          setLoadingIpInfo(false)
+        })
     } else {
       setReports([])
+      setIpInfo(null)
     }
   }, [scanResult, ip])
 
@@ -237,6 +264,45 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
                           </button>
                         </div>
                       </motion.div>
+                    )}
+
+                    {scanResult && (scanResult.isIP || scanResult.isIPv6) && (
+                      <div className="mt-8">
+                        <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-4">IP Information</h4>
+                        <div className="bg-slate-900/40 rounded-xl p-4 md:p-5 border border-white/5 shadow-inner">
+                          {loadingIpInfo ? (
+                            <div className="flex justify-center py-4">
+                              <div className="h-4 w-4 rounded-full border-2 border-slate-600 border-t-cyan-500 animate-spin"></div>
+                            </div>
+                          ) : ipInfo ? (
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                              <div className="flex flex-col gap-1">
+                                <span className="text-[10px] uppercase tracking-wider font-bold text-slate-500">Location</span>
+                                <span className="text-sm text-slate-300 font-medium flex items-center gap-2">
+                                  {ipInfo.country_flag && <img src={ipInfo.country_flag} alt="" className="w-4 h-3 object-cover rounded-[2px]" />}
+                                  <span className="truncate" title={ipInfo.city ? `${ipInfo.city}, ${ipInfo.country}` : ipInfo.country || 'Unknown'}>
+                                    {ipInfo.city ? `${ipInfo.city}, ` : ''}{ipInfo.country || 'Unknown'}
+                                  </span>
+                                </span>
+                              </div>
+                              <div className="flex flex-col gap-1">
+                                <span className="text-[10px] uppercase tracking-wider font-bold text-slate-500">ISP / Organization</span>
+                                <span className="text-sm text-slate-300 font-medium truncate" title={ipInfo.isp || 'Unknown'}>
+                                  {ipInfo.isp || 'Unknown'}
+                                </span>
+                              </div>
+                              <div className="flex flex-col gap-1">
+                                <span className="text-[10px] uppercase tracking-wider font-bold text-slate-500">ASN</span>
+                                <span className="text-sm text-slate-300 font-medium font-mono">
+                                  {ipInfo.asn || 'Unknown'}
+                                </span>
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="text-xs text-slate-500 italic">No information available.</p>
+                          )}
+                        </div>
+                      </div>
                     )}
                   </div>
 
