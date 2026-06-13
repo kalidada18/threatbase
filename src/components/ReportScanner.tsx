@@ -172,12 +172,25 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
                 </div>
                 <div className="flex items-center gap-4">
                   {(type === 'danger' || type === 'disputed') && !showDisputeForm && (
-                    <button
-                      onClick={() => setShowDisputeForm(true)}
-                      className="px-4 py-1.5 rounded-lg text-xs font-bold text-slate-400 border border-white/10 hover:bg-white/5 hover:text-white transition-all"
-                    >
-                      Report False Positive
-                    </button>
+                    <div className="flex flex-col items-end gap-1">
+                      <button
+                        onClick={() => {
+                          if (!user) {
+                            addToast('Please sign in to report a false positive.', 'error')
+                            return
+                          }
+                          setShowDisputeForm(true)
+                        }}
+                        className={`px-4 py-1.5 rounded-lg text-xs font-bold border transition-all ${
+                          user 
+                            ? 'text-slate-400 border-white/10 hover:bg-white/5 hover:text-white' 
+                            : 'text-slate-600 border-white/5 cursor-not-allowed bg-white/[0.01]'
+                        }`}
+                      >
+                        Report False Positive
+                      </button>
+                      {!user && <span className="text-[9px] text-slate-500 font-medium">Sign in required</span>}
+                    </div>
                   )}
                   <div className={`px-3 py-1.5 rounded-md text-[11px] font-bold uppercase tracking-widest border ${type === 'danger' ? 'bg-red-500/10 text-red-400 border-red-500/20' : type === 'safe' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : type === 'disputed' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20'}`}>
                     {type === 'danger' ? 'Threat Detected' : type === 'safe' ? 'Not Listed' : type === 'disputed' ? 'False Positive' : 'Warning'}
@@ -209,7 +222,7 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
 
                   {showDisputeForm && (
                     <motion.div initial={{opacity:0, height:0}} animate={{opacity:1, height:'auto'}} className="mt-6 p-4 rounded-xl border border-white/10 bg-black/20 overflow-hidden">
-                      <h5 className="text-sm font-semibold text-slate-300 mb-2">Why is this a false positive?</h5>
+                      <h5 className="text-sm font-semibold text-slate-300 mb-2">Why is this a false positive? <span className="text-red-500">*</span></h5>
                       <textarea
                         value={disputeReason}
                         onChange={e => setDisputeReason(e.target.value)}
