@@ -1,29 +1,6 @@
 import { motion } from 'framer-motion'
-import { ExternalLink, HeartHandshake } from 'lucide-react'
 import { useSEO } from '@/useSEO'
-import { useAuth } from '@/AuthContext'
 import { ParticleCanvas } from '@/components/ui/particle-canvas-1'
-
-const intelSources = [
-  { name: 'FireHOL', desc: 'Aggregated blocklists analyzing cyber threats, attacks, and malware.', url: 'https://iplists.firehol.org/' },
-  { name: 'Spamhaus', desc: 'The Spamhaus Project DROP and EDROP lists for spam and botnet operations.', url: 'https://www.spamhaus.org/' },
-  { name: 'Emerging Threats', desc: 'Open source intelligence for firewall rules and IDS/IPS signatures.', url: 'https://rules.emergingthreats.net/' },
-  { name: 'Blocklist.de', desc: 'Fail2Ban reporting service for SSH, Apache, Mail, and Brute Force attacks.', url: 'https://www.blocklist.de/' },
-  { name: 'ThreatFox', desc: 'A project from Abuse.ch sharing indicators of compromise (IOCs).', url: 'https://threatfox.abuse.ch/' },
-  { name: 'Feodo Tracker', desc: 'Tracking Botnet Command and Control (C2) servers.', url: 'https://feodotracker.abuse.ch/' },
-  { name: 'IPSUM', desc: 'A daily threat intelligence feed of malicious IPs based on 30+ blacklists.', url: 'https://github.com/stamparm/ipsum' },
-  { name: 'CINS Army', desc: 'Collective Intelligence Network Security providing active threat scores.', url: 'https://cinsarmy.com/' },
-  { name: 'DShield', desc: 'SANS Internet Storm Center blocklist tracking highly active malicious subnets.', url: 'https://www.dshield.org/' },
-  { name: 'Binary Defense', desc: 'Artillery Threat Intelligence Feed and Banlist.', url: 'https://www.binarydefense.com/' },
-  { name: 'Botvrij.eu', desc: 'Open source indicators of compromise for network defenders.', url: 'https://botvrij.eu/' },
-  { name: 'GreenSnow', desc: 'A team dedicated to tracking and blocking malicious IPs attacking servers.', url: 'https://greensnow.co/' },
-  { name: 'BruteForceBlocker', desc: 'List of IPs blocked for massive SSH brute-forcing attempts.', url: 'http://danger.rulez.sk/projects/bruteforceblocker/dirlist' },
-  { name: 'CriticalPath Security', desc: 'Actionable threat intelligence feeds for network defense.', url: 'https://criticalpathsecurity.com/' },
-  { name: 'Tor Bulk Exit', desc: 'Comprehensive list of active Tor exit nodes.', url: 'https://check.torproject.org/' },
-  { name: 'Dan Tor', desc: 'TOR node list provided by Dan.me.uk.', url: 'https://www.dan.me.uk/tornodes' },
-  { name: 'Romain Marcoux', desc: 'Curated firewall blocklists and outgoing connection rules.', url: 'https://github.com/romainmarcoux' },
-  { name: 'BBCan177', desc: 'Malicious IP blocklists curated by BBCan177.', url: 'https://github.com/BBcan177' }
-]
 
 export default function ThanksPage() {
   useSEO({
@@ -65,45 +42,7 @@ export default function ThanksPage() {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {intelSources.map((source, index) => (
-            <motion.a
-              href={source.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              key={source.name}
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.05, ease: "easeOut" }}
-              className="group rounded-2xl border border-white/5 bg-white/[0.01] p-8 hover:bg-white/[0.03] hover:border-white/10 transition-all duration-500 relative overflow-hidden flex flex-col h-full shadow-2xl backdrop-blur-xl hover:-translate-y-2"
-            >
-              {/* Subtle top border glow on hover */}
-              <div className="absolute top-0 inset-x-0 h-[1px] w-full bg-gradient-to-r from-transparent via-cyan-400/0 to-transparent group-hover:via-cyan-400/50 transition-all duration-500"></div>
-              
-              {/* Background ambient glow inside card */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/10 rounded-full blur-[50px] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
-              <div className="absolute top-0 right-0 p-8 opacity-0 group-hover:opacity-100 transition-opacity duration-500 transform group-hover:translate-x-0 translate-x-2">
-                <ExternalLink size={20} className="text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]" />
-              </div>
-              <div className="flex items-center gap-4 mb-5 relative z-10">
-                <div className="w-12 h-12 rounded-xl bg-black/40 border border-white/5 flex items-center justify-center group-hover:border-cyan-500/40 group-hover:shadow-[0_0_15px_rgba(34,211,238,0.2)] transition-all duration-500">
-                  <svg className="h-6 w-6 text-slate-500 group-hover:text-cyan-400 transition-colors duration-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="currentColor" fillOpacity="0.05" />
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M9 11l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </div>
-                <h3 className="font-extrabold text-xl tracking-tight text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-cyan-200 transition-all duration-500">
-                  {source.name}
-                </h3>
-              </div>
-              <p className="text-slate-400 text-[15px] leading-relaxed flex-grow relative z-10 group-hover:text-slate-300 transition-colors duration-500">
-                {source.desc}
-              </p>
-            </motion.a>
-          ))}
-        </div>
       </div>
     </main>
   )
