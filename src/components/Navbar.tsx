@@ -183,7 +183,7 @@ export default function Navbar() {
                                                         animate={{ opacity: 1, scale: 1, y: 0 }}
                                                         exit={{ opacity: 0, scale: 0.95, y: 10 }}
                                                         transition={{ duration: 0.15 }}
-                                                        className="absolute right-0 mt-2.5 w-48 rounded-2xl border border-white/10 bg-black/95 backdrop-blur-2xl p-2.5 shadow-2xl z-50 flex flex-col gap-1 select-none"
+                                                        className="absolute right-0 mt-2.5 w-48 rounded-2xl border border-white/10 bg-black/30 backdrop-blur-xl p-2.5 shadow-[0_8px_32px_rgba(0,0,0,0.4)] z-50 flex flex-col gap-1 select-none"
                                                     >
                                                         <div className="px-3 py-2 border-b border-white/5 mb-1 text-left">
                                                             <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Logged In As</p>
