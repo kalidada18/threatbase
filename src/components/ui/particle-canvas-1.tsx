@@ -232,12 +232,13 @@ const ParticleCanvas = ({ maxParticles = 1000, particleSizeMin = 2, particleSize
     <canvas
       ref={canvasRef}
       style={{
-        position: "absolute",
+        position: "fixed",
         top: 0,
         left: 0,
         width: "100%",
         height: "100%",
         pointerEvents: "none", // so it doesn't block clicks
+        zIndex: 0,
       }}
     />
   );
