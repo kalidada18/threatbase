@@ -37,8 +37,8 @@ export default function ThanksPage() {
           <h1 className="text-5xl md:text-7xl font-black flex flex-col items-center justify-center gap-3 text-transparent bg-clip-text bg-gradient-to-b from-white via-white to-slate-400 tracking-tight drop-shadow-sm pb-2">
             Intel Sources
           </h1>
-          <p className="mt-4 text-slate-400 text-lg max-w-2xl mx-auto leading-relaxed drop-shadow">
-            Threatbase is powered by the tireless work of the global cybersecurity community. We extend our deepest gratitude to the following organizations and open-source projects for providing free, high-quality threat intelligence.
+          <p className="mt-4 text-slate-400 text-lg md:text-xl max-w-4xl mx-auto leading-relaxed drop-shadow">
+            A sincere thank you to all the threat intelligence feed maintainers and contributors whose hard work makes this project possible. By continuously collecting, analyzing, and sharing malicious IP indicators, you help security professionals and organizations around the world detect threats faster and strengthen their defenses. We are grateful to the teams behind FireHOL, AbuseIPDB, Blocklist.de, IPsum, CINS Army, ThreatFox, Binary Defense, Feodo Tracker, DShield, TOR lists, GreenSnow, Emerging Threats, and many other community-driven projects. Your dedication to open threat intelligence helps make the internet a safer place for everyone.
           </p>
         </motion.div>
 
