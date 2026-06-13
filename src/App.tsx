@@ -20,6 +20,7 @@ import { AuthProvider } from './AuthContext'
 import { getBaseUrl, formatSyncTime, animateValue } from './utils'
 import { scanIndicatorLogic } from './scanner'
 import { useSEO } from './useSEO'
+import TurnstileModal from './components/TurnstileModal'
 
 export default function App() {
   const [statsData, setStatsData] = useState(null)
@@ -39,6 +40,7 @@ export default function App() {
   const [scanResult, setScanResult] = useState(null)
   const [isScanning, setIsScanning] = useState(false)
   const [showReport, setShowReport] = useState(false)
+  const [isVerifying, setIsVerifying] = useState(false)
 
   // Toast state
   const [toasts, setToasts] = useState([])
@@ -71,9 +73,14 @@ export default function App() {
 
     lastScanTime.current = now
 
-    // Basic sanitization
-    raw = raw.replace(/[<>"'&]/g, '')
+    // Show Turnstile modal instead of scanning directly
+    setIsVerifying(true)
+  }, [scanInput, addToast])
 
+  const performScan = useCallback(async (token: string) => {
+    setIsVerifying(false)
+    let raw = scanInput.trim().replace(/[<>"'&]/g, '')
+    
     setIsScanning(true)
     setShowReport(true)
     setScanResult(null)
@@ -178,6 +185,11 @@ export default function App() {
 
       <ToastContainer toasts={toasts} />
       <Footer />
+      <TurnstileModal 
+        isOpen={isVerifying} 
+        onClose={() => setIsVerifying(false)} 
+        onSuccess={performScan} 
+      />
     </AuthProvider>
   )
 }
