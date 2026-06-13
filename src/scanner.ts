@@ -3,7 +3,7 @@ import supabaseClient from './supabaseClient'
 
 const feedCache = {}
 
-export async function fetchAndCacheFeed(url) {
+async function fetchAndCacheFeed(url) {
   if (feedCache[url]) return feedCache[url]
   try {
     const r = await fetch(url)

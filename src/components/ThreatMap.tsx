@@ -27,6 +27,13 @@ interface Attack {
   color: string
 }
 
+interface Explosion {
+  x: number
+  y: number
+  progress: number
+  color: string
+}
+
 export default function ThreatMap() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
@@ -38,6 +45,7 @@ export default function ThreatMap() {
 
     let animationFrameId: number
     let attacks: Attack[] = []
+    let explosions: Explosion[] = []
     let width = 0
     let height = 0
     let dots: {x: number, y: number}[] = []
@@ -160,6 +168,12 @@ export default function ThreatMap() {
             a.progress += a.speed
 
             if (a.progress >= 1) {
+              explosions.push({
+                x: a.target.x,
+                y: a.target.y,
+                progress: 0,
+                color: a.color
+              })
               attacks.splice(i, 1)
               continue
             }
@@ -199,6 +213,36 @@ export default function ThreatMap() {
               ctx.fill()
               ctx.shadowBlur = 0
             }
+          }
+
+          // Update and draw explosions
+          for (let i = explosions.length - 1; i >= 0; i--) {
+            const e = explosions[i]
+            e.progress += 0.025 // Explosion speed
+
+            if (e.progress >= 1) {
+              explosions.splice(i, 1)
+              continue
+            }
+
+            const radius = e.progress * 25 // Max radius 25px
+            const opacity = 1 - Math.pow(e.progress, 1.5) // Fade out curve
+
+            ctx.beginPath()
+            ctx.arc(e.x, e.y, radius, 0, Math.PI * 2)
+            ctx.strokeStyle = `rgba(${hexToRgb(e.color)}, ${opacity})`
+            ctx.lineWidth = 1.5
+            ctx.shadowBlur = 12
+            ctx.shadowColor = e.color
+            ctx.stroke()
+            
+            // Inner core blast
+            ctx.beginPath()
+            ctx.arc(e.x, e.y, radius * 0.4, 0, Math.PI * 2)
+            ctx.fillStyle = `rgba(${hexToRgb(e.color)}, ${opacity * 0.6})`
+            ctx.fill()
+            
+            ctx.shadowBlur = 0
           }
 
           // Reset composite operation for next frame

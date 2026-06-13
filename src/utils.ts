@@ -40,27 +40,9 @@ export function timeAgo(dateStr) {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
-/** Category → badge CSS class map */
-export function getCategoryBadge(category) {
-  const map = {
-    'Brute Force': 'rip-cat-brute',
-    'Port Scan': 'rip-cat-scan',
-    'Phishing': 'rip-cat-phishing',
-    'Malware / C2': 'rip-cat-malware',
-    'DDoS': 'rip-cat-ddos',
-    'Spam': 'rip-cat-spam',
-    'Exploit Attempt': 'rip-cat-exploit',
-    'Other': 'rip-cat-other',
-  }
-  return map[category] || 'rip-cat-other'
-}
 
-/** Escape HTML to prevent XSS */
-export function escapeHtml(str) {
-  const div = document.createElement('div')
-  div.textContent = str
-  return div.innerHTML
-}
+
+
 
 /** Predict male/female avatar based on name heuristically */
 export function getAvatarForName(name) {
