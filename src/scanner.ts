@@ -88,6 +88,8 @@ export async function scanIndicatorLogic(rawInput, feedVersion) {
   let isMalicious = false
   let riskScore = 'Low'
   let feedCount = 1
+  let isDisputed = false
+  let disputeCount = 0
 
   try {
     let list = []
@@ -109,8 +111,6 @@ export async function scanIndicatorLogic(rawInput, feedVersion) {
     }
 
     const result = binarySearchArray(list, ip, compareFn)
-    let isDisputed = false
-    let disputeCount = 0
 
     if (result) {
       isMalicious = true
