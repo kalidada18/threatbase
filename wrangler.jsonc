@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "threatbase",
+  "name": "threatbase-deepscan",
   "compatibility_date": "2026-06-14",
   "observability": {
     "enabled": true
