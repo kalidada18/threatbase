@@ -46,3 +46,9 @@ ip2asn-v4.tsv.gz
 # API caches
 .otx_cache.json
 .abuseipdb_cache.txt
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+!.env.example
