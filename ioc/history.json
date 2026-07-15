@@ -1208,5 +1208,34 @@
       "romainmarcoux_outgoing_40k": 40000,
       "blocklist_de": 23706
     }
+  },
+  {
+    "date": "2026-07-15",
+    "total_unique_ips": 579761,
+    "total_unique_ipv6": 7523,
+    "total_unique_cidrs": 15106,
+    "total_unique_domains": 4145558,
+    "total_unique_hashes": 1109147,
+    "total_unique_urls": 77810,
+    "active_feeds": 55,
+    "category_counts": {
+      "Mixed": 363378,
+      "Malicious": 182120,
+      "Compromised": 15631,
+      "Brute-Force": 27590,
+      "Spam": 13429,
+      "C2": 7607,
+      "Tor": 7504,
+      "Malware": 2728,
+      "Botnet": 3654,
+      "Exploit": 8863
+    },
+    "top_sources": {
+      "romainmarcoux_outgoing_aa": 131072,
+      "ipsum": 104900,
+      "romainmarcoux_outgoing_ab": 46570,
+      "romainmarcoux_outgoing_40k": 40000,
+      "blocklist_de": 23760
+    }
   }
 ]
