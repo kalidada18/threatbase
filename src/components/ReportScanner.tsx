@@ -247,7 +247,7 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
               </div>
 
               {/* IP address */}
-              <div className="text-3xl md:text-[2.6rem] font-mono font-semibold tracking-tight text-white tabular-nums break-all text-center leading-none">{ip}</div>
+              <div className={`${ip.length > 30 ? 'text-lg sm:text-xl' : 'text-3xl'} md:text-[2.6rem] font-mono font-semibold tracking-tight text-white tabular-nums break-all text-center leading-none`}>{ip}</div>
             </motion.div>
           ) : scanResult ? (
             <motion.div

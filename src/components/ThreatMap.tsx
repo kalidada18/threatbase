@@ -325,9 +325,7 @@ export default function ThreatMap() {
         const graticule = d3.geoGraticule().step([15, 15])()
 
         // Map projection — Equirectangular for flat 2D map effect
-        const mapScale = (width / (2 * Math.PI)) * 1.05
         const projection = d3.geoEquirectangular()
-          .scale(mapScale)
           .translate([width / 2, height / 1.7])
           .precision(0.1)
 
@@ -385,7 +383,9 @@ export default function ThreatMap() {
         for (let i = 0; i < 5; i++) spawnAttack()
 
         const render = () => {
-          // Apply horizontal wrap-around and vertical panning from dragging
+          // Apply horizontal wrap-around and vertical panning from dragging.
+          // Scale is recomputed per-frame so rotate/resize rescale the map.
+          projection.scale((width / (2 * Math.PI)) * 1.05)
           projection.rotate([rotationRef.current[0], 0])
           projection.translate([width / 2, height / 1.7 + rotationRef.current[1] * 3])
 
@@ -631,7 +631,7 @@ export default function ThreatMap() {
           ref={canvasRef}
           className="absolute inset-0 w-full h-full bg-transparent cursor-grab active:cursor-grabbing"
           style={{ 
-            touchAction: 'none',
+            touchAction: 'pan-y',
             transform: 'rotateX(20deg) scale(1.15) translateY(-5%)',
             transformOrigin: 'center center'
           }}

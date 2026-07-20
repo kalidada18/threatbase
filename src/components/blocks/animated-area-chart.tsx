@@ -175,7 +175,7 @@ export default function AnimatedHighlightedAreaChart({ feedVersion }: { feedVers
                 key={k}
                 onClick={() => toggle(k)}
                 aria-pressed={!off}
-                className={`group/chip inline-flex items-center gap-2 pl-2 pr-2.5 py-1.5 rounded-xl border text-xs font-bold transition-all ${
+                className={`group/chip inline-flex items-center gap-2 pl-2 pr-2.5 py-2.5 md:py-1.5 rounded-xl border text-xs font-bold transition-all ${
                   off
                     ? 'border-white/5 bg-white/[0.02] text-slate-600'
                     : 'border-white/10 bg-white/[0.04] text-slate-200 hover:bg-white/[0.07]'

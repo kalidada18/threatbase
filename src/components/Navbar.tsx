@@ -112,7 +112,7 @@ export default function Navbar() {
                             </div>
                         </div>
 
-                        <div className="bg-black/95 backdrop-blur-xl border border-white/10 group-data-[state=active]:flex lg:group-data-[state=active]:flex mb-4 hidden w-full flex-col lg:flex-row flex-wrap items-center justify-center lg:justify-end space-y-8 lg:space-y-0 rounded-3xl p-6 shadow-2xl md:flex-nowrap lg:m-0 lg:flex lg:w-fit lg:gap-6 lg:border-transparent lg:bg-transparent lg:p-0 lg:shadow-none mt-4 lg:mt-0 transition-all duration-300">
+                        <div className="bg-black/95 backdrop-blur-xl border border-white/10 group-data-[state=active]:flex lg:group-data-[state=active]:flex mb-4 hidden w-full flex-col lg:flex-row flex-wrap items-center justify-center lg:justify-end space-y-8 lg:space-y-0 rounded-3xl p-6 shadow-2xl max-h-[calc(100dvh-6rem)] overflow-y-auto lg:max-h-none lg:overflow-visible md:flex-nowrap lg:m-0 lg:flex lg:w-fit lg:gap-6 lg:border-transparent lg:bg-transparent lg:p-0 lg:shadow-none mt-4 lg:mt-0 transition-all duration-300">
                             <div className="lg:hidden w-full">
                                 <ul className="space-y-6 text-base font-medium">
                                     {menuItems.map((item, index) => {

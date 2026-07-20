@@ -865,7 +865,7 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
               </div>
             ) : (
               <table className="w-full text-xs text-left">
-                <thead className="text-[10px] uppercase text-slate-500 font-semibold border-b border-white/[0.05]">
+                <thead className="hidden md:table-header-group text-[10px] uppercase text-slate-500 font-semibold border-b border-white/[0.05]">
                   <tr>
                     <th className="px-6 py-4 font-normal">Indicator</th>
                     <th className="px-6 py-4 font-normal">Category</th>
@@ -873,25 +873,25 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
                     <th className="px-6 py-4 text-right font-normal">Date</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/[0.02]">
+                <tbody className="divide-y divide-white/[0.04] md:divide-white/[0.02]">
                   {reports.map((row) => (
-                    <tr 
-                      key={row.id || row.created_at} 
-                      className="hover:bg-white/[0.02] transition-colors group"
+                    <tr
+                      key={row.id || row.created_at}
+                      className="block md:table-row px-4 py-3 md:p-0 hover:bg-white/[0.02] transition-colors group"
                     >
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="font-mono text-slate-200 flex items-center gap-2">
+                      <td className="block md:table-cell md:px-6 py-1 md:py-4 md:whitespace-nowrap">
+                        <div className="font-mono text-slate-200 flex items-center gap-2 break-all md:break-normal">
                           <span>{row.ip}</span>
                           <button
                             type="button"
                             onClick={() => handleCopyIp(row.ip)}
-                            className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-500 hover:text-white"
+                            className="p-2 -m-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-slate-500 hover:text-white"
                           >
                             {copiedIp === row.ip ? <Check size={12} /> : <Copy size={12} />}
                           </button>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="block md:table-cell md:px-6 py-1 md:py-4">
                         <div className="flex flex-wrap gap-1.5">
                           {(row.category || 'Other').split(', ').map((cat: string) => (
                             <span key={cat} className={`inline-flex items-center rounded-md border border-white/[0.06] bg-white/[0.02] px-2 py-0.5 text-[11px] font-medium ${getCategoryColor(cat)}`}>
@@ -900,10 +900,10 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
                           ))}
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-slate-400 max-w-sm truncate">
+                      <td className="block md:table-cell md:px-6 py-1 md:py-4 text-slate-400 md:max-w-sm md:truncate">
                         {row.comment || <span className="text-slate-600 italic">No context</span>}
                       </td>
-                      <td className="px-6 py-4 text-slate-500 text-right whitespace-nowrap">
+                      <td className="block md:table-cell md:px-6 py-1 md:py-4 text-slate-500 md:text-right md:whitespace-nowrap">
                         {timeAgo(row.created_at)}
                       </td>
                     </tr>

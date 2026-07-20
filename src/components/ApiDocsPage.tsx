@@ -145,7 +145,7 @@ function CodeBlock({ code, language = 'text', filename }: CodeBlockProps) {
         </div>
         <button
           onClick={handleCopy}
-          className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] font-bold text-slate-400 transition-all hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-400 active:scale-95"
+          className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-2.5 py-2 md:py-1 text-[11px] font-bold text-slate-400 transition-all hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-400 active:scale-95"
         >
           {copied ? (
             <>
@@ -414,9 +414,9 @@ export default function ApiDocsPage() {
 
         <div className="mb-16 inline-block rounded-2xl bg-gradient-to-r from-red-500/40 to-red-800/40 p-[1px] shadow-glow-ruby">
           <div className="rounded-2xl bg-slate-950/80 px-6 py-4 backdrop-blur-xl">
-            <span className="font-mono text-sm text-metal tracking-wide md:text-base">
+            <span className="font-mono text-xs sm:text-sm text-metal tracking-wide md:text-base">
               <span className="text-destructive">$</span> base url{' '}
-              <span className="text-slate-200">{BASE_URL}/api/v1</span>
+              <span className="text-slate-200 break-all">{BASE_URL}/api/v1</span>
             </span>
           </div>
         </div>

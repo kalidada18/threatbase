@@ -92,7 +92,7 @@ export default function ThanksPage() {
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           className="text-center flex flex-col items-center"
         >
-          <h1 className="text-6xl md:text-8xl lg:text-[10rem] font-black tracking-tighter text-white leading-[0.9]">
+          <h1 className="text-5xl sm:text-6xl md:text-8xl lg:text-[10rem] font-black tracking-tighter text-white leading-[0.9]">
             Intel<br /><span className="text-metal">Sources.</span>
           </h1>
 

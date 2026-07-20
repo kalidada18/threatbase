@@ -97,7 +97,7 @@ export const Footer7 = ({
               </a>
               <h2 className="font-display text-xl font-bold tracking-tight text-metal">{logo.title}</h2>
             </div>
-            <p className="max-w-[70%] text-sm text-slate-400">
+            <p className="max-w-full md:max-w-[70%] text-sm text-slate-400">
               {description}
             </p>
             <ul className="flex items-center space-x-6 text-slate-400">
