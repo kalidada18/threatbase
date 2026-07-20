@@ -60,37 +60,30 @@ export const onRequestPost = async (context: any) => {
       });
     }
 
-    // 1. Fetch user's alias
+    // 1. Fetch user's alias (display label only — NOT used for dedup anymore,
+    //    since usernames are mutable and not guaranteed unique across users
+    //    without a profile row).
     let reporter_alias = "API User";
     const { data: profile } = await supabaseClient
       .from('profiles')
       .select('username')
       .eq('id', userId)
       .single();
-    
+
     if (profile && profile.username) {
       reporter_alias = profile.username;
     }
 
-    // 2. Check if already reported
-    const { data: existingReport } = await supabaseClient
-      .from('reported_ips')
-      .select('id')
-      .eq('ip', cleanIp)
-      .eq('reporter_alias', reporter_alias)
-      .maybeSingle()
-
-    if (existingReport) {
-      return new Response(JSON.stringify({ error: "You have already reported this IP." }), {
-        status: 409, headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
-    // 3. Insert via the SECURITY DEFINER RPC using the server-only service_role
+    // 2. Insert via the SECURITY DEFINER RPC using the server-only service_role
     //    key. The API key was already validated by the middleware, so the
     //    privileged write happens server-side and the RPC can be REVOKEd from
     //    anon/public (see db/lock_down_api_insert_report.sql) to close the
     //    direct-PostgREST bypass. Fail closed if the key is absent.
+    //
+    //    Dedup is enforced at the DB level via a unique constraint on
+    //    (ip, user_id) rather than a check-then-insert — this avoids both a
+    //    race condition between concurrent requests and false collisions
+    //    between different users who share the same reporter_alias.
     const serviceKey = env?.SUPABASE_SERVICE_ROLE_KEY
     if (!serviceKey) {
       console.error('SUPABASE_SERVICE_ROLE_KEY is not configured — cannot insert report.')
@@ -104,10 +97,19 @@ export const onRequestPost = async (context: any) => {
       p_ip: cleanIp,
       p_category: cleanCategory,
       p_comment: cleanComment,
-      p_reporter_alias: reporter_alias
+      p_reporter_alias: reporter_alias,
+      p_user_id: userId
     });
 
-    if (insertError) throw insertError;
+    if (insertError) {
+      // Postgres unique_violation — user already reported this IP.
+      if (insertError.code === '23505') {
+        return new Response(JSON.stringify({ error: "You have already reported this IP." }), {
+          status: 409, headers: { 'Content-Type': 'application/json' }
+        });
+      }
+      throw insertError;
+    }
 
     return new Response(JSON.stringify({ success: true, message: "IP reported successfully." }), {
       headers: { 'Content-Type': 'application/json' }
