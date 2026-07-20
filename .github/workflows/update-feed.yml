@@ -31,6 +31,8 @@ jobs:
         with:
           # Ensure we have the full history for accurate diff detection and rebasing
           fetch-depth: 0
+          # Large feed files (domain/hash) are stored via Git LFS
+          lfs: true
 
       # ── 2. Python setup ──────────────────────────────────────────────────────
       - name: Set up Python 3.11

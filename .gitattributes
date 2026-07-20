@@ -1,0 +1,2 @@
+ioc/threatbase-hash.txt filter=lfs diff=lfs merge=lfs -text
+ioc/threatbase-domain.txt filter=lfs diff=lfs merge=lfs -text
