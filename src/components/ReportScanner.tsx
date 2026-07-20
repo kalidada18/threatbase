@@ -29,6 +29,10 @@ function computeConfidence(scanResult: any, reportCount: number): number {
   // A malicious-subnet match is a strong, range-level signal.
   if (scanResult.matchedCidr) score = Math.max(score, 80)
 
+  // A pivot match (subdomain / URL host) is indirect — cap confidence slightly
+  // below a direct listing of the exact indicator.
+  if (scanResult.relatedMatch) score = Math.min(score, 85)
+
   // Corroborating community reports nudge confidence up.
   score += Math.min(reportCount, 8) * 1.5
 
@@ -342,8 +346,20 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
                     </div>
                   )}
 
+                  {/* Related-infrastructure pivot match (subdomain / URL host) */}
+                  {type === 'danger' && scanResult?.relatedMatch && (
+                    <div className="mt-4 flex items-start gap-3 p-3.5 rounded-xl bg-rose-500/5 border border-rose-500/20">
+                      <ShieldAlert size={18} className="text-rose-400 shrink-0 mt-0.5" />
+                      <p className="text-sm text-slate-300 leading-relaxed">
+                        {scanResult.relatedMatch.reason}:{' '}
+                        <span className="font-mono font-bold text-rose-300 break-all">{scanResult.relatedMatch.indicator}</span>.
+                        The exact indicator is not listed, but it belongs to known malicious infrastructure.
+                      </p>
+                    </div>
+                  )}
+
                   {/* Malicious subnet (CIDR range) match */}
-                  {type === 'danger' && scanResult?.matchedCidr && (
+                  {type === 'danger' && scanResult?.matchedCidr && !scanResult?.relatedMatch && (
                     <div className="mt-4 flex items-start gap-3 p-3.5 rounded-xl bg-rose-500/5 border border-rose-500/20">
                       <ShieldAlert size={18} className="text-rose-400 shrink-0 mt-0.5" />
                       <p className="text-sm text-slate-300 leading-relaxed">
