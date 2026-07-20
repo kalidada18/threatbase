@@ -140,14 +140,57 @@ export function binarySearchString(text: string, query: string, compareFn: Compa
 }
 
 /**
+ * Refang a defanged IOC — analysts paste indicators as `hxxp://evil[.]com`
+ * or `1.2.3[.]4` to make them non-clickable. Normalize back to the real form
+ * so they scan correctly. Also strips whitespace and a trailing dot (FQDN form).
+ */
+export function refangIndicator(raw: string): string {
+  let s = raw.trim()
+    .replace(/^hxxps:\/\//i, 'https://')
+    .replace(/^hxxp:\/\//i, 'http://')
+    .replace(/\[\.\]|\(\.\)|\{\.\}/g, '.')
+    .replace(/\[:\]/g, ':')
+    .replace(/\[\/\/\]|\[\/\]/g, '/')
+    .replace(/\[at\]|\(at\)/gi, '@')
+  if (s.endsWith('.') && !s.endsWith('..')) s = s.slice(0, -1)
+  return s
+}
+
+/** Extract the hostname from a URL string, or null if unparseable. */
+export function extractUrlHost(url: string): string | null {
+  try {
+    return new URL(url).hostname.toLowerCase().replace(/^\[|\]$/g, '')
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Parent domains of a host, nearest first, down to the registrable-ish level.
+ * `a.b.evil.com` → ['b.evil.com', 'evil.com']. Naive on multi-part TLDs
+ * (co.uk etc.) — a miss there is a false negative, never a false positive,
+ * since we only report parents actually present in the feed.
+ */
+export function parentDomains(host: string): string[] {
+  const parts = host.split('.')
+  const out: string[] = []
+  for (let i = 1; i < parts.length - 1; i++) out.push(parts.slice(i).join('.'))
+  return out
+}
+
+/**
  * Classify a raw indicator string into its type. Pure (no network I/O) and
  * exported so the classification rules can be unit-tested in isolation.
+ *
+ * Input is refanged first, so defanged IOCs (hxxp://, [.]) classify as their
+ * real type.
  *
  * Hash detection is restricted to the three standard hex lengths — MD5 (32),
  * SHA-1 (40) and SHA-256 (64) — so odd-length hex (e.g. 56 chars) is no longer
  * misrouted to the hash feed.
  */
 export function classifyIndicator(rawInput: string) {
+  rawInput = refangIndicator(rawInput)
   const isURL = /^https?:\/\/.+/.test(rawInput)
   const isHash = /^(?:[a-fA-F0-9]{32}|[a-fA-F0-9]{40}|[a-fA-F0-9]{64})$/.test(rawInput)
   const ip = isURL && !isHash ? rawInput : rawInput.toLowerCase()
@@ -196,6 +239,9 @@ export async function scanIndicatorLogic(rawInput: string, feedVersion: string |
   let disputeCount = 0
   let tags: string[] = []
   let matchedCidr: string | null = null
+  // Pivot detection: the exact indicator wasn't listed, but a related one was
+  // (URL's host, a parent domain, the host's resolved-in-feed IP form, etc).
+  let relatedMatch: { indicator: string; reason: string } | null = null
 
   try {
     let textData = ''
@@ -229,6 +275,59 @@ export async function scanIndicatorLogic(rawInput: string, feedVersion: string |
       matchedCidr = findMatchingCidr(cidrText, ipv4ToLong(ip))
     }
 
+    // Domain pivot: an unlisted subdomain of a listed domain is still hostile
+    // infrastructure (evil.com listed → mail.evil.com flagged).
+    if (!result && isDomain) {
+      const { text: dText, filter: dFilter } = await fetchAndCacheFeedText(RAW, 'threatbase-domain.txt', feedVersion)
+      for (const parent of parentDomains(ip)) {
+        if (dFilter && !dFilter.has(parent)) continue
+        const hit = binarySearchString(dText, parent, stringCompare)
+        if (hit) {
+          relatedMatch = { indicator: parent, reason: 'Subdomain of listed malicious domain' }
+          result = hit
+          break
+        }
+      }
+    }
+
+    // URL pivot: the exact URL isn't listed, but its host (or a parent of it,
+    // or a host IP) is — an unlisted path on malicious infra is still malicious.
+    if (!result && isURL) {
+      const host = extractUrlHost(ip)
+      if (host) {
+        const hostIsIp = ipv4ToLong(host) !== null
+        if (hostIsIp) {
+          const { text: ipText, filter: ipFilter } = await fetchAndCacheFeedText(RAW, 'threatbase-ip.txt', feedVersion)
+          if (!ipFilter || ipFilter.has(host)) {
+            const hit = binarySearchString(ipText, host, ipCsvCompare)
+            if (hit) {
+              relatedMatch = { indicator: host, reason: 'URL hosted on listed malicious IP' }
+              result = hit
+            }
+          }
+          if (!result) {
+            const { text: cidrText } = await fetchAndCacheFeedText(RAW, 'threatbase-cidr.txt', feedVersion)
+            const cidrHit = findMatchingCidr(cidrText, ipv4ToLong(host))
+            if (cidrHit) {
+              relatedMatch = { indicator: cidrHit, reason: 'URL hosted inside listed malicious subnet' }
+              matchedCidr = cidrHit
+            }
+          }
+        } else {
+          const { text: dText, filter: dFilter } = await fetchAndCacheFeedText(RAW, 'threatbase-domain.txt', feedVersion)
+          for (const candidate of [host, ...parentDomains(host)]) {
+            if (dFilter && !dFilter.has(candidate)) continue
+            const hit = binarySearchString(dText, candidate, stringCompare)
+            if (hit) {
+              relatedMatch = { indicator: candidate, reason: candidate === host ? 'URL host is a listed malicious domain' : 'URL host is a subdomain of a listed malicious domain' }
+              result = hit
+              break
+            }
+          }
+        }
+      }
+    }
+
     if (result || matchedCidr) {
       isMalicious = true
       if (result) {
@@ -245,6 +344,9 @@ export async function scanIndicatorLogic(rawInput: string, feedVersion: string |
         riskScore = 'High'
         feedCount = 1
         tags = ['Malicious Subnet']
+      }
+      if (relatedMatch && !tags.includes('Related Infrastructure')) {
+        tags = [...tags, 'Related Infrastructure']
       }
 
       if (supabaseClient) {
@@ -270,5 +372,5 @@ export async function scanIndicatorLogic(rawInput: string, feedVersion: string |
     console.error(e)
   }
 
-  return { type: scanType, ip, isIP, isDomain, isHash, isURL, isIPv6, isCIDR, isMalicious, riskScore, feedCount, isDisputed, disputeCount, tags, matchedCidr }
+  return { type: scanType, ip, isIP, isDomain, isHash, isURL, isIPv6, isCIDR, isMalicious, riskScore, feedCount, isDisputed, disputeCount, tags, matchedCidr, relatedMatch }
 }

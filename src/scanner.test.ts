@@ -6,6 +6,9 @@ import {
   binarySearchString,
   ipCsvCompare,
   stringCompare,
+  refangIndicator,
+  extractUrlHost,
+  parentDomains,
 } from './scanner'
 
 describe('classifyIndicator', () => {
@@ -98,5 +101,49 @@ describe('binarySearchString', () => {
     const domainFeed = ['aaa.com', 'bbb.com', 'ccc.com'].join('\n')
     expect(binarySearchString(domainFeed, 'bbb.com', stringCompare)).toBe('bbb.com')
     expect(binarySearchString(domainFeed, 'zzz.com', stringCompare)).toBeNull()
+  })
+})
+
+describe('refangIndicator', () => {
+  it('refangs defanged URLs and domains', () => {
+    expect(refangIndicator('hxxp://evil[.]com/x')).toBe('http://evil.com/x')
+    expect(refangIndicator('hxxps://evil[.]com')).toBe('https://evil.com')
+    expect(refangIndicator('1.2.3[.]4')).toBe('1.2.3.4')
+    expect(refangIndicator('evil(.)com')).toBe('evil.com')
+  })
+
+  it('trims whitespace and trailing FQDN dot', () => {
+    expect(refangIndicator('  evil.com.  ')).toBe('evil.com')
+  })
+
+  it('leaves clean indicators untouched', () => {
+    expect(refangIndicator('https://ok.example/path')).toBe('https://ok.example/path')
+    expect(refangIndicator('8.8.8.8')).toBe('8.8.8.8')
+  })
+})
+
+describe('defanged input classification', () => {
+  it('classifies defanged IOCs as their real type', () => {
+    expect(classifyIndicator('hxxp://evil[.]com/x').type).toBe('URL')
+    expect(classifyIndicator('evil[.]com').type).toBe('Domain')
+    expect(classifyIndicator('1.2.3[.]4').type).toBe('IP Address')
+  })
+})
+
+describe('extractUrlHost', () => {
+  it('extracts and lowercases hostnames', () => {
+    expect(extractUrlHost('http://Evil.COM/path?q=1')).toBe('evil.com')
+    expect(extractUrlHost('https://1.2.3.4:8080/x')).toBe('1.2.3.4')
+  })
+
+  it('returns null for garbage', () => {
+    expect(extractUrlHost('not a url')).toBeNull()
+  })
+})
+
+describe('parentDomains', () => {
+  it('lists parents nearest-first, excluding the bare TLD', () => {
+    expect(parentDomains('a.b.evil.com')).toEqual(['b.evil.com', 'evil.com'])
+    expect(parentDomains('evil.com')).toEqual([])
   })
 })
