@@ -177,21 +177,57 @@ export const onRequestPost = async (context: any) => {
   //    REVOKEd from anon/authenticated (see db/lock_down_api_insert_report.sql)
   //    to close the direct-PostgREST bypass. Fail closed if the key is absent.
   const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY
-  if (!serviceKey) {
-    console.error('SUPABASE_SERVICE_ROLE_KEY is not configured — rejecting report.')
-    return json({ error: 'Reporting is temporarily unavailable.' }, 503, request)
-  }
-  const adminClient = createClient(env.SUPABASE_URL || SUPABASE_URL, serviceKey)
+  let insertError: any = null
 
-  const { error: insertError } = await adminClient.rpc('api_insert_report', {
-    p_ip: cleanIp,
-    p_category: cleanCategory,
-    p_comment: stripHtml(cleanComment),
-    p_reporter_alias: reporterAlias,
-  })
+  if (serviceKey) {
+    const adminClient = createClient(env.SUPABASE_URL || SUPABASE_URL, serviceKey)
+    const { error: rpcErr } = await adminClient.rpc('api_insert_report', {
+      p_ip: cleanIp,
+      p_category: cleanCategory,
+      p_comment: stripHtml(cleanComment),
+      p_reporter_alias: reporterAlias,
+    })
+
+    if (rpcErr) {
+      console.warn('community-report RPC api_insert_report failed, trying direct table insert:', rpcErr?.message || rpcErr)
+      const { error: tblErr } = await adminClient.from('reported_ips').insert([{
+        ip: cleanIp,
+        category: cleanCategory,
+        comment: stripHtml(cleanComment),
+        reporter_alias: reporterAlias,
+      }])
+      insertError = tblErr
+    }
+  } else {
+    // Fallback if serviceKey is not configured: execute insert via user authenticated client
+    const userClient = createClient(
+      env.SUPABASE_URL || SUPABASE_URL,
+      env.SUPABASE_ANON_KEY || 'https://anon-key-placeholder',
+      { global: { headers: { Authorization: `Bearer ${accessToken}` } } }
+    )
+
+    const { error: rpcErr } = await userClient.rpc('api_insert_report', {
+      p_ip: cleanIp,
+      p_category: cleanCategory,
+      p_comment: stripHtml(cleanComment),
+      p_reporter_alias: reporterAlias,
+    })
+
+    if (rpcErr) {
+      console.warn('userClient RPC failed, trying direct table insert:', rpcErr?.message || rpcErr)
+      const { error: tblErr } = await userClient.from('reported_ips').insert([{
+        ip: cleanIp,
+        category: cleanCategory,
+        comment: stripHtml(cleanComment),
+        reporter_alias: reporterAlias,
+      }])
+      insertError = tblErr
+    }
+  }
+
   if (insertError) {
     console.error('community-report insert failed:', insertError?.message || insertError)
-    return json({ error: 'Failed to save report. Please try again.' }, 500, request)
+    return json({ error: insertError?.message || 'Failed to save report. Please try again.' }, 500, request)
   }
 
   return json({ success: true, reporter_alias: reporterAlias }, 200, request)

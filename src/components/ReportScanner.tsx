@@ -136,9 +136,13 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
 
       if (scanResult.isIP || scanResult.isIPv6) {
         setLoadingIpInfo(true)
-        fetch(`https://get.geojs.io/v1/ip/geo/${ip}.json`)
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 2000)
+
+        fetch(`https://get.geojs.io/v1/ip/geo/${ip}.json`, { signal: controller.signal })
           .then(r => r.json())
           .then(data => {
+            clearTimeout(timeoutId)
             if (data && data.ip) {
               setIpInfo({
                 country: data.country,
@@ -153,7 +157,8 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
             setLoadingIpInfo(false)
           })
           .catch((err) => {
-            console.error("IP lookup failed:", err);
+            clearTimeout(timeoutId)
+            console.error("IP lookup failed or timed out:", err);
             setIpInfo(null)
             setLoadingIpInfo(false)
           })

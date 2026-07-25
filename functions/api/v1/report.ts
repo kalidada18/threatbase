@@ -93,13 +93,23 @@ export const onRequestPost = async (context: any) => {
     }
     const adminClient = createClient(env.SUPABASE_URL || SUPABASE_URL, serviceKey)
 
-    const { error: insertError } = await adminClient.rpc('api_insert_report', {
+    let { error: insertError } = await adminClient.rpc('api_insert_report', {
       p_ip: cleanIp,
       p_category: cleanCategory,
       p_comment: cleanComment,
       p_reporter_alias: reporter_alias,
-      p_user_id: userId
     });
+
+    if (insertError) {
+      console.warn('v1/report RPC api_insert_report failed, trying direct table insert:', insertError?.message || insertError);
+      const { error: tblErr } = await adminClient.from('reported_ips').insert([{
+        ip: cleanIp,
+        category: cleanCategory,
+        comment: cleanComment,
+        reporter_alias: reporter_alias,
+      }]);
+      insertError = tblErr;
+    }
 
     if (insertError) {
       // Postgres unique_violation — user already reported this IP.

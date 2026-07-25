@@ -54,7 +54,7 @@ export default function App() {
   const [isScanning, setIsScanning] = useState(false)
   const [showReport, setShowReport] = useState(false)
   const lastScanTime = useRef<number>(0)
-  const SCAN_COOLDOWN = 3000 // 3 seconds
+  const SCAN_COOLDOWN = 300 // 300ms
 
   // Initial verification
   const [isHumanVerified, setIsHumanVerified] = useState(() => {
@@ -122,9 +122,6 @@ export default function App() {
     }, 50)
 
     const result = await scanIndicatorLogic(raw, feedVersion)
-    // Add artificial delay to make the scan feel more powerful and comprehensive (4.5 seconds)
-    await new Promise((r) => setTimeout(r, 4500))
-
     setScanResult(result)
     setIsScanning(false)
   }, [scanInput, feedVersion])

@@ -4,13 +4,13 @@ import { BloomFilter } from './bloomFilter'
 
 type CompareFn = (query: string, line: string) => number
 
-const feedCache: Record<string, { text: string; filter: BloomFilter | null }> = {}
+const feedCache: Record<string, { text: string; filter: null }> = {}
 
 async function fetchAndCacheFeedText(
   baseUrl: string,
   filename: string,
   feedVersion: string | number,
-): Promise<{ text: string; filter: BloomFilter | null }> {
+): Promise<{ text: string; filter: null }> {
   const cacheKey = `${filename}?v=${feedVersion}`
   if (feedCache[cacheKey]) return feedCache[cacheKey]
 
@@ -31,19 +31,7 @@ async function fetchAndCacheFeedText(
     console.error(`GitHub Raw fetch failed for ${filename}:`, e)
   }
 
-  let filter: BloomFilter | null = null
-  if (text) {
-    const lines = text.split('\n')
-    filter = new BloomFilter(lines.length || 1, 0.01)
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim()
-      if (!line || line.startsWith('#') || line.startsWith('ip,')) continue;
-      const key = line.split(',')[0]
-      filter.add(key)
-    }
-  }
-
-  feedCache[cacheKey] = { text, filter }
+  feedCache[cacheKey] = { text, filter: null }
   return feedCache[cacheKey]
 }
 
@@ -60,6 +48,13 @@ export function ipv4ToLong(ip: string): number | null {
   return acc >>> 0
 }
 
+interface ParsedCidr {
+  line: string
+  base: number
+  bitmask: number
+}
+const cidrParsedCache = new Map<string, ParsedCidr[]>()
+
 /**
  * Scan an IPv4 address against the malicious CIDR feed.
  * Closes the "hidden IP" gap: feeds like Spamhaus/FireHOL publish ranges,
@@ -68,34 +63,62 @@ export function ipv4ToLong(ip: string): number | null {
  */
 export function findMatchingCidr(cidrText: string, ipLong: number | null): string | null {
   if (!cidrText || ipLong === null) return null
-  const lines = cidrText.split('\n')
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim()
-    if (!line || line.startsWith('#')) continue
-    // IPv6 CIDRs are stored here too; skip them for IPv4 membership tests.
-    if (line.indexOf(':') !== -1) continue
-    const slash = line.indexOf('/')
-    if (slash === -1) continue
-    const base = ipv4ToLong(line.slice(0, slash))
-    if (base === null) continue
-    const mask = Number(line.slice(slash + 1))
-    if (!Number.isInteger(mask) || mask < 0 || mask > 32) continue
-    const bitmask = mask === 0 ? 0 : (~0 << (32 - mask)) >>> 0
-    if ((ipLong & bitmask) === (base & bitmask)) return line
+  let list = cidrParsedCache.get(cidrText)
+  if (!list) {
+    list = []
+    const lines = cidrText.split('\n')
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim()
+      if (!line || line.startsWith('#') || line.indexOf(':') !== -1) continue
+      const slash = line.indexOf('/')
+      if (slash === -1) continue
+      const base = ipv4ToLong(line.slice(0, slash))
+      if (base === null) continue
+      const mask = Number(line.slice(slash + 1))
+      if (!Number.isInteger(mask) || mask < 0 || mask > 32) continue
+      const bitmask = mask === 0 ? 0 : (~0 << (32 - mask)) >>> 0
+      list.push({ line, base, bitmask })
+    }
+    cidrParsedCache.set(cidrText, list)
+  }
+
+  for (let i = 0; i < list.length; i++) {
+    const sub = list[i]
+    if ((ipLong & sub.bitmask) === (sub.base & sub.bitmask)) return sub.line
   }
   return null
 }
 
-export function ipCsvCompare(query: string, line: string): number {
-  if (line.startsWith('#') || line.startsWith('ip,')) return 1;
-  const ipPart = line.split(',')[0]
-  const pA = query.split('.').map(Number)
-  const pB = ipPart.split('.').map(Number)
-  for (let i = 0; i < 4; i++) {
-    if ((pA[i] || 0) < (pB[i] || 0)) return -1
-    if ((pA[i] || 0) > (pB[i] || 0)) return 1
+export function createIpCsvCompare(query: string): CompareFn {
+  const parts = query.split('.').map(Number)
+  const q0 = parts[0] || 0, q1 = parts[1] || 0, q2 = parts[2] || 0, q3 = parts[3] || 0
+  return (_query: string, line: string): number => {
+    if (line.startsWith('#') || line.startsWith('ip,')) return 1
+    const commaIdx = line.indexOf(',')
+    const ipStr = commaIdx === -1 ? line : line.slice(0, commaIdx)
+    const dot1 = ipStr.indexOf('.')
+    const dot2 = ipStr.indexOf('.', dot1 + 1)
+    const dot3 = ipStr.indexOf('.', dot2 + 1)
+
+    const b0 = Number(ipStr.slice(0, dot1))
+    const b1 = Number(ipStr.slice(dot1 + 1, dot2))
+    const b2 = Number(ipStr.slice(dot2 + 1, dot3))
+    const b3 = Number(ipStr.slice(dot3 + 1))
+
+    if (q0 < b0) return -1
+    if (q0 > b0) return 1
+    if (q1 < b1) return -1
+    if (q1 > b1) return 1
+    if (q2 < b2) return -1
+    if (q2 > b2) return 1
+    if (q3 < b3) return -1
+    if (q3 > b3) return 1
+    return 0
   }
-  return 0
+}
+
+export function ipCsvCompare(query: string, line: string): number {
+  return createIpCsvCompare(query)(query, line)
 }
 
 export function stringCompare(query: string, line: string): number {
@@ -141,6 +164,7 @@ export function binarySearchString(text: string, query: string, compareFn: Compa
   }
   return null;
 }
+
 
 /**
  * Refang a defanged IOC — analysts paste indicators as `hxxp://evil[.]com`
@@ -252,8 +276,8 @@ export async function scanIndicatorLogic(rawInput: string, feedVersion: string |
     let compareFn: CompareFn = stringCompare
 
     if (isIP) {
-      ;({ text: textData, filter } = await fetchAndCacheFeedText(RAW, 'threatbase-ip.txt', feedVersion))
-      compareFn = ipCsvCompare
+      ;({ text: textData } = await fetchAndCacheFeedText(RAW, 'threatbase-ip.txt', feedVersion))
+      compareFn = createIpCsvCompare(ip)
     } else if (isIPv6) {
       ;({ text: textData, filter } = await fetchAndCacheFeedText(RAW, 'threatbase-ipv6.txt', feedVersion))
     } else if (isCIDR) {
