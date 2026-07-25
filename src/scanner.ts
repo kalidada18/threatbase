@@ -1,4 +1,4 @@
-import { getBaseUrl, getDomainUrl } from './utils'
+import { getBaseUrl, getDomainUrl, getHashUrl } from './utils'
 import supabaseClient from './supabaseClient'
 import { BloomFilter } from './bloomFilter'
 
@@ -19,6 +19,8 @@ async function fetchAndCacheFeedText(
   try {
     const url = filename === 'threatbase-domain.txt'
       ? `${getDomainUrl()}?v=${feedVersion}`
+      : filename === 'threatbase-hash.txt'
+      ? `${getHashUrl()}?v=${feedVersion}`
       : `${baseUrl}${filename}?v=${feedVersion}`
     const r = await fetch(url)
 

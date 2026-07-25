@@ -2,7 +2,7 @@ import { Download } from 'lucide-react'
 import { motion } from 'framer-motion'
 import Section from './layout/Section'
 import Container from './layout/Container'
-import { getDomainUrl } from '../utils'
+import { getDomainUrl, getHashUrl } from '../utils'
 
 const BASE = import.meta.env.BASE_URL
 
@@ -183,7 +183,7 @@ function FeedCard({ f, isSplit, chunks, accent }: { f: typeof feeds[0]; isSplit:
             </a>
           ) : (
             <a
-              href={f.file === 'threatbase-domain.txt' ? getDomainUrl() : `https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/${f.file}`}
+              href={f.file === 'threatbase-domain.txt' ? getDomainUrl() : f.file === 'threatbase-hash.txt' ? getHashUrl() : `https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/${f.file}`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-red-500 px-4 sm:px-5 h-11 text-sm font-semibold text-white shadow-glow-red hover:bg-red-400 transition-all duration-200 active:scale-[0.97] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400/50"

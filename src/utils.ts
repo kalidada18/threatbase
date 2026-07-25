@@ -13,6 +13,11 @@ export function getDomainUrl() {
   return 'https://media.githubusercontent.com/media/kalidada18/threatbase/refs/heads/main/ioc/threatbase-domain.txt'
 }
 
+/** Get the media URL for Git LFS hash file */
+export function getHashUrl() {
+  return 'https://media.githubusercontent.com/media/kalidada18/threatbase/refs/heads/main/ioc/threatbase-hash.txt'
+}
+
 /** Format a sync timestamp for display */
 export function formatSyncTime(timestamp) {
   const options = { timeZone: 'Asia/Kathmandu', hour: '2-digit', minute: '2-digit', hour12: true }

@@ -169,7 +169,7 @@ https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/threatbase-url.
 > A vast, continuously updated repository of SHA-256 hashes for EDR ingestion and malware-triage pipelines.
 
 ```text
-https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/threatbase-hash.txt
+https://media.githubusercontent.com/media/kalidada18/threatbase/refs/heads/main/ioc/threatbase-hash.txt
 ```
 
 | Feed | File | Format |
