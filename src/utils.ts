@@ -8,6 +8,11 @@ export function getBaseUrl() {
   return 'https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/'
 }
 
+/** Get the media URL for Git LFS domain file */
+export function getDomainUrl() {
+  return 'https://media.githubusercontent.com/media/kalidada18/threatbase/refs/heads/main/ioc/threatbase-domain.txt'
+}
+
 /** Format a sync timestamp for display */
 export function formatSyncTime(timestamp) {
   const options = { timeZone: 'Asia/Kathmandu', hour: '2-digit', minute: '2-digit', hour12: true }

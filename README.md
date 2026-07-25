@@ -155,7 +155,7 @@ https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/categories/thre
 > Compatible with Pi-hole, AdGuard Home, Squid, and Palo Alto EDL.
 
 ```text
-https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/threatbase-domain.txt
+https://media.githubusercontent.com/media/kalidada18/threatbase/refs/heads/main/ioc/threatbase-domain.txt
 https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/threatbase-url.txt
 ```
 
@@ -200,7 +200,7 @@ curl -s https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/threatb
 Add this URL as a blocklist source:
 
 ```text
-https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/threatbase-domain.txt
+https://media.githubusercontent.com/media/kalidada18/threatbase/refs/heads/main/ioc/threatbase-domain.txt
 ```
 </details>
 
