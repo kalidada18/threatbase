@@ -1,5 +1,5 @@
 # Threatbase Threat Intelligence Feed - C2 IPs
-# Last update: Tue, 04 Aug 2026 18:17:30 +0000
+# Last update: Wed, 05 Aug 2026 02:17:29 +0000
 # Count: 7607
 # Format: IP,FeedCount,RiskScore,Tags
 1.53.101.75,2,HIGH,C2
@@ -893,7 +893,7 @@
 45.61.185.227,2,HIGH,C2
 45.61.186.18,2,HIGH,C2
 45.61.186.51,2,HIGH,C2
-45.61.187.10,3,HIGH,C2
+45.61.187.10,4,HIGH,C2|Malicious
 45.61.187.40,2,HIGH,C2
 45.61.187.123,2,HIGH,C2
 45.61.187.160,2,HIGH,C2
