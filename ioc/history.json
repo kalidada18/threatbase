@@ -2023,31 +2023,31 @@
   },
   {
     "date": "2026-08-12",
-    "total_unique_ips": 838722,
-    "total_unique_ipv6": 15604,
-    "total_unique_cidrs": 19544,
-    "total_unique_domains": 4299600,
-    "total_unique_hashes": 1124727,
-    "total_unique_urls": 109591,
+    "total_unique_ips": 840179,
+    "total_unique_ipv6": 15680,
+    "total_unique_cidrs": 19692,
+    "total_unique_domains": 4300027,
+    "total_unique_hashes": 1124829,
+    "total_unique_urls": 109991,
     "active_feeds": 54,
     "category_counts": {
-      "Mixed": 611408,
-      "Malicious": 187571,
-      "Compromised": 15524,
-      "Brute-Force": 33660,
-      "Spam": 14030,
-      "Tor": 7506,
-      "Exploit": 12310,
+      "Mixed": 611318,
+      "Malicious": 187542,
+      "Tor": 7486,
+      "Compromised": 15520,
+      "Brute-Force": 33823,
+      "Exploit": 12129,
       "Malware": 2728,
       "C2": 7607,
-      "Botnet": 3677
+      "Spam": 13860,
+      "Botnet": 3484
     },
     "top_sources": {
       "romainmarcoux_outgoing_aa": 131072,
       "ipsum": 128675,
-      "romainmarcoux_outgoing_ab": 50938,
+      "romainmarcoux_outgoing_ab": 51013,
       "romainmarcoux_outgoing_40k": 40000,
-      "blocklist_de": 31768
+      "blocklist_de": 31343
     }
   }
 ]
