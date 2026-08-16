@@ -155,7 +155,7 @@ https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/categories/thre
 > Compatible with Pi-hole, AdGuard Home, Squid, and Palo Alto EDL.
 
 ```text
-https://media.githubusercontent.com/media/kalidada18/threatbase/refs/heads/main/ioc/threatbase-domain.txt
+https://github.com/kalidada18/threatbase/releases/download/latest/threatbase-domain.txt
 https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/threatbase-url.txt
 ```
 
@@ -169,7 +169,7 @@ https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/threatbase-url.
 > A vast, continuously updated repository of SHA-256 hashes for EDR ingestion and malware-triage pipelines.
 
 ```text
-https://media.githubusercontent.com/media/kalidada18/threatbase/refs/heads/main/ioc/threatbase-hash.txt
+https://github.com/kalidada18/threatbase/releases/download/latest/threatbase-hash.txt
 ```
 
 | Feed | File | Format |
@@ -200,7 +200,7 @@ curl -s https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/threatb
 Add this URL as a blocklist source:
 
 ```text
-https://media.githubusercontent.com/media/kalidada18/threatbase/refs/heads/main/ioc/threatbase-domain.txt
+https://github.com/kalidada18/threatbase/releases/download/latest/threatbase-domain.txt
 ```
 </details>
 

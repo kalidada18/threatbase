@@ -31,8 +31,10 @@ jobs:
         with:
           # Ensure we have the full history for accurate diff detection and rebasing
           fetch-depth: 0
-          # Large feed files (domain/hash) are stored via Git LFS
-          lfs: true
+          # No LFS objects are needed: the two large feeds are no longer versioned
+          # in git, and fetching historical LFS blobs would bill the LFS bandwidth
+          # quota on every single run.
+          lfs: false
 
       # ── 2. Python setup ──────────────────────────────────────────────────────
       - name: Set up Python 3.11
@@ -58,7 +60,46 @@ jobs:
             fi
           done
 
-      # ── 5. Run the aggregator ────────────────────────────────────────────────
+      # ── 5. Restore the accumulative feed database ─────────────────────────────
+      #
+      # update_feed.py is accumulative: it seeds each run from the PREVIOUS contents
+      # of ioc/*.txt (see load_previous_list). The two large feeds are no longer
+      # committed to git, so a fresh checkout does not contain them and they must be
+      # pulled back from the rolling `latest` release before the aggregator runs.
+      #
+      # This matters a great deal: load_previous_list() returns an empty set for a
+      # missing file WITHOUT raising, so skipping this step would not fail the build —
+      # it would silently republish a feed shrunk to only today's source hits and
+      # then overwrite the release with it. Any download failure is therefore fatal
+      # on purpose.
+      - name: Restore previous large feeds from `latest` release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          mkdir -p ioc
+
+          if ! gh release view latest >/dev/null 2>&1; then
+            echo "::warning::No 'latest' release found. Treating this as a first run;"
+            echo "::warning::historical domains/hashes will start from whatever is on disk."
+            exit 0
+          fi
+
+          for f in threatbase-domain.txt threatbase-hash.txt; do
+            echo "Restoring $f from the 'latest' release..."
+            if ! gh release download latest --pattern "$f" --output "ioc/$f" --clobber; then
+              echo "::error::Failed to download $f from the 'latest' release."
+              echo "::error::Refusing to continue — proceeding would silently truncate the feed."
+              exit 1
+            fi
+            if [ ! -s "ioc/$f" ]; then
+              echo "::error::Restored ioc/$f is empty. Refusing to continue."
+              exit 1
+            fi
+            echo "  ✓ $f restored ($(wc -l < "ioc/$f") lines)"
+          done
+
+      # ── 6. Run the aggregator ────────────────────────────────────────────────
       - name: Run feed aggregator
         env:
           URLHAUS_AUTH_KEY: ${{ secrets.URLHAUS_AUTH_KEY }}
@@ -67,7 +108,7 @@ jobs:
           PYTHONUNBUFFERED: '1'
         run: python update_feed.py
 
-      # ── 6. Commit and push ───────────────────────────────────────────────────
+      # ── 7. Commit and push ───────────────────────────────────────────────────
       #
       # Uses the official github-actions[bot] identity so commit history is clean.
       # The GITHUB_TOKEN has contents:write permission granted above.
@@ -78,8 +119,12 @@ jobs:
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          # Stage all generated output files (including stats, history, and split chunks)
-          git add ioc/
+          # Stage all generated output files (including stats, history, and split chunks).
+          # The two large feeds are deliberately excluded — they are published as
+          # release assets in the steps below instead of being committed. The explicit
+          # pathspec exclusions make that guarantee independent of .gitignore,
+          # which would not apply if the files were ever re-tracked by accident.
+          git add ioc/ ':!ioc/threatbase-domain.txt' ':!ioc/threatbase-hash.txt'
           git add -f custom_iocs.txt 2>/dev/null || true
 
           # Check whether any staged file actually changed
@@ -132,7 +177,7 @@ jobs:
             done
           fi
 
-      # ── 7. Create Daily Archive Release ───────────────────────────────────────
+      # ── 8. Create Daily Archive Release ───────────────────────────────────────
       - name: Set Archive Date & Prepare Zip
         run: |
           DATE_DASH=$(date -u +'%Y-%m-%d')
@@ -149,6 +194,42 @@ jobs:
           allowUpdates: true
           replacesArtifacts: true
           body: "Automated daily archive of the Threatbase threat intelligence database."
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # ── 9. Publish the rolling `latest` release ────────────────────────────────
+      #
+      # This is the canonical, stable download location for the feeds, and the one
+      # the website reads from. The tag never changes, so consumer URLs stay valid:
+      #
+      #   https://github.com/kalidada18/threatbase/releases/download/latest/threatbase-domain.txt
+      #
+      # `replacesArtifacts` overwrites yesterday's assets in place, so this release
+      # occupies a constant ~180 MB no matter how long the feed runs. Release assets
+      # are not billed against the Git LFS storage or bandwidth quotas, which is why
+      # threatbase-domain.txt and threatbase-hash.txt are shipped here rather than
+      # committed to the repository.
+      - name: Publish rolling `latest` release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: latest
+          name: Latest Feed
+          artifacts: "ioc/threatbase-*.txt,ioc/threatbase-ip.json,ioc/stats.json"
+          allowUpdates: true
+          replacesArtifacts: true
+          makeLatest: true
+          body: |
+            Always-current Threatbase feeds. This release is overwritten on every
+            run, so these URLs are stable and always serve the newest data.
+
+            | Feed | URL |
+            |---|---|
+            | Domains | `https://github.com/kalidada18/threatbase/releases/download/latest/threatbase-domain.txt` |
+            | Hashes | `https://github.com/kalidada18/threatbase/releases/download/latest/threatbase-hash.txt` |
+            | IPs | `https://github.com/kalidada18/threatbase/releases/download/latest/threatbase-ip.txt` |
+            | URLs | `https://github.com/kalidada18/threatbase/releases/download/latest/threatbase-url.txt` |
+
+            For a point-in-time snapshot, use the dated `archive-YYYY-MM-DD` releases.
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

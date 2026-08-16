@@ -8,14 +8,23 @@ export function getBaseUrl() {
   return 'https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/'
 }
 
-/** Get the media URL for Git LFS domain file */
-export function getDomainUrl() {
-  return 'https://media.githubusercontent.com/media/kalidada18/threatbase/refs/heads/main/ioc/threatbase-domain.txt'
+/**
+ * Base URL for the rolling `latest` release, which always holds the current
+ * build of the two large feeds. These are too big to keep in the git tree, so
+ * they ship as release assets rather than via raw/LFS endpoints.
+ */
+export function getReleaseUrl() {
+  return 'https://github.com/kalidada18/threatbase/releases/download/latest/'
 }
 
-/** Get the media URL for Git LFS hash file */
+/** Get the release asset URL for the domain feed */
+export function getDomainUrl() {
+  return `${getReleaseUrl()}threatbase-domain.txt`
+}
+
+/** Get the release asset URL for the hash feed */
 export function getHashUrl() {
-  return 'https://media.githubusercontent.com/media/kalidada18/threatbase/refs/heads/main/ioc/threatbase-hash.txt'
+  return `${getReleaseUrl()}threatbase-hash.txt`
 }
 
 /** Format a sync timestamp for display */

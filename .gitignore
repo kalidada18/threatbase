@@ -43,6 +43,12 @@ find_canvas.py
 # GeoIP database (downloaded at runtime)
 ip2asn-v4.tsv.gz
 
+# Large feed files — published as GitHub Release assets, never committed.
+# These are rewritten in full every run; committing them burned ~160 MiB of
+# permanent Git LFS storage per day. See .gitattributes for the full story.
+ioc/threatbase-domain.txt
+ioc/threatbase-hash.txt
+
 # API caches
 .otx_cache.json
 .abuseipdb_cache.txt

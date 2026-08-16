@@ -1,2 +1,12 @@
-ioc/threatbase-hash.txt filter=lfs diff=lfs merge=lfs -text
-ioc/threatbase-domain.txt filter=lfs diff=lfs merge=lfs -text
+# Git LFS is intentionally NOT used in this repository.
+#
+# ioc/threatbase-domain.txt and ioc/threatbase-hash.txt were tracked in LFS until
+# 2026-08-16. Because they are regenerated in full on every feed run, each daily
+# commit stored a complete new ~90 MiB / ~69 MiB blob (LFS never deltas), which
+# exhausted the 10 GB LFS storage budget in about two months.
+#
+# Those two files are now git-ignored and published as GitHub Release assets on
+# the rolling `latest` tag instead. Release assets are not billed against the LFS
+# storage or bandwidth quotas. See .github/workflows/update-feed.yml.
+#
+# Do not add `filter=lfs` rules for any file that is rewritten on a schedule.
