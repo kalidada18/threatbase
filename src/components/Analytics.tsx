@@ -1,5 +1,3 @@
-import { useEffect, useRef, useState } from 'react'
-
 import {
   Chart as ChartJS,
   ArcElement,
@@ -7,7 +5,7 @@ import {
   Legend,
 } from 'chart.js'
 import { Doughnut } from 'react-chartjs-2'
-import { getBaseUrl, fmt } from '../utils'
+import { fmt, DATA_RAMP } from '../utils'
 import AnimatedHighlightedAreaChart from './blocks/animated-area-chart'
 import Section from './layout/Section'
 
@@ -16,12 +14,12 @@ ChartJS.register(ArcElement, Tooltip, Legend)
 export default function Analytics({ statsData, feedVersion }: any) {
   return (
     <Section id="analytics" className="overflow-hidden" containerClassName="relative z-10">
-        <div className="mb-14 text-center md:text-left flex flex-col items-center md:items-start">
+        <div className="mb-14 max-w-2xl">
           <h2 className="text-3xl md:text-5xl font-bold text-white tracking-tight">
             Threat landscape
           </h2>
-          <p className="mt-4 text-slate-400 text-lg max-w-2xl font-medium leading-relaxed">
-            90-day volume trend of tracked malicious indicators across the community sensor network, aggregated in real time.
+          <p className="mt-4 text-slate-400 text-lg font-medium leading-relaxed">
+            How the database has grown, day by day, since we started keeping history. Rebuilt on every feed refresh.
           </p>
         </div>
 
@@ -35,7 +33,7 @@ export default function Analytics({ statsData, feedVersion }: any) {
             <div className="absolute top-0 inset-x-0 h-px w-full bg-gradient-to-r from-transparent via-red-500/40 to-transparent"></div>
 
             <div className="relative z-10 h-full flex flex-col">
-              <h3 className="text-xl font-bold mb-8 text-white tracking-tight">Specialized categories</h3>
+              <h3 className="text-xl font-bold mb-8 text-white tracking-tight">Threat classes by volume</h3>
               <div className="flex-1 w-full relative flex items-center justify-center min-h-[300px]">
                 {statsData?.category_counts && (
                   <CategoryChart categories={statsData.category_counts} />
@@ -51,9 +49,6 @@ export default function Analytics({ statsData, feedVersion }: any) {
 
 function CategoryChart({ categories }: any) {
   const textColor = '#cbd5e1'
-  // Unified cyan → red ramp (matches the site's two-accent system):
-  // highest-volume categories run red, tapering to cyan.
-  const bgColors = ['#cf1733', '#e2566c', '#f0768c', '#fca5a5', '#67e8f9', '#22d3ee', '#38bdf8', '#0ea5e9', '#0891b2']
 
   const sorted = Object.entries(categories)
     .filter(([k]) => k !== 'Mixed' && k !== 'Unknown')
@@ -66,7 +61,9 @@ function CategoryChart({ categories }: any) {
     datasets: [
       {
         data: vals,
-        backgroundColor: bgColors,
+        // Segments are sorted by volume, so ramp position reads as rank:
+        // hottest ruby at the top, cooling to platinum down the tail.
+        backgroundColor: labels.map((_, i) => DATA_RAMP[i % DATA_RAMP.length]),
         borderWidth: 0, // Remove stroke for sleek modern look
         borderRadius: 8, // Rounded segments
         hoverOffset: 8,
@@ -81,9 +78,9 @@ function CategoryChart({ categories }: any) {
     plugins: {
       legend: {
         position: 'bottom',
-        labels: { 
-          color: textColor, 
-          font: { size: 12, family: "'Inter', sans-serif", weight: '500' }, 
+        labels: {
+          color: textColor,
+          font: { size: 12, family: "'Manrope', sans-serif", weight: '500' },
           usePointStyle: true,
           pointStyle: 'circle',
           padding: 20 
@@ -98,7 +95,7 @@ function CategoryChart({ categories }: any) {
         padding: 16,
         usePointStyle: true,
         boxPadding: 6,
-        bodyFont: { size: 14, family: "'Inter', sans-serif", weight: '600' },
+        bodyFont: { size: 14, family: "'Manrope', sans-serif", weight: '600' },
         callbacks: {
           label: (context: any) => ' ' + context.label + ': ' + fmt(context.parsed),
         },

@@ -58,7 +58,7 @@ export default function ThanksPage() {
   }, [])
 
   useSEO({
-    title: 'Intel Sources — Threatbase | Open Source Threat Intelligence Credits',
+    title: 'Intel Sources | Threatbase Open Source Threat Intelligence Credits',
     description: 'Threatbase is powered by the global cybersecurity community. Credits to Spamhaus, FireHOL, Emerging Threats, Abuse.ch, SANS DShield, and 15+ open-source threat intelligence providers.',
     path: '/thanks',
   })

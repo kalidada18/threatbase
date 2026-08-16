@@ -352,7 +352,7 @@ const AUTH_HEADER_EXAMPLE = `x-api-key: tb_api_xxxxxxxxxxxxxxxx`
 export default function ApiDocsPage() {
   const prefersReducedMotion = useReducedMotion()
   useSEO({
-    title: 'API Documentation — Threatbase | Threat Intelligence API',
+    title: 'API Documentation | Threatbase Threat Intelligence API',
     description:
       'Integrate real-time threat intelligence into your applications with the Threatbase API. Scan IPs, domains, URLs, and file hashes, and report malicious indicators programmatically.',
     path: '/api',
@@ -484,7 +484,7 @@ export default function ApiDocsPage() {
           <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-red-400" />
           <p className="text-sm leading-relaxed text-red-100/80">
             Your key is shown only once at creation time and is stored hashed on our servers. Treat it
-            like a password — never embed it in client-side code or commit it to source control. Keys
+            like a password. Never embed it in client-side code or commit it to source control. Keys
             begin with the prefix <code className="font-mono text-red-300">tb_api_</code>.
           </p>
         </div>

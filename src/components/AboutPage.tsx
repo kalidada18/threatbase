@@ -7,7 +7,7 @@ import { useSEO } from '@/useSEO'
 
 export default function AboutPage() {
   useSEO({
-    title: 'About — Threatbase | Community-Driven Threat Intelligence',
+    title: 'About Threatbase | Community-Driven Threat Intelligence',
     description: 'Learn about Threatbase, a community-driven threat intelligence platform for researchers, analysts, and cybersecurity enthusiasts. Discover IOCs, track threats, and transform security data into actionable intelligence.',
     path: '/about',
   })

@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react'
 import { Routes, Route, useLocation } from 'react-router-dom'
-import { motion } from 'framer-motion'
 import { HeroSection } from './components/blocks/hero-section-5'
 import ReportScanner from './components/ReportScanner'
 import Stats from './components/Stats'
@@ -33,7 +32,7 @@ import InitialVerification from './components/InitialVerification'
 /** Homepage-only SEO. Scoped to the index route so it never overrides subpage meta. */
 function HomeSeo() {
   useSEO({
-    title: 'Threatbase — Real-Time Threat Intelligence & Free IOC Blocklists',
+    title: 'Threatbase: Real-Time Threat Intelligence & Free IOC Blocklists',
     description: 'Free, community-driven threat intelligence. Scan any IP, domain, URL, or file hash for malicious activity and download real-time IOC blocklists for your firewall, IDS/IPS, and SIEM.',
     path: '/',
     keywords: 'threat intelligence, free IOC feed, IP blocklist, check malicious IP, domain reputation, malware hash lookup, open source threat intelligence, abuse IP database, IOC blocklist, SIEM threat feed',
@@ -203,32 +202,23 @@ export default function App() {
         <Route path="/" element={
           <main id="main-content">
             <HomeSeo />
-            <HeroSection scanInput={scanInput} setScanInput={setScanInput} handleScan={handleScan} statsData={statsData} />
+            <HeroSection scanInput={scanInput} setScanInput={setScanInput} handleScan={handleScan} />
 
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2, duration: 0.5 }}>
-              <ReportScanner
-                isScanning={isScanning}
-                showReport={showReport}
-                scanInput={scanInput}
-                scanResult={scanResult}
-                addToast={addToast}
-              />
-            </motion.div>
+            <ReportScanner
+              isScanning={isScanning}
+              showReport={showReport}
+              scanInput={scanInput}
+              scanResult={scanResult}
+              addToast={addToast}
+            />
 
             {/* Section order: Hero → HowItWorks → Stats → Feeds → Analytics.
-                Source credits live on the dedicated /thanks Intel Sources page. */}
+                Source credits live on the dedicated /thanks Intel Sources page.
+                Each section animates itself on scroll, so no wrapper here. */}
             <HowItWorks />
-
-            <motion.div 
-              className="flex flex-col"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.6, staggerChildren: 0.2 }}
-            >
-              <Stats statsData={statsData} />
-              <Feeds statsData={statsData} />
-              <Analytics statsData={statsData} feedVersion={feedVersion} />
-            </motion.div>
+            <Stats statsData={statsData} />
+            <Feeds statsData={statsData} />
+            <Analytics statsData={statsData} feedVersion={feedVersion} />
           </main>
         } />
         

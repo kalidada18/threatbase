@@ -1,59 +1,45 @@
 import { useEffect, useState, useMemo } from 'react'
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import { Activity, Database, Radio } from 'lucide-react'
-import { fmt } from '../utils'
+import { fmt, INDICATOR_ACCENT, type IndicatorKey } from '../utils'
 import Section from './layout/Section'
 
 type MetricDef = {
-  key: string
+  key: IndicatorKey
   label: string
   statKey: string
   img: string
   invert?: boolean
   sub: string
-  /** rgb triple used for accent wash + glow */
-  rgb: string
-  iconWrap: string
 }
 
 const METRICS: MetricDef[] = [
-  {
-    key: 'ip', label: 'Malicious IPs', statKey: 'total_unique_ips',
-    img: 'ipv4icon.png', invert: true, sub: 'Active IPv4 addresses',
-    rgb: '207,23,51', iconWrap: 'bg-red-950/40 border-destructive/20 group-hover:border-destructive/50',
-  },
-  {
-    key: 'domain', label: 'Domains', statKey: 'total_unique_domains',
-    img: 'domain.png', sub: 'Known malicious domains',
-    rgb: '99,102,241', iconWrap: 'bg-indigo-950/40 border-indigo-500/20 group-hover:border-indigo-500/50',
-  },
-  {
-    key: 'hash', label: 'File Hashes', statKey: 'total_unique_hashes',
-    img: 'file.png', sub: 'Malware signatures',
-    rgb: '59,130,246', iconWrap: 'bg-blue-950/40 border-blue-500/20 group-hover:border-blue-500/50',
-  },
-  {
-    key: 'url', label: 'Malicious URLs', statKey: 'total_unique_urls',
-    img: 'url.png', sub: 'Active phishing URLs',
-    rgb: '244,63,94', iconWrap: 'bg-rose-950/40 border-rose-500/20 group-hover:border-rose-500/50',
-  },
-  {
-    key: 'ipv6', label: 'IPv6 Addresses', statKey: 'total_unique_ipv6',
-    img: 'ipv6.png', invert: true, sub: 'Active IPv6 threats',
-    rgb: '14,165,233', iconWrap: 'bg-sky-950/40 border-sky-500/20 group-hover:border-sky-500/50',
-  },
-  {
-    key: 'cidr', label: 'CIDR Blocks', statKey: 'total_unique_cidrs',
-    img: 'cidrs.png', sub: 'Malicious subnets',
-    rgb: '249,115,22', iconWrap: 'bg-orange-950/40 border-orange-500/20 group-hover:border-orange-500/50',
-  },
+  { key: 'ip', label: 'Malicious IPs', statKey: 'total_unique_ips', img: 'ipv4icon.png', invert: true, sub: 'Active IPv4 addresses' },
+  { key: 'domain', label: 'Domains', statKey: 'total_unique_domains', img: 'domain.png', sub: 'Known malicious domains' },
+  { key: 'hash', label: 'File Hashes', statKey: 'total_unique_hashes', img: 'file.png', sub: 'Malware signatures' },
+  { key: 'url', label: 'Malicious URLs', statKey: 'total_unique_urls', img: 'url.png', sub: 'Active phishing URLs' },
+  { key: 'ipv6', label: 'IPv6 Addresses', statKey: 'total_unique_ipv6', img: 'ipv6.png', invert: true, sub: 'Active IPv6 threats' },
+  { key: 'cidr', label: 'CIDR Blocks', statKey: 'total_unique_cidrs', img: 'cidrs.png', sub: 'Malicious subnets' },
 ]
 
-/** Count up to a target, easing out. */
+/** Skeleton in the shape of the number it replaces (tasteskill §4.5). */
+function ValueSkeleton({ className = '' }: { className?: string }) {
+  return (
+    <span
+      className={`inline-block h-[0.75em] rounded-md bg-white/[0.07] animate-pulse align-middle ${className}`}
+      role="status"
+      aria-label="Loading count"
+    />
+  )
+}
+
+/** Count up to a target, easing out. Jumps straight to the value when the user prefers reduced motion. */
 function useCountUp(target: number | null, duration = 1700) {
+  const reduceMotion = useReducedMotion()
   const [value, setValue] = useState(0)
   useEffect(() => {
     if (target == null) return
+    if (reduceMotion) { setValue(target); return }
     let raf = 0
     const start = performance.now()
     const tick = (now: number) => {
@@ -64,7 +50,7 @@ function useCountUp(target: number | null, duration = 1700) {
     }
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)
-  }, [target, duration])
+  }, [target, duration, reduceMotion])
   return value
 }
 
@@ -178,7 +164,7 @@ function SummaryStrip({ total, feeds }: { total: number | null; feeds: number | 
         <div>
           <div className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Total indicators tracked</div>
           <div className="font-mono text-2xl md:text-3xl font-bold text-white tabular-nums tracking-tight mt-0.5">
-            {total != null ? fmt(totalVal) : '—'}
+            {total != null ? fmt(totalVal) : <ValueSkeleton className="w-[8ch]" />}
           </div>
         </div>
         <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-red-500/[0.05] blur-3xl pointer-events-none" />
@@ -191,7 +177,7 @@ function SummaryStrip({ total, feeds }: { total: number | null; feeds: number | 
         <div>
           <div className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Active intelligence feeds</div>
           <div className="font-mono text-2xl md:text-3xl font-bold text-white tabular-nums tracking-tight mt-0.5">
-            {feeds != null ? fmt(feeds) : '—'}
+            {feeds != null ? fmt(feeds) : <ValueSkeleton className="w-[3ch]" />}
           </div>
         </div>
         <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-red-500/[0.06] blur-3xl pointer-events-none" />
@@ -204,23 +190,24 @@ function SummaryStrip({ total, feeds }: { total: number | null; feeds: number | 
 function FeaturedStatCard({ metric, target }: { metric: MetricDef; target: number | null }) {
   const value = useCountUp(target)
   const ready = target != null
+  const accent = INDICATOR_ACCENT[metric.key]
 
   return (
     <motion.div
       variants={cardVariants}
       whileHover={{ y: -4 }}
       transition={{ type: 'spring', stiffness: 300, damping: 24 }}
-      className="group glass-card glass-hover relative flex flex-col overflow-hidden p-7 md:p-8 cursor-pointer"
+      className="group glass-card glass-hover relative flex flex-col overflow-hidden p-7 md:p-8"
     >
       {/* Accent glow on hover */}
       <div
         className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-        style={{ background: `radial-gradient(130% 90% at 100% 0%, rgba(${metric.rgb},0.12), transparent 55%)` }}
+        style={{ background: `radial-gradient(130% 90% at 100% 0%, ${accent}1f, transparent 55%)` }}
       />
       {/* Top accent line on hover */}
       <div
         className="absolute top-0 inset-x-0 h-px opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-        style={{ backgroundImage: `linear-gradient(90deg, transparent, rgba(${metric.rgb},0.7), transparent)` }}
+        style={{ backgroundImage: `linear-gradient(90deg, transparent, ${accent}b3, transparent)` }}
       />
 
       {/* Header row */}
@@ -241,7 +228,7 @@ function FeaturedStatCard({ metric, target }: { metric: MetricDef; target: numbe
       {/* Value — larger for featured */}
       <div className="mt-8 relative z-10">
         <span className="block font-mono text-5xl lg:text-6xl font-bold tracking-tight text-white tabular-nums leading-none">
-          {ready ? fmt(value) : <span className="text-slate-600">—</span>}
+          {ready ? fmt(value) : <ValueSkeleton className="w-[7ch]" />}
         </span>
       </div>
 
@@ -259,18 +246,19 @@ function FeaturedStatCard({ metric, target }: { metric: MetricDef; target: numbe
 function CompactStatCard({ metric, target }: { metric: MetricDef; target: number | null }) {
   const value = useCountUp(target)
   const ready = target != null
+  const accent = INDICATOR_ACCENT[metric.key]
 
   return (
     <motion.div
       variants={cardVariants}
       whileHover={{ y: -3 }}
       transition={{ type: 'spring', stiffness: 300, damping: 24 }}
-      className="group glass-card glass-hover relative flex flex-col overflow-hidden p-5 cursor-pointer"
+      className="group glass-card glass-hover relative flex flex-col overflow-hidden p-5"
     >
       {/* Top accent line on hover */}
       <div
         className="absolute top-0 inset-x-0 h-px opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-        style={{ backgroundImage: `linear-gradient(90deg, transparent, rgba(${metric.rgb},0.6), transparent)` }}
+        style={{ backgroundImage: `linear-gradient(90deg, transparent, ${accent}99, transparent)` }}
       />
 
       {/* Icon + label */}
@@ -291,7 +279,7 @@ function CompactStatCard({ metric, target }: { metric: MetricDef; target: number
       {/* Value */}
       <div className="mt-4 relative z-10">
         <span className="block font-mono text-3xl font-bold tracking-tight text-white tabular-nums leading-none">
-          {ready ? fmt(value) : <span className="text-slate-600">—</span>}
+          {ready ? fmt(value) : <ValueSkeleton className="w-[5ch]" />}
         </span>
       </div>
 

@@ -165,6 +165,24 @@
 }
 
 @layer utilities {
+  /* Film grain, inlined so no page depends on a third-party asset host.
+     Only ever applied to an absolutely-positioned pointer-events-none layer. */
+  .grain {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+  }
+
+  /* Opt out of the global 10px scrollbar. For scroll-snap strips that already
+     signal their overflow with edge fade masks. */
+  .scrollbar-none {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+  }
+
   /* Dark app surface — use this instead of hardcoding the hex */
   .bg-app {
     background-color: var(--app-bg);

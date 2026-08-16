@@ -69,7 +69,7 @@ export default function ReportIP({ addToast }: any) {
   const { user, profile, signInWithGoogle } = useAuth()
   const prefersReducedMotion = useReducedMotion()
   useSEO({
-    title: 'Report Malicious IP — Threatbase Community Intel',
+    title: 'Report a Malicious IP | Threatbase Community Intel',
     description: 'Submit malicious IP addresses to the Threatbase community intelligence feed. Help defend networks globally by reporting threats, malware, phishing, DDoS attacks, and more.',
     path: '/report',
   })
@@ -305,7 +305,7 @@ export default function ReportIP({ addToast }: any) {
         
       if (error) throw error
       if (!data || data.length === 0) {
-        throw new Error('Update failed — you can only edit your own reports.')
+        throw new Error('Update failed. You can only edit your own reports.')
       }
       
       addToast('Comment updated successfully!', 'success')
@@ -439,7 +439,7 @@ export default function ReportIP({ addToast }: any) {
                   </div>
                   <Textarea
                     id="comment"
-                    placeholder="Describe the malicious activity — observed behaviour, timestamps, ports, or log excerpts."
+                    placeholder="Describe the malicious activity: observed behaviour, timestamps, ports, or log excerpts."
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
                     maxLength={1000}

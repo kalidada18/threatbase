@@ -6,7 +6,7 @@ import AnoAI from '@/components/ui/animated-shader-background'
 
 export default function ContributorsPage() {
   useSEO({
-    title: 'Top Contributors — Threatbase Community Intel',
+    title: 'Top Contributors | Threatbase Community Intel',
     description: 'View the top contributors who are defending networks globally by reporting threats.',
     path: '/contributors',
   })
@@ -14,7 +14,7 @@ export default function ContributorsPage() {
   return (
     <main className="bg-app min-h-screen">
       <div className="pt-28 pb-24 relative overflow-hidden font-sans">
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.02] mix-blend-overlay pointer-events-none z-10"></div>
+        <div className="grain absolute inset-0 opacity-[0.02] mix-blend-overlay pointer-events-none z-10"></div>
         {/* Cool aurora kept faint so it reads as ambient depth, not a blue wash */}
         <div className="absolute inset-0 z-0 opacity-40">
           <AnoAI />

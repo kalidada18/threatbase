@@ -6,7 +6,7 @@ export default function PrivacyPage() {
   const prefersReducedMotion = useReducedMotion()
 
   useSEO({
-    title: 'Privacy Policy — Threatbase',
+    title: 'Privacy Policy | Threatbase',
     description: 'Privacy Policy for Threatbase.',
     path: '/privacy',
   })
@@ -45,15 +45,15 @@ export default function PrivacyPage() {
               </h3>
               <ul className="space-y-4">
                 <li className="flex gap-4">
-                  <span className="text-red-500 font-bold shrink-0">—</span>
+                  <span className="mt-2.5 h-px w-3 shrink-0 bg-red-500" aria-hidden="true" />
                   <span><strong className="text-white font-semibold">Automatically Collected Data</strong>: We (or our hosting provider) may collect standard server logs such as IP address, browser type, operating system, access times, and referring pages.</span>
                 </li>
                 <li className="flex gap-4">
-                  <span className="text-red-500 font-bold shrink-0">—</span>
+                  <span className="mt-2.5 h-px w-3 shrink-0 bg-red-500" aria-hidden="true" />
                   <span><strong className="text-white font-semibold">No User Accounts</strong>: The Service does not require registration or login to view data. Authenticaton may be used via trusted third-party providers (like Google) for submitting data, but we do not store sensitive personal passwords.</span>
                 </li>
                 <li className="flex gap-4">
-                  <span className="text-red-500 font-bold shrink-0">—</span>
+                  <span className="mt-2.5 h-px w-3 shrink-0 bg-red-500" aria-hidden="true" />
                   <span><strong className="text-white font-semibold">Threat Data</strong>: Feeds and IOCs are publicly available security indicators and generally do not contain personal information.</span>
                 </li>
               </ul>

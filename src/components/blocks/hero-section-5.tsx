@@ -1,7 +1,7 @@
 'use client'
 import { motion } from 'framer-motion'
 import ThreatMap from '../ThreatMap'
-import { ChevronRight, Search, Shield } from 'lucide-react'
+import { ChevronRight, Search } from 'lucide-react'
 
 const stagger = {
   hidden: {},
@@ -15,7 +15,6 @@ const fadeUp = {
 
 export function HeroSection({ scanInput, setScanInput, handleScan }: any) {
     return (
-        <>
             <div className="relative overflow-hidden w-full min-h-[100dvh] bg-app flex items-center">
                 <ThreatMap />
                 <div className="absolute inset-0 bg-gradient-to-b from-[#080b12]/10 via-[#080b12]/30 to-[#080b12] pointer-events-none z-0" />
@@ -24,7 +23,9 @@ export function HeroSection({ scanInput, setScanInput, handleScan }: any) {
                     canvas behind it; interactive controls below re-enable events. */}
                 <section className="relative z-10 w-full pt-24 pb-20 lg:pb-28 pointer-events-none">
                     <motion.div
-                      className="relative flex max-w-7xl flex-col px-6 lg:px-8"
+                      /* max-w + padding mirror layout/Container so the headline shares
+                         one optical left edge with every section heading below it. */
+                      className="relative mx-auto flex max-w-7xl flex-col px-6 lg:px-12"
                       variants={stagger}
                       initial="hidden"
                       animate="show"
@@ -87,6 +88,5 @@ export function HeroSection({ scanInput, setScanInput, handleScan }: any) {
                     </motion.div>
                 </section>
             </div>
-        </>
     )
 }

@@ -14,7 +14,7 @@ export default function PageShell({ grain = true, className, children, ...props 
     <main className={cn('bg-app min-h-screen', className)} {...props}>
       <div className="relative overflow-hidden pt-28 pb-24 font-sans">
         {grain && (
-          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.02] mix-blend-overlay pointer-events-none" />
+          <div className="grain absolute inset-0 opacity-[0.02] mix-blend-overlay pointer-events-none" />
         )}
         {children}
       </div>

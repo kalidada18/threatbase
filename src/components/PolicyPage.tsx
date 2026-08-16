@@ -24,7 +24,7 @@ const SECTIONS = [
   },
   {
     title: 'No Personal Information',
-    body: 'Do not include Personally Identifiable Information (PII) in your reports unless it is directly part of the threat indicator — for example, a phishing email address operated by an attacker.',
+    body: 'Do not include Personally Identifiable Information (PII) in your reports unless it is directly part of the threat indicator, for example a phishing email address operated by an attacker.',
     points: [
       'Never submit innocent third-party personal data.',
       'Redact sensitive internal details from log evidence.',
@@ -55,7 +55,7 @@ export default function PolicyPage() {
   const prefersReducedMotion = useReducedMotion()
 
   useSEO({
-    title: 'Community Reporting Policy — Threatbase',
+    title: 'Community Reporting Policy | Threatbase',
     description: 'The rules and standards for submitting malicious IP addresses to the Threatbase community intelligence feed. Report accurately, ethically, and responsibly.',
     path: '/policy',
   })

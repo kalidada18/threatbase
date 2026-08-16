@@ -1,6 +1,40 @@
 /** Number formatter */
 export const fmt = (n) => new Intl.NumberFormat('en-US').format(n)
 
+/**
+ * The one ordered accent ramp for every data surface on the site: hot ruby,
+ * through warm amber, into cool platinum. Charts, stat glows, and feed stripes
+ * all read from this so the page can never pick up an off-palette hue.
+ *
+ * It replaces four independent palettes that had drifted apart (indigo/sky
+ * stat tiles, a purple hash series, an emerald CIDR series, a cyan donut tail).
+ * Ordered rather than categorical on purpose: every consumer plots magnitude,
+ * so ramp position carries meaning instead of being decoration.
+ */
+export const DATA_RAMP = [
+  '#cf1733', // ruby — the house accent
+  '#e2566c', // blush
+  '#ed6b4a', // vermilion
+  '#f48d34', // amber
+  '#f0a97a', // sand
+  '#cdd3de', // platinum
+  '#aeb6c4', // platinum, dim
+  '#8f98a8', // platinum, deep
+  '#65758b', // slate
+] as const
+
+/** Per-indicator accent, taken from DATA_RAMP in descending volume order. */
+export const INDICATOR_ACCENT = {
+  ip: DATA_RAMP[0],
+  domain: DATA_RAMP[1],
+  hash: DATA_RAMP[2],
+  url: DATA_RAMP[3],
+  cidr: DATA_RAMP[6],
+  ipv6: DATA_RAMP[8],
+} as const
+
+export type IndicatorKey = keyof typeof INDICATOR_ACCENT
+
 
 
 /** Get the base URL for IOC data files */

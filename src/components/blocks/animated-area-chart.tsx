@@ -14,17 +14,17 @@ import {
 } from "@/components/ui/area-chart";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import React, { useEffect, useState, useMemo } from "react";
-import { getBaseUrl, fmt } from "../../utils";
+import { getBaseUrl, fmt, INDICATOR_ACCENT } from "../../utils";
 
 type SeriesKey = "ipv4" | "ipv6" | "cidrs" | "domains" | "hashes" | "urls";
 
 const chartConfig = {
-  ipv4: { label: "IPv4", color: "#cf1733" },
-  domains: { label: "Domains", color: "#3b82f6" },
-  hashes: { label: "Hashes", color: "#a855f7" },
-  urls: { label: "URLs", color: "#f97316" },
-  cidrs: { label: "CIDRs", color: "#10b981" },
-  ipv6: { label: "IPv6", color: "#06b6d4" },
+  ipv4: { label: "IPv4", color: INDICATOR_ACCENT.ip },
+  domains: { label: "Domains", color: INDICATOR_ACCENT.domain },
+  hashes: { label: "Hashes", color: INDICATOR_ACCENT.hash },
+  urls: { label: "URLs", color: INDICATOR_ACCENT.url },
+  cidrs: { label: "CIDRs", color: INDICATOR_ACCENT.cidr },
+  ipv6: { label: "IPv6", color: INDICATOR_ACCENT.ipv6 },
 } satisfies ChartConfig;
 
 const SERIES_ORDER: SeriesKey[] = ["ipv4", "domains", "hashes", "urls", "cidrs", "ipv6"];
@@ -114,7 +114,7 @@ export default function AnimatedHighlightedAreaChart({ feedVersion }: { feedVers
       latestTotal: lt,
       periodDelta: lt - ft,
       periodPct: ft > 0 ? ((lt - ft) / ft) * 100 : 0,
-      rangeLabel: `${first.dateLabel} – ${last.dateLabel}`,
+      rangeLabel: `${first.dateLabel} to ${last.dateLabel}`,
       latestByKey: byKey,
     }
   }, [chartData])
@@ -140,22 +140,23 @@ export default function AnimatedHighlightedAreaChart({ feedVersion }: { feedVers
   return (
     <Card className="rounded-3xl border border-white/10 bg-slate-900/60 backdrop-blur-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] relative overflow-hidden group h-full flex flex-col">
       <div className="absolute top-0 inset-x-0 h-[2px] w-full bg-gradient-to-r from-transparent via-red-500/50 to-transparent" />
-      <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] mix-blend-overlay pointer-events-none" />
 
       <div className="relative z-10 flex flex-col h-full">
         {/* Header */}
         <div className="px-6 pt-6 pb-4 flex flex-col sm:flex-row sm:items-start justify-between gap-4 border-b border-white/[0.06]">
           <div>
-            <h3 className="text-xl font-extrabold text-white tracking-tight">Threat Landscape Trends</h3>
+            <h3 className="text-xl font-extrabold text-white tracking-tight">Daily volume by category</h3>
             <p className="text-slate-400 font-medium text-sm mt-1">
-              Tracked malicious indicators across 6 categories{rangeLabel ? ` · ${rangeLabel}` : ''}
+              Six indicator types{rangeLabel ? `, ${rangeLabel}` : ''}
             </p>
           </div>
 
           {/* Headline total + period delta */}
           <div className="shrink-0 text-left sm:text-right">
             <div className="text-2xl md:text-3xl font-black text-white tabular-nums tracking-tight leading-none">
-              {loading ? '—' : fmt(latestTotal)}
+              {loading
+                ? <span className="inline-block h-[0.75em] w-[7ch] rounded-md bg-white/[0.07] animate-pulse align-middle" role="status" aria-label="Loading total" />
+                : fmt(latestTotal)}
             </div>
             <div className={`mt-1.5 inline-flex items-center gap-1 text-xs font-bold tabular-nums ${trendColor}`}>
               <TrendIcon size={14} strokeWidth={2.5} />
@@ -197,12 +198,17 @@ export default function AnimatedHighlightedAreaChart({ feedVersion }: { feedVers
         {/* Chart */}
         <CardContent className="flex-1 pt-4">
           {loading ? (
-            <div className="w-full h-72 flex flex-col items-center justify-center gap-3 text-slate-500">
-              <div className="relative h-7 w-7">
-                <div className="absolute inset-0 rounded-full border border-slate-700" />
-                <div className="absolute inset-0 rounded-full border border-slate-400 border-t-transparent animate-spin" />
+            /* Skeleton in the shape of the chart, not a spinner (tasteskill §4.5) */
+            <div className="w-full h-72 relative" role="status" aria-label="Loading trend data">
+              <div className="absolute inset-x-0 top-0 bottom-6 flex flex-col justify-between">
+                {[0, 1, 2, 3, 4].map((i) => (
+                  <div key={i} className="h-px w-full bg-white/[0.05]" />
+                ))}
               </div>
-              <p className="text-[11px] font-bold uppercase tracking-widest">Loading trend data…</p>
+              <div
+                className="absolute inset-x-0 bottom-6 h-2/3 animate-pulse bg-gradient-to-t from-white/[0.06] to-transparent"
+                style={{ clipPath: 'polygon(0 78%, 14% 62%, 28% 68%, 43% 44%, 57% 50%, 71% 26%, 86% 33%, 100% 12%, 100% 100%, 0 100%)' }}
+              />
             </div>
           ) : (
             <ChartContainer config={chartConfig} className="w-full h-72">

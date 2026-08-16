@@ -599,7 +599,7 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
   const usernameDisplay = activeProfile?.username || editUsername || activeProfile?.email?.split('@')[0] || 'User'
 
   useSEO({
-    title: isForbidden ? 'Access Denied — Threatbase' : `${usernameDisplay}'s Profile — Threatbase`,
+    title: isForbidden ? 'Access Denied | Threatbase' : `${usernameDisplay}'s Profile | Threatbase`,
     description: isForbidden
       ? 'This profile is private to its owner.'
       : `View ${usernameDisplay}'s threat intelligence contributions, badges, and activity on Threatbase.`,

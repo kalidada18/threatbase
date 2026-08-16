@@ -335,7 +335,7 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
                       <div>
                         <h4 className="text-slate-200 font-bold text-sm tracking-tight">No malicious activity on record</h4>
                         <p className="text-slate-400 text-sm mt-1 leading-relaxed">
-                          This {scanResult.isDomain ? 'domain' : 'address'} was not found in any of our threat-intelligence feeds and has{reports.length === 0 ? ' no' : ` ${reports.length}`} community {reports.length === 1 ? 'report' : 'reports'}. A clean result is not a guarantee of safety — always combine multiple signals before trusting an indicator.
+                          This {scanResult.isDomain ? 'domain' : 'address'} was not found in any of our threat-intelligence feeds and has{reports.length === 0 ? ' no' : ` ${reports.length}`} community {reports.length === 1 ? 'report' : 'reports'}. A clean result is not a guarantee of safety. Always combine multiple signals before trusting an indicator.
                         </p>
                       </div>
                     </div>

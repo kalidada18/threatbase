@@ -6,7 +6,7 @@ export default function TermsPage() {
   const prefersReducedMotion = useReducedMotion()
 
   useSEO({
-    title: 'Terms and Conditions — Threatbase',
+    title: 'Terms and Conditions | Threatbase',
     description: 'Terms and Conditions for Threatbase.',
     path: '/terms',
   })
@@ -52,19 +52,19 @@ export default function TermsPage() {
               </h3>
               <ul className="space-y-4">
                 <li className="flex gap-4">
-                  <span className="text-red-500 font-bold shrink-0">—</span>
+                  <span className="mt-2.5 h-px w-3 shrink-0 bg-red-500" aria-hidden="true" />
                   <span>You must comply with all applicable laws and regulations.</span>
                 </li>
                 <li className="flex gap-4">
-                  <span className="text-red-500 font-bold shrink-0">—</span>
+                  <span className="mt-2.5 h-px w-3 shrink-0 bg-red-500" aria-hidden="true" />
                   <span>You may not use the Service for malicious purposes, to distribute malware, or to conduct unauthorized attacks.</span>
                 </li>
                 <li className="flex gap-4">
-                  <span className="text-red-500 font-bold shrink-0">—</span>
+                  <span className="mt-2.5 h-px w-3 shrink-0 bg-red-500" aria-hidden="true" />
                   <span>You agree not to excessively scrape data, overload the Service, or attempt to reverse-engineer it.</span>
                 </li>
                 <li className="flex gap-4">
-                  <span className="text-red-500 font-bold shrink-0">—</span>
+                  <span className="mt-2.5 h-px w-3 shrink-0 bg-red-500" aria-hidden="true" />
                   <span>Any contact information you provide must be accurate.</span>
                 </li>
               </ul>
