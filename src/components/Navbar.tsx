@@ -65,7 +65,7 @@ export default function Navbar() {
             >
                 <div className="w-full px-4 lg:px-8">
                     <div className="relative flex flex-wrap items-center justify-between">
-                        <div className="flex w-full items-center justify-between gap-10 lg:w-auto">
+                        <div className="flex w-full items-center justify-between gap-10 xl:w-auto">
                             <Link
                                 to="/"
                                 aria-label="home"
@@ -83,12 +83,16 @@ export default function Navbar() {
                             <button
                                 onClick={() => setMenuState(!menuState)}
                                 aria-label={menuState === true ? 'Close Menu' : 'Open Menu'}
-                                className="relative z-20 -m-2.5 -mr-4 block cursor-pointer p-2.5 lg:hidden text-foreground">
+                                aria-expanded={menuState}
+                                className="relative z-20 -m-2.5 -mr-4 block cursor-pointer p-2.5 xl:hidden text-foreground">
                                 <Menu className="group-data-[state=active]:rotate-180 group-data-[state=active]:scale-0 group-data-[state=active]:opacity-0 m-auto size-6 duration-200" />
                                 <X className="group-data-[state=active]:rotate-0 group-data-[state=active]:scale-100 group-data-[state=active]:opacity-100 absolute inset-0 m-auto size-6 -rotate-180 scale-0 opacity-0 duration-200" />
                             </button>
 
-                            <div className="hidden lg:block">
+                            {/* Full nav only from xl up: six labels + wordmark + the action
+                                cluster measure wider than 1024px, which used to wrap the bar
+                                onto a second line between lg and xl. */}
+                            <div className="hidden xl:block">
                                 <ul className="flex items-center gap-1 text-sm font-medium">
                                     {menuItems.map((item, index) => {
                                         const isActive = item.name === 'Report IP' && isReportActive
@@ -97,7 +101,7 @@ export default function Navbar() {
                                                 <Link
                                                     to={item.href}
                                                     className={cn(
-                                                        "transition-colors duration-200 tracking-tight font-semibold text-[0.9rem] px-3.5 py-2 rounded-full",
+                                                        "transition-colors duration-200 tracking-tight font-semibold text-[0.9rem] px-3 py-2 rounded-full whitespace-nowrap",
                                                         isActive
                                                             ? "bg-red-500/10 text-white ring-1 ring-red-500/20"
                                                             : "text-slate-400 hover:text-white hover:bg-white/[0.06]"
@@ -112,9 +116,9 @@ export default function Navbar() {
                             </div>
                         </div>
 
-                        <div className="bg-black/95 backdrop-blur-xl border border-white/10 group-data-[state=active]:flex lg:group-data-[state=active]:flex mb-4 hidden w-full flex-col lg:flex-row flex-wrap items-center justify-center lg:justify-end space-y-8 lg:space-y-0 rounded-3xl p-6 shadow-2xl max-h-[calc(100dvh-6rem)] overflow-y-auto lg:max-h-none lg:overflow-visible md:flex-nowrap lg:m-0 lg:flex lg:w-fit lg:gap-6 lg:border-transparent lg:bg-transparent lg:p-0 lg:shadow-none mt-4 lg:mt-0 transition-all duration-300">
-                            <div className="lg:hidden w-full">
-                                <ul className="space-y-6 text-base font-medium">
+                        <div className="bg-black/95 backdrop-blur-xl border border-white/10 group-data-[state=active]:flex xl:group-data-[state=active]:flex mb-4 hidden w-full flex-col xl:flex-row flex-wrap items-center justify-center xl:justify-end space-y-8 xl:space-y-0 rounded-3xl p-6 shadow-2xl max-h-[calc(100dvh-6rem)] overflow-y-auto xl:max-h-none xl:overflow-visible md:flex-nowrap xl:m-0 xl:flex xl:w-fit xl:gap-6 xl:border-transparent xl:bg-transparent xl:p-0 xl:shadow-none mt-4 xl:mt-0 transition-all duration-300">
+                            <div className="xl:hidden w-full">
+                                <ul className="space-y-2 text-base font-medium">
                                     {menuItems.map((item, index) => {
                                         const isActive = item.name === 'Report IP' && isReportActive
                                         return (
@@ -123,7 +127,7 @@ export default function Navbar() {
                                                     to={item.href}
                                                     onClick={() => setMenuState(false)}
                                                     className={cn(
-                                                        "block transition-all duration-200 px-4 py-2 rounded-xl text-center",
+                                                        "flex min-h-[44px] items-center justify-center transition-all duration-200 px-4 py-2.5 rounded-xl text-center",
                                                         isActive ? "bg-white/10 text-white font-bold" : "text-slate-400 hover:text-white hover:bg-white/5 font-semibold"
                                                     )}>
                                                     {item.name}
@@ -134,26 +138,28 @@ export default function Navbar() {
 
                                 </ul>
                             </div>
-                            
-                            <div className="flex w-full flex-col space-y-4 sm:flex-row sm:items-center sm:justify-center lg:justify-end sm:gap-4 sm:space-y-0 md:w-fit relative mt-6 lg:mt-0">
+
+                            <div className="flex w-full flex-col space-y-4 sm:flex-row sm:items-center sm:justify-center xl:justify-end sm:gap-4 sm:space-y-0 md:w-fit relative mt-6 xl:mt-0">
+                                {/* Secondary utilities: labelled in the mobile panel, icon-only
+                                    from xl so the desktop bar stays on one line. */}
                                 <Button
                                     asChild
                                     variant="outline"
-                                    className="border-white/10 bg-white/5 text-white hover:bg-white/10 hover:border-white/20 hover:text-white rounded-full px-5 h-10 transition-all duration-300 gap-2 text-xs font-semibold"
+                                    className="border-white/10 bg-white/5 text-white hover:bg-white/10 hover:border-white/20 hover:text-white rounded-full px-5 xl:px-0 xl:w-10 h-10 transition-all duration-300 gap-2 text-xs font-semibold"
                                     size="sm">
-                                    <Link to="/thanks" onClick={() => setMenuState(false)}>
+                                    <Link to="/thanks" onClick={() => setMenuState(false)} title="Thanks" aria-label="Thanks">
                                         <Heart size={14} className="text-destructive fill-red-400/20" />
-                                        Thanks
+                                        <span className="xl:hidden">Thanks</span>
                                     </Link>
                                 </Button>
                                 <Button
                                     asChild
                                     variant="outline"
-                                    className="border-white/10 bg-white/5 text-white hover:bg-white/10 hover:border-white/20 hover:text-white rounded-full px-5 h-10 transition-all duration-300 gap-2 text-xs font-semibold"
+                                    className="border-white/10 bg-white/5 text-white hover:bg-white/10 hover:border-white/20 hover:text-white rounded-full px-5 xl:px-0 xl:w-10 h-10 transition-all duration-300 gap-2 text-xs font-semibold"
                                     size="sm">
-                                    <a href="https://github.com/kalidada18/threatbase" target="_blank" rel="noopener noreferrer">
+                                    <a href="https://github.com/kalidada18/threatbase" target="_blank" rel="noopener noreferrer" title="Star us on GitHub" aria-label="Star us on GitHub">
                                         <Github size={14} />
-                                        Star us
+                                        <span className="xl:hidden">Star us</span>
                                     </a>
                                 </Button>
 

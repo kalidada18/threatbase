@@ -5,7 +5,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../AuthContext'
 import supabaseClient from '../supabaseClient'
 import { Button } from '@/components/ui/button'
-import { fmt, timeAgo } from '../utils'
+import { fmt, timeAgo, categoryTier, TIER_TEXT } from '../utils'
 import { useSEO } from '../useSEO'
 import MfaSetup from './MfaSetup'
 import NotFound from './ui/not-found'
@@ -611,7 +611,7 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
   // owner from flashing a 403 on their own profile during auth load.
   if (authLoading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-app text-slate-400">
+      <div className="min-h-[100dvh] flex flex-col items-center justify-center bg-app text-slate-400">
         <Loader2 className="animate-spin text-red-400/70 mb-4" size={24} />
         <p className="text-[11px] font-semibold tracking-[0.24em] uppercase text-platinum-400">Loading Profile</p>
       </div>
@@ -633,26 +633,17 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
 
   if (loadingProfile) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-app text-slate-400">
+      <div className="min-h-[100dvh] flex flex-col items-center justify-center bg-app text-slate-400">
         <Loader2 className="animate-spin text-red-400/70 mb-4" size={24} />
         <p className="text-[11px] font-semibold tracking-[0.24em] uppercase text-platinum-400">Loading Profile</p>
       </div>
     )
   }
 
-  const getCategoryColor = (cat: string) => {
-    if (!cat) return 'text-slate-300'
-    if (cat.includes('Brute')) return 'text-orange-400'
-    if (cat.includes('Malware')) return 'text-destructive'
-    if (cat.includes('DDoS')) return 'text-purple-400'
-    if (cat.includes('Phish')) return 'text-blue-400'
-    if (cat.includes('Scan')) return 'text-primary'
-    if (cat.includes('Exploit')) return 'text-amber-400'
-    return 'text-slate-300'
-  }
+  const getCategoryColor = (cat: string) => TIER_TEXT[categoryTier(cat)]
 
   return (
-    <main className="min-h-screen pt-28 pb-24 relative bg-app font-sans">
+    <main className="min-h-[100dvh] pt-28 pb-24 relative bg-app font-sans">
       <div className="mx-auto max-w-5xl px-6 relative z-10 space-y-6 md:space-y-8">
 
         {/* Navigation back */}

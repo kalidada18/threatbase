@@ -10,6 +10,9 @@ const BASE_URL = 'https://threatbase.qzz.io'
 /* ------------------------------------------------------------------ */
 /* Lightweight, dependency-free syntax highlighter.                    */
 /* Tokenizes a handful of languages just enough to colour code blocks. */
+/* Token colours stay on the site ramp (ruby → vermilion → amber →     */
+/* platinum → slate) plus the one sanctioned green, so a code block    */
+/* never imports an editor theme's cold hues (tasteskill colour lock). */
 /* ------------------------------------------------------------------ */
 
 type Token = { text: string; cls: string }
@@ -19,11 +22,11 @@ const C = {
   string: 'text-emerald-300',
   number: 'text-amber-300',
   keyword: 'text-rose-400',
-  builtin: 'text-sky-400',
-  property: 'text-indigo-300',
+  builtin: 'text-orange-300',
+  property: 'text-platinum-300',
   punct: 'text-slate-500',
   plain: 'text-slate-200',
-  method: 'text-blue-300',
+  method: 'text-red-300',
 }
 
 const PY_KEYWORDS = new Set([
@@ -225,7 +228,7 @@ function ParamTable({ rows, title }: { rows: ParamRow[]; title: string }) {
         {rows.map((r) => (
           <div key={r.name} className="grid grid-cols-1 gap-1 px-5 py-4 sm:grid-cols-[180px_1fr]">
             <div className="flex flex-wrap items-center gap-2">
-              <code className="font-mono text-sm font-semibold text-indigo-300">{r.name}</code>
+              <code className="font-mono text-sm font-semibold text-platinum-200">{r.name}</code>
               <span className="font-mono text-[10px] uppercase tracking-wide text-slate-500">
                 {r.type}
               </span>

@@ -5,19 +5,16 @@ import Section from './layout/Section'
 const steps = [
   {
     icon: Search,
-    num: '01',
     title: 'Scan & Investigate',
     desc: 'Query any IP, domain, URL, or hash against aggregated threat feeds and community reports in real time.',
   },
   {
     icon: ShieldCheck,
-    num: '02',
     title: 'Analyze Threats',
     desc: 'Get severity scoring, geolocation data, ISP attribution, and corroborating evidence from multiple feeds.',
   },
   {
     icon: Share2,
-    num: '03',
     title: 'Defend Together',
     desc: 'Report new threats, download blocklists, and deploy high-performance feeds to your firewall and SIEM.',
   },
@@ -71,7 +68,7 @@ export default function HowItWorks() {
             const Icon = step.icon
             return (
               <motion.div
-                key={step.num}
+                key={step.title}
                 custom={i}
                 variants={stepVariants}
                 initial="hidden"
@@ -88,8 +85,7 @@ export default function HowItWorks() {
 
                 {/* Content */}
                 <div className="pt-1.5 md:pt-2.5">
-                  <span className="font-mono text-[11px] font-bold text-red-500/60 tracking-widest">{step.num}</span>
-                  <h3 className="text-xl md:text-2xl font-bold text-white tracking-tight mt-1 group-hover:text-red-50 transition-colors">
+                  <h3 className="text-xl md:text-2xl font-bold text-white tracking-tight group-hover:text-red-50 transition-colors">
                     {step.title}
                   </h3>
                   <p className="mt-2 text-sm md:text-base text-slate-400 leading-relaxed max-w-lg group-hover:text-slate-300 transition-colors">

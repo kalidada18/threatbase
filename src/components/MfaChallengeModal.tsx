@@ -105,10 +105,10 @@ export default function MfaChallengeModal() {
           className="relative w-full max-w-md rounded-2xl border border-white/10 bg-app p-8 shadow-2xl overflow-hidden"
         >
           {/* Decorative glow */}
-          <div className="absolute -top-24 -right-24 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
-          
+          <div className="absolute -top-24 -right-24 w-48 h-48 bg-red-500/10 rounded-full blur-3xl pointer-events-none" />
+
           <div className="flex flex-col items-center text-center space-y-6">
-            <div className="w-16 h-16 rounded-full border border-blue-500/20 flex items-center justify-center shadow-[0_0_15px_rgba(59,130,246,0.15)] overflow-hidden">
+            <div className="w-16 h-16 rounded-full border border-red-500/20 flex items-center justify-center shadow-[0_0_15px_rgba(207,23,51,0.18)] overflow-hidden">
               <img 
                 src={`${import.meta.env.BASE_URL}img/logo.png`} 
                 alt="Threatbase Logo" 
@@ -138,14 +138,14 @@ export default function MfaChallengeModal() {
                 value={otp}
                 onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ''))}
                 placeholder="000000"
-                className="w-full h-14 rounded-xl border border-white/10 bg-black/50 px-4 text-center text-2xl tracking-[0.5em] text-white placeholder:text-slate-700 focus:outline-none focus:border-blue-500/50 focus:bg-white/5 transition-all font-mono"
+                className="w-full h-14 rounded-xl border border-white/10 bg-black/50 px-4 text-center text-2xl tracking-[0.5em] text-white placeholder:text-slate-700 focus:outline-none focus:border-red-500/50 focus:bg-white/5 transition-all font-mono"
                 disabled={loading || !challengeId}
               />
               
               <button
                 type="submit"
                 disabled={loading || !challengeId || otp.length < 6}
-                className="w-full h-12 rounded-xl bg-blue-500 hover:bg-blue-600 text-white font-bold text-sm tracking-wide transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full h-12 rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold text-sm tracking-wide transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {loading ? <Loader2 size={16} className="animate-spin" /> : 'Verify Code'}
               </button>

@@ -241,7 +241,7 @@ export default function RadarScan({ size = 220 }: { size?: number }) {
       <div className="absolute z-30 flex flex-col items-center gap-1.5" style={{ top: size + 4, left: 0, right: 0 }}>
         <motion.span
           key={phase}
-          className="font-mono text-[10px] font-medium tracking-[0.16em] uppercase text-teal-400/70"
+          className="font-mono text-[10px] font-medium tracking-[0.16em] uppercase text-platinum-400"
           initial={reduce ? false : { opacity: 0, y: 4 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -4 }}

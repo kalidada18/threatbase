@@ -158,7 +158,7 @@ export default function MfaSetup({ addToast }: { addToast: (msg: string, type: '
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div className="space-y-1">
           <h3 className="text-sm font-semibold text-white flex items-center gap-2">
-            <KeyRound size={16} className="text-blue-400" />
+            <KeyRound size={16} className="text-red-400" />
             Two-Factor Authentication
           </h3>
           <p className="text-xs text-slate-400 max-w-md">
@@ -190,7 +190,7 @@ export default function MfaSetup({ addToast }: { addToast: (msg: string, type: '
                 <Button
                   onClick={handleStartSetup}
                   variant="outline"
-                  className="border-blue-500/20 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 hover:text-blue-300 rounded text-xs px-4"
+                  className="border-red-500/20 bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300 rounded text-xs px-4"
                 >
                   Set Up 2FA
                 </Button>
@@ -214,7 +214,7 @@ export default function MfaSetup({ addToast }: { addToast: (msg: string, type: '
             // Safe: qrCodeSvg is the TOTP QR returned by Supabase Auth's MFA
             // enroll API (first-party, trusted), never user-supplied input.
             <div
-              className="bg-white p-4 rounded-xl border-4 border-blue-500/20"
+              className="bg-white p-4 rounded-xl border-4 border-red-500/20"
               dangerouslySetInnerHTML={{ __html: qrCodeSvg }}
             />
           ) : null}
@@ -230,7 +230,7 @@ export default function MfaSetup({ addToast }: { addToast: (msg: string, type: '
                 value={otp}
                 onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ''))}
                 placeholder="000000"
-                className="w-full h-12 rounded-xl border border-white/10 bg-black/50 px-4 text-center text-xl tracking-[0.5em] text-white placeholder:text-slate-700 focus:outline-none focus:border-blue-500/50 transition-colors font-mono"
+                className="w-full h-12 rounded-xl border border-white/10 bg-black/50 px-4 text-center text-xl tracking-[0.5em] text-white placeholder:text-slate-700 focus:outline-none focus:border-red-500/50 transition-colors font-mono"
                 disabled={verifying}
               />
             </div>
@@ -239,7 +239,7 @@ export default function MfaSetup({ addToast }: { addToast: (msg: string, type: '
               <Button 
                 type="submit"
                 disabled={verifying || otp.length < 6}
-                className="flex-1 h-10 rounded-xl bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold transition-colors disabled:opacity-50"
+                className="flex-1 h-10 rounded-xl bg-red-500 hover:bg-red-600 text-white text-xs font-bold transition-colors disabled:opacity-50"
               >
                 {verifying ? 'Verifying...' : 'Verify & Enable'}
               </Button>

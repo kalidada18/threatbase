@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom'
 import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile'
 import { AuthComponent } from '@/components/ui/sign-up'
 import supabaseClient from '../supabaseClient'
-import { fmt, timeAgo, getAvatarForName, getCategoryIconPath } from '../utils'
+import { fmt, timeAgo, getAvatarForName, getCategoryIconPath, categoryTier, TIER_CHIP } from '../utils'
 import { useAuth } from '../AuthContext'
 import { useSEO } from '@/useSEO'
 import DOMPurify from 'dompurify'
@@ -325,15 +325,7 @@ export default function ReportIP({ addToast }: any) {
     setTimeout(() => setCopiedIp(null), 1500)
   }
 
-  const getCategoryColor = (cat: string) => {
-    if (!cat) return 'bg-slate-500/10 text-slate-300 border border-slate-500/20'
-    if (cat.includes('Brute') || cat.includes('Force')) return 'bg-orange-500/10 text-orange-400 border border-orange-500/20'
-    if (cat.includes('Malware')) return 'bg-destructive/10 text-destructive border border-destructive/20'
-    if (cat.includes('DDoS')) return 'bg-purple-500/10 text-purple-400 border border-purple-500/20'
-    if (cat.includes('Phish')) return 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
-    if (cat.includes('Scan')) return 'bg-primary/10 text-primary border border-primary/20'
-    return 'bg-slate-500/10 text-slate-300 border border-slate-500/20'
-  }
+  const getCategoryColor = (cat: string) => TIER_CHIP[categoryTier(cat)]
 
   const isFormValid = () => {
     return ipValue.trim() !== "" && category !== "" && comment.trim() !== "" && (ipStatus.type === 'valid_v4' || ipStatus.type === 'valid_v6');

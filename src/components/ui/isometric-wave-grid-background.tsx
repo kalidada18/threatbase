@@ -3,8 +3,8 @@ import { cn } from "@/lib/utils";
 
 interface IsoLevelWarpProps extends React.HTMLAttributes<HTMLDivElement> {
   /**
-   * Primary line color (Tailwind hex or rgb).
-   * Default: cyan/teal mix
+   * Primary line color as an `r, g, b` triple.
+   * Default: the house ruby accent (#cf1733).
    */
   color?: string;
   /**
@@ -21,7 +21,7 @@ interface IsoLevelWarpProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const IsoLevelWarp = ({
   className,
-  color = "14, 165, 233", // RGB for Tailwind sky-500
+  color = "207, 23, 51", // ruby #cf1733 — the one site accent
   speed = 1,
   density = 40,
   ...props

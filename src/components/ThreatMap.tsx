@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react'
 import * as d3 from 'd3-geo'
 import * as topojson from 'topojson-client'
-import { getBaseUrl, fmt, timeAgo } from '../utils'
+import { getBaseUrl, fmt, timeAgo, DATA_RAMP } from '../utils'
 import { COUNTRY_COORDS, TARGET_HUBS } from '../lib/countryCoords'
 
 // Fallback origins used until real geo data loads (or if it fails).
@@ -20,30 +20,10 @@ const CITIES = [
   { name: "Dubai", coords: [55.2708, 25.2048] }
 ]
 
-// Category → accent colour for the ticker dot.
-const CATEGORY_COLOR: Record<string, string> = {
-  C2: '#cf1733', Botnet: '#f97316', 'Brute-Force': '#f59e0b', Malware: '#ec4899',
-  Exploit: '#d946ef', Compromised: '#fb7185', Spam: '#10b981', Tor: '#8b5cf6',
-  Scanner: '#84cc16', Malicious: '#38bdf8', Mixed: '#94a3b8',
-}
-
-// Category → severity tier
-const SEVERITY: Record<string, { label: string; color: string }> = {
-  C2: { label: 'CRIT', color: '#cf1733' },
-  Exploit: { label: 'CRIT', color: '#cf1733' },
-  Malware: { label: 'HIGH', color: '#f97316' },
-  Botnet: { label: 'HIGH', color: '#f97316' },
-  'Brute-Force': { label: 'HIGH', color: '#f97316' },
-  Compromised: { label: 'MED', color: '#f59e0b' },
-  Spam: { label: 'MED', color: '#f59e0b' },
-  Malicious: { label: 'MED', color: '#f59e0b' },
-  Tor: { label: 'LOW', color: '#8b5cf6' },
-  Scanner: { label: 'LOW', color: '#84cc16' },
-  Mixed: { label: 'INFO', color: '#94a3b8' },
-}
-function sevFor(cat: string) {
-  return SEVERITY[cat] ?? { label: 'INFO', color: '#94a3b8' }
-}
+// Category → accent colour. The breakdown is always rendered in descending
+// volume order, so colour comes from rank position in the single ordered
+// DATA_RAMP rather than a per-category rainbow (tasteskill colour lock).
+const rampAt = (i: number) => DATA_RAMP[Math.min(i, DATA_RAMP.length - 1)]
 
 // Build an SVG path string for the trend sparkline.
 function sparkLine(vals: number[], w: number, h: number) {
@@ -105,8 +85,6 @@ interface Weighted<T> {
   total: number
 }
 
-interface TickerEntry { id: number; src: string; tgt: string; cat: string; ts: number }
-
 function pickWeighted<T>(w: Weighted<T> | null): T | null {
   if (!w || w.total <= 0) return null
   const r = Math.random() * w.total
@@ -130,14 +108,9 @@ function interpolateGreatArc(src: [number, number], tgt: [number, number], t: nu
 
 export default function ThreatMap() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  // Weighted pickers, read live by the animation loop.
+  // Weighted picker over real attacker geography, read live by the render loop.
   const geoRef = useRef<Weighted<{ coords: [number, number]; cc: string }> | null>(null)
-  const catRef = useRef<Weighted<string> | null>(null)
-  const [ticker, setTicker] = useState<TickerEntry[]>([])
-  const [totalSeen, setTotalSeen] = useState(0)
   const [topAttackers, setTopAttackers] = useState<{cc: string, name: string, count: number, pct: number}[]>([])
-  // Ticking clock so relative timestamps ("now", "5s") stay fresh.
-  const [now, setNow] = useState(() => Date.now())
   // Real CTI stats for the "Last 24h" analytics strip.
   const [stats, setStats] = useState<{ total: number; cats: Record<string, number>; feeds: number; updated: string } | null>(null)
   const [trend, setTrend] = useState<{ delta: number; pct: number; spark: number[] } | null>(null)
@@ -151,12 +124,10 @@ export default function ThreatMap() {
   // Hover state — cursor position (canvas-local px) + currently highlighted country
   const mouseRef = useRef<{ x: number; y: number } | null>(null)
   const hoveredFeatureRef = useRef<any>(null)
-  const tooltipRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const t = window.setInterval(() => setNow(Date.now()), 1000)
-    return () => window.clearInterval(t)
-  }, [])
+  // Set only under prefers-reduced-motion, where there is no rAF loop to pick
+  // up ref changes: pointer handlers call it to repaint the one static frame.
+  // Stays null in normal mode, so calling it there is a no-op.
+  const redrawRef = useRef<(() => void) | null>(null)
 
   // Fetch real attacker geolocation + category mix to drive the map.
   useEffect(() => {
@@ -197,24 +168,15 @@ export default function ThreatMap() {
       .then(r => r.json())
       .then((data: { category_counts?: Record<string, number>; total_unique_ips?: number; active_feeds?: number; last_updated?: string }) => {
         if (cancelled || !data?.category_counts) return
-        const items: string[] = []
-        const cumulative: number[] = []
-        let total = 0
-        for (const [cat, count] of Object.entries(data.category_counts) as [string, number][]) {
-          if (count <= 0) continue
-          total += count
-          items.push(cat)
-          cumulative.push(total)
-        }
-        if (items.length > 0) catRef.current = { items, cumulative, total }
+        const catTotal = Object.values(data.category_counts).reduce((s, n) => s + (n > 0 ? n : 0), 0)
         setStats({
-          total: data.total_unique_ips ?? total,
+          total: data.total_unique_ips ?? catTotal,
           cats: data.category_counts,
           feeds: data.active_feeds ?? 0,
           updated: data.last_updated ?? '',
         })
       })
-      .catch(() => { /* ticker shows a generic category */ })
+      .catch(() => { /* HUD analytics strip stays hidden */ })
 
     // Daily history → real "last 24h" delta + 14-day trend sparkline.
     fetch(getBaseUrl() + 'history.json?_=' + Date.now())
@@ -263,7 +225,7 @@ export default function ThreatMap() {
         y: ((e.clientY - rect.top) / rect.height) * H,
       }
     }
-    if (!isDraggingRef.current) return
+    if (!isDraggingRef.current) { redrawRef.current?.(); return }
     const dx = e.clientX - dragStartRef.current[0]
     const dy = e.clientY - dragStartRef.current[1]
     const sensitivity = 0.4
@@ -271,6 +233,7 @@ export default function ThreatMap() {
       rotStartRef.current[0] + dx * sensitivity,
       Math.max(-80, Math.min(80, rotStartRef.current[1] + dy * sensitivity)),
     ]
+    redrawRef.current?.()
   }, [])
 
   const onPointerUp = useCallback((e: React.PointerEvent<HTMLCanvasElement>) => {
@@ -284,6 +247,7 @@ export default function ThreatMap() {
     // Clear hover so the highlight + tooltip disappear when the cursor leaves.
     mouseRef.current = null
     isDraggingRef.current = false
+    redrawRef.current?.()
   }, [])
 
   useEffect(() => {
@@ -298,7 +262,11 @@ export default function ThreatMap() {
     let countryHits: CountryHit[] = []
     let width = 0
     let height = 0
-    let tickerId = 0
+
+    // Honour prefers-reduced-motion. A stylesheet cannot reach into a canvas
+    // rAF loop, so the map draws a single static frame instead of animating.
+    // Drag and hover still repaint, since that motion is user-initiated.
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
     const resize = () => {
       const parent = canvas.parentElement
@@ -311,6 +279,8 @@ export default function ThreatMap() {
       canvas.style.width = `${width}px`
       canvas.style.height = `${height}px`
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      // Resizing clears the bitmap; without a loop nothing would redraw it.
+      redrawRef.current?.()
     }
 
     window.addEventListener('resize', resize)
@@ -336,23 +306,14 @@ export default function ThreatMap() {
 
         const spawnAttack = () => {
           const geoPick = pickWeighted(geoRef.current)
-          let srcCoords: [number, number]
-          let srcCC: string | null = null
-
-          if (geoPick) {
-            srcCoords = geoPick.coords
-            srcCC = geoPick.cc
-          } else {
-            srcCoords = CITIES[Math.floor(Math.random() * CITIES.length)].coords as [number, number]
-          }
+          const srcCoords: [number, number] = geoPick
+            ? geoPick.coords
+            : CITIES[Math.floor(Math.random() * CITIES.length)].coords as [number, number]
 
           // Target a victim hub (real) or a random different city (fallback).
           let tgtCoords: [number, number]
-          let tgtCC: string | null = null
           if (geoPick) {
-            const hub = TARGET_HUBS[Math.floor(Math.random() * TARGET_HUBS.length)]
-            tgtCoords = hub.coords
-            tgtCC = hub.cc
+            tgtCoords = TARGET_HUBS[Math.floor(Math.random() * TARGET_HUBS.length)].coords
           } else {
             let t = CITIES[Math.floor(Math.random() * CITIES.length)]
             while (t.coords[0] === srcCoords[0] && t.coords[1] === srcCoords[1]) {
@@ -369,18 +330,11 @@ export default function ThreatMap() {
             speed: 0.003 + Math.random() * 0.004,
             color: colors[Math.floor(Math.random() * colors.length)]
           })
-
-          // Feed the live ticker only with real, attributable attacks.
-          if (srcCC && tgtCC && srcCC !== tgtCC) {
-            const cat = pickWeighted(catRef.current) ?? 'Malicious'
-            tickerId += 1
-            const entry: TickerEntry = { id: tickerId, src: srcCC, tgt: tgtCC, cat, ts: Date.now() }
-            setTicker(prev => [entry, ...prev].slice(0, 7))
-            setTotalSeen(n => n + 1)
-          }
         }
 
-        for (let i = 0; i < 5; i++) spawnAttack()
+        // With reduced motion the static frame shows the map alone, no arcs
+        // frozen mid-flight.
+        if (!reduceMotion) for (let i = 0; i < 5; i++) spawnAttack()
 
         const render = () => {
           // Apply horizontal wrap-around and vertical panning from dragging.
@@ -391,25 +345,25 @@ export default function ThreatMap() {
 
           ctx.clearRect(0, 0, width, height)
 
-          // ── Map Background & Grid ──
-          // Graticule grid
+          // ── Map base: cold platinum hairlines on a deep on-brand landmass ──
+          // Graticule
           ctx.beginPath()
           path.context(ctx)(graticule as any)
           ctx.lineWidth = 0.6
-          ctx.strokeStyle = 'rgba(45, 212, 191, 0.1)' // Teal grid
+          ctx.strokeStyle = 'rgba(174, 182, 196, 0.07)'
           ctx.stroke()
 
-          // Filled landmasses
+          // Filled landmasses — one step above the page surface (#080b12)
           ctx.beginPath()
           path.context(ctx)(land)
-          ctx.fillStyle = '#201f4a' // Dark purple/blue landmasses
+          ctx.fillStyle = '#131a26'
           ctx.fill()
 
           // Country borders
           ctx.beginPath()
           path.context(ctx)(borders as any)
           ctx.lineWidth = 0.5
-          ctx.strokeStyle = 'rgba(45, 212, 191, 0.2)'
+          ctx.strokeStyle = 'rgba(174, 182, 196, 0.18)'
           ctx.stroke()
 
           // ── Hover highlight: find + accent the country under the cursor ──
@@ -428,12 +382,12 @@ export default function ThreatMap() {
           if (hovered) {
             ctx.beginPath()
             path.context(ctx)(hovered)
-            ctx.fillStyle = 'rgba(45, 212, 191, 0.15)'
+            ctx.fillStyle = 'rgba(207, 23, 51, 0.16)'
             ctx.fill()
             ctx.lineWidth = 1.2
-            ctx.strokeStyle = 'rgba(45, 212, 191, 0.8)'
+            ctx.strokeStyle = 'rgba(226, 86, 108, 0.85)'
             ctx.shadowBlur = 8
-            ctx.shadowColor = 'rgba(45, 212, 191, 0.4)'
+            ctx.shadowColor = 'rgba(207, 23, 51, 0.45)'
             ctx.stroke()
             ctx.shadowBlur = 0
 
@@ -441,21 +395,21 @@ export default function ThreatMap() {
               const name = (hovered.properties && hovered.properties.name) || 'Unknown'
               const mx = mouseRef.current.x
               const my = mouseRef.current.y
-              
+
               ctx.font = '600 11px monospace'
               const textWidth = ctx.measureText(name).width
-              
+
               // Tooltip background
               ctx.fillStyle = 'rgba(10, 14, 23, 0.9)'
               ctx.beginPath()
               ctx.roundRect(mx + 14, my + 14, textWidth + 16, 24, 4)
               ctx.fill()
-              
+
               // Tooltip border
-              ctx.strokeStyle = 'rgba(45, 212, 191, 0.3)'
+              ctx.strokeStyle = 'rgba(207, 23, 51, 0.38)'
               ctx.lineWidth = 1
               ctx.stroke()
-              
+
               // Tooltip text
               ctx.fillStyle = '#f1f5f9'
               ctx.fillText(name, mx + 22, my + 30)
@@ -487,7 +441,7 @@ export default function ThreatMap() {
           }
 
           // ── Spawn new attacks ──
-          if (Math.random() < 0.03 && attacks.length < 15) {
+          if (!reduceMotion && Math.random() < 0.03 && attacks.length < 15) {
             spawnAttack()
           }
 
@@ -586,10 +540,13 @@ export default function ThreatMap() {
           }
 
           ctx.globalCompositeOperation = 'source-over'
-          animationFrameId = requestAnimationFrame(render)
+          if (!reduceMotion) animationFrameId = requestAnimationFrame(render)
         }
 
         render()
+        // Only under reduced motion: render() no longer self-schedules, so the
+        // pointer handlers and resize become the repaint triggers.
+        if (reduceMotion) redrawRef.current = render
       })
       .catch(err => {
         console.error('Failed to load map data:', err)
@@ -598,6 +555,7 @@ export default function ThreatMap() {
     return () => {
       window.removeEventListener('resize', resize)
       cancelAnimationFrame(animationFrameId)
+      redrawRef.current = null
     }
   }, [])
 
@@ -642,15 +600,8 @@ export default function ThreatMap() {
         />
       </div>
 
-      {/* Hover tooltip — country name under the cursor (positioned imperatively) */}
-      <div
-        ref={tooltipRef}
-        className="pointer-events-none absolute left-0 top-0 z-20 hidden whitespace-nowrap rounded-md border border-red-500/30 bg-[#0a0e17]/90 px-2.5 py-1 font-mono text-[11px] font-medium tracking-wide text-slate-100 shadow-lg backdrop-blur-sm transition-opacity duration-150 will-change-transform sm:block"
-        style={{ opacity: 0 }}
-      />
-
       {/* Live CTI HUD — premium cold-luxury threat console, bottom-right of the hero */}
-      {(stats || ticker.length > 0) && (
+      {stats && (
         <div className="hidden lg:flex flex-col absolute bottom-6 right-6 z-10 w-[23rem] max-h-[400px] overflow-hidden rounded-2xl border border-white/[0.07] bg-[#0a0e17]/75 backdrop-blur-2xl shadow-glass-lux pointer-events-none">
           {/* Platinum top hairline + faint ruby corner glow */}
           <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-platinum-300/25 to-transparent" />
@@ -716,18 +667,18 @@ export default function ThreatMap() {
               {breakdown && (
                 <>
                   <div className="mt-3.5 flex h-1.5 w-full gap-px overflow-hidden rounded-full bg-white/5 ring-1 ring-inset ring-white/[0.05]">
-                    {breakdown.entries.map(([cat, n]) => (
+                    {breakdown.entries.map(([cat, n], i) => (
                       <span
                         key={cat}
                         title={`${cat} · ${((n / breakdown.sum) * 100).toFixed(1)}%`}
-                        style={{ width: `${(n / breakdown.sum) * 100}%`, backgroundColor: CATEGORY_COLOR[cat] ?? '#94a3b8' }}
+                        style={{ width: `${(n / breakdown.sum) * 100}%`, backgroundColor: rampAt(i) }}
                       />
                     ))}
                   </div>
                   <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
-                    {breakdown.entries.slice(0, 3).map(([cat, n]) => (
+                    {breakdown.entries.slice(0, 3).map(([cat, n], i) => (
                       <span key={cat} className="flex items-center gap-1.5 text-[9px] font-medium text-slate-400">
-                        <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: CATEGORY_COLOR[cat] ?? '#94a3b8' }} />
+                        <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: rampAt(i) }} />
                         {cat}
                         <span className="tabular-nums text-slate-500">{((n / breakdown.sum) * 100).toFixed(0)}%</span>
                       </span>
@@ -776,14 +727,6 @@ export default function ThreatMap() {
 
     </>
   )
-}
-
-// Compact relative time for the live feed: "now" → "5s" → "3m".
-function relTime(ts: number, now: number) {
-  const s = Math.max(0, Math.round((now - ts) / 1000))
-  if (s < 1) return 'now'
-  if (s < 60) return `${s}s`
-  return `${Math.floor(s / 60)}m`
 }
 
 function hexToRgb(hex: string) {

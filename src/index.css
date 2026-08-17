@@ -81,7 +81,7 @@
   }
 
   body {
-    @apply text-foreground min-h-screen antialiased;
+    @apply text-foreground min-h-[100dvh] antialiased;
     font-family: theme('fontFamily.sans');
     background-color: var(--app-bg);
     font-feature-settings: 'ss01', 'calt' 1;

@@ -149,7 +149,7 @@ const modalSteps = [
     { message: "Signing you in...", icon: <Loader className="w-12 h-12 text-primary animate-spin" /> },
     { message: "Verifying credentials...", icon: <Loader className="w-12 h-12 text-primary animate-spin" /> },
     { message: "Finalizing...", icon: <Loader className="w-12 h-12 text-primary animate-spin" /> },
-    { message: "Welcome Aboard!", icon: <PartyPopper className="w-12 h-12 text-green-500" /> }
+    { message: "Welcome Aboard!", icon: <PartyPopper className="w-12 h-12 text-emerald-400" /> }
 ];
 const TEXT_LOOP_INTERVAL = 1.5;
 

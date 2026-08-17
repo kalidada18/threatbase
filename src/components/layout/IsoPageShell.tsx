@@ -18,13 +18,13 @@ interface IsoPageShellProps {
  */
 export default function IsoPageShell({
   children,
-  color = '220, 38, 38',
+  color = '207, 23, 51',
   density = 50,
   speed = 1.2,
   contentClassName,
 }: IsoPageShellProps) {
   return (
-    <div className="relative min-h-screen w-full overflow-hidden font-sans bg-app">
+    <div className="relative min-h-[100dvh] w-full overflow-hidden font-sans bg-app">
       <IsoLevelWarp color={color} density={density} speed={speed} />
       <div className={cn('relative z-10 flex flex-col items-center px-6 pt-28 pb-24', contentClassName)}>
         {children}

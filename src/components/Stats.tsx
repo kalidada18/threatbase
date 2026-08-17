@@ -132,8 +132,10 @@ export default function Stats({ statsData }: any) {
             ))}
           </div>
 
-          {/* Compact row: 4 tiles */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+          {/* Compact row: 4 tiles. One column on the narrowest phones — at 375px a
+              two-up split leaves ~65px of label width, which shreds "IPv6 Addresses"
+              across three lines. */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {compact.map((m) => (
               <CompactStatCard
                 key={m.key}
@@ -225,9 +227,10 @@ function FeaturedStatCard({ metric, target }: { metric: MetricDef; target: numbe
         </div>
       </div>
 
-      {/* Value — larger for featured */}
+      {/* Value — larger for featured. Steps down on narrow phones so an
+          eight-digit count cannot outrun the card. */}
       <div className="mt-8 relative z-10">
-        <span className="block font-mono text-5xl lg:text-6xl font-bold tracking-tight text-white tabular-nums leading-none">
+        <span className="block font-mono text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white tabular-nums leading-none">
           {ready ? fmt(value) : <ValueSkeleton className="w-[7ch]" />}
         </span>
       </div>

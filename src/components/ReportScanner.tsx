@@ -3,7 +3,7 @@ import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { Bug, ShieldCheck, AlertTriangle, AlertOctagon, ChevronRight, Search, Check, ShieldAlert, Copy } from 'lucide-react'
 import DOMPurify from 'dompurify'
 import supabaseClient from '../supabaseClient'
-import { timeAgo, getCategoryIconPath, normalizeTags } from '../utils'
+import { timeAgo, getCategoryIconPath, normalizeTags, categoryTier, TIER_CHIP, TIER_ACCENT } from '../utils'
 import { useAuth } from '../AuthContext'
 import LoaderProgressiveBar from './ui/loader-progressive-bar'
 import { getMalwareDescription } from '../malwareDictionary'
@@ -46,33 +46,16 @@ const getConfidenceTier = (score: number) => {
   return { label: 'Minimal', text: 'text-primary', bar: 'bg-primary', track: 'shadow-primary/20' }
 }
 
-const getCategoryColor = (cat: string) => {
-  if (!cat) return 'bg-slate-500/10 text-slate-300 border border-slate-500/20'
-  const c = cat.toLowerCase()
-  if (c.includes('brute') || c.includes('force')) return 'bg-orange-500/10 text-orange-400 border border-orange-500/20'
-  if (c.includes('malware') || c.includes('exploit') || c.includes('zero-day')) return 'bg-destructive/10 text-destructive border border-destructive/20'
-  if (c.includes('ddos')) return 'bg-purple-500/10 text-purple-400 border border-purple-500/20'
-  if (c.includes('phish') || c.includes('harvest')) return 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
-  if (c.includes('scan') || c.includes('recon')) return 'bg-primary/10 text-primary border border-primary/20'
-  if (c.includes('botnet') || c.includes('c2')) return 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-  return 'bg-slate-500/10 text-slate-300 border border-slate-500/20'
-}
+const getCategoryColor = (cat: string) => TIER_CHIP[categoryTier(cat)]
 
 function MalwareDescriptionBlock({ tag }: { tag: string }) {
   const desc = getMalwareDescription(tag) || getMalwareDescription('Malware');
 
   if (!desc) return null;
 
-  // Pick a color theme per category so each block looks distinct
-  const l = tag.toLowerCase()
-  let accent = { bg: 'bg-rose-500/10', border: 'border-rose-500/20', card: 'border-rose-500/10' }
-  if (l.includes('brute') || l.includes('force'))   accent = { bg: 'bg-orange-500/10', border: 'border-orange-500/20', card: 'border-orange-500/10' }
-  if (l.includes('spam'))                            accent = { bg: 'bg-amber-500/10', border: 'border-amber-500/20', card: 'border-amber-500/10' }
-  if (l.includes('phish') || l.includes('harvest'))  accent = { bg: 'bg-blue-500/10', border: 'border-blue-500/20', card: 'border-blue-500/10' }
-  if (l.includes('ddos'))                            accent = { bg: 'bg-purple-500/10', border: 'border-purple-500/20', card: 'border-purple-500/10' }
-  if (l.includes('botnet') || l.includes('c2'))      accent = { bg: 'bg-rose-500/10', border: 'border-rose-500/20', card: 'border-rose-500/10' }
-  if (l.includes('scan') || l.includes('recon'))     accent = { bg: 'bg-cyan-500/10', border: 'border-cyan-500/20', card: 'border-cyan-500/10' }
-  if (l.includes('malicious'))                       accent = { bg: 'bg-red-500/10', border: 'border-red-500/20', card: 'border-red-500/10' }
+  // Severity tier drives the accent, so no category can introduce a new hue.
+  const tier = categoryTier(tag)
+  const accent = TIER_ACCENT[tier]
 
   return (
     <div className={`mt-5 p-4 rounded-xl bg-slate-950/40 border ${accent.card} shadow-inner`}>
@@ -82,7 +65,7 @@ function MalwareDescriptionBlock({ tag }: { tag: string }) {
         </div>
         <div>
           <h4 className="text-slate-200 font-bold text-sm tracking-tight flex items-center gap-2">
-            {tag} 
+            {tag}
           </h4>
           <p className="text-slate-400 text-sm mt-1 leading-relaxed">{desc}</p>
         </div>

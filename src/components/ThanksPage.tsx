@@ -14,7 +14,7 @@ type Source = { name: string; desc: string; url: string }
 
 const SOURCES: Source[] = [
   { name: 'Spamhaus', desc: 'DROP / EDROP hijacked & malicious netblocks', url: 'https://www.spamhaus.org/' },
-  { name: 'FireHOL', desc: 'Curated IP blocklist aggregation (levels 1–3)', url: 'https://iplists.firehol.org/' },
+  { name: 'FireHOL', desc: 'Curated IP blocklist aggregation (levels 1 to 3)', url: 'https://iplists.firehol.org/' },
   { name: 'Abuse.ch', desc: 'Feodo Tracker, ThreatFox, URLhaus & SSLBL', url: 'https://abuse.ch/' },
   { name: 'AbuseIPDB', desc: 'Community-reported IP abuse confidence scores', url: 'https://www.abuseipdb.com/' },
   { name: 'Emerging Threats', desc: 'Compromised hosts & firewall block rules', url: 'https://rules.emergingthreats.net/' },

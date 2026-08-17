@@ -35,6 +35,54 @@ export const INDICATOR_ACCENT = {
 
 export type IndicatorKey = keyof typeof INDICATOR_ACCENT
 
+/**
+ * Threat categories read as severity, not as a per-category rainbow: ruby
+ * (critical), orange (high), amber (medium), platinum (low), slate (unknown).
+ * Same warm-to-cool ordering as DATA_RAMP, so category chips can never drift
+ * off-palette into purple/blue/cyan. The label and icon carry *which* category
+ * it is; colour only carries how bad it is.
+ */
+export type SeverityTier = 'critical' | 'high' | 'medium' | 'low' | 'unknown'
+
+export function categoryTier(cat?: string | null): SeverityTier {
+  if (!cat) return 'unknown'
+  const c = cat.toLowerCase()
+  if (c.includes('malware') || c.includes('exploit') || c.includes('zero-day') ||
+      c.includes('c2') || c.includes('command') || c.includes('botnet') ||
+      c.includes('mirai') || c.includes('malicious')) return 'critical'
+  if (c.includes('brute') || c.includes('force') || c.includes('ddos')) return 'high'
+  if (c.includes('phish') || c.includes('harvest') || c.includes('spam')) return 'medium'
+  if (c.includes('scan') || c.includes('recon')) return 'low'
+  return 'unknown'
+}
+
+/** Chip classes (background + text + hairline) for a category, by severity. */
+export const TIER_CHIP: Record<SeverityTier, string> = {
+  critical: 'bg-red-500/10 text-red-400 border border-red-500/20',
+  high: 'bg-orange-500/10 text-orange-400 border border-orange-500/20',
+  medium: 'bg-amber-500/10 text-amber-400 border border-amber-500/20',
+  low: 'bg-platinum-400/10 text-platinum-300 border border-platinum-400/25',
+  unknown: 'bg-slate-500/10 text-slate-300 border border-slate-500/20',
+}
+
+/** Text-only variant of TIER_CHIP, for dense table cells. */
+export const TIER_TEXT: Record<SeverityTier, string> = {
+  critical: 'text-red-400',
+  high: 'text-orange-400',
+  medium: 'text-amber-400',
+  low: 'text-platinum-300',
+  unknown: 'text-slate-300',
+}
+
+/** Split background / border classes, for panels that tint their own surface. */
+export const TIER_ACCENT: Record<SeverityTier, { bg: string; border: string; card: string }> = {
+  critical: { bg: 'bg-red-500/10', border: 'border-red-500/20', card: 'border-red-500/10' },
+  high: { bg: 'bg-orange-500/10', border: 'border-orange-500/20', card: 'border-orange-500/10' },
+  medium: { bg: 'bg-amber-500/10', border: 'border-amber-500/20', card: 'border-amber-500/10' },
+  low: { bg: 'bg-platinum-400/10', border: 'border-platinum-400/25', card: 'border-platinum-400/15' },
+  unknown: { bg: 'bg-slate-500/10', border: 'border-slate-500/20', card: 'border-slate-500/10' },
+}
+
 
 
 /** Get the base URL for IOC data files */
