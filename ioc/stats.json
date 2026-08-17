@@ -1,41 +1,41 @@
 {
-  "total_unique_ips": 726415,
-  "total_unique_ipv6": 11464,
-  "total_unique_cidrs": 17784,
-  "total_unique_domains": 3265979,
-  "total_unique_hashes": 1124992,
-  "total_unique_urls": 103809,
+  "total_unique_ips": 728069,
+  "total_unique_ipv6": 11548,
+  "total_unique_cidrs": 17785,
+  "total_unique_domains": 3281806,
+  "total_unique_hashes": 1125093,
+  "total_unique_urls": 104145,
   "active_feeds": 54,
   "category_counts": {
-    "Mixed": 503943,
-    "Malicious": 183586,
-    "Tor": 7588,
-    "Botnet": 4540,
-    "Brute-Force": 26098,
+    "Mixed": 503116,
+    "Malicious": 183664,
+    "Tor": 7566,
+    "Botnet": 5450,
+    "Brute-Force": 27575,
     "Compromised": 15538,
     "Malware": 2728,
     "C2": 7607,
-    "Spam": 13338,
-    "Exploit": 9029
+    "Exploit": 9112,
+    "Spam": 13419
   },
   "ip_category_files": {
-    "threatbase-ip-botnet.txt": 4540,
-    "threatbase-ip-bruteforce.txt": 26098,
+    "threatbase-ip-botnet.txt": 5450,
+    "threatbase-ip-bruteforce.txt": 27575,
     "threatbase-ip-c2.txt": 7607,
     "threatbase-ip-compromised.txt": 15538,
-    "threatbase-ip-exploit.txt": 9029,
-    "threatbase-ip-malicious.txt": 183586,
+    "threatbase-ip-exploit.txt": 9112,
+    "threatbase-ip-malicious.txt": 183664,
     "threatbase-ip-malware.txt": 2728,
-    "threatbase-ip-mixed.txt": 503943,
-    "threatbase-ip-spam.txt": 13338,
-    "threatbase-ip-tor.txt": 7588
+    "threatbase-ip-mixed.txt": 503116,
+    "threatbase-ip-spam.txt": 13419,
+    "threatbase-ip-tor.txt": 7566
   },
   "top_sources": {
     "romainmarcoux_outgoing_aa": 131072,
     "ipsum": 116952,
-    "romainmarcoux_outgoing_ab": 46702,
+    "romainmarcoux_outgoing_ab": 46743,
     "romainmarcoux_outgoing_40k": 40000,
-    "blocklist_de": 23978
+    "blocklist_de": 24996
   },
-  "last_updated": "2026-08-17T10:47:34.582292+00:00"
+  "last_updated": "2026-08-17T18:17:51.952150+00:00"
 }
