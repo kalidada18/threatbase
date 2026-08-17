@@ -145,9 +145,12 @@ export default function Feeds({ statsData }: { statsData?: any }) {
 }
 
 function FeedCard({ f, isSplit, chunks, wide = false }: { f: Feed; isSplit: boolean; chunks: string[]; wide?: boolean }) {
-  const href = isSplit
-    ? 'https://github.com/kalidada18/threatbase/tree/main/ioc'
-    : f.file === 'threatbase-domain.txt' ? getDomainUrl()
+  // Always link a single, directly downloadable file. The domain and hash feeds
+  // are committed to the repo as ~45 MiB chunks (too large for one file in git),
+  // but the unsplit build is published as a GitHub Release asset, so the download
+  // button stays one click rather than sending people to browse a folder.
+  const href =
+    f.file === 'threatbase-domain.txt' ? getDomainUrl()
     : f.file === 'threatbase-hash.txt' ? getHashUrl()
     : `https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/${f.file}`
 
@@ -174,7 +177,10 @@ function FeedCard({ f, isSplit, chunks, wide = false }: { f: Feed; isSplit: bool
             <div className="flex items-center gap-2.5">
               <h3 className="text-lg font-bold text-white tracking-tight truncate">{f.name}</h3>
               {isSplit && (
-                <span className="shrink-0 rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 font-mono text-[10px] font-medium text-slate-400">
+                <span
+                  title={`Also mirrored in this repo as ${chunks.length} chunks (${chunks.join(', ')}). Concatenating them in order reproduces this file exactly.`}
+                  className="shrink-0 rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 font-mono text-[10px] font-medium text-slate-400"
+                >
                   {chunks.length} parts
                 </span>
               )}
@@ -190,14 +196,10 @@ function FeedCard({ f, isSplit, chunks, wide = false }: { f: Feed; isSplit: bool
             href={href}
             target="_blank"
             rel="noopener noreferrer"
-            className={
-              isSplit
-                ? 'inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.05] px-4 h-11 text-sm font-semibold text-slate-200 hover:bg-white/[0.1] hover:text-white transition-all duration-200 active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400/40'
-                : 'inline-flex w-full items-center justify-center gap-2 rounded-xl bg-red-500 px-4 sm:px-5 h-11 text-sm font-semibold text-white shadow-glow-red hover:bg-red-400 transition-all duration-200 active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400/50'
-            }
+            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-red-500 px-4 sm:px-5 h-11 text-sm font-semibold text-white shadow-glow-red hover:bg-red-400 transition-all duration-200 active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400/50"
           >
             <Download size={16} className="transition-transform group-hover:-translate-y-0.5" />
-            {isSplit ? 'View Parts' : 'Download'}
+            Download
           </a>
         </div>
       </div>

@@ -1,12 +1,40 @@
 # Git LFS is intentionally NOT used in this repository.
 #
-# ioc/threatbase-domain.txt and ioc/threatbase-hash.txt were tracked in LFS until
-# 2026-08-16. Because they are regenerated in full on every feed run, each daily
-# commit stored a complete new ~90 MiB / ~69 MiB blob (LFS never deltas), which
-# exhausted the 10 GB LFS storage budget in about two months.
+# History: ioc/threatbase-domain.txt (~90 MiB) and ioc/threatbase-hash.txt
+# (~69 MiB) were tracked in LFS until 2026-08-16. Because they are regenerated
+# in full on every feed run, each run stored a complete new blob — LFS never
+# deltas — which exhausted the 10 GB LFS budget in about two months.
 #
-# Those two files are now git-ignored and published as GitHub Release assets on
-# the rolling `latest` tag instead. Release assets are not billed against the LFS
-# storage or bandwidth quotas. See .github/workflows/update-feed.yml.
+# Current layout (2026-08-17):
 #
-# Do not add `filter=lfs` rules for any file that is rewritten on a schedule.
+#   * The unsplit threatbase-domain.txt / threatbase-hash.txt are git-ignored
+#     and published as GitHub Release assets on the rolling `latest` tag, plus
+#     the dated `archive-YYYY-MM-DD` tags. Release assets are billed against
+#     neither the LFS storage nor the LFS bandwidth quota.
+#
+#   * Size-bounded chunks (threatbase-domain-01.txt, -02.txt, …) ARE committed
+#     as ordinary git objects. GitHub warns above 50 MiB per file and hard-
+#     rejects above 100 MiB, so update_feed.py keeps every chunk near 45 MiB.
+#
+# Why committing the chunks is safe, when committing the originals was not:
+# both feeds are sorted and effectively append-only — a measured 786 added
+# domains and 0 removed between two consecutive runs, out of 4.2M lines. Plain
+# git delta-compresses that to about 14 KiB per run (measured, two real
+# consecutive runs, halves committed then re-committed). LFS stored ~160 MiB for
+# the same change. That is the whole difference, and it is roughly 11,000x.
+#
+# Rules that follow from this:
+#
+#   1. Do NOT add `filter=lfs` rules for any file that is rewritten on a
+#      schedule. LFS is for large files that rarely change; these are the exact
+#      opposite. Deleting LFS files also does not reclaim quota — server-side
+#      objects persist even after history rewrites.
+#
+#   2. Keep the chunked feeds SORTED. The delta compression above depends on it,
+#      and so does the scanner's binary search and per-chunk range routing. An
+#      unsorted rewrite would both break lookups and balloon the repo.
+#
+#   3. Do not force text/eol conversion on the feeds. They are written with \n
+#      by update_feed.py and are byte-compared during verification; a CRLF
+#      rewrite on checkout would corrupt the reassembly check.
+ioc/*.txt -text

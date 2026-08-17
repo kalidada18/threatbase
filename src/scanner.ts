@@ -1,10 +1,39 @@
-import { getBaseUrl, getDomainUrl, getHashUrl } from './utils'
+import {
+  getBaseUrl,
+  getDomainUrl,
+  getHashUrl,
+  getFeedChunks,
+  selectChunkFor,
+  CHUNKED_FEEDS,
+} from './utils'
 import supabaseClient from './supabaseClient'
 import { BloomFilter } from './bloomFilter'
 
 type CompareFn = (query: string, line: string) => number
 
 const feedCache: Record<string, { text: string; filter: null }> = {}
+const statsCache: Record<string, any> = {}
+
+/**
+ * Fetch stats.json, which carries the chunk layout for the two large feeds.
+ *
+ * Callers that already hold stats (the website) pass it in; the Pages Function
+ * does not, so it is fetched and cached per feed version. A failure here is not
+ * fatal — the chunk lookup falls back to the unsplit release assets.
+ */
+async function fetchStats(baseUrl: string, feedVersion: string | number, provided?: any): Promise<any> {
+  if (provided) return provided
+  const key = `stats?v=${feedVersion}`
+  if (key in statsCache) return statsCache[key]
+  try {
+    const r = await fetch(`${baseUrl}stats.json?v=${feedVersion}`)
+    statsCache[key] = r.ok ? await r.json() : null
+  } catch (e) {
+    console.error('stats.json fetch failed, falling back to unsplit feeds:', e)
+    statsCache[key] = null
+  }
+  return statsCache[key]
+}
 
 async function fetchAndCacheFeedText(
   baseUrl: string,
@@ -35,6 +64,39 @@ async function fetchAndCacheFeedText(
 
   feedCache[cacheKey] = { text, filter: null }
   return feedCache[cacheKey]
+}
+
+/**
+ * Fetch only the part of a feed that could contain `query`.
+ *
+ * The domain and hash feeds are committed as chunks that partition the sorted
+ * list, so exactly one chunk can hold any given key. That turns a ~90 MiB
+ * download into a single ~45 MiB one, and when the query lands in the gap
+ * between two chunks it is provably absent from the feed, so nothing is fetched
+ * at all.
+ *
+ * Falls back to the whole unsplit feed if the chunk layout is unavailable (an
+ * older stats.json, or a failed stats fetch), which is the pre-chunking
+ * behaviour — slower, never wrong.
+ */
+async function fetchFeedTextForQuery(
+  baseUrl: string,
+  filename: string,
+  query: string,
+  feedVersion: string | number,
+  stats: any,
+): Promise<{ text: string; filter: null }> {
+  if (!(CHUNKED_FEEDS as readonly string[]).includes(filename)) {
+    return fetchAndCacheFeedText(baseUrl, filename, feedVersion)
+  }
+
+  const chunks = getFeedChunks(stats, filename)
+  if (chunks.length === 0) return fetchAndCacheFeedText(baseUrl, filename, feedVersion)
+
+  const chunk = selectChunkFor(chunks, query)
+  if (!chunk) return { text: '', filter: null }
+
+  return fetchAndCacheFeedText(baseUrl, chunk.file, feedVersion)
 }
 
 /** Convert a dotted IPv4 string to an unsigned 32-bit integer. */
@@ -249,9 +311,14 @@ export function classifyIndicator(rawInput: string) {
 
 /**
  * Classify the indicator type and search against cached feed files.
+ *
+ * `statsData` is optional: pass it when the caller already has stats.json (the
+ * website does) to save a request. Without it, stats are fetched on demand so
+ * the chunk layout of the large feeds can be resolved.
+ *
  * Returns { type, isMalicious, riskScore, feedCount }
  */
-export async function scanIndicatorLogic(rawInput: string, feedVersion: string | number) {
+export async function scanIndicatorLogic(rawInput: string, feedVersion: string | number, statsData?: any) {
   const { ip, type, isIP, isIPv6, isCIDR, isHash, isURL, isDomain } = classifyIndicator(rawInput)
 
   if (type === 'invalid') {
@@ -261,6 +328,8 @@ export async function scanIndicatorLogic(rawInput: string, feedVersion: string |
   const scanType = type
 
   const RAW = getBaseUrl()
+  // Only needed to locate chunks of the domain/hash feeds.
+  const stats = isDomain || isHash || isURL ? await fetchStats(RAW, feedVersion, statsData) : null
   let isMalicious = false
   let riskScore = 'Low'
   let feedCount: number | string = 1
@@ -285,9 +354,9 @@ export async function scanIndicatorLogic(rawInput: string, feedVersion: string |
     } else if (isCIDR) {
       ;({ text: textData, filter } = await fetchAndCacheFeedText(RAW, 'threatbase-cidr.txt', feedVersion))
     } else if (isDomain) {
-      ;({ text: textData, filter } = await fetchAndCacheFeedText(RAW, 'threatbase-domain.txt', feedVersion))
+      ;({ text: textData, filter } = await fetchFeedTextForQuery(RAW, 'threatbase-domain.txt', ip, feedVersion, stats))
     } else if (isHash) {
-      ;({ text: textData, filter } = await fetchAndCacheFeedText(RAW, 'threatbase-hash.txt', feedVersion))
+      ;({ text: textData, filter } = await fetchFeedTextForQuery(RAW, 'threatbase-hash.txt', ip, feedVersion, stats))
     } else if (isURL) {
       ;({ text: textData, filter } = await fetchAndCacheFeedText(RAW, 'threatbase-url.txt', feedVersion))
     }
@@ -306,9 +375,13 @@ export async function scanIndicatorLogic(rawInput: string, feedVersion: string |
 
     // Domain pivot: an unlisted subdomain of a listed domain is still hostile
     // infrastructure (evil.com listed → mail.evil.com flagged).
+    // Each parent is looked up in its own chunk — sibling parents rarely share
+    // one — and chunk fetches are cached, so this costs at most one download per
+    // distinct chunk touched.
     if (!result && isDomain) {
-      const { text: dText, filter: dFilter } = await fetchAndCacheFeedText(RAW, 'threatbase-domain.txt', feedVersion)
       for (const parent of parentDomains(ip)) {
+        const { text: dText, filter: dFilter } = await fetchFeedTextForQuery(RAW, 'threatbase-domain.txt', parent, feedVersion, stats)
+        if (!dText) continue
         if (dFilter && !dFilter.has(parent)) continue
         const hit = binarySearchString(dText, parent, stringCompare)
         if (hit) {
@@ -343,8 +416,9 @@ export async function scanIndicatorLogic(rawInput: string, feedVersion: string |
             }
           }
         } else {
-          const { text: dText, filter: dFilter } = await fetchAndCacheFeedText(RAW, 'threatbase-domain.txt', feedVersion)
           for (const candidate of [host, ...parentDomains(host)]) {
+            const { text: dText, filter: dFilter } = await fetchFeedTextForQuery(RAW, 'threatbase-domain.txt', candidate, feedVersion, stats)
+            if (!dText) continue
             if (dFilter && !dFilter.has(candidate)) continue
             const hit = binarySearchString(dText, candidate, stringCompare)
             if (hit) {

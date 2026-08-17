@@ -92,21 +92,73 @@ export function getBaseUrl() {
 
 /**
  * Base URL for the rolling `latest` release, which always holds the current
- * build of the two large feeds. These are too big to keep in the git tree, so
- * they ship as release assets rather than via raw/LFS endpoints.
+ * build of the two large feeds as single unsplit files. This is the recommended
+ * download for humans and for anyone who wants one whole file; the scanner uses
+ * the committed chunks instead (see CHUNKED_FEEDS below).
  */
 export function getReleaseUrl() {
   return 'https://github.com/kalidada18/threatbase/releases/download/latest/'
 }
 
-/** Get the release asset URL for the domain feed */
+/** Get the release asset URL for the (unsplit) domain feed */
 export function getDomainUrl() {
   return `${getReleaseUrl()}threatbase-domain.txt`
 }
 
-/** Get the release asset URL for the hash feed */
+/** Get the release asset URL for the (unsplit) hash feed */
 export function getHashUrl() {
   return `${getReleaseUrl()}threatbase-hash.txt`
+}
+
+/**
+ * The two feeds that exceed GitHub's file size limits and are therefore
+ * committed as chunks rather than as one file.
+ */
+export const CHUNKED_FEEDS = ['threatbase-domain.txt', 'threatbase-hash.txt'] as const
+
+/** One committed chunk of a large feed, as published in stats.json / manifest.json. */
+export interface FeedChunk {
+  file: string
+  /** First key in the chunk (inclusive). */
+  first: string
+  /** Last key in the chunk (inclusive). */
+  last: string
+  lines: number
+  bytes: number
+}
+
+/**
+ * Read the chunk layout for a feed out of stats.json.
+ *
+ * Returns [] when the feed is not chunked, or when stats.json predates chunking —
+ * callers treat that as "fetch the unsplit file", so an old stats.json degrades to
+ * the previous behaviour instead of breaking.
+ */
+export function getFeedChunks(statsData: any, filename: string): FeedChunk[] {
+  const chunks = statsData?.chunks?.[filename]
+  if (!Array.isArray(chunks)) return []
+  return chunks.filter(
+    (c: any) => c && typeof c.file === 'string' && typeof c.first === 'string' && typeof c.last === 'string',
+  )
+}
+
+/**
+ * Pick the single chunk whose key range can contain `query`.
+ *
+ * The chunks partition a sorted feed, so at most one can hold any given key and
+ * the scanner never needs to download the rest — one ~45 MiB fetch instead of the
+ * whole ~90 MiB feed. Returns null when the query falls in the gap between two
+ * chunks, which is itself a definitive "not in the feed" answer requiring no
+ * download at all.
+ *
+ * Comparisons use the same plain string ordering as the Python side's sorted()
+ * and as binarySearchString, so the three agree on every boundary.
+ */
+export function selectChunkFor(chunks: FeedChunk[], query: string): FeedChunk | null {
+  for (const c of chunks) {
+    if (query >= c.first && query <= c.last) return c
+  }
+  return null
 }
 
 /** Format a sync timestamp for display */

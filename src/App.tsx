@@ -120,10 +120,12 @@ export default function App() {
       if (section) section.scrollIntoView({ behavior: 'smooth', block: 'center' })
     }, 50)
 
-    const result = await scanIndicatorLogic(raw, feedVersion)
+    // statsData is passed through so the scanner can resolve the chunk layout of
+    // the large domain/hash feeds without re-fetching stats.json.
+    const result = await scanIndicatorLogic(raw, feedVersion, statsData)
     setScanResult(result)
     setIsScanning(false)
-  }, [scanInput, feedVersion])
+  }, [scanInput, feedVersion, statsData])
 
 
   // Boot & Poll: fetch stats.json

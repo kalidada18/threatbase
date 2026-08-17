@@ -31,9 +31,9 @@ jobs:
         with:
           # Ensure we have the full history for accurate diff detection and rebasing
           fetch-depth: 0
-          # No LFS objects are needed: the two large feeds are no longer versioned
-          # in git, and fetching historical LFS blobs would bill the LFS bandwidth
-          # quota on every single run.
+          # No LFS objects exist any more: the large feeds ship as release assets and
+          # their chunks are ordinary git objects. Enabling LFS here would only bill
+          # the LFS bandwidth quota for fetching historical blobs on every run.
           lfs: false
 
       # ── 2. Python setup ──────────────────────────────────────────────────────
@@ -63,40 +63,49 @@ jobs:
       # ── 5. Restore the accumulative feed database ─────────────────────────────
       #
       # update_feed.py is accumulative: it seeds each run from the PREVIOUS contents
-      # of ioc/*.txt (see load_previous_list). The two large feeds are no longer
-      # committed to git, so a fresh checkout does not contain them and they must be
-      # pulled back from the rolling `latest` release before the aggregator runs.
+      # of ioc/*.txt (see load_previous_list). Steady state is that the committed
+      # threatbase-domain-NN.txt chunks are already in the checkout and
+      # load_previous_list_chunked() reassembles them with no download at all.
       #
-      # This matters a great deal: load_previous_list() returns an empty set for a
-      # missing file WITHOUT raising, so skipping this step would not fail the build —
-      # it would silently republish a feed shrunk to only today's source hits and
-      # then overwrite the release with it. Any download failure is therefore fatal
-      # on purpose.
-      - name: Restore previous large feeds from `latest` release
+      # The release download below is the migration path and the safety net: until
+      # the first post-chunking run has committed a set of chunks, there is nothing
+      # in the checkout to seed from. This matters a great deal, because
+      # load_previous_list() returns an empty set for a missing file WITHOUT raising —
+      # so seeding from nothing would not fail the build, it would silently republish
+      # a feed shrunk to only today's source hits and then overwrite the `latest`
+      # release with it. Failing loudly is deliberate.
+      - name: Restore accumulative feed database (chunks, else `latest` release)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           mkdir -p ioc
 
-          if ! gh release view latest >/dev/null 2>&1; then
-            echo "::warning::No 'latest' release found. Treating this as a first run;"
-            echo "::warning::historical domains/hashes will start from whatever is on disk."
-            exit 0
-          fi
+          for base in threatbase-domain threatbase-hash; do
+            count=$(ls -1 ioc/${base}-[0-9][0-9].txt 2>/dev/null | wc -l)
+            if [ "$count" -gt 0 ]; then
+              lines=$(cat ioc/${base}-[0-9][0-9].txt | wc -l)
+              echo "  ✓ ${base}: seeding from ${count} committed chunk(s), ${lines} lines"
+              continue
+            fi
 
-          for f in threatbase-domain.txt threatbase-hash.txt; do
-            echo "Restoring $f from the 'latest' release..."
-            if ! gh release download latest --pattern "$f" --output "ioc/$f" --clobber; then
-              echo "::error::Failed to download $f from the 'latest' release."
+            echo "No ${base} chunks committed yet — falling back to the 'latest' release."
+            if ! gh release view latest >/dev/null 2>&1; then
+              echo "::warning::No 'latest' release and no chunks for ${base}."
+              echo "::warning::Treating this as a genuine first run; history starts from today."
+              continue
+            fi
+
+            if ! gh release download latest --pattern "${base}.txt" --output "ioc/${base}.txt" --clobber; then
+              echo "::error::Failed to download ${base}.txt from the 'latest' release."
               echo "::error::Refusing to continue — proceeding would silently truncate the feed."
               exit 1
             fi
-            if [ ! -s "ioc/$f" ]; then
-              echo "::error::Restored ioc/$f is empty. Refusing to continue."
+            if [ ! -s "ioc/${base}.txt" ]; then
+              echo "::error::Restored ioc/${base}.txt is empty. Refusing to continue."
               exit 1
             fi
-            echo "  ✓ $f restored ($(wc -l < "ioc/$f") lines)"
+            echo "  ✓ ${base}: restored $(wc -l < "ioc/${base}.txt") lines from the release"
           done
 
       # ── 6. Run the aggregator ────────────────────────────────────────────────
@@ -119,11 +128,13 @@ jobs:
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          # Stage all generated output files (including stats, history, and split chunks).
-          # The two large feeds are deliberately excluded — they are published as
-          # release assets in the steps below instead of being committed. The explicit
-          # pathspec exclusions make that guarantee independent of .gitignore,
-          # which would not apply if the files were ever re-tracked by accident.
+          # Stage all generated output files: stats.json, manifest.json, history,
+          # the category files, and the threatbase-domain-NN.txt / -hash-NN.txt
+          # chunks. Only the two UNSPLIT feeds are excluded — they go out as release
+          # assets instead. The explicit pathspec exclusions make that guarantee
+          # independent of .gitignore, which would not apply if the files were ever
+          # re-tracked by accident. Note these pathspecs are exact filenames, so they
+          # do not match the -NN chunks, which is intended.
           git add ioc/ ':!ioc/threatbase-domain.txt' ':!ioc/threatbase-hash.txt'
           git add -f custom_iocs.txt 2>/dev/null || true
 
@@ -178,19 +189,33 @@ jobs:
           fi
 
       # ── 8. Create Daily Archive Release ───────────────────────────────────────
+      #
+      # Releases carry the UNSPLIT feeds. The committed -NN chunks are deliberately
+      # excluded: they are byte-identical to the unsplit files when concatenated, so
+      # shipping both would double every release to ~320 MB for no benefit. Hence the
+      # explicit file list rather than a threatbase-*.txt glob, which would match the
+      # chunks too.
       - name: Set Archive Date & Prepare Zip
         run: |
+          set -euo pipefail
           DATE_DASH=$(date -u +'%Y-%m-%d')
           DATE_DOT=$(date -u +'%Y.%m.%d')
           echo "ARCHIVE_DATE=${DATE_DASH}" >> $GITHUB_ENV
-          zip -j threatbase-archive-${DATE_DOT}.zip ioc/threatbase-ip*.txt ioc/threatbase-ipv6*.txt ioc/threatbase-cidr*.txt ioc/threatbase-domain*.txt ioc/threatbase-hash*.txt ioc/threatbase-url*.txt
+          zip -j threatbase-archive-${DATE_DOT}.zip \
+            ioc/threatbase-ip.txt \
+            ioc/threatbase-ipv6.txt \
+            ioc/threatbase-cidr.txt \
+            ioc/threatbase-domain.txt \
+            ioc/threatbase-hash.txt \
+            ioc/threatbase-url.txt
 
       - name: Create Daily Archive Release
         uses: ncipollo/release-action@v1
         with:
           tag: archive-${{ env.ARCHIVE_DATE }}
           name: Daily Feed Archive - ${{ env.ARCHIVE_DATE }}
-          artifacts: "ioc/threatbase-*.txt,ioc/threatbase-ip.json,ioc/stats.json,threatbase-archive-*.zip"
+          artifacts: >-
+            ioc/threatbase-ip.txt,ioc/threatbase-ipv6.txt,ioc/threatbase-cidr.txt,ioc/threatbase-domain.txt,ioc/threatbase-hash.txt,ioc/threatbase-url.txt,ioc/threatbase-ip.json,ioc/stats.json,ioc/manifest.json,threatbase-archive-*.zip
           allowUpdates: true
           replacesArtifacts: true
           body: "Automated daily archive of the Threatbase threat intelligence database."
@@ -199,22 +224,27 @@ jobs:
 
       # ── 9. Publish the rolling `latest` release ────────────────────────────────
       #
-      # This is the canonical, stable download location for the feeds, and the one
-      # the website reads from. The tag never changes, so consumer URLs stay valid:
+      # This is the canonical download location for the full, unsplit feeds. The tag
+      # never changes, so consumer URLs stay valid:
       #
       #   https://github.com/kalidada18/threatbase/releases/download/latest/threatbase-domain.txt
       #
       # `replacesArtifacts` overwrites yesterday's assets in place, so this release
-      # occupies a constant ~180 MB no matter how long the feed runs. Release assets
-      # are not billed against the Git LFS storage or bandwidth quotas, which is why
-      # threatbase-domain.txt and threatbase-hash.txt are shipped here rather than
-      # committed to the repository.
+      # occupies a constant ~180 MB no matter how long the feed runs, and is billed
+      # against neither the LFS storage nor bandwidth quota.
+      #
+      # The website no longer reads the big feeds from here — it binary-searches the
+      # committed chunks over raw.githubusercontent.com instead, fetching only the one
+      # chunk that can contain the query. These assets remain the recommended download
+      # for anyone who just wants one whole file, and the -NN chunks are intentionally
+      # not uploaded (see step 8).
       - name: Publish rolling `latest` release
         uses: ncipollo/release-action@v1
         with:
           tag: latest
           name: Latest Feed
-          artifacts: "ioc/threatbase-*.txt,ioc/threatbase-ip.json,ioc/stats.json"
+          artifacts: >-
+            ioc/threatbase-ip.txt,ioc/threatbase-ipv6.txt,ioc/threatbase-cidr.txt,ioc/threatbase-domain.txt,ioc/threatbase-hash.txt,ioc/threatbase-url.txt,ioc/threatbase-ip.json,ioc/stats.json,ioc/manifest.json
           allowUpdates: true
           replacesArtifacts: true
           makeLatest: true
@@ -228,6 +258,13 @@ jobs:
             | Hashes | `https://github.com/kalidada18/threatbase/releases/download/latest/threatbase-hash.txt` |
             | IPs | `https://github.com/kalidada18/threatbase/releases/download/latest/threatbase-ip.txt` |
             | URLs | `https://github.com/kalidada18/threatbase/releases/download/latest/threatbase-url.txt` |
+
+            The domain and hash feeds are too large for a single file in git, so the
+            repository also carries them split into ~45 MiB chunks under `ioc/`
+            (`threatbase-domain-01.txt`, `-02.txt`, …). Concatenating the chunks in
+            order reproduces the file above byte for byte. Read `manifest.json` for
+            the current chunk list and each chunk's key range — the number of chunks
+            grows with the feed, so please don't hardcode it.
 
             For a point-in-time snapshot, use the dated `archive-YYYY-MM-DD` releases.
         env:

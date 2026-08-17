@@ -43,9 +43,13 @@ find_canvas.py
 # GeoIP database (downloaded at runtime)
 ip2asn-v4.tsv.gz
 
-# Large feed files — published as GitHub Release assets, never committed.
-# These are rewritten in full every run; committing them burned ~160 MiB of
-# permanent Git LFS storage per day. See .gitattributes for the full story.
+# Unsplit large feed files — published as GitHub Release assets, never committed.
+# They are rewritten in full every run, and committing them as single blobs is
+# what burned ~160 MiB of permanent Git LFS storage per run.
+#
+# Their size-bounded chunks (ioc/threatbase-domain-01.txt, -02.txt, …) ARE
+# committed, and are deliberately NOT matched by the two exact paths below.
+# Ordinary git deltas them to ~14 KiB per run. See .gitattributes for the story.
 ioc/threatbase-domain.txt
 ioc/threatbase-hash.txt
 

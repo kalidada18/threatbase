@@ -11,11 +11,17 @@ Writes to ioc/ folder:
   - threatbase-ip.json      (detailed JSON with tags and sources)
   - threatbase-ipv6.txt     (sorted)
   - threatbase-cidr.txt     (sorted)
-  - threatbase-domain.txt   (sorted)
-  - threatbase-hash.txt     (sorted)
+  - threatbase-domain.txt   (sorted; also split into -NN chunks, see below)
+  - threatbase-hash.txt     (sorted; also split into -NN chunks, see below)
   - threatbase-url.txt      (sorted)
-  - stats.json              (summary counts + last_updated timestamp)
+  - stats.json              (summary counts + last_updated + chunk layout)
+  - manifest.json           (chunk layout for third-party consumers)
   - history.json            (daily snapshots for trend charts)
+
+The domain and hash feeds are additionally written as threatbase-domain-01.txt,
+-02.txt, … chunks of at most CHUNK_TARGET_BYTES each. The chunks are what gets
+committed to git; the unsplit files are git-ignored and ship as GitHub Release
+assets. See the comment above write_chunked_feed for why.
 """
 
 import asyncio
@@ -408,7 +414,125 @@ def load_previous_list(path: str) -> Set[str]:
                 if item: items.add(item)
     return items
 
+
 import glob
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Chunked output for the two oversized feeds
+#
+# threatbase-domain.txt (~90 MiB) and threatbase-hash.txt (~69 MiB) are too big
+# to commit as single files: GitHub warns above 50 MiB and hard-rejects above
+# 100 MiB. They are therefore also written out as size-bounded chunks which ARE
+# committed to git, while the unsplit originals stay git-ignored and ship as
+# GitHub Release assets.
+#
+# This is safe for repo size only because both feeds are sorted and effectively
+# append-only (a measured ~786 new domains per run out of 4.2M lines). Ordinary
+# git delta-compresses that to ~14 KiB per run. Git LFS, which never deltas,
+# stored a full ~160 MiB blob per run instead and is what exhausted the 10 GB
+# LFS quota in two months. Do not move these back into LFS.
+#
+# The chunk COUNT is derived from the byte size, never hardcoded, so the feed
+# can grow past 2 chunks without any code change. Consumers must read the chunk
+# list from stats.json / manifest.json rather than assuming how many there are —
+# assuming a count silently drops indicators once the feed grows.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Target maximum bytes per committed chunk.
+#
+# 48 MiB is chosen so the current 90.4 MiB domain feed splits into exactly two
+# ~45.2 MiB chunks, both comfortably below GitHub's 50 MiB push warning (the
+# hard rejection threshold is 100 MiB). A 45 MiB target would tip 90.4 MiB into
+# ceil()=3 chunks instead.
+#
+# Nothing breaks when the feed outgrows this: at ~96 MiB the domain feed simply
+# becomes three ~32 MiB chunks. Chunk count is always derived, and both
+# stats.json and manifest.json publish the resulting list, so consumers follow
+# along automatically.
+CHUNK_TARGET_BYTES = 48 * 1024 * 1024
+
+
+def chunk_name(path: str, index: int) -> str:
+    """ioc/threatbase-domain.txt + 1 -> ioc/threatbase-domain-01.txt"""
+    base, ext = os.path.splitext(path)
+    return f"{base}-{index:02d}{ext}"
+
+
+def load_previous_list_chunked(path: str) -> Set[str]:
+    """
+    Seed the accumulative database for a chunked feed.
+
+    Prefers the unsplit file when present (local runs, or a release restore),
+    and otherwise reassembles from the committed chunks — which is what a fresh
+    CI checkout has, since the unsplit file is git-ignored. Without the chunk
+    fallback the aggregator would silently start from an empty historical set
+    and republish a feed truncated to only today's source hits.
+    """
+    if os.path.exists(path):
+        return load_previous_list(path)
+
+    items: Set[str] = set()
+    base, ext = os.path.splitext(path)
+    for chunk in sorted(glob.glob(f"{base}-[0-9][0-9]{ext}")):
+        items |= load_previous_list(chunk)
+    if items:
+        log.info(f"  Reassembled {len(items):,} items from chunks of {os.path.basename(path)}")
+    return items
+
+
+def write_chunked_feed(path: str, items: list, false_positives=None) -> list:
+    """
+    Write `items` to `path` as one unsplit file plus size-bounded chunks.
+
+    Chunks are split on line boundaries only, so each chunk stays individually
+    sorted and independently binary-searchable. Because the chunks partition a
+    sorted list, each one covers a contiguous key range — the scanner uses the
+    recorded first/last keys to fetch only the single chunk that could contain a
+    query, instead of downloading the whole feed.
+
+    Returns a list of per-chunk metadata dicts for stats.json / manifest.json.
+    """
+    lines = [f"{i}\n" for i in items if false_positives is None or i not in false_positives]
+
+    with open(path, "w", encoding="utf-8") as f:
+        f.writelines(lines)
+
+    total_bytes = sum(len(ln.encode("utf-8")) for ln in lines)
+    num_chunks = max(1, -(-total_bytes // CHUNK_TARGET_BYTES))  # ceil
+    budget = -(-total_bytes // num_chunks) if num_chunks else total_bytes
+
+    meta, idx, cursor = [], 1, 0
+    while cursor < len(lines):
+        acc, end = 0, cursor
+        while end < len(lines) and (acc < budget or end == cursor):
+            acc += len(lines[end].encode("utf-8"))
+            end += 1
+        part = lines[cursor:end]
+        out = chunk_name(path, idx)
+        with open(out, "w", encoding="utf-8") as f:
+            f.writelines(part)
+        meta.append({
+            "file": os.path.basename(out),
+            "first": part[0].strip(),
+            "last": part[-1].strip(),
+            "lines": len(part),
+            "bytes": acc,
+        })
+        log.info(f"  Wrote {out} ({len(part):,} lines, {acc / 1048576:.1f} MiB)")
+        cursor, idx = end, idx + 1
+
+    # Remove chunks left over from a run that produced more of them. A stale
+    # -03 would otherwise stay committed and keep being served as live data.
+    stale = idx
+    while os.path.exists(chunk_name(path, stale)):
+        os.remove(chunk_name(path, stale))
+        log.info(f"  Removed stale chunk {chunk_name(path, stale)}")
+        stale += 1
+
+    return meta
+
+
 def clean_temporary_files():
     log.info("Cleaning up temporary downloaded files (*.zip, *.csv, *.data)...")
     for ext in ["*.zip", "*.csv", "*.data"]:
@@ -880,8 +1004,8 @@ async def run_async_collector():
     ip_sources["historical"] = load_previous_ips("ioc/threatbase-ip.txt")
     ipv6_sources["historical"] = load_previous_list("ioc/threatbase-ipv6.txt")
     cidr_sources["historical"] = load_previous_list("ioc/threatbase-cidr.txt")
-    domain_results["historical"] = load_previous_list("ioc/threatbase-domain.txt")
-    hash_sources["historical"] = load_previous_list("ioc/threatbase-hash.txt")
+    domain_results["historical"] = load_previous_list_chunked("ioc/threatbase-domain.txt")
+    hash_sources["historical"] = load_previous_list_chunked("ioc/threatbase-hash.txt")
     url_sources["historical"] = load_previous_list("ioc/threatbase-url.txt")
     
     log.info(f"  Historical cache: {len(ip_sources['historical'])} IPs, "
@@ -1043,19 +1167,15 @@ async def run_async_collector():
         log.warning("  Skipped ioc/geo.json (no geo data)")
 
 
-    # ── Write domains (sorted for binary search) ───────────────────────────
+    # ── Write domains (sorted for binary search, chunked for git) ───────────
     log.info("Writing threatbase-domain.txt...")
     all_domains = sorted(set().union(*domain_results.values()))
-    with open("ioc/threatbase-domain.txt", "w", encoding="utf-8") as f:
-        for d in all_domains:
-            if d not in false_positives: f.write(f"{d}\n")
-            
-    # ── Write hashes (sorted for binary search) ────────────────────────────
+    domain_chunks = write_chunked_feed("ioc/threatbase-domain.txt", all_domains, false_positives)
+
+    # ── Write hashes (sorted for binary search, chunked for git) ────────────
     log.info("Writing threatbase-hash.txt...")
     all_hashes = sorted(set().union(*hash_sources.values()))
-    with open("ioc/threatbase-hash.txt", "w", encoding="utf-8") as f:
-        for h in all_hashes:
-            f.write(f"{h}\n")
+    hash_chunks = write_chunked_feed("ioc/threatbase-hash.txt", all_hashes)
             
     # ── Write urls (sorted for binary search) ──────────────────────────────
     log.info("Writing threatbase-url.txt...")
@@ -1090,6 +1210,16 @@ async def run_async_collector():
     # ── Write stats.json (with last_updated for the website) ───────────────
     log.info("Writing stats.json...")
     now_utc = datetime.now(timezone.utc)
+
+    # Chunk metadata travels inside stats.json because the website already
+    # fetches it and already uses last_updated as its cache-busting feed
+    # version — so the scanner learns the chunk layout with no extra request
+    # and can never read a chunk list that disagrees with the data version.
+    chunk_meta = {
+        "threatbase-domain.txt": domain_chunks,
+        "threatbase-hash.txt": hash_chunks,
+    }
+
     stats = {
         "total_unique_ips": len(sorted_ips),
         "total_unique_ipv6": len(all_ipv6),
@@ -1102,9 +1232,31 @@ async def run_async_collector():
         "ip_category_files": ip_category_files,
         "top_sources": top_sources,
         "last_updated": now_utc.isoformat(),
+        # Full per-chunk detail (ranges, sizes) for the scanner.
+        "chunks": chunk_meta,
+        # Flat filename lists, which is the shape the Feeds UI consumes.
+        "chunk_files": {k: [c["file"] for c in v] for k, v in chunk_meta.items()},
     }
     with open("ioc/stats.json", "w", encoding="utf-8") as f:
         json.dump(stats, f, indent=2)
+
+    # ── Write manifest.json (standalone, for third-party consumers) ────────
+    log.info("Writing manifest.json...")
+    manifest = {
+        "generated": now_utc.isoformat(),
+        "note": (
+            "threatbase-domain.txt and threatbase-hash.txt exceed GitHub's file size "
+            "limits and are committed as the chunks listed here. Chunks partition the "
+            "sorted feed, so each covers a contiguous key range and can be binary "
+            "searched on its own. Always read this list rather than assuming a chunk "
+            "count: the count grows with the feed."
+        ),
+        "unsplit_downloads": "https://github.com/kalidada18/threatbase/releases/download/latest/",
+        "chunk_base": "https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/",
+        "feeds": chunk_meta,
+    }
+    with open("ioc/manifest.json", "w", encoding="utf-8") as f:
+        json.dump(manifest, f, indent=2)
 
     # ── Update history.json (for trend charts) ─────────────────────────────
     log.info("Updating history.json...")
