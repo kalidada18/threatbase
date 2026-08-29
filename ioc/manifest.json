@@ -1,0 +1,40 @@
+{
+  "generated": "2026-08-29T02:18:35.730381+00:00",
+  "note": "threatbase-domain.txt and threatbase-hash.txt exceed GitHub's file size limits and are committed as the chunks listed here. Chunks partition the sorted feed, so each covers a contiguous key range and can be binary searched on its own. Always read this list rather than assuming a chunk count: the count grows with the feed.",
+  "unsplit_downloads": "https://github.com/kalidada18/threatbase/releases/download/latest/",
+  "chunk_base": "https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/",
+  "feeds": {
+    "threatbase-domain.txt": [
+      {
+        "file": "threatbase-domain-01.txt",
+        "first": "0--foodwarez.da.ru",
+        "last": "mon-colissimo-suivi.fr",
+        "lines": 1703446,
+        "bytes": 32711595
+      },
+      {
+        "file": "threatbase-domain-02.txt",
+        "first": "mon-colissimo.fr",
+        "last": "zzzzzzzzzzzzz.com",
+        "lines": 1606636,
+        "bytes": 32711566
+      }
+    ],
+    "threatbase-hash.txt": [
+      {
+        "file": "threatbase-hash-01.txt",
+        "first": "00000077553a5b27a610ac98f29563bbd6e0decc020c2d49e4fa0d89197e7fd8",
+        "last": "7fbe8f5df88e917b8384e8c8a49dd465480ab21ad3c8c6470e5d55a11a689631",
+        "lines": 565248,
+        "bytes": 36741120
+      },
+      {
+        "file": "threatbase-hash-02.txt",
+        "first": "7fbe90daab199a8095505ce3b7e9e13a23b638e84378bf5809e84fc91ee92a68",
+        "last": "version https://git-lfs.github.com/spec/v1",
+        "lines": 565247,
+        "bytes": 36740993
+      }
+    ]
+  }
+}
