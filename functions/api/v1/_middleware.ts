@@ -1,4 +1,5 @@
-import supabaseClient from '../../../src/supabaseClient'
+import { createClient } from '@supabase/supabase-js'
+import { SUPABASE_URL } from '../../../src/lib/supabaseConfig'
 
 const ALLOWED_ORIGIN = 'https://threatbase.qzz.io'
 
@@ -68,9 +69,20 @@ export const onRequest = async (context: any) => {
       await kv.put(rlKey, (count + 1).toString(), { expirationTtl: 86400 }); // Expire after 1 day
     }
 
-    // Validate the hash via Supabase RPC
-    const { data: userId, error } = await supabaseClient.rpc('validate_api_key_hash', { client_hash: hashHex });
-    
+    // Validate the hash via Supabase RPC. validate_api_key_hash is SECURITY
+    // DEFINER and REVOKEd from anon (it reads the api_keys table), so this must
+    // run with the server-only service_role key — the same pattern the report
+    // endpoints use. Fail closed if the key is absent rather than falling back
+    // to the anon client, which would make every request "Invalid API key".
+    const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!serviceKey) {
+      console.error('SUPABASE_SERVICE_ROLE_KEY is not configured — cannot validate API keys.');
+      return new Response(JSON.stringify({ error: 'API authentication is temporarily unavailable.' }), { status: 503, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': getAllowedOrigin(request) } });
+    }
+    const adminClient = createClient(env.SUPABASE_URL || SUPABASE_URL, serviceKey);
+
+    const { data: userId, error } = await adminClient.rpc('validate_api_key_hash', { client_hash: hashHex });
+
     if (error || !userId) {
       return new Response(JSON.stringify({ error: 'Invalid or revoked API key' }), { status: 401, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': getAllowedOrigin(request) } });
     }
