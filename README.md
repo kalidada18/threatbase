@@ -44,7 +44,8 @@ Threatbase is a **fully-automated threat-intelligence pipeline**. It ingests, va
 ```text
   54 OSINT Feeds ──▶ Python Aggregator ──▶ GitHub Actions ─┬─▶ Raw Blocklists
                      (fetch · dedup ·                       ├─▶ React Dashboard
-                      validate · classify)                  └─▶ Daily ZIP Archive
+                      validate · classify)                  ├─▶ Daily ZIP Archive
+                                                            └─▶ Chunked Git Mirrors
 ```
 
 ### 🏗️ Architecture
@@ -56,6 +57,7 @@ Threatbase is a **fully-automated threat-intelligence pipeline**. It ingests, va
 | **Dashboard** | React 19 · Chart.js · Cloudflare Pages | IOC search, live analytics, community reporting |
 | **Delivery** | GitHub Raw | Zero-infra, always-on blocklist serving |
 | **Archives** | GitHub Releases | Daily ZIP snapshots for retrospective hunting |
+| **Large-feed mirrors** | Git chunks + Release assets | Domain/hash feeds ship as ~31 MiB chunks in `ioc/` and unsplit as release assets |
 
 ---
 
@@ -176,6 +178,39 @@ https://github.com/kalidada18/threatbase/releases/download/latest/threatbase-has
 |:--|:--|:--|
 | Malware Hash DB | `threatbase-hash.txt` | SHA-256, one per line |
 
+### 🧩 Chunked Mirrors of the Large Feeds
+
+> The domain and hash feeds exceed GitHub's 100 MiB single-file limit, so this
+> repo **also** carries them split into git-committed chunks under [`ioc/`](ioc/).
+> Release assets (above) stay the recommended download for humans; the chunks are
+> for tooling that prefers plain raw.githubusercontent.com pulls.
+
+```text
+https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/threatbase-domain-01.txt
+https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/threatbase-domain-02.txt
+https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/threatbase-hash-01.txt
+https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/threatbase-hash-02.txt
+```
+
+<details>
+<summary><strong>Chunk rules</strong></summary>
+
+<br/>
+
+- Chunks **partition the sorted feed**: each covers a contiguous key range, is
+  individually sorted, and concatenating them in numeric order reproduces the
+  unsplit file byte-for-byte.
+- The chunk **count is never fixed** — it grows as the feed grows. Read the
+  authoritative layout from [`ioc/manifest.json`](ioc/manifest.json) or the
+  `chunks` / `chunk_files` keys of [`ioc/stats.json`](ioc/stats.json) instead of
+  hardcoding `2`.
+- Because ranges are contiguous, a lookup tool can binary-search a chunk
+  directly, or skip all downloads when a query falls between two chunks' ranges.
+  This is exactly how the [dashboard search](https://threatbase.qzz.io) works —
+  it fetches only the one chunk that can contain the query.
+
+</details>
+
 ---
 
 ## ⚡ Quick Integration
@@ -211,8 +246,8 @@ https://github.com/kalidada18/threatbase/releases/download/latest/threatbase-dom
 
 ```bash
 # Pull the latest daily archive for bulk lookup ingestion
-wget https://github.com/kalidada18/threatbase/releases/latest/download/threatbase-latest.zip
-unzip threatbase-latest.zip -d ./ioc-feeds/
+wget https://github.com/kalidada18/threatbase/releases/latest/download/threatbase-archive-2026.08.29.zip
+unzip threatbase-archive-*.zip -d ./ioc-feeds/
 ```
 </details>
 
@@ -220,10 +255,10 @@ unzip threatbase-latest.zip -d ./ioc-feeds/
 
 ## 🗄️ Historical Archives
 
-A full ZIP of the complete feed is published daily to the **[Releases](https://github.com/kalidada18/threatbase/releases)** page.
+A full ZIP of the complete feed is published daily to the **[Releases](https://github.com/kalidada18/threatbase/releases)** page, alongside the unsplit `threatbase-domain.txt` / `threatbase-hash.txt` on the rolling [`latest`](https://github.com/kalidada18/threatbase/releases/tag/latest) tag.
 
 ```text
-threatbase-YYYY-MM-DD.zip
+threatbase-archive-YYYY.MM.DD.zip
 ├── threatbase-ip.txt
 ├── threatbase-ipv6.txt
 ├── threatbase-cidr.txt

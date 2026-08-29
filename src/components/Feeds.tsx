@@ -146,7 +146,7 @@ export default function Feeds({ statsData }: { statsData?: any }) {
 
 function FeedCard({ f, isSplit, chunks, wide = false }: { f: Feed; isSplit: boolean; chunks: string[]; wide?: boolean }) {
   // Always link a single, directly downloadable file. The domain and hash feeds
-  // are committed to the repo as ~45 MiB chunks (too large for one file in git),
+  // are committed to the repo as ~31 MiB chunks (too large for one file in git),
   // but the unsplit build is published as a GitHub Release asset, so the download
   // button stays one click rather than sending people to browse a folder.
   const href =
@@ -178,8 +178,8 @@ function FeedCard({ f, isSplit, chunks, wide = false }: { f: Feed; isSplit: bool
               <h3 className="text-lg font-bold text-white tracking-tight truncate">{f.name}</h3>
               {isSplit && (
                 <span
-                  title={`Also mirrored in this repo as ${chunks.length} chunks (${chunks.join(', ')}). Concatenating them in order reproduces this file exactly.`}
-                  className="shrink-0 rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 font-mono text-[10px] font-medium text-slate-400"
+                  title={`Also mirrored in this repo as ${chunks.length} chunks (${chunks.join(', ')}). Concatenating them in order reproduces this file exactly — see ioc/manifest.json for the chunk list and key ranges.`}
+                  className="shrink-0 rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 font-mono text-[10px] font-medium text-slate-400 cursor-help"
                 >
                   {chunks.length} parts
                 </span>
