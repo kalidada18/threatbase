@@ -5,7 +5,7 @@ import DOMPurify from 'dompurify'
 import supabaseClient from '../supabaseClient'
 import { timeAgo, getCategoryIconPath, normalizeTags, categoryTier, TIER_CHIP, TIER_ACCENT } from '../utils'
 import { useAuth } from '../AuthContext'
-import LoaderProgressiveBar from './ui/loader-progressive-bar'
+import ScanPulse from './ui/scan-pulse'
 import { getMalwareDescription } from '../malwareDictionary'
 
 // Derive a credible 0–100 confidence-of-abuse score from real signals
@@ -225,7 +225,7 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
       <div className="mx-auto max-w-5xl px-6 lg:px-12 relative">
         <AnimatePresence mode="wait">
           {isScanning ? (
-            <motion.div 
+            <motion.div
               key="scanning"
               className="w-full min-h-[320px] flex flex-col items-center justify-center p-8 relative"
               initial={{ opacity: 0, y: 10 }}
@@ -233,13 +233,7 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
               exit={{ opacity: 0, scale: 0.98 }}
               transition={{ duration: 0.3 }}
             >
-              {/* Loading bar */}
-              <div className="mb-8">
-                <LoaderProgressiveBar />
-              </div>
-
-              {/* IP address */}
-              <div className={`${ip.length > 30 ? 'text-lg sm:text-xl' : 'text-3xl'} md:text-[2.6rem] font-mono font-semibold tracking-tight text-white tabular-nums break-all text-center leading-none`}>{ip}</div>
+              <ScanPulse ip={ip} />
             </motion.div>
           ) : scanResult ? (
             <motion.div
