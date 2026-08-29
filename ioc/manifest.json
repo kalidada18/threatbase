@@ -8,32 +8,32 @@
       {
         "file": "threatbase-domain-01.txt",
         "first": "0--foodwarez.da.ru",
-        "last": "mon-colissimo-suivi.fr",
-        "lines": 1703446,
-        "bytes": 32711595
+        "last": "mon-colissimo-en-ligne.fr",
+        "lines": 1703443,
+        "bytes": 32711523
       },
       {
         "file": "threatbase-domain-02.txt",
-        "first": "mon-colissimo.fr",
+        "first": "mon-colissimo-fr.com",
         "last": "zzzzzzzzzzzzz.com",
         "lines": 1606636,
-        "bytes": 32711566
+        "bytes": 32711505
       }
     ],
     "threatbase-hash.txt": [
       {
         "file": "threatbase-hash-01.txt",
         "first": "00000077553a5b27a610ac98f29563bbd6e0decc020c2d49e4fa0d89197e7fd8",
-        "last": "7fbe8f5df88e917b8384e8c8a49dd465480ab21ad3c8c6470e5d55a11a689631",
-        "lines": 565248,
-        "bytes": 36741120
+        "last": "7fbe5e2bc141a533dd4c16bb346b82a4d451c4141ebdbda2dfaea4c2b487ad50",
+        "lines": 565246,
+        "bytes": 36740990
       },
       {
         "file": "threatbase-hash-02.txt",
-        "first": "7fbe90daab199a8095505ce3b7e9e13a23b638e84378bf5809e84fc91ee92a68",
-        "last": "version https://git-lfs.github.com/spec/v1",
-        "lines": 565247,
-        "bytes": 36740993
+        "first": "7fbe87545eef49da0df850719536bb30b196f7ad2d5a34ee795c01381ffda569",
+        "last": "ffffe8b36158ae710a9fbf0941f83625ae69f9f2070b3b04def6171b890a6dde",
+        "lines": 565246,
+        "bytes": 36740990
       }
     ]
   }
