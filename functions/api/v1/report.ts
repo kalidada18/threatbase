@@ -76,7 +76,7 @@ export const onRequestPost = async (context: any) => {
 
     // 2. Insert via the SECURITY DEFINER RPC using the server-only service_role
     //    key. The API key was already validated by the middleware, so the
-    //    privileged write happens server-side and the RPC can be REVOKEd from
+    //    privileged write happens server-side and the RPC is REVOKEd from
     //    anon/public (see db/lock_down_api_insert_report.sql) to close the
     //    direct-PostgREST bypass. Fail closed if the key is absent.
     //
@@ -93,23 +93,18 @@ export const onRequestPost = async (context: any) => {
     }
     const adminClient = createClient(env.SUPABASE_URL || SUPABASE_URL, serviceKey)
 
-    let { error: insertError } = await adminClient.rpc('api_insert_report', {
+    //    p_user_id is REQUIRED — it is what the (ip, user_id) unique index keys
+    //    on. Omitting it made every call 404 (PGRST202) and fall through to a
+    //    direct insert that left user_id NULL, so the index never fired and
+    //    dedup silently did nothing. No fallback: fail closed instead of
+    //    writing rows the dedup and ownership rules can't see.
+    const { error: insertError } = await adminClient.rpc('api_insert_report', {
       p_ip: cleanIp,
       p_category: cleanCategory,
       p_comment: cleanComment,
       p_reporter_alias: reporter_alias,
+      p_user_id: userId,
     });
-
-    if (insertError) {
-      console.warn('v1/report RPC api_insert_report failed, trying direct table insert:', insertError?.message || insertError);
-      const { error: tblErr } = await adminClient.from('reported_ips').insert([{
-        ip: cleanIp,
-        category: cleanCategory,
-        comment: cleanComment,
-        reporter_alias: reporter_alias,
-      }]);
-      insertError = tblErr;
-    }
 
     if (insertError) {
       // Postgres unique_violation — user already reported this IP.
