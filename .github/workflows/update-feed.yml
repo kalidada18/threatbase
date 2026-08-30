@@ -174,18 +174,30 @@ jobs:
             
             git commit -m "Update: ${TIMESTAMP} — Added ${D_IP} IPs, ${D_IPV6} IPv6, ${D_CIDR} CIDRs, ${D_DOMAIN} Domains, ${D_HASH} Hashes, ${D_URL} URLs" -m "Total: ${IP_COUNT} IPs, ${IPV6_COUNT} IPv6, ${CIDR_COUNT} CIDRs, ${DOMAIN_COUNT} domains, ${HASH_COUNT} hashes, ${URL_COUNT} URLs"
 
-            # Pull with rebase, resolving conflicts by preferring our freshly generated files ('theirs' during rebase)
-            # Retry pushing up to 5 times in case of concurrent pushes from other workflows
+            # Sync with any concurrent pushes, then push. Rebase prefers our freshly
+            # generated files ('theirs' during a rebase = the commits being replayed).
+            # The pull MUST live inside the `if`: this step runs under `bash -e`, so an
+            # unguarded `git pull --rebase` that hits a conflict -X theirs can't resolve
+            # (e.g. a chunk added/removed by a concurrent run) would abort the whole step.
+            # `git rebase --abort` clears a half-finished rebase so the next try is clean.
             max_retries=5
+            pushed=false
             for i in $(seq 1 $max_retries); do
-              git pull --rebase -X theirs --autostash --quiet origin "${GITHUB_REF_NAME:-main}"
-              if git push origin "${GITHUB_REF_NAME:-main}"; then
+              if git pull --rebase -X theirs --autostash --quiet origin "${GITHUB_REF_NAME:-main}" \
+                 && git push origin "${GITHUB_REF_NAME:-main}"; then
+                pushed=true
                 echo "✓ Feed pushed successfully (${IP_COUNT} IPs, ${DOMAIN_COUNT} Domains, ${HASH_COUNT} Hashes, ${URL_COUNT} URLs)."
                 break
               fi
+              git rebase --abort 2>/dev/null || true
               echo "Push failed, retrying ($i/$max_retries) in a few seconds..."
               sleep $((RANDOM % 5 + 5))
             done
+
+            if [ "$pushed" != true ]; then
+              echo "::error::Could not push after ${max_retries} attempts."
+              exit 1
+            fi
           fi
 
       # ── 8. Create Daily Archive Release ───────────────────────────────────────
