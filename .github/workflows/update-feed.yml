@@ -135,7 +135,8 @@ jobs:
           # independent of .gitignore, which would not apply if the files were ever
           # re-tracked by accident. Note these pathspecs are exact filenames, so they
           # do not match the -NN chunks, which is intended.
-          git add ioc/ ':!ioc/threatbase-domain.txt' ':!ioc/threatbase-hash.txt'
+          git add ioc/
+          git reset HEAD ioc/threatbase-domain.txt ioc/threatbase-hash.txt 2>/dev/null || true
           git add -f custom_iocs.txt 2>/dev/null || true
 
           # Check whether any staged file actually changed
