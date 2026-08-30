@@ -1,74 +1,74 @@
 {
-  "total_unique_ips": 838057,
-  "total_unique_ipv6": 14268,
-  "total_unique_cidrs": 20221,
-  "total_unique_domains": 3310079,
-  "total_unique_hashes": 1130492,
-  "total_unique_urls": 116295,
+  "total_unique_ips": 847416,
+  "total_unique_ipv6": 14497,
+  "total_unique_cidrs": 20356,
+  "total_unique_domains": 3310955,
+  "total_unique_hashes": 1131030,
+  "total_unique_urls": 117206,
   "active_feeds": 54,
   "category_counts": {
-    "Mixed": 606702,
-    "Malicious": 193574,
+    "Mixed": 618133,
+    "Malicious": 191394,
     "Compromised": 15517,
-    "Tor": 7432,
-    "Brute-Force": 35054,
+    "Tor": 7422,
+    "Brute-Force": 26769,
     "Malware": 2728,
     "C2": 7607,
-    "Exploit": 9900,
-    "Botnet": 2758,
-    "Spam": 13870
+    "Spam": 12141,
+    "Botnet": 2961,
+    "Exploit": 9812
   },
   "ip_category_files": {
-    "threatbase-ip-botnet.txt": 2758,
-    "threatbase-ip-bruteforce.txt": 35054,
+    "threatbase-ip-botnet.txt": 2961,
+    "threatbase-ip-bruteforce.txt": 26769,
     "threatbase-ip-c2.txt": 7607,
     "threatbase-ip-compromised.txt": 15517,
-    "threatbase-ip-exploit.txt": 9900,
-    "threatbase-ip-malicious.txt": 193574,
+    "threatbase-ip-exploit.txt": 9812,
+    "threatbase-ip-malicious.txt": 191394,
     "threatbase-ip-malware.txt": 2728,
-    "threatbase-ip-mixed.txt": 606702,
-    "threatbase-ip-spam.txt": 13870,
-    "threatbase-ip-tor.txt": 7432
+    "threatbase-ip-mixed.txt": 618133,
+    "threatbase-ip-spam.txt": 12141,
+    "threatbase-ip-tor.txt": 7422
   },
   "top_sources": {
     "romainmarcoux_outgoing_aa": 131072,
-    "ipsum": 126087,
-    "romainmarcoux_outgoing_ab": 56944,
+    "ipsum": 126147,
+    "romainmarcoux_outgoing_ab": 54632,
     "romainmarcoux_outgoing_40k": 40000,
-    "blocklist_de": 31876
+    "firehol_level2": 25310
   },
-  "last_updated": "2026-08-29T02:18:35.730381+00:00",
+  "last_updated": "2026-08-30T10:18:59.985491+00:00",
   "chunks": {
     "threatbase-domain.txt": [
       {
         "file": "threatbase-domain-01.txt",
         "first": "0--foodwarez.da.ru",
-        "last": "mon-colissimo-en-ligne.fr",
-        "lines": 1703443,
-        "bytes": 32711523
+        "last": "mon-espace-avantage.fr",
+        "lines": 1703842,
+        "bytes": 32721068
       },
       {
         "file": "threatbase-domain-02.txt",
-        "first": "mon-colissimo-fr.com",
+        "first": "mon-espace-bancaire.fr",
         "last": "zzzzzzzzzzzzz.com",
-        "lines": 1606636,
-        "bytes": 32711505
+        "lines": 1607113,
+        "bytes": 32721065
       }
     ],
     "threatbase-hash.txt": [
       {
         "file": "threatbase-hash-01.txt",
         "first": "00000077553a5b27a610ac98f29563bbd6e0decc020c2d49e4fa0d89197e7fd8",
-        "last": "7fbe5e2bc141a533dd4c16bb346b82a4d451c4141ebdbda2dfaea4c2b487ad50",
-        "lines": 565246,
-        "bytes": 36740990
+        "last": "7fbdacc83093cfc1e3c037463221fc735890db1f3eb2d9e23cc5e2443618e9c0",
+        "lines": 565515,
+        "bytes": 36758475
       },
       {
         "file": "threatbase-hash-02.txt",
-        "first": "7fbe87545eef49da0df850719536bb30b196f7ad2d5a34ee795c01381ffda569",
+        "first": "7fbdc1b6e92a12b8a36118ca129b2fd15b7298bd5f0724eaf133579f2eb4ce94",
         "last": "ffffe8b36158ae710a9fbf0941f83625ae69f9f2070b3b04def6171b890a6dde",
-        "lines": 565246,
-        "bytes": 36740990
+        "lines": 565515,
+        "bytes": 36758475
       }
     ]
   },
