@@ -78,7 +78,7 @@ export default function HowItWorks() {
               >
                 {/* Step indicator */}
                 <div className="relative z-10 flex flex-col items-center shrink-0">
-                  <div className="h-12 w-12 md:h-14 md:w-14 rounded-2xl border border-white/10 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center shadow-[0_0_20px_-6px_rgba(207,23,51,0.15)] group-hover:border-red-500/30 group-hover:shadow-[0_0_24px_-4px_rgba(207,23,51,0.25)] transition-all duration-300">
+                  <div className="icon-chip h-12 w-12 md:h-14 md:w-14 shadow-[0_0_20px_-6px_rgba(207,23,51,0.15)] group-hover:border-red-500/30 group-hover:shadow-[0_0_24px_-4px_rgba(207,23,51,0.25)] transition-all duration-300">
                     <Icon className="h-5 w-5 md:h-6 md:w-6 text-red-400 group-hover:text-red-300 transition-colors" strokeWidth={1.8} />
                   </div>
                 </div>

@@ -35,8 +35,12 @@ export default function Analytics({ statsData, feedVersion }: any) {
             <div className="relative z-10 h-full flex flex-col">
               <h3 className="text-xl font-bold mb-8 text-white tracking-tight">Threat classes by volume</h3>
               <div className="flex-1 w-full relative flex items-center justify-center min-h-[300px]">
-                {statsData?.category_counts && (
+                {statsData?.category_counts ? (
                   <CategoryChart categories={statsData.category_counts} />
+                ) : (
+                  <p className="max-w-[16rem] text-center text-sm font-medium text-slate-500">
+                    Category breakdown appears once the live feed has loaded.
+                  </p>
                 )}
               </div>
             </div>
@@ -75,6 +79,9 @@ function CategoryChart({ categories }: any) {
     responsive: true,
     maintainAspectRatio: false,
     cutout: '80%', // Thinner sleek ring
+    // MotionConfig governs framer-motion only; chart.js runs its own animation
+    // engine, so honor prefers-reduced-motion here explicitly.
+    animation: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? false : undefined,
     plugins: {
       legend: {
         position: 'bottom',

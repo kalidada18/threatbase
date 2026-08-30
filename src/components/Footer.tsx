@@ -8,7 +8,7 @@ export default function Footer() {
     <footer className="relative border-t border-white/[0.06] overflow-hidden">
       {/* Premium gradient separator */}
       <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-red-500/30 to-transparent" />
-      <div className="relative z-10 bg-slate-900/40 backdrop-blur-md">
+      <div className="relative z-10 bg-white/[0.02] backdrop-blur-md">
         <Footer7 
         logo={{
           url: "/",
@@ -16,7 +16,7 @@ export default function Footer() {
           alt: "Threatbase Logo",
           title: "Threatbase",
         }}
-        description="Advanced Threat Intelligence Platform. Curiosity fuels discovery. Special thanks to all open-source intelligence contributors including Spamhaus, FireHOL, AbuseIPDB, Emerging Threats, and the wider infosec community."
+        description="Advanced threat intelligence platform. Special thanks to all open-source intelligence contributors including Spamhaus, FireHOL, AbuseIPDB, Emerging Threats, and the wider infosec community."
         sections={[
           {
             title: "Product",

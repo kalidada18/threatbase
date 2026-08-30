@@ -116,7 +116,7 @@ export default function Navbar() {
                             </div>
                         </div>
 
-                        <div className="bg-black/95 backdrop-blur-xl border border-white/10 group-data-[state=active]:flex xl:group-data-[state=active]:flex mb-4 hidden w-full flex-col xl:flex-row flex-wrap items-center justify-center xl:justify-end space-y-8 xl:space-y-0 rounded-3xl p-6 shadow-2xl max-h-[calc(100dvh-6rem)] overflow-y-auto xl:max-h-none xl:overflow-visible md:flex-nowrap xl:m-0 xl:flex xl:w-fit xl:gap-6 xl:border-transparent xl:bg-transparent xl:p-0 xl:shadow-none mt-4 xl:mt-0 transition-all duration-300">
+                        <div className="bg-[#080b12]/95 backdrop-blur-xl border border-white/10 group-data-[state=active]:flex xl:group-data-[state=active]:flex mb-4 hidden w-full flex-col xl:flex-row flex-wrap items-center justify-center xl:justify-end space-y-8 xl:space-y-0 rounded-2xl p-6 shadow-2xl max-h-[calc(100dvh-6rem)] overflow-y-auto xl:max-h-none xl:overflow-visible md:flex-nowrap xl:m-0 xl:flex xl:w-fit xl:gap-6 xl:border-transparent xl:bg-transparent xl:p-0 xl:shadow-none mt-4 xl:mt-0 transition-all duration-300">
                             <div className="xl:hidden w-full">
                                 <ul className="space-y-2 text-base font-medium">
                                     {menuItems.map((item, index) => {
@@ -164,12 +164,12 @@ export default function Navbar() {
                                 </Button>
 
                                  {loading ? (
-                                     <div className="h-9 w-9 rounded-full border border-white/5 bg-black/60 animate-pulse" />
+                                     <div className="h-9 w-9 rounded-full border border-white/5 bg-white/5 animate-pulse" />
                                  ) : user ? (
                                     <div className="relative">
                                         <button
                                             onClick={() => setDropdownOpen(!dropdownOpen)}
-                                            className="flex items-center gap-2.5 p-1 pr-3 rounded-full border border-white/10 bg-slate-900/40 backdrop-blur-md hover:bg-slate-800/60 hover:border-white/20 transition-all duration-300 focus:outline-none select-none active:scale-[0.98] cursor-pointer"
+                                            className="flex items-center gap-2.5 p-1 pr-3 rounded-full border border-white/10 bg-white/5 backdrop-blur-md hover:bg-white/10 hover:border-white/20 transition-all duration-300 focus:outline-none select-none active:scale-[0.98] cursor-pointer"
                                         >
                                             {(profile?.avatar_url || user.user_metadata?.avatar_url) ? (
                                                 <img
@@ -199,12 +199,12 @@ export default function Navbar() {
                                                         animate={{ opacity: 1, scale: 1, y: 0 }}
                                                         exit={{ opacity: 0, scale: 0.95, y: 10 }}
                                                         transition={{ duration: 0.15 }}
-                                                        className="absolute right-0 mt-2.5 w-48 rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-xl p-2.5 shadow-xl shadow-black/40 ring-1 ring-white/5 z-50 flex flex-col gap-1 select-none"
+                                                        className="absolute right-0 mt-2.5 w-48 rounded-2xl border border-white/10 bg-[#080b12]/95 backdrop-blur-xl p-2.5 shadow-xl shadow-black/40 ring-1 ring-white/5 z-50 flex flex-col gap-1 select-none"
                                                     >
                                                         <div className="px-3 py-2 border-b border-white/5 mb-1 text-left">
-                                                            <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500">Logged In As</p>
+                                                            <p className="text-[9px] font-bold uppercase tracking-widest text-slate-400">Logged In As</p>
                                                             <p className="text-xs font-bold text-white truncate mt-0.5">{profile?.full_name || user.user_metadata?.full_name || 'Defender'}</p>
-                                                            <p className="text-[10px] text-slate-500 truncate font-semibold mt-0.5">{user.email}</p>
+                                                            <p className="text-[10px] text-slate-400 truncate font-semibold mt-0.5">{user.email}</p>
                                                         </div>
 
                                                         <Link
@@ -218,9 +218,9 @@ export default function Navbar() {
 
                                                         <button
                                                             onClick={handleSignOut}
-                                                            className="flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-xl transition-all text-left cursor-pointer"
+                                                            className="flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-xl transition-all text-left cursor-pointer"
                                                         >
-                                                            <LogOut size={14} className="text-rose-400/80" />
+                                                            <LogOut size={14} className="text-red-400/80" />
                                                             Sign Out
                                                         </button>
                                                     </motion.div>

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react'
 import { Routes, Route, useLocation } from 'react-router-dom'
+import { MotionConfig } from 'framer-motion'
 import { HeroSection } from './components/blocks/hero-section-5'
 import ReportScanner from './components/ReportScanner'
 import Stats from './components/Stats'
@@ -196,6 +197,7 @@ export default function App() {
   }
 
   return (
+    <MotionConfig reducedMotion="user">
     <AuthProvider>
       <Navbar />
 
@@ -244,5 +246,6 @@ export default function App() {
       <ToastContainer toasts={toasts} />
       <Footer />
     </AuthProvider>
+    </MotionConfig>
   )
 }

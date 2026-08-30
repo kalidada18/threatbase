@@ -21,7 +21,7 @@ const C = {
   comment: 'text-slate-500 italic',
   string: 'text-emerald-300',
   number: 'text-amber-300',
-  keyword: 'text-rose-400',
+  keyword: 'text-red-400',
   builtin: 'text-orange-300',
   property: 'text-platinum-300',
   punct: 'text-slate-500',
@@ -139,9 +139,9 @@ function CodeBlock({ code, language = 'text', filename }: CodeBlockProps) {
       {/* Title bar */}
       <div className="flex items-center justify-between border-b border-white/[0.06] bg-white/[0.02] px-4 py-2.5">
         <div className="flex items-center gap-2">
-          <span className="h-2.5 w-2.5 rounded-full bg-rose-500/70" />
-          <span className="h-2.5 w-2.5 rounded-full bg-amber-400/70" />
-          <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/70" />
+          <span className="h-2.5 w-2.5 rounded-full bg-white/15" />
+          <span className="h-2.5 w-2.5 rounded-full bg-white/15" />
+          <span className="h-2.5 w-2.5 rounded-full bg-white/15" />
           <span className="ml-3 font-mono text-[11px] font-semibold uppercase tracking-widest text-slate-500">
             {filename || language}
           </span>
@@ -152,7 +152,7 @@ function CodeBlock({ code, language = 'text', filename }: CodeBlockProps) {
         >
           {copied ? (
             <>
-              <Check className="h-3 w-3 text-emerald-400" /> Copied
+              <Check className="h-3 w-3 text-red-400" /> Copied
             </>
           ) : (
             <>
@@ -170,7 +170,7 @@ function CodeBlock({ code, language = 'text', filename }: CodeBlockProps) {
               language === 'json' ? highlightJson(line) : tokenizeLine(line, language)
             return (
               <div key={idx} className="flex px-4 hover:bg-white/[0.015]">
-                <span className="select-none pr-4 text-right text-slate-700 w-8 shrink-0">
+                <span className="select-none pr-4 text-right text-slate-600 w-8 shrink-0">
                   {idx + 1}
                 </span>
                 <code className="whitespace-pre">
@@ -200,8 +200,8 @@ function CodeBlock({ code, language = 'text', filename }: CodeBlockProps) {
 function MethodBadge({ method }: { method: 'GET' | 'POST' }) {
   const styles =
     method === 'GET'
-      ? 'text-emerald-300 bg-emerald-950/40 border-emerald-500/30'
-      : 'text-amber-300 bg-amber-950/40 border-amber-500/30'
+      ? 'text-platinum-200 bg-white/5 border-platinum-400/25'
+      : 'text-red-300 bg-red-500/10 border-red-500/30'
   return (
     <span
       className={`inline-flex items-center rounded-md border px-2.5 py-1 font-mono text-xs font-bold tracking-wider ${styles}`}
@@ -399,7 +399,7 @@ export default function ApiDocsPage() {
       >
         <div className="eyebrow mb-6">
           <Terminal className="h-3.5 w-3.5" />
-          Developer API · v1
+          Developer API
         </div>
 
         <h1 className="mb-6 text-5xl font-extrabold tracking-tighter text-white drop-shadow-2xl md:text-7xl">
@@ -452,7 +452,6 @@ export default function ApiDocsPage() {
 
       {/* Authentication */}
       <section className="mx-auto mb-28 w-full max-w-4xl">
-        <div className="eyebrow mb-6">Getting Started</div>
         <SectionHeading icon={KeyRound} title="Authentication">
           Every request must be authenticated with an API key. Generate one for free from your{' '}
           <Link to="/profile" className="font-semibold text-red-400 underline-offset-4 hover:underline">
@@ -511,7 +510,6 @@ export default function ApiDocsPage() {
 
       {/* Endpoints */}
       <section className="mx-auto mb-12 w-full max-w-4xl">
-        <div className="eyebrow mb-6">Reference</div>
         <SectionHeading icon={Terminal} title="Endpoints" />
       </section>
 
@@ -563,7 +561,6 @@ export default function ApiDocsPage() {
 
       {/* Python quickstart */}
       <section className="mx-auto mb-28 w-full max-w-4xl">
-        <div className="eyebrow mb-6">Quickstart</div>
         <SectionHeading icon={Terminal} title="Python Example">
           A complete, copy-paste script that scans an indicator and reports a malicious IP using the{' '}
           <code className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-sm text-platinum-300 border border-white/10">requests</code>{' '}

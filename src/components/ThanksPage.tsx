@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
-import { ExternalLink, Trophy } from 'lucide-react'
+import { ExternalLink, Trophy, ArrowRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useSEO } from '@/useSEO'
 import { useIsDesktop } from '@/lib/useMediaQuery'
@@ -113,7 +113,7 @@ export default function ThanksPage() {
               {SOURCES.map((s) => (
                 <span
                   key={s.name}
-                  className="whitespace-nowrap font-mono text-sm md:text-base font-medium tracking-[0.1em] text-slate-500 uppercase transition-colors hover:text-white"
+                  className="whitespace-nowrap font-mono text-sm md:text-base font-medium tracking-[0.1em] text-slate-400 uppercase transition-colors hover:text-white"
                 >
                   {s.name}
                 </span>
@@ -215,7 +215,7 @@ export default function ThanksPage() {
             className="group inline-flex items-center gap-3 border-b border-red-500/30 pb-1 text-sm font-bold uppercase tracking-[0.15em] text-red-400 transition-colors hover:border-red-400 hover:text-red-300"
           >
             Contribute an Indicator
-            <span className="transition-transform group-hover:translate-x-1">→</span>
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Link>
         </motion.div>
 

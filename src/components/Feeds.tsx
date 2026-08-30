@@ -115,8 +115,8 @@ export default function Feeds({ statsData }: { statsData?: any }) {
               })}
             </div>
             {/* Fade masks */}
-            <div className="pointer-events-none absolute inset-y-0 left-0 w-6 bg-gradient-to-r from-[#080b12] to-transparent z-10" />
-            <div className="pointer-events-none absolute inset-y-0 right-0 w-6 bg-gradient-to-l from-[#080b12] to-transparent z-10" />
+            <div className="pointer-events-none absolute inset-y-0 left-0 w-6 bg-gradient-to-r from-[var(--app-bg)] to-transparent z-10" />
+            <div className="pointer-events-none absolute inset-y-0 right-0 w-6 bg-gradient-to-l from-[var(--app-bg)] to-transparent z-10" />
           </div>
 
           {/* Desktop: 6-column asymmetric grid */}
@@ -178,7 +178,7 @@ function FeedCard({ f, isSplit, chunks, wide = false }: { f: Feed; isSplit: bool
               <h3 className="text-lg font-bold text-white tracking-tight truncate">{f.name}</h3>
               {isSplit && (
                 <span
-                  title={`Also mirrored in this repo as ${chunks.length} chunks (${chunks.join(', ')}). Concatenating them in order reproduces this file exactly — see ioc/manifest.json for the chunk list and key ranges.`}
+                  title={`Also mirrored in this repo as ${chunks.length} chunks (${chunks.join(', ')}). Concatenating them in order reproduces this file exactly. See ioc/manifest.json for the chunk list and key ranges.`}
                   className="shrink-0 rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 font-mono text-[10px] font-medium text-slate-400 cursor-help"
                 >
                   {chunks.length} parts

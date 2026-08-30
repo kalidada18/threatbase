@@ -164,7 +164,7 @@ function SummaryStrip({ total, feeds }: { total: number | null; feeds: number | 
           <Database size={22} />
         </div>
         <div>
-          <div className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Total indicators tracked</div>
+          <div className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Total indicators tracked</div>
           <div className="font-mono text-2xl md:text-3xl font-bold text-white tabular-nums tracking-tight mt-0.5">
             {total != null ? fmt(totalVal) : <ValueSkeleton className="w-[8ch]" />}
           </div>
@@ -177,7 +177,7 @@ function SummaryStrip({ total, feeds }: { total: number | null; feeds: number | 
           <Radio size={22} />
         </div>
         <div>
-          <div className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Active intelligence feeds</div>
+          <div className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Active intelligence feeds</div>
           <div className="font-mono text-2xl md:text-3xl font-bold text-white tabular-nums tracking-tight mt-0.5">
             {feeds != null ? fmt(feeds) : <ValueSkeleton className="w-[3ch]" />}
           </div>
@@ -237,7 +237,7 @@ function FeaturedStatCard({ metric, target }: { metric: MetricDef; target: numbe
 
       {/* Footer */}
       <div className="mt-6 pt-4 border-t border-white/[0.05] relative z-10">
-        <span className="text-[11px] text-slate-500 font-medium uppercase tracking-wider group-hover:text-slate-400 transition-colors">
+        <span className="text-[11px] text-slate-400 font-medium tracking-wide group-hover:text-slate-300 transition-colors">
           {metric.sub}
         </span>
       </div>
@@ -288,7 +288,7 @@ function CompactStatCard({ metric, target }: { metric: MetricDef; target: number
 
       {/* Sub */}
       <div className="mt-3 pt-3 border-t border-white/[0.05] relative z-10">
-        <span className="text-[10px] text-slate-500 font-medium uppercase tracking-wider group-hover:text-slate-400 transition-colors">
+        <span className="text-[10px] text-slate-400 font-medium tracking-wide group-hover:text-slate-300 transition-colors">
           {metric.sub}
         </span>
       </div>

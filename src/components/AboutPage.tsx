@@ -2,7 +2,7 @@ import React from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import IsoPageShell from './layout/IsoPageShell'
-import { Search, ShieldCheck, Share2, ArrowRight, Github } from 'lucide-react'
+import { Search, ShieldCheck, Share2, ArrowRight, Github, Database, Radar, Zap } from 'lucide-react'
 import { useSEO } from '@/useSEO'
 
 export default function AboutPage() {
@@ -16,19 +16,19 @@ export default function AboutPage() {
 
   const features = [
     {
-      icon: <img src={`${import.meta.env.BASE_URL}img/database.png`} alt="Database" className="w-8 h-8 object-contain drop-shadow-sm invert opacity-80" />,
+      icon: <Database className="h-7 w-7" strokeWidth={1.8} />,
       title: "Discover IOCs",
       desc: "Access verified indicators of compromise to proactively defend networks.",
       large: true
     },
     {
-      icon: <img src={`${import.meta.env.BASE_URL}img/threat.png`} alt="Threats" className="w-8 h-8 object-contain drop-shadow-sm invert opacity-80" />,
+      icon: <Radar className="h-7 w-7" strokeWidth={1.8} />,
       title: "Track Threats",
       desc: "Monitor emerging threat actors, malware campaigns, and attack vectors.",
       large: false
     },
     {
-      icon: <img src={`${import.meta.env.BASE_URL}img/action.png`} alt="Actionable Intel" className="w-8 h-8 object-contain drop-shadow-sm invert opacity-80" />,
+      icon: <Zap className="h-7 w-7" strokeWidth={1.8} />,
       title: "Actionable Intel",
       desc: "Transform raw security data and logs into clear, actionable intelligence.",
       large: false
@@ -71,7 +71,7 @@ export default function AboutPage() {
           className="max-w-4xl mx-auto text-center"
         >
           <div className="eyebrow mb-6">
-            About ThreatBase
+            About Threatbase
           </div>
 
           <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter text-white mb-6">
@@ -82,7 +82,7 @@ export default function AboutPage() {
           </h1>
 
           <p className="text-lg md:text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed mb-8">
-            ThreatBase is a community-driven threat intelligence platform designed for researchers, analysts, and cybersecurity enthusiasts. Discover IOCs, track emerging threats, explore vulnerabilities, and transform raw security data into actionable intelligence.
+            Threatbase is a community-driven threat intelligence platform designed for researchers, analysts, and cybersecurity enthusiasts. Discover IOCs, track emerging threats, explore vulnerabilities, and transform raw security data into actionable intelligence.
           </p>
 
           <div className="inline-block p-[1px] rounded-2xl bg-gradient-to-r from-red-500/40 to-red-800/40 mb-16 shadow-glow-ruby">
@@ -110,7 +110,7 @@ export default function AboutPage() {
               <div className="text-3xl md:text-4xl font-extrabold text-white tracking-tight">
                 {s.value}
               </div>
-              <div className="mt-1 text-xs uppercase tracking-widest text-slate-500 font-semibold">
+              <div className="mt-1 text-xs uppercase tracking-widest text-slate-400 font-semibold">
                 {s.label}
               </div>
             </div>
@@ -180,7 +180,7 @@ export default function AboutPage() {
                   className="group relative flex gap-6 md:gap-8 items-start"
                 >
                   <div className="relative z-10 shrink-0">
-                    <div className="h-14 w-14 md:h-16 md:w-16 rounded-2xl border border-white/10 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center shadow-glass-lux group-hover:border-red-500/30 group-hover:shadow-[0_0_24px_-4px_rgba(207,23,51,0.25)] transition-all duration-300">
+                    <div className="icon-chip h-14 w-14 md:h-16 md:w-16 shadow-glass-lux group-hover:border-red-500/30 group-hover:shadow-[0_0_24px_-4px_rgba(207,23,51,0.25)] transition-all duration-300">
                       <Icon className="h-6 w-6 text-red-400 group-hover:text-red-300 transition-colors" strokeWidth={1.8} />
                     </div>
                   </div>
@@ -200,7 +200,7 @@ export default function AboutPage() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="relative max-w-4xl mx-auto w-full overflow-hidden rounded-[2rem] border border-white/10 bg-slate-900/60 backdrop-blur-xl p-10 md:p-14 text-center shadow-glass-lux"
+          className="relative max-w-4xl mx-auto w-full overflow-hidden rounded-[2rem] glass-card p-10 md:p-14 text-center shadow-glass-lux"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-red-500/10 via-transparent to-red-900/10 pointer-events-none" />
           <div className="relative z-10">
