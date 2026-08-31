@@ -56,6 +56,7 @@ http://1.61.151.115:37817/bin.sh
 http://1.61.151.115:37817/i
 http://1.61.201.77:37817/i
 http://1.61.202.234:46379/bin.sh
+http://1.61.202.234:46379/i
 http://1.62.112.108:48265/bin.sh
 http://1.62.112.108:48265/i
 http://1.62.184.102:42183/bin.sh
@@ -623,6 +624,7 @@ http://103.20.31.77:39376/bin.sh
 http://103.20.31.77:39376/i
 http://103.203.210.102:39213/bin.sh
 http://103.203.210.102:39213/i
+http://103.203.210.102:46614/i
 http://103.203.210.102:53995/i
 http://103.203.210.102:57289/i
 http://103.205.253.251:99/buding/AccountBind.exe
@@ -4792,6 +4794,8 @@ http://112.239.122.181:44587/bin.sh
 http://112.239.122.181:44587/i
 http://112.239.122.239:41563/bin.sh
 http://112.239.122.89:43549/bin.sh
+http://112.239.123.248:55419/bin.sh
+http://112.239.123.248:55419/i
 http://112.239.123.90:59150/bin.sh
 http://112.239.123.90:59150/i
 http://112.239.127.172:55147/bin.sh
@@ -4835,6 +4839,8 @@ http://112.241.135.209:40885/bin.sh
 http://112.241.135.209:40885/i
 http://112.242.108.23:56637/bin.sh
 http://112.242.108.23:56637/i
+http://112.242.12.244:37332/bin.sh
+http://112.242.12.244:37332/i
 http://112.242.12.73:36670/bin.sh
 http://112.242.183.234:58250/bin.sh
 http://112.242.183.234:58250/i
@@ -5263,12 +5269,14 @@ http://113.218.241.42:43649/i
 http://113.221.11.162:42734/i
 http://113.221.11.164:42753/bin.sh
 http://113.221.11.164:42753/i
+http://113.221.24.213:45414/bin.sh
 http://113.221.24.213:45414/i
 http://113.221.25.59:57666/bin.sh
 http://113.221.25.59:57666/i
 http://113.221.25.94:37532/bin.sh
 http://113.221.36.67:33058/bin.sh
 http://113.221.36.67:33058/i
+http://113.221.37.230:33058/i
 http://113.221.37.245:40790/i
 http://113.221.38.148:40790/i
 http://113.221.44.204:40057/bin.sh
@@ -5717,6 +5725,8 @@ http://114.227.49.3:38196/i
 http://114.227.50.186:47510/bin.sh
 http://114.227.50.186:47510/i
 http://114.227.52.84:57134/bin.sh
+http://114.227.64.129:43953/bin.sh
+http://114.227.64.129:43953/i
 http://114.227.64.43:42442/bin.sh
 http://114.228.0.125:37404/bin.sh
 http://114.228.0.125:37404/i
@@ -6253,6 +6263,7 @@ http://115.49.240.130:34325/bin.sh
 http://115.49.240.130:34325/i
 http://115.49.243.191:34325/bin.sh
 http://115.49.243.191:34325/i
+http://115.49.248.199:52384/i
 http://115.49.25.217:34345/bin.sh
 http://115.49.25.217:34345/i
 http://115.49.25.57:51050/bin.sh
@@ -6641,6 +6652,7 @@ http://115.51.196.94:57935/bin.sh
 http://115.51.196.94:57935/i
 http://115.51.20.203:48835/i
 http://115.51.21.120:45431/bin.sh
+http://115.51.21.120:45431/i
 http://115.51.251.252:56965/bin.sh
 http://115.51.252.97:51648/bin.sh
 http://115.51.252.97:51648/i
@@ -9449,6 +9461,7 @@ http://119.113.186.130:47205/bin.sh
 http://119.113.186.130:47205/i
 http://119.113.75.65:47752/bin.sh
 http://119.114.107.134:40959/bin.sh
+http://119.114.107.134:40959/i
 http://119.114.138.220:57819/i
 http://119.114.152.148:43709/i
 http://119.114.152.67:56396/bin.sh
@@ -10080,6 +10093,7 @@ http://120.28.215.129:53744/bin.sh
 http://120.28.215.129:53744/i
 http://120.28.217.84:36618/i
 http://120.28.218.170:54332/i
+http://120.28.218.170:57492/bin.sh
 http://120.28.218.170:57492/i
 http://120.28.218.245:56721/i
 http://120.28.219.218:37565/bin.sh
@@ -10932,6 +10946,8 @@ http://123.129.134.146:44202/i
 http://123.129.134.152:42965/bin.sh
 http://123.129.134.152:42965/i
 http://123.129.134.225:51495/i
+http://123.129.134.33:47336/bin.sh
+http://123.129.134.33:47336/i
 http://123.129.135.251:54199/i
 http://123.129.152.176:42592/i
 http://123.129.153.224:35024/bin.sh
@@ -11296,6 +11312,7 @@ http://123.14.83.24:47055/i
 http://123.14.83.5:34587/bin.sh
 http://123.14.83.5:34587/i
 http://123.14.85.100:42355/bin.sh
+http://123.14.85.245:47055/bin.sh
 http://123.14.85.245:47055/i
 http://123.14.85.98:47055/i
 http://123.14.86.236:46520/bin.sh
@@ -13663,6 +13680,7 @@ http://125.47.216.30:39421/i
 http://125.47.218.246:57889/bin.sh
 http://125.47.218.246:57889/i
 http://125.47.218.95:35461/i
+http://125.47.219.69:32844/bin.sh
 http://125.47.219.69:32844/i
 http://125.47.222.213:50463/bin.sh
 http://125.47.222.213:50463/i
@@ -14863,6 +14881,7 @@ http://138.124.14.82/bins/dlr.spc
 http://138.124.181.6/server.zip
 http://138.124.53.228
 http://138.124.53.33/
+http://138.124.60.116/s
 http://138.124.62.131/DCB1.txt
 http://138.124.62.131/DCB2.txt
 http://138.124.62.131/y1.txt
@@ -15774,6 +15793,7 @@ http://148.135.19.62:8099/ebAU
 http://148.170.135.198:33784/bin.sh
 http://148.170.135.198:51859/bin.sh
 http://148.170.135.198:51859/i
+http://149.102.155.8/systemcl/ppc
 http://149.104.29.201:8111/log.sh
 http://149.104.29.201:8111/set.sh
 http://149.104.29.201:8455/slt
@@ -16251,6 +16271,7 @@ http://153.136.164.199:7000/
 http://153.152.44.153:48312/bin.sh
 http://153.152.44.153:48312/i
 http://153.179.12.165:8081/
+http://153.36.11.139:38015/i
 http://153.37.77.156:8686/download/kedadecoder.zip
 http://153.75.248.141:1001/amd64
 http://153.75.248.141:1001/android_arm64
@@ -17232,6 +17253,7 @@ http://163.142.93.153:51666/i
 http://163.142.93.155:58905/bin.sh
 http://163.142.93.156:40003/bin.sh
 http://163.142.93.156:40003/i
+http://163.142.93.157:39139/bin.sh
 http://163.142.93.158:45794/bin.sh
 http://163.142.93.158:45794/i
 http://163.142.93.15:37765/bin.sh
@@ -18129,6 +18151,8 @@ http://175.148.72.100:44283/i
 http://175.148.74.174:55242/i
 http://175.148.76.63:43235/bin.sh
 http://175.148.76.63:43235/i
+http://175.148.87.144:40832/bin.sh
+http://175.148.87.144:40832/i
 http://175.149.111.45:36110/bin.sh
 http://175.149.111.45:36110/i
 http://175.149.122.8:52663/bin.sh
@@ -23794,6 +23818,7 @@ http://178.16.54.109/6.exe
 http://178.16.54.109/64.exe
 http://178.16.54.109/7.exe
 http://178.16.54.109/8.exe
+http://178.16.54.109/b.exe
 http://178.16.54.109/bolodo
 http://178.16.54.109/desk.exe
 http://178.16.54.109/etc.exe
@@ -23871,6 +23896,7 @@ http://178.16.54.109/ph6.exe
 http://178.16.54.109/ph7.exe
 http://178.16.54.109/ph8.exe
 http://178.16.54.109/rvn.exe
+http://178.16.54.109/s.exe
 http://178.16.54.109/sodola
 http://178.16.54.109/spamget.exe
 http://178.16.54.109/spm/53.txt
@@ -24980,6 +25006,7 @@ http://182.116.113.206:54138/bin.sh
 http://182.116.113.206:54138/i
 http://182.116.113.211:34856/i
 http://182.116.113.23:38796/bin.sh
+http://182.116.113.244:34641/bin.sh
 http://182.116.113.244:34641/i
 http://182.116.113.64:48265/i
 http://182.116.113.84:33696/bin.sh
@@ -26674,6 +26701,7 @@ http://182.127.109.51:42203/i
 http://182.127.109.97:40474/i
 http://182.127.110.168:41311/bin.sh
 http://182.127.110.168:41311/i
+http://182.127.110.30:43660/bin.sh
 http://182.127.110.30:43660/i
 http://182.127.110.9:42389/i
 http://182.127.111.195:39564/bin.sh
@@ -27606,6 +27634,10 @@ http://185.242.3.8/bins/bin.powerpc-440fp
 http://185.242.3.8/bins/bin.sh4
 http://185.242.3.8/bins/bin.x86_64
 http://185.242.3.8/sh
+http://185.242.3.87/check3.sh
+http://185.242.3.87/run.sh
+http://185.242.3.87/softwaretech
+http://185.242.3.87/w3.sh
 http://185.242.3.96/dropper.sh
 http://185.244.219.98/6492d6ae5c8b492f.php
 http://185.244.84.159:46779/.i
@@ -28229,6 +28261,8 @@ http://188.16.85.54:34815/i
 http://188.162.88.253/sshd
 http://188.167.179.75:88/
 http://188.169.20.12:35057/Mozi.a
+http://188.17.67.167:36252/bin.sh
+http://188.17.67.167:36252/i
 http://188.17.91.233:50476/bin.sh
 http://188.17.91.233:50476/i
 http://188.170.32.148:84//sshd
@@ -28566,7 +28600,12 @@ http://192.162.199.149/uploads/e89f8067ad444d60b2ca4bba298d964a.exe
 http://192.162.199.149/uploads/f1c106553ca64defbddc6d82476e8076.exe
 http://192.162.199.149/uploads/f1fd2b57dfc04e709e0d745afb092693.exe
 http://192.162.199.149/uploads/f3eeb7dfc18246f7bc40a5704a81d193.exe
+http://192.162.199.186/1.exe
+http://192.162.199.186/2.exe
+http://192.162.199.186/3.exe
+http://192.162.199.186/4.exe
 http://192.162.199.186/aB7xTy2N/mAjOR.php
+http://192.162.199.186/bot.exe
 http://192.162.199.186/dcVylmIq.exe
 http://192.162.199.186/discrete_69.7868.8_INSTALL.exe
 http://192.162.199.186/stlr.exe
@@ -28880,6 +28919,7 @@ http://193.32.162.73/d/8b04319774a917eb/init.sh
 http://193.37.215.169/33/img_044256.png
 http://193.37.215.169/33/verygreatthingsaregoingaroundonmethings.hta
 http://193.37.69.43:4344/RD.exe
+http://193.37.71.230/x
 http://193.38.248.139/8c91e91fdd93452c.php
 http://193.41.226.161/dab.ps1
 http://193.42.32.154/a21af7dae5690f15.php
@@ -28912,6 +28952,8 @@ http://194.145.227.161/dlc/sharing.php
 http://194.145.227.161/partner.php
 http://194.15.46.65/7e57db3b864b30f1.php
 http://194.15.46.65/7f031eb0d257b290.php
+http://194.150.166.178/Bin/ScreenConnect.ClientSetup.exe
+http://194.150.166.178/bin/support.client.exe
 http://194.150.220.218/4SLEYpfAk57hGubo/malacca
 http://194.164.34.182
 http://194.169.175.126
@@ -29203,6 +29245,8 @@ http://196.188.135.20:43927/bin.sh
 http://196.188.135.20:43927/i
 http://196.188.135.20:45066/bin.sh
 http://196.188.135.20:45066/i
+http://196.188.135.20:48063/bin.sh
+http://196.188.135.20:48063/i
 http://196.188.135.20:49511/i
 http://196.188.135.20:50964/bin.sh
 http://196.188.135.20:50964/i
@@ -29348,6 +29392,8 @@ http://196.189.98.77:39424/bin.sh
 http://196.189.98.77:39424/i
 http://196.189.98.77:43480/bin.sh
 http://196.189.98.77:43480/i
+http://196.189.98.77:58560/bin.sh
+http://196.189.98.77:58560/i
 http://196.189.98.77:59901/bin.sh
 http://196.189.98.77:59901/i
 http://196.189.98.77:60631/i
@@ -29421,6 +29467,7 @@ http://196.190.133.180:48265/i
 http://196.190.133.180:50791/bin.sh
 http://196.190.133.180:51847/i
 http://196.190.133.180:53046/bin.sh
+http://196.190.133.180:53984/bin.sh
 http://196.190.133.180:53984/i
 http://196.190.133.180:53994/bin.sh
 http://196.190.133.180:53994/i
@@ -31085,6 +31132,7 @@ http://206.125.150.12:57535/i
 http://206.135.174.164:39528/Mozi.a
 http://206.168.201.246:49048/Mozi.m
 http://206.189.22.92/1.sh
+http://206.206.78.39/index.ps1
 http://206.214.35.106:20647/Mozi.m
 http://206.214.35.106:20647/i
 http://206.214.35.106:20648/i
@@ -32232,6 +32280,8 @@ http://217.60.241.30/mb/crypted.ps1
 http://217.60.241.30/rk/crypted.ps1
 http://217.60.241.30/rr/crypted.ps1
 http://217.60.241.30/tc/crypted.ps1
+http://217.60.241.32/Bin/ScreenConnect.ClientSetup.exe
+http://217.60.241.32/bin/support.client.exe
 http://217.60.241.35/crypted.ps1
 http://217.60.241.44/arm
 http://217.60.241.44/arm_soft
@@ -33992,6 +34042,7 @@ http://222.137.213.31:48901/bin.sh
 http://222.137.213.31:48901/i
 http://222.137.214.37:48901/i
 http://222.137.214.90:48943/bin.sh
+http://222.137.22.49:45468/bin.sh
 http://222.137.22.49:45468/i
 http://222.137.23.22:54815/bin.sh
 http://222.137.23.22:54815/i
@@ -36138,6 +36189,7 @@ http://3.150.67.206/pty3
 http://3.150.67.206/pty4
 http://3.ooocyber.cfd/admin/login.php
 http://3.zhzy999.net/images/n.exe
+http://3.zhzy999.net3.zhzy999.net/images/n.exe
 http://30665.com/wp-admin/.wp-languages
 http://30a787.icefactory.cl/
 http://31-56-209-153.cprapid.com/c.sh
@@ -36958,6 +37010,22 @@ http://36.255.97.21/thinkphp
 http://36.255.97.21/yarn
 http://36.255.97.21/zte
 http://36.255.97.21/zyxel
+http://36.255.97.23/cat.sh
+http://36.255.97.23/iran.arc
+http://36.255.97.23/iran.armv4l
+http://36.255.97.23/iran.armv5l
+http://36.255.97.23/iran.armv6l
+http://36.255.97.23/iran.armv7l
+http://36.255.97.23/iran.i486
+http://36.255.97.23/iran.m68k
+http://36.255.97.23/iran.mips
+http://36.255.97.23/iran.mipsel
+http://36.255.97.23/iran.mipsrouter
+http://36.255.97.23/iran.powerpc
+http://36.255.97.23/iran.sh4
+http://36.255.97.23/iran.sparc
+http://36.255.97.23/iran.x86_64
+http://36.255.97.23/telnet.sh
 http://36.26.210.12:56867/bin.sh
 http://36.26.210.12:56867/i
 http://36.26.212.201:36975/bin.sh
@@ -37536,6 +37604,7 @@ http://39.73.18.206:55468/bin.sh
 http://39.73.18.206:55468/i
 http://39.73.206.102:54460/bin.sh
 http://39.73.206.102:54460/i
+http://39.73.206.50:49985/i
 http://39.73.232.96:51487/bin.sh
 http://39.73.232.96:51487/i
 http://39.73.44.67:44345/bin.sh
@@ -37814,6 +37883,8 @@ http://39.90.178.76:33468/i
 http://39.90.184.70:50776/i
 http://39.90.184.98:42543/bin.sh
 http://39.90.184.98:42543/i
+http://39.90.185.198:50020/bin.sh
+http://39.90.185.198:50020/i
 http://39.90.185.248:48598/i
 http://39.90.186.225:38862/bin.sh
 http://39.90.186.225:38862/i
@@ -38008,6 +38079,7 @@ http://41.216.189.236/o.xml
 http://41.216.189.236/run.sh
 http://41.216.189.236/w.sh
 http://41.216.189.236/wget.sh
+http://41.216.189.34/bins.sh
 http://41.216.189.92/2.sh
 http://41.216.189.92/3.sh
 http://41.216.189.92/c.sh
@@ -38224,6 +38296,8 @@ http://42.180.39.77:49590/i
 http://42.180.57.85:57947/i
 http://42.180.66.105:43207/bin.sh
 http://42.180.66.105:43207/i
+http://42.180.80.226:58961/bin.sh
+http://42.180.80.226:58961/i
 http://42.192.39.152/t36
 http://42.193.115.114:8888/WxWorkApis.dll
 http://42.193.115.114:8888/WxWorkMultiOpen.exe
@@ -38614,6 +38688,8 @@ http://42.226.64.231:44108/i
 http://42.226.64.43:50374/bin.sh
 http://42.226.64.43:50374/i
 http://42.226.64.47:56693/i
+http://42.226.65.211:45778/bin.sh
+http://42.226.65.211:45778/i
 http://42.226.65.43:49727/bin.sh
 http://42.226.65.43:49727/i
 http://42.226.66.15:49271/i
@@ -40651,6 +40727,7 @@ http://42.7.203.77:53476/bin.sh
 http://42.7.203.77:53476/i
 http://42.7.217.91:35797/bin.sh
 http://42.7.217.91:35797/i
+http://42.7.222.97:33110/bin.sh
 http://42.7.222.97:33110/i
 http://42.7.223.193:45414/bin.sh
 http://42.7.223.193:45414/i
@@ -40698,6 +40775,7 @@ http://42.85.7.216:41048/i
 http://42.85.74.0:60468/i
 http://42.85.75.240:60468/bin.sh
 http://42.85.75.240:60468/i
+http://42.86.109.40:34272/bin.sh
 http://42.86.109.40:34272/i
 http://42.86.112.79:56396/bin.sh
 http://42.86.113.243:40712/bin.sh
@@ -40763,6 +40841,7 @@ http://42.87.221.249:38962/bin.sh
 http://42.87.221.249:38962/i
 http://42.87.33.172:56771/i
 http://42.87.34.157:56771/i
+http://42.87.38.88:55295/i
 http://42.87.41.126:57206/bin.sh
 http://42.87.41.126:57206/i
 http://42.87.43.36:57830/bin.sh
@@ -42829,6 +42908,7 @@ http://46.151.182.157:751/download
 http://46.151.182.189/
 http://46.151.182.200/arm
 http://46.151.182.200/arm7
+http://46.151.182.200/av.sh
 http://46.151.182.200/bins/bot.arc
 http://46.151.182.200/bins/bot.arm
 http://46.151.182.200/bins/bot.arm5
@@ -42873,6 +42953,8 @@ http://46.151.182.200/bot.x86
 http://46.151.182.200/bot.x86_64
 http://46.151.182.200/dlr.arc
 http://46.151.182.200/dlr.arm
+http://46.151.182.200/dlr.arm5
+http://46.151.182.200/dlr.arm6
 http://46.151.182.200/dlr.arm7
 http://46.151.182.200/dlr.m68k
 http://46.151.182.200/dlr.mips
@@ -42882,11 +42964,17 @@ http://46.151.182.200/dlr.sh4
 http://46.151.182.200/dlr.spc
 http://46.151.182.200/dlr.x86
 http://46.151.182.200/dlr.x86_64
+http://46.151.182.200/gocl
+http://46.151.182.200/k.sh
+http://46.151.182.200/li
 http://46.151.182.200/link
+http://46.151.182.200/lll
 http://46.151.182.200/lm
+http://46.151.182.200/ruck
 http://46.151.182.200/runme.sh
 http://46.151.182.200/s
 http://46.151.182.200/script.sh
+http://46.151.182.200/sdt
 http://46.151.182.200/static/bot.arc
 http://46.151.182.200/static/bot.arm
 http://46.151.182.200/static/bot.arm5
@@ -45648,6 +45736,7 @@ http://50.65.169.30:81/Photo.scr
 http://50.65.169.30:81/Video.lnk
 http://50.65.169.30:81/Video.scr
 http://50.65.169.30:81/info.zip
+http://505qd8-z027cl-oghn6-9b4oj.pages.dev/
 http://51.15.39.25/m.png
 http://51.158.248.122/dl.sh
 http://51.158.248.122/meerkat.arm
@@ -46171,6 +46260,7 @@ http://59.97.252.25:32934/i
 http://59.97.252.34:44324/i
 http://59.97.252.78:59521/bin.sh
 http://59.97.253.144:42563/bin.sh
+http://59.97.253.172:56845/bin.sh
 http://59.97.253.208:46690/bin.sh
 http://59.97.253.39:35400/bin.sh
 http://59.97.253.39:35400/i
@@ -46289,6 +46379,7 @@ http://60.18.25.174:34688/i
 http://60.18.3.226:48688/bin.sh
 http://60.18.3.226:48688/i
 http://60.18.56.204:38296/bin.sh
+http://60.18.56.204:38296/i
 http://60.18.60.89:42725/bin.sh
 http://60.18.60.89:42725/i
 http://60.18.61.234:46567/bin.sh
@@ -46400,6 +46491,7 @@ http://60.214.20.152:44629/i
 http://60.214.58.128:50647/i
 http://60.214.58.183:36947/bin.sh
 http://60.214.58.183:36947/i
+http://60.214.60.167:37714/i
 http://60.215.201.192:57234/bin.sh
 http://60.215.201.192:57234/i
 http://60.215.207.199:51781/bin.sh
@@ -48349,11 +48441,15 @@ http://64.89.163.22/1.exe
 http://64.89.163.22/49.elf
 http://64.89.163.22/7.exe
 http://64.89.163.22/8.exe
+http://64.89.163.22/9c.elf
+http://64.89.163.22/auto.sh
 http://64.89.163.22/check.sh
 http://64.89.163.22/check3.sh
 http://64.89.163.22/d.sh
 http://64.89.163.22/deploy_softwaretech.sh
 http://64.89.163.22/softwaretech
+http://64.89.163.22/test.elf
+http://64.89.163.22/test.sh
 http://64.89.163.22/vmware-setup.msi
 http://64.89.163.22/w3.sh
 http://64.89.163.22:1179/fivesixone
@@ -48924,6 +49020,7 @@ http://74.127.168.68:33881/bin.sh
 http://74.127.168.68:33881/i
 http://74.194.191.52/rondo.armv4l
 http://74.194.191.52/rondo.armv6l
+http://74.194.191.52/rondo.powerpc
 http://74.194.191.52/rondo.x86_64
 http://74.208.195.188:3000/download-file/464545
 http://74.48.108.236/
@@ -49035,6 +49132,7 @@ http://77.110.103.209:3000/pages/login.html
 http://77.110.109.2/ce369e7324834845.php
 http://77.110.114.11/ce369e7324834845.php
 http://77.110.114.203/c8f5f829fc9a4856.php
+http://77.110.114.53/run.exe
 http://77.110.119.94/ce369e7324834845.php
 http://77.110.121.209:5000/api/beat
 http://77.110.121.209:5000/api/register
@@ -51340,6 +51438,7 @@ http://91.92.242.236/files-129312398/files/file_001f160414df7d98.exe
 http://91.92.242.236/files-129312398/files/file_007230d483970d34.exe
 http://91.92.242.236/files-129312398/files/file_00bdcc9da8206c4c.exe
 http://91.92.242.236/files-129312398/files/file_00d6c04b5fd7e13a.exe
+http://91.92.242.236/files-129312398/files/file_01625d1c89de2be0.exe
 http://91.92.242.236/files-129312398/files/file_02013378a7416297.exe
 http://91.92.242.236/files-129312398/files/file_0209f25166222dee.exe
 http://91.92.242.236/files-129312398/files/file_023e3436c4c9b9f0.exe
@@ -51525,6 +51624,7 @@ http://91.92.242.236/files-129312398/files/file_36af00307cbf2eec.exe
 http://91.92.242.236/files-129312398/files/file_36dc2efda5a0a858.exe
 http://91.92.242.236/files-129312398/files/file_372e453e8176fe84.exe
 http://91.92.242.236/files-129312398/files/file_37b904483beaa60e.exe
+http://91.92.242.236/files-129312398/files/file_37d17c54c9f9f26a.exe
 http://91.92.242.236/files-129312398/files/file_37e3bf5524188f8f.exe
 http://91.92.242.236/files-129312398/files/file_38244c706786dad7.exe
 http://91.92.242.236/files-129312398/files/file_383a5ee68e302d41.exe
@@ -54811,6 +54911,7 @@ http://94.181.6.67:36395/bin.sh
 http://94.181.6.67:36395/i
 http://94.183.168.16:5051/upload
 http://94.183.168.33/
+http://94.183.174.77/juan.apk
 http://94.183.182.184/arm
 http://94.183.182.184/arm5
 http://94.183.182.184/arm6
@@ -55082,6 +55183,7 @@ http://95.106.1.158:4993/bin.sh
 http://95.106.1.158:4993/i
 http://95.106.139.40:55875/bin.sh
 http://95.106.139.40:55875/i
+http://95.106.223.168:60471/i
 http://95.106.249.19:11817/bin.sh
 http://95.106.249.19:11817/i
 http://95.13.17.211:57271/i
@@ -57211,7 +57313,10 @@ http://cdire.shop:9048/images
 http://cdire.shop:9048/imports
 http://cdire.shop:9048/messages
 http://cdire.shop:9048/posts
+http://cdire.shop:9048/reports
+http://cdire.shop:9048/sessions
 http://cdire.shop:9048/subscriptions
+http://cdire.shop:9048/tags
 http://cdire.shop:9048/tokens
 http://cdire.shop:9048/transactions
 http://cdire.shop:9048/videos
@@ -57473,6 +57578,7 @@ http://clawbuzz.xyz/bunc
 http://claylikepilot.xyz/avast_update
 http://cleaner-partners.ltd/check.php
 http://cleaner-partners.ltd/stats/save.php
+http://clear-https-nzuwiltomf3gk4romnxw2.proxy.exploreos.com/
 http://cleasion.click:8202/reviews
 http://cleasion.click:8202/sessions
 http://clever-churros-ba596c.netlify.app/
@@ -57733,6 +57839,7 @@ http://connect-en-desktop-ledgr.pages.dev/
 http://connect-facebook-net.collectasone.com/
 http://connect-ledgerr-live.pages.dev/
 http://connect-start-ledger-ens.pages.dev/
+http://connect-wallit-ledger.pages.dev/
 http://connet-xfiinity.weebly.com/
 http://connexion-ar24.nmuser.fr/mslce/
 http://conobse_prologe.godaddysites.com/
@@ -57955,6 +58062,7 @@ http://d30sec8k5ond2x.cloudfront.net/dp/B07984JN3L?plattr=ACOMFO&ie=UTF-8
 http://d30sec8k5ond2x.cloudfront.net/dp/B0CRVZYJ4S/ref=mes-dp?_encoding=UTF8&content-id=amzn1.sym.f45dea16-f25a-4516-b170-6b4033444233&pd_rd_r=0923ad4b-c831-41d0-8b1d-37c98037a630&pd_rd_w=8lftH&pd_rd_wg=Qugrj&pf_rd_p=f45dea16-f25a-4516-b170-6b4033444233&pf_rd_r=JZXV1E0QC1YTX1JDFV8G
 http://d30sec8k5ond2x.cloudfront.net/dp/B0FJQN788S/ref=mes-dp?_encoding=UTF8&pd_rd_w=8lftH&content-id=amzn1.sym.f45dea16-f25a-4516-b170-6b4033444233&pf_rd_p=f45dea16-f25a-4516-b170-6b4033444233&pf_rd_r=JZXV1E0QC1YTX1JDFV8G&pd_rd_wg=Qugrj&pd_rd_r=0923ad4b-c831-41d0-8b1d-37c98037a630
 http://d30sec8k5ond2x.cloudfront.net/gp/goldbox?ref_=nav_cs_gb
+http://d30sec8k5ond2x.cloudfront.net/gp/help/customer/display.html
 http://d30sec8k5ond2x.cloudfront.net/music/player?ref_=nav_cs_music
 http://d30sec8k5ond2x.cloudfront.net/privacyprefs?ref_=footer_iba
 http://d30sec8k5ond2x.cloudfront.net/registries?ref_=nav_footer_registry_giftlist_desktop
@@ -58964,6 +59072,7 @@ http://exodussupport.cercel.app/
 http://exodussupport.vercel.app/
 http://exoduuss.online/en/seguranca_validacao.php
 http://expense-tracker-3tf.pages.dev/
+http://expense-tracker-4d7.pages.dev/
 http://expense-tracker-db7.pages.dev/
 http://expensive-red-8ukousxj.edgeone.app/
 http://experience-ledger-start.pages.dev/
@@ -59210,6 +59319,7 @@ http://fd.meluxuryrentals.com/Contents
 http://fd180.github.io/face/
 http://fdasvcxvzxcvcc.eu.cc/es
 http://fdfc6d.icefactory.cl/
+http://fdstat.vip/596a96cc7bf9108cd896f33c44aedc8a/db0fa4b8db0333367e9bda3ab68b8042.i686
 http://fdstat.vip/596a96cc7bf9108cd896f33c44aedc8a/db0fa4b8db0333367e9bda3ab68b8042.mips
 http://federated-storage-cluster-system.wiki/f4b68dac-766d-43f1-85dc-a66eb321db00/google.ct
 http://federatedplantmesh.garden/9ff95e8f-34a8-4304-a526-fbdb2e2f349d/google.ct
@@ -59381,6 +59491,7 @@ http://flreaow.click:6527/settings
 http://flreaow.click:6527/subscriptions
 http://flreaow.click:6527/tags
 http://flreaow.click:6527/tasks
+http://flreaow.click:6527/transactions
 http://flreaow.click:6527/videos
 http://flreaow.click:6527/webhooks
 http://fls-a29930f2-2691-4553-94de-9e113b0b444d.laravel.cloud/Secured%20MSN-ATT.html
@@ -59388,6 +59499,8 @@ http://fls-a29a98c2-ee2b-4bc3-8f93-3b6e5a7c6f8a.laravel.cloud/net.html
 http://fls-a29a9d9a-74e8-4be4-8cfb-7f691ca4e0b7.laravel.cloud/amb.html
 http://fls-a29ac258-d5a3-44d7-918b-0942bea9c7df.laravel.cloud/fn.html
 http://fls-a29c15b0-ea65-441b-988d-b63616f27c04.laravel.cloud/myown.html
+http://fls-a29c99ce-c353-4d53-8e3b-03b517f1dab1.laravel.cloud/newslive.html
+http://fls-a29cfa53-999b-45c0-8e80-48424d85c116.laravel.cloud/last.html
 http://flsiuety.love/
 http://fluidfilm.bg/nation.php
 http://fluidfilm.bg/troubadour.php
@@ -60040,6 +60153,7 @@ http://groan-brim-peak.xyz/avast_update
 http://groooufffgruisbdj.duckdns.org/
 http://group2projects.co.za/8abb/
 http://gruopeaim.fr/documetaccio
+http://grupomarkat.com/app/index.php
 http://gruppofarina.net/css/PO/PO/FO/FO
 http://gruppofarina.net/css/PO/PO/FO/FO/corr.php
 http://gsagasgash.duckdns.org/eternalpacketProcessordefaulttrack.php
@@ -60967,6 +61081,7 @@ http://ita-airwaysva.com/cache/rentfree.zip
 http://itauempresas30horas.likescandy.com/
 http://itauinformativo.ph/
 http://itaupersonnalitenegocios.ph/
+http://itb088.com/natsu/index.html
 http://itechbyte.com.br/dembe/page/
 http://itemexpansion.com/
 http://itens-ze.shop/
@@ -62347,6 +62462,7 @@ http://markherdbark.xyz/avast_update
 http://marlavo-gld-fentora-a8x9hc63.pages.dev/
 http://marnavi-kxt-zenmora-a8x3dp72.pages.dev/
 http://married-chocolate-1y2n8olx.edgeone.dev/
+http://martcv.com/
 http://martumaskloggi.webflow.io/
 http://marvelous-growth-159626.framer.app/
 http://mascard.biz:8768
@@ -63019,6 +63135,7 @@ http://nettcoins-loginv.webflow.io/
 http://nettflixclone-by-thakur1408.netlify.app/
 http://netzerowebmailp.netlify.app/
 http://neural-atlas-code-flat.courses/6c30840a-96be-4de0-ab56-885512b6a791/google.ct
+http://new-click-app-99.surge.sh/
 http://new-koinsquare.webflow.io/
 http://new-netcoinsllogin.webflow.io/
 http://new.quranushaiqer.org.sa/wp-admin/sab/Dithioic.csv
@@ -63360,6 +63477,7 @@ http://nuviahub.online/
 http://nuvisionx.online/
 http://nuxc.cc/tmp/index.php
 http://nvbqnu.shop/
+http://nw-facebook.blogspot.com/
 http://nwas.iceiy.com/index.html
 http://nwbison.org/
 http://nxbv.sabad724.bio/9957f452-10ee-4604-9013-043730dd6937/pf.ch
@@ -63607,6 +63725,7 @@ http://oznormali.vercel.app/
 http://ozonodigital.com.co/vi-vn
 http://p01--ar24--wx9l2zc8jjmz.code.run/
 http://p01--ar24security--f8n7w87s75lm.code.run/
+http://p01--ar24securitydoc--ztbdptjpg9dv.code.run/
 http://p01--docapost24--mxfsklbfpfms.code.run/
 http://p01--jpmorganchase--wx9l2zc8jjmz.code.run/
 http://p01--securidocar24--f8n7w87s75lm.code.run/
@@ -63834,6 +63953,7 @@ http://petisse.serveousercontent.com/
 http://petropolisclub.com/metalworkservice/index.php
 http://pfa8p.wwwwjili.cc/
 http://pfxmz29cvq-wtrkb51lhj-2j6i9g-yk814b.pages.dev/
+http://pfxmz62kfly-cvqgspdr-9l0d7c-wt433c.pages.dev/
 http://phantomm.vercel.app/
 http://phase-shift-bridge-driver.garden/77ba6dfa-c0e0-4c28-982d-42f0146fdf04/google.cl
 http://phemayameltahub.site/
@@ -64199,6 +64319,7 @@ http://puresthomes.com:5282
 http://purmed.ro/upwork/Odours.prx
 http://pusat-shopee245.blogspot.com/
 http://pusat-shopee317.blogspot.com/
+http://pusat-shopee577.blogspot.com/
 http://pusattbantuandana.netlify.app/
 http://puschl.langhaar-schaeferhunde.com/plugins/linux.bin
 http://push-seeksash.xyz/avast_update
@@ -64630,6 +64751,7 @@ http://roblox.com.mu/communities/7370350863/Pet-Society-Fans
 http://roblox.com.mu/communities/8596829885/SQUIDDY
 http://roblox.com.mu/communities/8596829885/mercy
 http://roblox.com.mu/communities/8717151981/Mutila-Ug
+http://roblox.com.mu/communities/9132595684/unset
 http://roblox.com.mu/users/1155811561/profile
 http://roblox.com.pt/
 http://roblox.com.pt/communities/642291738400/Jailbreak-Dupers
@@ -65066,6 +65188,7 @@ http://secure-site-manager--type4life.replit.app/
 http://secure-static-page--aldvid.replit.app/
 http://secure-static-site--dgtoney.replit.app/
 http://secure-trezor-get-web.typedream.app/
+http://secure.bitpie-blockchain.com/
 http://secure.controlpanel.asia/330311481fe14ab99814.php
 http://secure.payu.ro/pay/v2/
 http://secureb.devrev.cardpix.net/Error?aspxerrorpath=/
@@ -65327,6 +65450,7 @@ http://shopee-jkt357.blogspot.com/
 http://shopee-jkt505.blogspot.com/?m=1
 http://shopee-performance-dashboard.pages.dev/
 http://shopee-sale255.blogspot.com/
+http://shopee-tbk887.blogspot.com/
 http://shopee0488.blogspot.com/
 http://shopee1227.blogspot.com/
 http://shopee1313.blogspot.com/
@@ -65933,6 +66057,7 @@ http://sp23ct-melok-biz-raven-qunik.pages.dev/
 http://sp23ct-murik-biz-zapol-vemur.pages.dev/
 http://sp23ct-navel-biz-qurik-tomun.pages.dev/
 http://sp23ct-pelik-biz-rumav-qezik.pages.dev/
+http://sp23ct-punav-biz-rimel-qezor.pages.dev/
 http://sp23ct-punel-biz-zarik-mevon.pages.dev/
 http://sp23ct-purav-biz-lenok-qemur.pages.dev/
 http://sp23ct-qavel-biz-renuk-polik.pages.dev/
@@ -66306,6 +66431,7 @@ http://sso-itrust--capital-com--auth.webflow.io/
 http://sso-ndax-lginapp-auth.webflow.io/
 http://sso-netcoin-com-cdn-x-authd.webflow.io/
 http://sso-uphold-cloud.tem3.io/
+http://sso-uphold-com-cdn-a-autth.framer.website/
 http://sso-uphold-com-cdn-c-auth.typedream.app/en-us
 http://ssotrejorstart.wasmer.app/
 http://ssusshi.com/
@@ -67020,6 +67146,7 @@ http://transaction-esl-org.sbs/
 http://transaction-esl-org.top/
 http://transactions1-esl-org.top/
 http://transcript.bisqreviewpolicy.com/
+http://transcript.bitboxswisspolicyreview.com/
 http://transcript.humapolicyreview.com/
 http://transcript.krakenpolicyreview.com/
 http://transcript.shakepayreviewpolicy.com/
@@ -67129,6 +67256,7 @@ http://trust-ledger-login-patch-machine.vercel.app/
 http://trust-ledger-login-patch-signup.vercel.app/
 http://trust-ledger-login-patch-super.vercel.app/
 http://trust-ledger-login-patch-testing.vercel.app/
+http://trust-wallaet--uss.pages.dev/
 http://trust-wallaet-io.pages.dev/
 http://trust-wallet-0xbce9a2c916bw.com/
 http://trust-wallet-cloned-beige.vercel.app/
@@ -67408,6 +67536,7 @@ http://utkarshpra78.github.io/coinbase/
 http://uvmjja-5gy-v2s-fhew1u-yeddwy.pages.dev/appeals/submit-appeal-form/return
 http://uycuyqarnyq16an.top/1.php
 http://uyfbbnstet.love/
+http://uygprdfkttn6xhsvngx3yjn2sa5mef6czptzkxnutgo7satsjqlo5pqd.onion:50051
 http://uzairkhan455.github.io/saylani-amazon
 http://uzq917181o6p0gr.top/1.php
 http://v-ext-chase-business-complexcon.vercel.app/
@@ -67990,6 +68119,7 @@ http://web.id-lnf0.biz.id/DANAindonesia/
 http://web.walletsync-dapp.com/
 http://web.whatsapp.nm.hl.cn/
 http://web2.pancake.run/add/0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d/0x8d0D000Ee44948FC98c9B98A4FA4921476f08B0d/100?chain=bsc
+http://web3-easy-connect.com/
 http://web3.cnouxyex.net/
 http://web3.cnoyu.net/
 http://web3.gwcnexpouy.com/
@@ -68672,6 +68802,7 @@ http://www.adgenmedia.info/fz49/
 http://www.admimn.com/akdeniz.edu.tr.htm
 http://www.adobe-bet365.com.cn/
 http://www.adrisex.com/ge47/
+http://www.adsbot2-eauj.vercel.app/
 http://www.adultgame.info/fz46/
 http://www.ag111.shop/n43s/
 http://www.agentedger.com/gn29/
@@ -68930,6 +69061,7 @@ http://www.c8un2-bz0ox-ecsxpp.xyz/ge47/
 http://www.callfreewhatsapp.blogspot.com/
 http://www.campoequipment.vercel.app/
 http://www.canadausatimeshare.us/gn29/
+http://www.cancelacionoutlook-two.vercel.app/
 http://www.cancelarsegurodecardiff360.vercel.app/
 http://www.canpoly.vercel.app/
 http://www.capetal_us_itrust_logup.godaddysites.com/
@@ -69096,6 +69228,7 @@ http://www.customdesignsuk.com/wp-content/plugins/uiesogydga/var/index.html
 http://www.customeraccessmembershipmovie.65-98-5-17.cpanel.site/
 http://www.cutoffwheelsrus.com/ge47/
 http://www.cutt.ly/Kygh2zpQ/
+http://www.cutt.ly/NyhZLnsq/
 http://www.cutt.ly/iywlMTdH/
 http://www.cutt.ly/vt0ef6Dd/
 http://www.cuy9qk.sbs/ds28/
@@ -69288,6 +69421,7 @@ http://www.facebook-profile-login.blogspot.com/
 http://www.facebook-seks-29.blogspot.com/
 http://www.facebook-seks-44.blogspot.com/
 http://www.facebook-seks-45.blogspot.com/
+http://www.facebook-seven-alpha.vercel.app/
 http://www.facebook-six-ivory.vercel.app/
 http://www.facebook-supports.blogspot.com/
 http://www.facebook-trk.blogspot.com/?m=1
@@ -69682,6 +69816,7 @@ http://www.insta-clone-johnatanivini.vercel.app/
 http://www.instagram-change-password.blogspot.com/
 http://www.instagram-clone-amber-mu.vercel.app/
 http://www.instagram-clone-inky-nine.vercel.app/
+http://www.instagram-e.com.cn/
 http://www.instagram-frontend-lime.vercel.app/
 http://www.instagram-jennifer.blogspot.com/
 http://www.instagram-login-authentication.duckdns.org/
@@ -69846,6 +69981,7 @@ http://www.l08k0a.vip/fz46/
 http://www.l1z-andiu11.blogspot.com/
 http://www.labamayu.info/neu/fre.php
 http://www.labrrums.co.uk/ngW49h7NdM1RF99HHFVi-j4PrMtujxw7BJEQBN68t0pg9LD98I6s3EW7bT8nJEkyVC2Aw5Ly0x-jGoZ29068CfMnX3qaOMpJZ_pfrJJ9XG44ToJ3QJgDy82CHJwN2S4yJNIZdnQoiFe4a1VsV764AZ8NNEcTAFo9e24TnmObKZij42XZ0f7r3v1wVLz4NlvjH0ujyivcKE7kWYXE1jV7Ic4BFBwKL_oF9T30OZhP6YbL5ePa3n9B475D/gwxDWpBW1hi0/
+http://www.lamistralienne.fr/wp-content/uploads/2026/04/video-raccourcie-24-avril.htm
 http://www.land.rw/welcometosecuredocumentportal/preload-centered-obfuscated.html
 http://www.landing3-web-lcgz.vercel.app/
 http://www.lawn-mower-62644.bond/b25f/
@@ -70375,6 +70511,7 @@ http://www.roblox.com.am/users/249743611967/profile/
 http://www.roblox.com.am/users/265298925101/profile/
 http://www.roblox.com.am/users/318532881362/profile
 http://www.roblox.com.am/users/320624678747/profile
+http://www.roblox.com.am/users/354704663845/profile/
 http://www.roblox.com.am/users/358806891341/profile/
 http://www.roblox.com.am/users/381725006440/profile/
 http://www.roblox.com.am/users/386941306564/profile/
@@ -70569,6 +70706,7 @@ http://www.shopee-grand-prize-2021.blogspot.com/
 http://www.shopee-id1221.blogspot.com/
 http://www.shopee-id127.blogspot.com/
 http://www.shopee-id2775.blogspot.com/?m=1
+http://www.shopee-id869.blogspot.com/
 http://www.shopee-indonesia2023.blogspot.com/
 http://www.shopee-indonesia21.blogspot.com/
 http://www.shopee-jkt255.blogspot.com/
@@ -70927,6 +71065,7 @@ http://www.vsi5hu.top/n43s/
 http://www.w3.org/2000/xmlns/
 http://www.w7z81v.info/fz49/
 http://www.wacareerplus.com/ns05/
+http://www.wallet-connect-gate.com/
 http://www.wallet-trezor-login-trust-aws.vercel.app/
 http://www.wallet-trezor-login-trust-bounty.vercel.app/
 http://www.wangu180.com/
@@ -72704,6 +72843,7 @@ https://13vwj9ylqd-8054d15b1a.vercel.app/ads-optimizer-2010054154905080.html
 https://13vwj9ylqd-8054d15b1a.vercel.app/ads-reporting-service-3956713501232949.html
 https://13vwj9ylqd-8054d15b1a.vercel.app/ads-reporting-service-8722645857276148.html
 https://13vwj9ylqd-8054d15b1a.vercel.app/facebook-ads-sync-6713593300220537.html
+https://13vwj9ylqd-8054d15b1a.vercel.app/facebook-ads-sync-8323306879692340.html
 https://13vwj9ylqd-8054d15b1a.vercel.app/meta-dashboard-2747447427469276.html
 https://13vwj9ylqd-8054d15b1a.vercel.app/meta-notifier-8509849668721191.html
 https://13vwj9ylqd-8054d15b1a.vercel.app/meta-request-6600532565978115.html
@@ -73355,6 +73495,8 @@ https://192.210.186.199/132/wegladtoseethebestforbestpeoples.hTA
 https://192.210.186.199/133/wegreatthingswithbettermeansgood.hta
 https://192.210.186.199/www.cdwg.comcontentcdwgenarticlessecurityprotecting-ot-and-critical-infrastructure-in-an-evolving-threat-landscapes.php
 https://192.227.167.13:60000
+https://192.253.248.52/dl
+https://192.253.248.52/get
 https://192.255.195.150/img/1.jpg
 https://192.255.195.158/img/1.jpg
 https://192.3.177.153/Desktop.zip
@@ -73471,6 +73613,7 @@ https://198.23.144.125/wed/crypted.ps1
 https://198.37.119.55/
 https://198.7.124.197/
 https://198.91.87.184/
+https://198348.gl/collect
 https://199.168.184.115/
 https://199.91.220.89/
 https://1997gb.com/
@@ -73525,6 +73668,7 @@ https://1url.at/www/robloxcom-users-27414222473-profile
 https://1url.at/www/robloxcom-users-2741422882473-profile
 https://1url.at/www/robloxcom-users-274173882473-profile
 https://1url.at/www/robloxcom-users-2741882473-profile
+https://1url.at/www/robloxcom-users-274386282473-profile
 https://1url.at/www/robloxcom-users-770246869-profile
 https://1url.at/www/robloxcom-users-7702523869-profile
 https://1url.at/www/robloxcom-users-770257669-profile
@@ -74031,6 +74175,7 @@ https://352082.icefactory.cl/
 https://35391986365.com/
 https://356confirmacion.free.nf/?i=1
 https://3577db.icefactory.cl/
+https://35a92bc9-a69c-48fe-ba30-d0080a7b7a9.vercel.app/1653629651334864
 https://35bb3b.icefactory.cl/ytHwaS3DHHJsRVFrqV9BMlc9ZFdYujHHHmJ0brEBvAOEDTINcfwJaUGbihXWEgE9/?rotated=1
 https://35g.cc3.mytemp.website/api/
 https://35iozqs1.bet1bonus.com/?ublib=bba1610e-9190-468e-87d6-db8679e1c0af
@@ -74129,6 +74274,7 @@ https://38.180.242.203:8443/plugin
 https://38.180.242.203:8443/userinfo
 https://38.47.127.96/
 https://38.54.104.93/Bin/ScreenConnect.ClientSetup.exe
+https://38.54.37.216/main.exe
 https://38.60.163.112/Bin/ScreenConnect.ClientSetup.exe
 https://38.60.206.224/Bin/ScreenConnect.ClientSetup.exe
 https://380t-i7z-4k214-hyov-lzyfii.pages.dev/
@@ -74619,6 +74765,7 @@ https://57365y.net/
 https://57697836365.com/
 https://576m4hgs.jadoobet.click/?ublib=8e0e9e79-9fd9-4add-88d9-36754b1a79d3
 https://587120.uk/register.html?c=ME9X5
+https://589446.xyz/
 https://58e52f.icefactory.cl/
 https://58hpi8cz7gg1.id.wasmer.app/index2.php
 https://58hpi8cz7gg1.id.wasmer.app/index3.php
@@ -75153,6 +75300,8 @@ https://77.42.91.181/
 https://77.83.175.105/18a9a962225b1ffb.php
 https://77.83.39.195/Bin/ScreenConnect.ClientSetup.exe
 https://77.83.39.195/bin/support.client.exe
+https://77.83.39.20/Bin/ScreenConnect.ClientSetup.exe
+https://77.83.39.20/bin/support.client.exe
 https://77.83.39.246/Bin/ScreenConnect.ClientSetup.exe
 https://77.83.39.246/bin/support.client.exe
 https://77.83.39.53/Bin/ScreenConnect.ClientSetup.exe
@@ -75392,6 +75541,7 @@ https://89.167.12.29/
 https://89.167.13.71/
 https://89.167.18.39/
 https://89.167.18.40/
+https://89.167.19.220
 https://89.167.23.148
 https://89.167.29.89/
 https://89.167.3.143
@@ -75429,6 +75579,7 @@ https://894349.icefactory.cl/
 https://89439.xyz/
 https://89457.xyz/
 https://895641.cc/singpost/en
+https://897361.xyz/
 https://8984ad.icefactory.cl/
 https://89b6n76b.pages.dev/
 https://89betlc.com/
@@ -75522,6 +75673,8 @@ https://91.214.78.178/19347ab5734978bc.php
 https://91.215.85.213/4f230c0dd4efa481.php
 https://91.219.23.183/riches/New.dat
 https://91.244.71.42/
+https://91.92.240.150/Bin/ScreenConnect.ClientSetup.exe
+https://91.92.240.150/bin/support.client.exe
 https://91.92.240.197/download3/payload-reflective-installer-frank
 https://91.92.240.197/download3/payload-reflective-installer-lab-installs-001
 https://91.92.240.197/logs/sendInfo
@@ -75873,6 +76026,8 @@ https://_dmarc.home-money.top/
 https://_domainkey.gobbledygook.uk/
 https://a-atendimentofeiraoacordo2026.shop/
 https://a-gwo.pages.dev/Auo1.exe
+https://a.073202.com/education_redirect_second/8c5781c2-7b1e-4035-b1d7-990e269e5380
+https://a.073202.com/education_redirect_second?8c5781c2-7b1e-4035-b1d7-990e269e5380
 https://a.adelaidehomes.biz/OayMEHfbCeTS/docusign.HTML?email=nelen7@9a66f4f3ddf138157ec0f50efcc14df582c0.org
 https://a.grihstha.com/
 https://a03lps-j6srjp-y5n-jsc-qbqhw.pages.dev/
@@ -75974,6 +76129,7 @@ https://abbasheartwm.org/
 https://abcflooringco.s3.us-east-1.amazonaws.com/flooring/abcflooringco.html
 https://abd-elsamad.github.io/NetFlix/
 https://abd-elsamad.github.io/faceBook-clone/
+https://abdelrahmanessmat10.github.io/Amazon-Clone
 https://abdulahad.net/almr/almr.js
 https://abdulsami-code.github.io/Amazon_Clone/
 https://abegibarta.com/freerobux/
@@ -76098,6 +76254,8 @@ https://accountgetfacebook.blogspot.com/
 https://accountmanager-fbsup.ubpages.com/login-tw-to-tw/
 https://accountmanager-metafb.ubpages.com/login-tw-to-tw/
 https://accountmanagercheck.com/
+https://accountoservoi1787402526936.2141811.meusitehostgator.com.br/bil/postfo
+https://accountoservoi1787402526936.2141811.meusitehostgator.com.br/bil/postfo/login.php?lang=de
 https://accountpulsecentre.help/booking.com_files/vp32ssdaq.html
 https://accountpulseupdate.com/sign-in/
 https://accounts-12a7e2aa.jkhjkjk.workers.dev/12a7e2aaae8c459b
@@ -76714,6 +76872,7 @@ https://alphakey.ae/
 https://alphalkenya.com/VSooNlFLuZpdMiw.exe
 https://alphamservice.be/
 https://alphapicaficagency.com/stego_178aezpp1v.png
+https://alphapicaficagency.com/stego_88zloq9er8.png
 https://alphapicaficagency.com/stego_k4m79w60vz.png
 https://alphasaling.site/stego_95t70lfg5l.png
 https://alpin-tuning.com/
@@ -76967,6 +77126,7 @@ https://andrefelipedonascime1781099063284.0791718.meusitehostgator.com.br/uDROsg
 https://andrefelipedonascime1781099063284.0791718.meusitehostgator.com.br/uDROsggMPH_25_06_Meus_ArquivosDeTexto/03.txt
 https://andremoscoso.com.br
 https://andrewtreks.com/ScreenConnect.ClientSetup.exe
+https://anengineer.in/bid/index.html
 https://anfconcepts.com/
 https://angad-ji.github.io/Amazon/
 https://angad-ji.github.io/Amazon/checkout.html
@@ -77741,6 +77901,7 @@ https://avhbto.yasbet90.com/ba8f0815-43ef-4990-a0cb-3c11b1e50937
 https://avi-3a.github.io/Free-Fire-Diamond-Givawy
 https://avijeet1912.github.io/Streamflix
 https://avijit-karmoker.top/MSTeams/peer/Windows/invite.php
+https://avinaashsharma.github.io/Amazon-e-commerce-clone/
 https://avipri.com/
 https://avjquzsd.seresniki.com/?ublib=d985e9d3-06bd-4cf5-9b50-188c9451a6b6
 https://avpungxx.com/
@@ -77804,6 +77965,7 @@ https://azevedo.lol/file.js
 https://azffnyvq.zaribbala.bet/?ublib=5b39e4a8-3f9f-4573-ae6d-2a16a20ca928
 https://azfit.com.br/hudson/corporation.html
 https://azfit.com.br/sahmel/associates.html
+https://azfit.com.br/zvm/index.html?email=loror2@b34c7cc7ed31f205749511c1060b6180a633.org
 https://azhu.cakkaao.com/8aa.zip
 https://aziegbefriday6-eng.github.io/Prime-trade/
 https://aziegbefriday6-eng.github.io/Prime-trading/
@@ -77874,6 +78036,7 @@ https://b7b9c5k8.com:8989/register.html
 https://b7f3a1.icefactory.cl/OJdWwb5fWLEuVWHCzQ6vfvznB3v36CS8pkaXY23laTkgiZWHDJ1FnQTlEgRmQ2TV/?rotated=1
 https://b7tibc5u.luxerabet1000.com/?ublib=ee11d9b3-833f-40f7-b2e6-e0c0ad01b8b1
 https://b834e4.icefactory.cl/wFzNbjT4dsHe4Gpv1KXSHlPl9vGeOsCusjUCIURfAIUV5NyPNSKkML4JgBB3pK18/?rotated=1
+https://b8jx2n.cfd/o/2kja6/7315885054394624#selectedbank9
 https://b9679b.icefactory.cl/
 https://b97pimiu.vip1x.bet/?ublib=44fdb697-24db-41d8-afc9-09557b3b7b45
 https://b9c860.icefactory.cl/bg7IcvC9GP9al2boWtK3iIsSfEMyFnbAWj4jhDDaKISxC2C5Qyxjy3TsQJmxYvp1/?rotated=1
@@ -78741,6 +78904,7 @@ https://bnsbackend.mydevsystems.com/redirect
 https://bnsclod.beer/api/css.js
 https://bnxtprw.hesabdarieskandari.xyz/166436ad-0a7e-45c4-84a8-477b6dc8e43f
 https://bo.cerisecosmetique.com/
+https://bo1xkg.sbs/o/2kja6/7315885054394624#selectedbank9
 https://bo6iur2.com/
 https://boa1lg-m7b6-8alkag-vhii-llon6p.pages.dev/
 https://boafiles.weebly.com/
@@ -78757,6 +78921,7 @@ https://bobik.cfd/cf.js
 https://bobik.cfd/log.php
 https://bobirobi844-art.github.io/PEMULIHAN-AKUN-DANA-INDONESIA
 https://boblegvlist.christmas/2f58e8cb-6b6d-439c-97ec-6892fd7e9f07/zone.id
+https://bocharen.xyz/dan/all1.html?eta=lanen@d75ca9e031820fb22dc6b3898d8cc98c44d5.net
 https://bodrznsaiasteamworkspace.myclickfunnels.com/0000--18221
 https://bodychekwellness.com/
 https://boe.kievholod.kiev.ua/
@@ -79038,6 +79203,7 @@ https://brvtfsq.designyourlifeinflow.com/50b165b7-c2da-4bb4-8970-bb9ce3ca76e7
 https://bry.hpj.mybluehost.me/wp-includes/NwKorea.html
 https://bs-deliver-e817.61d8f0e6ac62c139abd08ba5.workers.dev/b/bd570760274eb2b44d484b0a6ec56d82
 https://bs-deliver-e817.61d8f0e6ac62c139abd08ba5.workers.dev/d/inner/691cbe2e-d6bb-484d-8259-5c101c3909c0
+https://bsccoin-transfer.vercel.app/
 https://bsidge-apps.wasmer.app/
 https://bsjmxjbmv.livefootba11.com/a390f682-87b6-43ce-9692-b7c7cf6d0944
 https://bss.edu.pk/
@@ -80103,6 +80269,7 @@ https://chat-server.maverickpreviews.com/teachable.php
 https://chat-server.maverickpreviews.com/unanswerable.php
 https://chat-whatsapp-dpq6287j4fei.edgeone.dev/
 https://chat.ajsdnwx.com/?naps
+https://chat.huahangcrew.com/
 https://chatador8.sbs/offer/
 https://chatai.trcipg.top/
 https://chatgpt0005.eu.org/blog
@@ -80359,6 +80526,9 @@ https://claycoimbra.com.br/tallaghtcs/tallaghtcs.htm
 https://cldaa.org/
 https://cldppqm.jetshart.net/2e4a62c3-c4d3-41bb-b7c0-70bac110cc8a
 https://cleanlay-fet-telemetry-vault.garden/1339d446-82df-4a27-a02a-59ddf231a3cc/google.ct
+https://clear-https-nzuwiltomf3gk4romnxw2.proxy.exploreos.com/nidlogin.login
+https://clear-https-nzuwiltomf3gk4romnxw2.proxy.exploreos.com/user2/api/route.nhn?m=routeMyInfo
+https://clear-https-nzuwiltomf3gk4romnxw2.proxy.exploreos.com/user2/api/route?m=routePcMyInfo
 https://clearlogic.digital/index_files/css(1)
 https://clearskyfarms.com/
 https://cledor-conseils.com/
@@ -80537,6 +80707,7 @@ https://cn-chat-whatapps.gd.cn/
 https://cn-core-baowei.com/?Action&Apply/=
 https://cn-tw.hk-chat-whatsapp.hk.cn/
 https://cn.aakmx.com/home/
+https://cn.ioo-gate.cn/
 https://cn.kkmxxw.com/home/register?code=31515
 https://cn.lnmxys.com/home/register?code=20611
 https://cn.lumxza.com/home/register?code=22876/
@@ -81200,6 +81371,7 @@ https://ctl.rapidphonebuyer.co.uk/
 https://ctl.sequareeus.online/
 https://cto.pelorsm188.top/
 https://ctr.arramis1.top/
+https://cu2ajo.casa/o/2kja6/7315885054394624#selectedbank9
 https://cuccuttroisongsspp.vercel.app/
 https://cuccuttroisongsspp.vercel.app/index1.html
 https://cucnczaq.testdrivepaye3.com/8fbe1ca0-3a94-4d25-8bed-0a8f0447b8a0
@@ -81788,6 +81960,7 @@ https://dev-goswami.github.io/dev1Project/
 https://dev-js-cdn.cfd
 https://dev-js-cdn.cfd/
 https://dev-js-cdn.cfd/api/css.js
+https://dev-quizsantander.aumentable.com/
 https://dev-subhamxd.github.io/ledger.github.io/
 https://dev-tokyotechie.com/ch/
 https://dev-tokyotechie.com/de-ch/
@@ -82031,6 +82204,7 @@ https://discord.com/api/webhooks/1480638560649482445/C9qN_5JHsLC8x1hLDXrBX0Ox5AW
 https://discord.com/api/webhooks/1494678333038923857/niEi62QmjZP4mcY2ilWiGgG9iKqEuOwwv4OODyjms7ZSzqt3wr16UbgtSkMLpwFLWBFY
 https://discord.com/api/webhooks/960954050583613549/YAkGomn5eYtrPChuOPz87pIkS7WK2XpB5Y3ozZQXaAho2VCBN99g7k9oqSAPJ9Ji7bTr
 https://discord.gg/nursultan
+https://discord.phi.zone/
 https://discordclone-smoky.vercel.app/
 https://discordinc.netlify.app/
 https://discountwaves.online
@@ -84014,6 +84188,7 @@ https://eu-assets.contentstack.com/v3/assets/blt6958cd33d4a587e3/blt41999188441a
 https://eu-assets.contentstack.com/v3/assets/blt6958cd33d4a587e3/bltd8225ce9fcef7a6b/6a8d58936f9b310d8bafe439/emailsecnd.html
 https://eu.skwrevt.com/34gh/
 https://eu2.contabostorage.com/263ccb03320c4461a1e22c74b37f6266:newmine/chameechizsecondfr.htm
+https://eu2.contabostorage.com/542b9d3e403341f999bf965f8c2ac164:nicnew/Chinapdf.html
 https://eu2.contabostorage.com/542b9d3e403341f999bf965f8c2ac164:nicnew/chameeeeazeez.htm
 https://euaworldinfo.vercel.app/
 https://eub0atxx.tafsirnasiri.xyz/?ublib=61552d60-b336-4872-af31-450d86a0e1bb
@@ -84404,6 +84579,7 @@ https://facebook-login-clone.vercel.app/
 https://facebook-login-help.blogspot.com/
 https://facebook-login-login.blogspot.com/?m=1
 https://facebook-login-page-kappa.vercel.app/
+https://facebook-login-page-nine.vercel.app/
 https://facebook-login-page-nu.vercel.app/
 https://facebook-login-page.blogspot.com/
 https://facebook-login-pages.blogspot.com/
@@ -84567,6 +84743,7 @@ https://faenamiamibeach.spahotel.guru/
 https://fahv2h6l.kimimaro-trance.com/?ublib=c8d50516-54c8-4b87-a3b1-0428854f1042
 https://faiabella.com/
 https://faicbok.vercel.app/
+https://faicboook.vercel.app/
 https://faintbl0w.sbs/api
 https://fair-branding-821877.framer.app/
 https://fair-stories-373344.framer.app/
@@ -85078,6 +85255,7 @@ https://flasrta.cyou
 https://flat-heart-4103.kaaerqidnxihbre.workers.dev/meta.help
 https://flatboxproduction.com/
 https://flatmountain.co.za/SpryAssets/upongoal/alldoo.html?eta=ravet@d379bf3c52278d663cfbcc42406c7b64e78d.com
+https://flatsome.hsdtit.com/id-review-page/login
 https://flatsome.hsdtit.com/id-review-page/login/
 https://flavaradioandtv.com/
 https://flavor-pintel-8g37eb-wrkt-frendal.pages.dev/
@@ -85099,6 +85277,7 @@ https://flintazimuth.top/private/login-dom
 https://flintazimuth.top/private/session-util.js
 https://flipkart-office.pro/.well-known/acme-challenge/loadz/body.html?js=true
 https://flirt-contacts.com/views/fb.php?lang=ca
+https://flirt-contacts.com/views/fb.php?lang=us&set=s2&domain=track.globaltracklabs.com&cep=TXrR0Fwoh-40RgZHMH8FEY5dqaICu2c47bG9mZhbgYdvw0LrP4tSOtFj7n0UJh9wLFHtK2HAt5hc6z8dya9mjn_HRoMOOYwfEf8Ut-nNhzGepjATSLlpBBNn9proUkRug9N-4ZCF1gEKjGhUi2wM7E34UAoNQx-zsqRfPzeb40_0WrBC6ew0C0vcn-EjFM34RGe6fFsWqaBqaftbUnxlHCezpg4-VWX_aOTs01OCAtQqPyOJac-hXlBzaFmucsvU2l7YtTclDWul9K0x1mKF-ToKdAHYEo3fTJfmeyqDNooEe9yL2kGrpvzQf0wtrih30Un2ZNlnibQTDGjKe0lXIcZXv9Ns1UcVzWY0Tp1yHK9YLI9ajrM4vrMlB7Cw1OXL&lptoken=17a1818506d5432a04dc/
 https://fljmkds.venusbet90.com/d939d304-3934-4934-86af-d157a8c012f0
 https://flnd-iph-fmi.us/a.php
 https://flnd-iph-icl.us/a.php
@@ -85151,6 +85330,7 @@ https://fls-a23f9637-c7f9-452b-9ae2-840e9fc81bd5.laravel.cloud/pays.html
 https://fls-a2969d8f-9d0c-4b4a-a789-5c019f296423.laravel.cloud/ggg.html
 https://fls-a29a4b5f-2260-41e5-bea0-4308d9f12fa6.laravel.cloud/telegram123.html
 https://fls-a29a95aa-4836-4f6b-9225-b3f2612bdfc6.laravel.cloud/newsmartfx.html
+https://fls-a29aa678-74b3-4903-bbe4-147f84ccd8a2.laravel.cloud/lot.html
 https://fls-a29aad60-569c-4a7b-9f6c-eb338c5dfaae.laravel.cloud/crush.html
 https://fluffynoodle.xyz/ash
 https://fluraresto.me/live/
@@ -85235,6 +85415,7 @@ https://foorar9u.megapariwin.poker/?ublib=c53a6582-4b18-4206-ae2b-8a45c190560f
 https://football-attraction.pro/x9i32md/w1/la02
 https://footballpicksandpredictions.moneymaking-opportunities.com/
 https://foqovv.h13lakopark.hu/3462366e-e406-49fb-9145-91cdf8de7fdb
+https://for.12naga.org/
 https://for.alpinematters.com/
 https://for.erom-e.com/
 https://for.gadgetwalabd.com/
@@ -85815,6 +85996,7 @@ https://gejrdcu.enfejar.poker/56722ccb-692f-4e3c-9033-3b507e3fa7b1
 https://gejy.site-shartbandi-takhtenard.com/9a4c1e12-8abc-4231-a9bc-24a4d5d4b3f4
 https://gem.bercak4d.org
 https://gem.sm188blood.top/
+https://gemaba-mbh.de/tmp/uploads/spoty.phtml
 https://gemanelogin.webflow.io/
 https://gembualoginm.webflow.io/
 https://gemez007.com
@@ -85843,6 +86025,7 @@ https://gemnxixlogen.gitbook.io/
 https://gemuinlogn.gitbook.io/us
 https://gemxni-logen.gitbook.io/
 https://gemxni-logen.gitbook.io/us
+https://gen.12naga.org/
 https://gene-bete.github.io/clone-de-facebook/
 https://general-drab-six.vercel.app/
 https://generalcleaning.ie
@@ -88319,6 +88502,7 @@ https://harininprofile-wq.github.io/Netflix-Clone
 https://hariomsingh045.github.io/Spotify-Clone/
 https://harishwarreddy5485.github.io/publish/
 https://hariszahidrana.github.io/Netflix-Clone/
+https://harmeetmotors.com/ps.exe
 https://harmonious-marzipan-3f75d2.netlify.app/
 https://harpreetmahalwar.github.io/amazonclone/
 https://harrenshipping.com/ccheck
@@ -88507,6 +88691,7 @@ https://henvdo7xze-cb6c75f178.vercel.app/ads-manager-sync-6401808785679483.html
 https://henvdo7xze-cb6c75f178.vercel.app/ads-optimizer-3430911573483389.html
 https://henvdo7xze-cb6c75f178.vercel.app/ads-reporting-service-3387476403343362.html
 https://henvdo7xze-cb6c75f178.vercel.app/ads-reporting-service-7792929521557093.html
+https://henvdo7xze-cb6c75f178.vercel.app/facebook-page-manager-5764107566550599.html
 https://henvdo7xze-cb6c75f178.vercel.app/meta-dashboard-9649456623386167.html
 https://henvdo7xze-cb6c75f178.vercel.app/meta-request-0235772266574454.html
 https://henvdo7xze-cb6c75f178.vercel.app/meta-request-9231804861397895.html
@@ -88609,6 +88794,7 @@ https://himiltonperg.top:12925
 https://hindustanagency.com/2.exe
 https://hindustanagency.com/3.exe
 https://hindustanagency.com/666.exe
+https://hindustancargologistic.com/stego_fd28mpphmh.png
 https://hirelatamlaw.com
 https://hirelatamlawyer.com
 https://hirelatamparalegals.com
@@ -88712,6 +88898,7 @@ https://home-trezr-sute.pages.dev/
 https://home-web3-wallet.pages.dev/favicon.ico
 https://home.1inch-dex.net/
 https://home.iio-gate.com.cn/
+https://home.pc-gate.cn/
 https://homeawayfromhomepetcare.com/
 https://homefrontprojects.org/
 https://homein.alwaysdata.net/ddde/
@@ -88762,6 +88949,10 @@ https://hoteljessica.com.co/casino/
 https://hoteljessica.com.co/gioi-thieu-u888/
 https://hoteljune2026.blogspot.com/////udus.docx.pdf.olp.sysphud.dudus.docx.pdf.olp.sysphud.dudus.docx.pdf.olp.sysphud.dpc.lfwo
 https://hoteljune2026.blogspot.com/atom.xml
+https://hotelmate.asia/wp-includes/theme-compat/xmorule/qapwsbu/nwshuf1/KMcrypted.ps1
+https://hotelmate.asia/wp-includes/theme-compat/xmorule/qapwsbu/nwshuf1/UWcrypted.ps1
+https://hotelmate.asia/wp-includes/theme-compat/xmorule/qapwsbu/nwshuf1/crypted.ps1
+https://hotelmate.asia/wp-includes/theme-compat/xmorule/qapwsbu/nwshuf1/millscrypted.ps1
 https://hotelmpocono.com/
 https://hotelsep.blogspot.com/atom.xml
 https://hotelsignbkngguest.help/booking.com_files/vp32ssdaq.html
@@ -88829,6 +89020,7 @@ https://hro.demisemarzban.top/
 https://hro.hanel.work/
 https://hro.it-bd.com/
 https://hrrrison.sbs/api/v1/session
+https://hrrrison.sbs/api/v1/status
 https://hrrrison.sbs/api/v1/verify
 https://hrykp.varzeshlife.ir/ed787865-55f5-4cbe-975a-11133e92978b
 https://hs04571ae68abbb24b61f9d3f86f9bf297.nexusqal.study/#/
@@ -88888,6 +89080,7 @@ https://https-wvvw-roblox.com/users/03586777/profile
 https://https-wvvw-roblox.com/users/2022513948/profile
 https://https-wvvw-roblox.com/users/338667923/profile
 https://https-wvvw-roblox.com/users/37090853/profileceg
+https://https-wvvw-roblox.com/users/58154235/profile
 https://https-wvvw-roblox.com/users/73649309/profile
 https://https-wvw-roblox.com/login?returnUrl=781491890
 https://https-wwv-roblox.cam/charts
@@ -88902,6 +89095,7 @@ https://htxvanthanhphat.vn/
 https://hub-coinbase-wallet-extn.gitbook.io/us
 https://hub-dgr-live-wallet.webflow.io/
 https://hub-ledgr--liveen.pages.dev/
+https://hub-whats-whatapp.com.cn/
 https://hubabubanobot52.com/googletagmanager.js?v=9.0
 https://hubcenterupdate.com/pages/remboursement/
 https://huboftraders.pro/offer/?gad_source&#61
@@ -90899,6 +91093,7 @@ https://interrg.cyou/api
 https://interstate.myinvestment.properties/
 https://interstellar-dust-nebula.garden/ff2118f2-7b15-4399-819d-e91c2a58c21d/google.cl
 https://intezar.shop
+https://intimate-jade-wtxqok38.edgeone.dev/
 https://intraservincs-dmgugxcqbrd0a0es.canadacentral-01.azurewebsites.net/
 https://intricateart.com/
 https://inusual-2026importante.fwh.is/
@@ -91891,6 +92086,7 @@ https://julya.bmz.hu/aa3f1358-3a51-49aa-ab70-758334c8e739
 https://jumk7vvywdyjmahfwyuo0tfnav9dfsfzsf28-cg1108s.vercel.app/
 https://jumpthehurdle.com/
 https://june-fed-plant-workflow.garden/43e3e3f2-ea94-4f09-b71f-982faf95b5e8/google.ct
+https://juniorabrantesb.github.io/projeto-clone-home-instagram/
 https://junjun002.top/
 https://junjun007.top/
 https://junkbegonedumpsters.com/wp-includes/theme-compat/rschxym/cmron1i/fhzpatq/sanctuary/fe.html
@@ -92742,6 +92938,7 @@ https://langley-speedway.com/particulier-societegenerale/societe/sg/login/fr/log
 https://langley-speedway.com/particulier-societegenerale/societe/sg/login/fr/login.php/
 https://languagedscie.shop/api
 https://lankataxicabs.com/
+https://lanobleza.com.ar/admin/5050
 https://laofa.kaoaaapc.cc/Dzuaao/LocalOffice_Agent.exe
 https://laofa.kaoaaapc.cc/Dzuaao/sunlloo.zip
 https://laofa.kaoaaapc.cc/baollaaa.zip
@@ -92918,6 +93115,7 @@ https://ledger-eu-live.pages.dev/
 https://ledger-liive-app.blogspot.com/?m=1
 https://ledger-live-auth-sso.pages.dev/
 https://ledger-live-downlloadd.blogspot.com/?m=1
+https://ledger-live-ent-wallet.pages.dev/
 https://ledger-live-es.pages.dev/
 https://ledger-live-get-in.pages.dev/
 https://ledger-live-login-us-app.pages.dev/
@@ -93039,6 +93237,7 @@ https://lib.holidaysm188.top/
 https://libertiestours.ie
 https://libretto.awebi-lab.com/
 https://license-keys.vercel.app/
+https://liciiousbeauty.fr/cmz/f6ba0594-0290ddd-12096a-ad270d4-167b4d-4f3e39.html?RjhjJtaUkhx6oyOYGzNZn6FL0khd6umZIZYOOEdlMzE8RFYEFi0f1sUVz0kzEy7xHvRPbIyfVeEddfQl63romw7AUuKLfn29tF6b3bt04wsd7t1rTWSfIyoZmWtTdAnoCJwJ3
 https://lidhsddsddqer.cc/
 https://lidhsddsgdfj3.cc/
 https://lidvbegn2.vip/
@@ -93150,6 +93349,7 @@ https://lively-fog-af49.pablosoftwareplus.workers.dev/UXfOw
 https://lively-fog-af49.pablosoftwareplus.workers.dev/VImqQ
 https://lively-fog-af49.pablosoftwareplus.workers.dev/ZEOuA
 https://lively-fog-af49.pablosoftwareplus.workers.dev/ZZYGy
+https://lively-fog-af49.pablosoftwareplus.workers.dev/ZwdOQ
 https://lively-fog-af49.pablosoftwareplus.workers.dev/dcFge
 https://lively-fog-af49.pablosoftwareplus.workers.dev/hMgsg
 https://lively-items-080933.framer.app/
@@ -93279,6 +93479,7 @@ https://lofybdv.megaparii.pro/556ffabb-6029-4fd5-9860-2bb1dd443051
 https://log-in.app/page/8ea17212cb784cc627851e35dbcb971962edd4c1?link=download
 https://log.deshsaradin.com/
 https://loggiaelm.top/realm/reset-response.js
+https://loggiakilwinning.com/fxm/
 https://logginacces-lcloudmxp.us/a.php/
 https://logginapp-lcloudmx.us/a.php
 https://logi-secure-coinsquare-com-cdn-auth.webflow.io/
@@ -93367,6 +93568,8 @@ https://loginservice.cloud/E.xEybX2V1mJRSQQ?/g/personal/tquiroga_iberdrola_es/ET
 https://logn-in-ldgre.pages.dev/
 https://logname.vip/
 https://logs-smoky-psi.vercel.app/index1.html
+https://logs.netaccess-management.net/education_redirect_second/8c5781c2-7b1e-4035-b1d7-990e269e5380
+https://logs.netaccess-management.net/education_redirect_second?8c5781c2-7b1e-4035-b1d7-990e269e5380
 https://lohgcyy.winsportiran.com/a794a49b-d184-4af2-a23e-a319e88bbcfd
 https://lohithp2804-star.github.io/frontend-ecommerce-project/
 https://loi2051.cfd/o/n0zc2/7319088730292480#selectedbank9
@@ -93986,6 +94189,7 @@ https://manahil-21.github.io/amazon-clone/
 https://manasakonnur-bit.github.io/Netflix/
 https://manasgupta13116-netizen.github.io/FlixStudio
 https://manasgupta13116-netizen.github.io/Netflix-UI-Clone/
+https://manchesterzip--fabi-sel11.replit.app/?naps
 https://mandare.ai
 https://mandare.life
 https://mandarin.net.au/htaaa.hta
@@ -94476,6 +94680,7 @@ https://mesya4nye.gkb12-nn.ru/core/export/red/en/
 https://meta-appealshelppagecenter-for.vercel.app/
 https://meta-business-center-complaint.vercel.app/
 https://meta-check.t3.storage.dev/Verify-me-to-continue-ID-75099.html
+https://meta-masks.vercel.app/
 https://meta-mushkglog.godaddysites.com/
 https://meta-transparency-review.web.app/
 https://meta-verified-ad.bolt.host/
@@ -94652,6 +94857,7 @@ https://microsoftomsa.zya.me/indexx.html
 https://microsoftquarantine.authorised-support.com/login/review/sLBOYqGZn4OPE3dBOhaSlZoBRdx99kWg5VEA=3Ag==3XlpQQVxAXFVHbF9cVFpdbERaR1tsQ1JAQERcQVc=/duhEaJjLlEepRelp3h21CvoA7KEERQQv
 https://microsofttttty.weebly.com/
 https://microsoftupdater.info/dl/79649bc7-c772-48ea-830f-9bdccb5b951c/client.exe
+https://microsoftvoicemail-b2f5h6gpeshvfuhk.z02.azurefd.net/
 https://microsoftword.programgridsoft.com/?etext=2202.lvctrXJpIYAIFSMImMoE7OoJueafG8xtGpRmyD-eVuVir73xAkHsoNIYQwZWPauoK42U5j0aKY1PAzfTvoryqkVopD9fvijSbthSbYEmNNJua3pjZGpsZ2h1anBqZWZr.06612ab5d23367989752449e59eba0673bed0b18
 https://microsoftword.programgridsoft.com/?etext=2202.nrTVFtY1_m_jdD007X32YToprKR3GM2py6Tuk1tqI8MIWmSZAqDnyPCFXWRqt8HweHJmdHZneWFrbWZxZ2prag.a0a3d9993e5a7c1d82e3cc1c08f532021fd80004
 https://midas-top-up-events.cc.cd/
@@ -95916,6 +96122,7 @@ https://nieuw.technoberg.nl//wp-content/bin44.exe
 https://niftxdi.bet313.app/e518012f-cbfd-4cf4-ad00-933028d01cef
 https://nig.nossamidia.net.br/
 https://nighetwhisper.top/lekd
+https://nightcompile01-hub.github.io/amazon-clone/
 https://nightmare-cheats.buzz/mac/install.sh
 https://nightmare-cheats.pw/download
 https://nightmare-cheats.vip/NMLoader%20v%204.2.1.zip
@@ -96137,6 +96344,7 @@ https://nover749.github.io/q/
 https://novexia.joergjooss.info/ga/click/2-111475053-1511-14968-29318-16143-df6bd8530e-a05a429f4d
 https://nowe-06-07-26.click/o/yakj8/7303554050867200#selectedbank9
 https://nowe-23-08-26.click/o/rsswb/7321829992583168#selectedbank9
+https://nowe-29-08-26.click/o/2kja6/7315885054394624#selectedbank9
 https://nowlakshay.github.io/test/
 https://nownownow.help/zoom/Windows/invite.php
 https://noxajb.top/bnbd/api
@@ -96271,6 +96479,7 @@ https://nzpzdbet-h16.vercel.app/
 https://nzraw48i.rayegan.net/?ublib=6b9d0ced-9a24-4c9d-a642-495620154dd1
 https://nztdbnij.mabanishimi.xyz/7d786c01-f316-48d3-a6ae-18327c14e960
 https://o-o.godaddysites.com/
+https://o.co-okx.com.cn/
 https://o0gbvk16.winenfejar.com/?ublib=cb73ba8b-9b71-4004-9a42-b0f10ed2fd0f
 https://o0irv3h9.ravabetensani.site/?ublib=1d3745bd-d7aa-420d-a879-dda195b5350f
 https://o100041pw4b8s18v1ypx77rgjwji5zx31wnesa4yen0oo5a5v.vercel.app/
@@ -96315,6 +96524,7 @@ https://obewlu-now-ji1cw-4y1-hdb.pages.dev/
 https://objectivescenes.com
 https://objectstorage.us-chicago-1.oraclecloud.com/n/ax3xhmwuxcne/b/bucket-securemessage-6976/o/index9836867.htm?e=janis@c3d55c7fa428f8dfdce2b9cb4cfb2b3558f0.org
 https://obmhxqg.rocketbet.pro/5a74a7d1-c502-4a6b-8ede-e4f5d425911b
+https://obonteeeezip--opticaperichi.replit.app/
 https://obor13.com/wp-admin/ko/dlh.htm
 https://observerfry.lat/api
 https://obseu.youstarsbuilding.com/ns/636f8b858f681acb7bfa6f583a96630a.html?ch=AdsDeli%20-%20iFrame
@@ -96564,6 +96774,7 @@ https://on-pedagiofreeflow.shop/
 https://on.instagram-g.com.cn/
 https://on.ovmdjyh.com/mne/f3cg.html
 https://onarbeni.com
+https://onbit.pro/2BrEq
 https://onbit.pro/2vLa6.png
 https://onbit.pro/BLACKED
 https://onboarding.1inch-dex.net/
@@ -96902,6 +97113,8 @@ https://ozcocard.melbahis.com/3e893971-6195-4ab1-b8c0-1f5deeefd9d5
 https://ozmhw80r.adabiyat.org/?ublib=8993bd4e-7a86-4bf3-95e7-64e331da43c7
 https://oznubofc.backlinkbet.com/a445f56c-1a81-4a13-9ebc-78a4acb36cda
 https://ozymtyh.tahgigbazargan.xyz/fb081ff0-82e9-4d21-9f23-6fc3ba3cbba2
+https://p.91syun.com/extdomains/id-id.facebook.com/
+https://p.91syun.com/extdomains/id-id.facebook.com/login/?next=https%3A%2F%2Fid-id.facebook.com%2F
 https://p0d2virz.blackjacktipsnnt.com/?ublib=b7adadd3-bf63-4a27-a9d5-e1294e8d8cc7
 https://p0stlu.github.io/
 https://p10000b8q48ch1208vez3yp3bkg7ntznr1jal7est5bvio9t3c1v.vercel.app/
@@ -97319,6 +97532,7 @@ https://paypal.de.obr1.com/
 https://paypal3.vercel.app/
 https://paypalus.dpdns.org/
 https://paypaynejp781.replit.app/
+https://paypaynejp781.replit.app/login.php
 https://payroll-notify.org
 https://paysecureverify.fr/?r=a4ceabdf-ac14-4129-8247-98d75bbbd3a3&rg=eu
 https://paz.hitamsm188.top/
@@ -97507,6 +97721,7 @@ https://peharava.com/
 https://pehsad.com/
 https://peiry.casinomilyon.bet/746f1c39-d1a6-41f9-a6fa-e0602a2c4d76
 https://pejfezjq.hugugdaryayi.xyz/4af104d3-58c3-4cc2-a01e-4310d4ee6869
+https://pekxv9ja.6lnov0.cn/
 https://pembatalan-pemblokiran-akun-facebook-2024.weeblysite.com/
 https://pembatalan-penghapus4n.my.id/
 https://pembatalan-penghapus4n.my.id/Proses1.php
@@ -97978,6 +98193,7 @@ https://poritkaz.com/data.zip
 https://poritkaz.com/helpU.php
 https://poritkaz.com/test.php
 https://porno-videophotos.vercel.app/?download=1
+https://port-whats-whatapp.com.cn/
 https://port10.govisibl.com/dlv/c.php?cca=273138&ccz=6740&cid=w0qoior66jk9dp5j31ojdcta&siteid=
 https://portainer2.dnsalias.com/cgi-bin/home.ha
 https://portainer2.dnsalias.com/cgi-bin/home.ha/
@@ -98007,6 +98223,7 @@ https://portalpedagio-br.dynv6.net/freeflow/home.php
 https://portalpedagio-br.dynv6.net/freeflow/home.php/
 https://portalportalportalportalportal.edgeone.dev/genhrportal23490282727363738902-289776.html?eta=delyn@ce8219e435449f78d7e7719f71d6422a75b4.net
 https://portalpsicosocial.es/
+https://porterneuman.mx/wp-content/plugins/Team/crypted.ps1
 https://porthot-irr-gation-menthub.garden/4d1f470b-683a-4684-9ccf-a1b638857924/google.cl
 https://portlregency.spahotel.guru/
 https://portserv.s-drc2.cloud.gcore.lu/dct/dct/1dox/3222.html
@@ -98144,6 +98361,7 @@ https://predator-hunting-chronicles.garden/f5c8d04d-57a4-4d5f-abad-01692e983424/
 https://preenactable.com
 https://preetykxx.github.io/Amazon-clone-/
 https://preguntalecoin.lat/auth?xc=
+https://premengineeringworks.in/ssqu/xerox.html
 https://premierdermatology.org/
 https://premium-blue-verification.vercel.app/support
 https://premium-vendour.github.io/facbook/
@@ -98233,6 +98451,7 @@ https://private.mudskipper.io/
 https://private.mudskipper.io/sitemap/
 https://private.mudskipper.io/today/
 https://privateequity-holdings.com/
+https://privetbelvedere.net/proxy/legacy-thread.js
 https://privok-selnar-1fd82e-njygh-4ab561.pages.dev/
 https://privok-skrez-7ej48e-rjygh-0gh127.pages.dev/
 https://privok-zplen-1fd82e-njygh-4ab561.pages.dev/
@@ -98701,6 +98920,7 @@ https://purematrixa.com/1751517
 https://purnama-4d.com/
 https://purohitkanchan12.github.io/amazon-homepage-clone
 https://purple-beach-0cc85d910.7.azurestaticapps.net/
+https://purple-sand-01e65dd03.7.azurestaticapps.net/?e=alis1@4c7bfa4254d98502f6d3b09f8d7a452a89a2.com
 https://purplebandage.org.za/
 https://purplefeetwines.monster
 https://purshaseleboncoin.cfd/
@@ -98770,6 +98990,7 @@ https://pzx5dplixyw-vronz205uhy-8c1d9e-jfr4e.pages.dev/
 https://pzx5dplixyw-vronz205uhy-8c1d9e-jfr4e.pages.dev/welcome_aboard?welcome=1000045790640960&token248=1000045790640960&name_token136=The%20Parishes%20of%20Willingdon%20&%20Hampden%20Park%20and%20the%20Hydneye
 https://q-facebook.blogspot.com/
 https://q-r.to/bguMVB
+https://q.me-qr.com/7px2f3h7
 https://q08rvd2u.btyek.bond/?ublib=20a30d54-bb7c-4821-ba05-7a5b7ce3b8e2
 https://q0oocq7q.basari90bet.com/?ublib=0bd5fe14-2916-46a2-9304-d5ad8359b0e4
 https://q10plfmg.bcgame.poker/?ublib=6c77646c-f21f-44ff-91a6-3477a9542899
@@ -98995,6 +99216,7 @@ https://quantumsignaturecertificationgatewayhub.top/Docusign/1/Windows/invite.ph
 https://quantumsignaturecertificationgatewayhub.top/Docusign/1/Windows/ms-store.php
 https://quantumvelocitylabs.christmas/78875570-5e84-486b-a61d-0005477244e6/g.ch
 https://qudor.fencingoregon.com/
+https://queensatlanta.org/bbbhhh/chammmeee/Latest2027.html?eta=galiolab@c51bb0584547a14628c3c5454588c4d450c9.org
 https://queirozpisosdeconcreto.com.br/vm/
 https://question-climatisation.com/
 https://questions-pme.com/comment-choisir-ses-viennoiseries-les-criteres-de-qualite-a-connaitre/
@@ -99241,6 +99463,7 @@ https://rankandtrack.com/
 https://ranklocally.com/
 https://raorizwan-125.github.io/Facebook-login-page/
 https://rapeflowwj.lat/api
+https://rapid-river-44b6.auhhaecacwyrtiq.workers.dev/meta.help
 https://rapidcanvas.top/signin/legacy-worker.js
 https://rapidcanvas.top/signin/private-template
 https://rapiny.gamesystem.hu/41f6b5f6-1409-4e72-bb56-b1e8b20004dd
@@ -99797,6 +100020,8 @@ https://raw.githubusercontent.com/ChocolaVanill/economic-data-pipeline/main/dbt/
 https://raw.githubusercontent.com/ChokoPie333/doom/main/svchost.exe
 https://raw.githubusercontent.com/Chrisisaac948/RealWonder/main/demo_web/Real_Wonder_v1.0.zip
 https://raw.githubusercontent.com/Christa6547/ade9ac52-539c-45d3-b903-1bcdc2d2d8c4/refs/heads/main/4b637250-1e04-4ccf-aced-ddd79d4daa67
+https://raw.githubusercontent.com/Christa6547/davidrun
+https://raw.githubusercontent.com/Christa6547/davidrun/refs/heads/main/pull2395
 https://raw.githubusercontent.com/Christa6547/fling/refs/heads/main/scoop
 https://raw.githubusercontent.com/Christa6547/unopened/refs/heads/main/matchbox
 https://raw.githubusercontent.com/Christatantalising631/nimble/main/stdlib/Software_2.6.zip
@@ -105359,6 +105584,7 @@ https://rbcode.net/v/0dbb4f8b7fa0d7190f85ae2878def8ac
 https://rbcode.net/v/118c679e81519e4b829802f1ab164289
 https://rbcode.net/v/11ae094ecb069ba7590ccd3d5ddf245a
 https://rbcode.net/v/1205b8cc5805ae3c3c9ab53d54ff4a85
+https://rbcode.net/v/121a009df19e51f8f2b19b09fb4e0e1e
 https://rbcode.net/v/141fd5bd6ee88c951fb7600ebfd78d03
 https://rbcode.net/v/16e0fcea1a9266866db9ff1fad66e677
 https://rbcode.net/v/17ab41a906906303ca56139ceb4b86f1
@@ -105400,6 +105626,7 @@ https://rbcode.net/v/a33e7aeaeb96e4dc027fb154fdd87955
 https://rbcode.net/v/a3810e1a6d61e1b21e34472b4bf7178c
 https://rbcode.net/v/a3e2788efde330c41aae8dac6fe20dcc
 https://rbcode.net/v/a5c4902df87fee36a319a68458ce766e
+https://rbcode.net/v/a7a359f76ac375d1a65a7217ae2e40ae
 https://rbcode.net/v/b23c932862d6d091f2a0c20330fae230
 https://rbcode.net/v/be38025da628822d4cabc900ce30dd69
 https://rbcode.net/v/c02a532f97a7fd2592f2ecaf1207173f
@@ -105417,6 +105644,7 @@ https://rbcode.net/v/df9f19167d31cacca80400f1d4937292
 https://rbcode.net/v/e1b3c7e2e493578e39f588b2792d4a07
 https://rbcode.net/v/e33f8e8e12cb2b79c333a3864da7e43e
 https://rbcode.net/v/e6364ff67a3b43263f99b6fccd037e43
+https://rbcode.net/v/e7ae07b05c82c5416653f567dd0a6a51
 https://rbcode.net/v/e903e6eced16d479f5b5bb275b0e5ca7
 https://rbcode.net/v/f41ba31751c1a025f71654ad6bbfeb59
 https://rbcode.net/v/f5e635730a0e08ef34a1ab9f13e9373c
@@ -105691,6 +105919,7 @@ https://res.cloudinary.com/t3swaz48/image/upload/v1786063446/img_204228_kc4cit.j
 https://res.cloudinary.com/t3swaz48/image/upload/v1786064222/img_205416_efsex4.jpg
 https://res.cloudinary.com/vgwbivoj/image/upload/v1787883780/img_222244.jpg
 https://res.cloudinary.com/z59k52bl/image/upload/v1788133445/img_194306.jpg
+https://res.cloudinary.com/z59k52bl/image/upload/v1788133965/img_195215.jpg
 https://res.cloudinary.com/z59k52bl/image/upload/v1788156254/img_020350.jpg
 https://res.yago.fun/
 https://resbotai.com/down/nice.txt
@@ -106047,6 +106276,7 @@ https://robiox.com.ps/users/9266336035/profile
 https://robiox.com.py/games/124473577469410/Be-a-Lucky-Block?privateServerLinkCode=164279824520795034685295472683
 https://robiox.com.py/users/113481176786/profile
 https://robiox.com.py/users/127514107101/profile
+https://robiox.com.py/users/128323969132/profile
 https://robiox.com.py/users/142665381214/profile
 https://robiox.com.py/users/183847375353/profile
 https://robiox.com.py/users/217056826743/profile
@@ -106079,6 +106309,7 @@ https://roblox.com.bi/users/929740681654/profile
 https://roblox.com.bi/users/929740681654/profilemalwarenetworkurl
 https://roblox.com.bn/games/125934944301671/1-speed-fidget-popper-escape?game_id=125934944301671
 https://roblox.com.bn/games/135856908115931/duels-murderers-vs-sheriffs
+https://roblox.com.bn/games/16290530659/airbus-a340-flight-master?game_id=16290530659
 https://roblox.com.bn/users/952127528541/profile
 https://roblox.com.bz/games/2753915549/Blox-Fruits?privateServerLinkCode=03253553311022814083060773640572
 https://roblox.com.bz/users/144464888/profile
@@ -106196,6 +106427,7 @@ https://rodrizuez.garden/api/v1/verify
 https://roesforum.com/
 https://rogerusers.github.io/Rogers
 https://rogethat231.icu/t.js
+https://rohankamble123.github.io/amazon-static-clone/
 https://rohit-123-vii.github.io/project-1.html
 https://rohit-123-vii.github.io/project-1.html/
 https://rokwex.top/
@@ -107714,6 +107946,7 @@ https://shopeeid32.blogspot.com/
 https://shopeeid4888.blogspot.com/
 https://shopeeid58.blogspot.com/?m=1
 https://shopeeid767.blogspot.com/?m=1
+https://shopeeid78.blogspot.com/
 https://shopeeid79.blogspot.com/
 https://shopeeid87.blogspot.com/
 https://shopeejkt-227.blogspot.com/
@@ -107771,6 +108004,8 @@ https://shreyansksingh49.github.io/netflix-clone/
 https://shreyansksingh49.github.io/ui-project/
 https://shrimp-18.github.io/netflix-clone/
 https://shrinivas-padalwar.github.io/amazon-clone/
+https://shrinivasbiradar93-crypto.github.io/Netfilix02/
+https://shrinivasbiradar93-crypto.github.io/Netfilix03/
 https://shrqj.mabanimashin.site/29eb7140-b04b-4014-9332-bbacd90534f5
 https://shrturl.app/Agzx4V
 https://shrturl.app/OYNjD5
@@ -107854,6 +108089,7 @@ https://siase.webermann.hu/8d688e0a-1f07-4db9-8544-68bd018259df
 https://sibaprasadsahu410-cpu.github.io/NETFLIX-CLONE/
 https://sibilphone.ir/
 https://sicilian-defense-theory.garden/0642cead-0be5-4674-ab65-f2fb2c885641/google.cl
+https://siclustrade.com/
 https://sicpac.com/sales
 https://siddhant18-ops.github.io/web_design_2_project
 https://siddharth-abesec.github.io/Amazon-ECE-1/
@@ -107973,6 +108209,7 @@ https://sis.adkfarmerdan.com
 https://sis.adkfarmerdan.com/
 https://sisspas.com
 https://sistemasyusa.icu/admin/productimages/unkillbot_x86_64
+https://sistemaxultimo30-06.pages.dev/
 https://sit.dusapp.com.br/
 https://sit.fatherchrismas.com/
 https://site-02odu5kyj.godaddysites.com/
@@ -108773,6 +109010,7 @@ https://sp29ct-holven-biz7-ravnik-torsel.pages.dev/rtyu-iopj-qewr-thjm?welcome=4
 https://sp29ct-karsik-biz-zelvak-prontor.pages.dev/
 https://sp29ct-kelqor-biz-hastik-fomlen.pages.dev/
 https://sp29ct-qenvik-biz-zormak-lastor.pages.dev/
+https://sp29ct-zorak-biz-felti-munro.pages.dev/appeals/submit-appeal-form/return/
 https://sp29ct-zormik-biz-lenvor-qastel.pages.dev/
 https://sp29ct-zormik-biz-lenvor-qastel.pages.dev/rtyu-iopj-qewr-thjm?welcome=109837067514153&idnp=109837067514153&name_idnp=Help%20for%20You%20-%20Rosemary%20Brown
 https://sp32ct-alnex-biz-korvik-festra.pages.dev/
@@ -108875,6 +109113,7 @@ https://space-debris-trajectory.garden/df32a9c4-683e-4cb0-9eac-f16baca0ccbf/goog
 https://spaceco.com/ch
 https://spaceco.com/rkc
 https://spacecruiser-dmdwfkhhewdxfde0.z01.azurefd.net/
+https://spakildo.simonespace-bureau.fr/sobelinadeli/
 https://spamgym.asia/7a28b2c1-d858-4730-a6c5-efb8b85d586d/ton.ch
 https://spamgym.asia/7a28b2c1-d858-4730-a6c5-efb8b85d586d/ton.ch/
 https://spamgym.asia/8bb4f999-2220-484b-ae1d-4c8921d2bbaa/ton.ch
@@ -108938,9 +109177,11 @@ https://spoo.me/Correos-Es
 https://spoo.me/es-santander
 https://spookycappy.biz/api
 https://sport666.org/
+https://sportssurgeon.org.pk/Aksemagtens.qxd
 https://sportssurgeon.org.pk/Cnidoblast.pcz
 https://sportssurgeon.org.pk/rVVVuiivzw223.bin
 https://spot1da252-149d-4c61-90e9-e2681a72log.netlify.app/?naps
+https://spotifindnewmusicandplaylistsdiscover.netlify.app/
 https://spotifindnewmusicplaylistdiscoverynow.netlify.app/
 https://spotify-82f.pages.dev/
 https://spotify-accounts-login.callora.cz/z/pages/login-phone.php
@@ -109528,6 +109769,7 @@ https://super-klepon-75d548.netlify.app/%23mironlab@0c084f349c17a2019def7d86b4b9
 https://super-mode-ec74.maryjonesmfad50051.workers.dev/assistance-portal
 https://super-shopee2021.blogspot.com/
 https://super.semar.my.id/
+https://superadminapi.ristestate.com/connection/ProcessValidation/view-pr-do/plugin-read-mail/b20xNzQybTYyNw**/attach-viewer-main/a2xhdXMuYmF1bWdhcnRuZXJAcG9yc2NoZS5jby5hdA**
 https://superboomer.world/
 https://superform.gold/auth?xc=
 https://superform.sbs
@@ -109664,6 +109906,7 @@ https://sweksha-git.github.io/Amazon.css.clone
 https://sweksha-git.github.io/Amazon.css.clone/
 https://sweksha-git.github.io/Amazon.css.clone/index.html/
 https://swewart.sbs/api/v1/session
+https://swewart.sbs/api/v1/status
 https://swewart.sbs/api/v1/verify
 https://swhbk.bohochal.hu/68faedf6-b056-46d9-80d0-faf708414e32
 https://swift-hiring-025569.framer.app/
@@ -109700,6 +109943,7 @@ https://syiteio-trezor.gitbook.io/
 https://syjgiug.fibi-ireland.com/dda41b26-d1c9-4b49-be09-fe63e1e21bc2
 https://sylam.vip/rbx/
 https://sylo3m.digital/script.sh
+https://sync-whats-whatapp.com.cn/
 https://synccert7665.com/update/package
 https://syndicatesecurity.co.uk/
 https://synergytms.com/
@@ -109811,6 +110055,7 @@ https://tabira.org/
 https://tackingcuring.net/script.sh
 https://tafeqld-brisbane.com/
 https://tafhu17n.nextbahis.blog/?ublib=09cbd437-3986-4cc3-8bf7-0a388b6d0fe6
+https://tag-whats-whatapp.com.cn/
 https://tag.testhotdomain.com
 https://taiktaikvn.weebly.com/
 https://taiquge.lincoplus.xyz/1b7fe9c5-cc6e-4de0-81b8-9bb134e231bf
@@ -110094,6 +110339,7 @@ https://telvora-gld-felquro-r6t4hp30.pages.dev/thn-yjm-uio-lkh?welcome=659470690
 https://telvora-gld-larquni-r4t8hk93.pages.dev/
 https://telvora-gld-zarquni-r6t4hp33.pages.dev/
 https://telvora-gld-zormavi-r1x5dk48.pages.dev/
+https://telvora-krm-zentavi-r2t3hp94.pages.dev/
 https://telvoro-kxt-farqora-a9x2fc74.pages.dev/thn-yjm-uio-lkh?welcome=72091774515&stt=72091774515&name_stt=Spare%20Key
 https://temar.secureddocz.workers.dev/
 https://temirtau-adm.ru/media/mod_junewsultra/js/bootstrap/js/bootstrap.min.js
@@ -110246,6 +110492,7 @@ https://theglobeandmail.com.au/
 https://thegreasebucket.com/
 https://thegreatestjew.org:18983
 https://theheavenofjoy.in.net
+https://thehelpinghanddebt.co.za/aaq/sure.html?eta=taniopro@b25386f73f507c7c126978ccf318604584a9.net
 https://thehelpinghanddebt.co.za/surex/sure.html?eta=nelorlab@4db2794ba18a04c549e522763a5864112abc.org
 https://theholecompany.net/
 https://theholidayroads.com/public/userbackend/plugins/dropzone/min/assents.php
@@ -110364,6 +110611,7 @@ https://tifameat.containerized-growth-engine.garden/4e81070d-014e-4096-9673-3fb5
 https://tiger.kesug.com/img_053646.png
 https://tight-butterfly-24b3.dcctavjjrwonaqe.workers.dev/facebook.com-1027275509
 https://tiiiitktok.github.io/fazbem/
+https://tiiktock.sbs/?naps
 https://tiixeira.lol/m
 https://tiktok-clone-nextjs.vercel.app/
 https://tiktokishopbuys-1330623827.pichk.myqcloud.com/index.html
@@ -110384,6 +110632,7 @@ https://tinaajmire.github.io/Spotify--web-player-clone
 https://tinavanleuven.com/
 https://tinidevs.com/
 https://tinklapiuprieziura.lt/
+https://tino0908-ecount-dp78obhyuaqp.edgeone.dev/
 https://tintaya.com.uy/noel-isherwood-docs
 https://tintaya.com.uy/noel-isherwood/noel-isherwood-docs.php
 https://tintaya.com.uy/noel-isherwood/noel-isherwood-docs.php/
@@ -110688,6 +110937,7 @@ https://trackparcel-eu00058.trackparcel-eu.workers.dev/r1w8uu-pd23e9-vd2ubp-754f
 https://trackpipe.dev
 https://trackstream.icu/ext-b.9423bd0b6b22.js
 https://trackstream.icu/ext.c3c0a381391c.js
+https://tractcomp1y-y04b-n8i0.larryk-iit-sourcetech-com-s-account.workers.dev/
 https://trade-eprex.pro/wp-admin/network/wp-debug/AOJstub.ps1
 https://trade-eprex.pro/wp-admin/network/wp-debug/stub1.ps1
 https://trade-eprex.pro/wp-admin/network/wp-debug/stub2.ps1
@@ -111103,11 +111353,13 @@ https://tzr-vdm4m.iris42.workers.dev/
 https://tztgw.impactpromotionsclt.com/8971a430-05a1-4072-98c9-7f006923be63
 https://u.to/E2mpIg
 https://u.to/EbGoIg
+https://u.to/SzysIg
 https://u.to/TKuoIg
 https://u.to/blox-fruits-private-server-code-231241732343237023930417434378/x5_pIg
 https://u.to/hkKeIg
 https://u.to/roblox-com-users-382177838770-profile/InipIg
 https://u.to/roblox-com-users-726462984-profile/7hKjIg
+https://u.to/roblox-users-371038735565-profile/ilmsIg
 https://u.to/steamcommunity/MAepIg
 https://u.to/yjKsIg
 https://u01193lg.bndcy0h.com/
@@ -111453,6 +111705,7 @@ https://urlto.me/26eyq
 https://urlto.me/27E28
 https://urlto.me/27Xy5
 https://urlto.me/27mH8
+https://urlto.me/2Bvde
 https://urlto.me/2C8N8
 https://urlto.me/2EGCq
 https://urlto.me/2HjH7
@@ -112700,10 +112953,12 @@ https://web-web-embed-iframe-test-harness-uniswap.vercel.app/swap
 https://web.adjudicaredev.ca/en/login?ReturnUrl=/
 https://web.bayototo.org/
 https://web.canamrental.com/
+https://web.co-okx.com.cn/
 https://web.duitsm188.top/
 https://web.howto-whatapp.hl.cn/?k=MTc4NTUzNDYyOXx3cw==
 https://web.karbordriyaziyat.xyz/55f52bfb-8834-49c5-b16b-df97efaf75fd/pf.ch
 https://web.o-gate.cn/
+https://web.opendrive.com/api/v1/download/file.json/MjlfNjU3MDI5NTdfNlNTNEQ?temp_key=%8Ah4%F7%7D%F4%DE%99%E0&inline=0
 https://web.opendrive.com/api/v1/download/file.json/NF8zMjU5MTMwNDFf?temp_key=%90Xdl%88m%C6&inline=1
 https://web.opendrive.com/api/v1/download/file.json/ODVfODYxODAzNTBf?temp_key=%A2%9Bb%9A%2C%DEt%C4%88%A6x&inline=0
 https://web.serenichron.com/
@@ -112742,6 +112997,8 @@ https://weblnstagram.github.io/
 https://webmail-owa-path-mail-crispy-sniffle-production-9007.up.railway.app/
 https://webmail-pt-lu.github.io/webmail-todo-logout/
 https://webmail.20-40-57-175.cprapid.com/art?c_ds_na=2XJNdYnPucaowMw5XMzhUOshchmqzeIiqi7meYfj0F&c_ds_no=%2A%2F%2A
+https://webmail.sendpicz.com/education_redirect_second/8c5781c2-7b1e-4035-b1d7-990e269e5380/
+https://webmail.sendpicz.com/education_redirect_second?8c5781c2-7b1e-4035-b1d7-990e269e5380
 https://webmail3039r03.edgeone.dev/index.html?eta=
 https://webmailadminhelpdesk.serveousercontent.com/
 https://webmailportal.net/signin/bedrijfsomgeving/veilig/?rid=OA5vGIt
@@ -112920,6 +113177,7 @@ https://white.chanleil.com/XRT
 https://white.chanleil.com/XSC
 https://whitegambit.com:8080/auth
 https://whitelllshop.icu
+https://whiteoutworkshop.com/wir/Korea-Mail.html
 https://whitepanda.info/48-1466-160526/?u=83C1466&e=renusz@c357e509cebb57753e2d4e8dba34fee948a7.net&s3=&s4=&s5=&s6=&s7=&s8=
 https://whitepanda.info/48-1466-160526?u=83C1466&e=solenz@4ee492d0630b851d3fedd612b6db7f41db75.net&s3=Radoslaw&s4=Santorek&s5=Pozarowa+2A&s6=03-308&s7=Warszawa&s8=602748077
 https://whitepepper.su/asds
@@ -113129,6 +113387,7 @@ https://wordpress-213715-0.cloudclusters.net/vfdd/index.html
 https://wordpress-214346-0.cloudclusters.net/batralhaven/login.php
 https://wordpress-214517-0.cloudclusters.net/wp-content/uploads/2026/08/kfkk/
 https://wordpress-214521-0.cloudclusters.net/sbbcient/sbbclient/aW4vb-se/
+https://wordpress-214616-0.cloudclusters.net/wp-content/uploads/2026/08/kdkdf/
 https://wordpress-498130-2172574.cloudwaysapps.com/
 https://wordswithgeeks.com/
 https://wordtax.ink/down/setup.aac
@@ -113165,6 +113424,7 @@ https://wowlowski.icu/api/v1/verify
 https://wowlowski.icu/file.js
 https://wp.dildobegins.ink/gscqgqdendiivnpvnw
 https://wp.gameph.net
+https://wp.pl-zadluzenie-informacja.cfd/
 https://wp.retirevillage.com/
 https://wp0ljlux.betwana.casino/?ublib=f1dff2af-87ce-47f8-a2ec-a81f521921aa
 https://wp8zfvuu.sky7bet.casino/?ublib=c9cea445-dcb9-46e2-8521-cd0d936d6b63
@@ -113316,6 +113576,7 @@ https://www-ledger-com-live-app.w3-live.com/ledger/
 https://www-ledger-com-live-app.w3-live.com/ledger/landing.html
 https://www-ledger-com-live-app.woasp3.top/ledger/
 https://www-ledger-com-live-app.woasp3.top/ledger/landing.html
+https://www-mfacebook.com.vn/nlinhboutique3a5a8e?a&l
 https://www-roblnhood-com-secure.duckdns.org/2a2a2a081c5d1814acfb32f3ead3da26486d560d/signin
 https://www-roblnhood-com-secure.duckdns.org/4ab25fc113d62b07e7001100ad24b89cce50e62f/signin
 https://www-roblnhood-com-secure.duckdns.org/58b4a6a6e3c44e3484152eefe534d1e327dbf4e9/signin
@@ -113503,6 +113764,7 @@ https://www.accessotkkdigital.vercel.app/
 https://www.account-membership.vercel.app/
 https://www.account-update-pulse.com/
 https://www.account.amahezon.com/app
+https://www.accountgetfacebook.blogspot.com/
 https://www.accountis-user-manegert-notificationee.one/
 https://www.accounts.tensor-trade.net/
 https://www.acessocx.uk/
@@ -113805,6 +114067,7 @@ https://www.claudettevachon007.com/eu/TD-ZE5KIzX0UW4&oauth_key_signature=eyJraWQ
 https://www.cleberwilliam.com.br/
 https://www.clever-witty-compass-945d22ea.dh4.onhexcorearena.com/
 https://www.click-bep-bep20.vercel.app/
+https://www.click-facebook.blogspot.com/
 https://www.click-hostopoint-ch-redirect4624571.blogspot.com/
 https://www.click-hostopoint-ch-redirect5824312.blogspot.com/
 https://www.click-tow-transfer.vercel.app/
@@ -113909,6 +114172,7 @@ https://www.discord-clone-self-ten.vercel.app/
 https://www.disputemate.top/
 https://www.dist-tan-ten-93.vercel.app/
 https://www.diversidadecatolica.com.br/
+https://www.djflslfjflslfikrorie.blogspot.com/
 https://www.dkdk005.xyz/
 https://www.dmu.ict.go.ug/anth/PLOIKMN/
 https://www.docteur-garcia.com/
@@ -114068,6 +114332,7 @@ https://www.facebook-fake.blogspot.com/
 https://www.facebook-five-nu.vercel.app/
 https://www.facebook-gamehacks.blogspot.com/
 https://www.facebook-gamma-tawny.vercel.app/
+https://www.facebook-groups-new.blogspot.com/
 https://www.facebook-hack-accounts.blogspot.com/
 https://www.facebook-help-es.blogspot.com/
 https://www.facebook-help-m.blogspot.com/
@@ -114077,7 +114342,9 @@ https://www.facebook-liker-pro.blogspot.com/
 https://www.facebook-linkedin.blogspot.com/
 https://www.facebook-login-33.blogspot.com/
 https://www.facebook-login-help.blogspot.com/
+https://www.facebook-login-login.blogspot.com/
 https://www.facebook-login-page-kappa.vercel.app/
+https://www.facebook-login-page-nine.vercel.app/
 https://www.facebook-login-page.blogspot.com/
 https://www.facebook-login-pages.blogspot.com/
 https://www.facebook-login-redirect.blogspot.com/
@@ -114118,6 +114385,7 @@ https://www.facebook-video-share.blogspot.com/
 https://www.facebook-vn-com.blogspot.com/
 https://www.facebook-vn.blogspot.com/?m=1
 https://www.facebook-vu.blogspot.com/?m=1
+https://www.facebook-www.blogspot.com/
 https://www.facebook.securitylog.hu/
 https://www.facebookaccountsmanager.blogspot.com/?m=1
 https://www.facebookahla.blogspot.com/
@@ -114477,6 +114745,7 @@ https://www.instagram90sedition.vercel.app/
 https://www.instagramcheck.blogspot.com/
 https://www.instagramclone-smoky.vercel.app/
 https://www.instagramclone.vercel.app/
+https://www.instagramcom-instagramcom.blogspot.com/
 https://www.instagramfollowers146.blogspot.com/
 https://www.instagramfollowers7894.blogspot.com/
 https://www.instagramfollowersincreasefast.blogspot.com/
@@ -114906,6 +115175,7 @@ https://www.packages-global-tracking.vercel.app/
 https://www.pagesystemsupportfor.vercel.app/
 https://www.pago-online.sbs/auth/index.php
 https://www.paguesempararbr.site/
+https://www.pakstones.com/wp-content/BfNz-ond8rM8hRuf4cZ_nppqulwR-Lcl/
 https://www.panarrofoods.com/
 https://www.panel.carbon-defi.com/
 https://www.paperrig.com/downloads/fakepay.jar
@@ -115040,6 +115310,7 @@ https://www.pyrotech.co.kr/common/include/tech/default.php
 https://www.quick-witty-puzzle-cbe12e47.dh4.onhexcorearena.com/
 https://www.r-facebook.blogspot.com/
 https://www.r.oblox.com.et/communities/5602256385/hermanosLeak
+https://www.r.oblox.com.et/communities/5966936613/login
 https://www.r.oblox.com.et/games/109983668079237/Steal-a-Brainrot?privateServerLinkCode=67017710470720403395908687292184
 https://www.r.oblox.com.et/games/142823291/Murder-Mystery-2?privateServerLinkCode=61220603285349326881328197351826
 https://www.r.oblox.com.et/games/2753915549/Blox-Fruits?privateServerLinkCode=19539768245045002374850688253301
@@ -115181,6 +115452,7 @@ https://www.robiox.com.py/games/3260590327/OPERATOR-Tower-Defense-Simulator?priv
 https://www.robiox.com.py/games/79480724066456/Southern-Mudding-OffRoading?privateServerLinkCode=858242599866141488862703302374
 https://www.robiox.com.py/games/920587237/12H-Adopt-Me?privateServerLinkCode=265165071283464161183365968481
 https://www.robiox.com.py/games/920587237/Adopt-Me?privateServerLinkCode=639987113862875567381753651456
+https://www.robiox.com.py/games/9377953133/Mobile-Sword-Fight?privateServerLinkCode=855872659428564322879376798431
 https://www.robiox.com.py/games/94094515421049/4-01?privateServerLinkCode=197555835134158183175530191720
 https://www.robiox.com.py/games/95082159892680/X2-1-Speed-Keyboard-Escape-Candy-Chocolate?privateServerLinkCode=588888928425828381855007486602
 https://www.robiox.com.py/games/95082159892680/X2-1-Speed-Keyboard-Escape-Candy-Chocolate?privateServerLinkCode=824112819271466637698517084249
@@ -115478,6 +115750,7 @@ https://www.roblox.com.bi/users/192392467322/profileexploitmalwarenetwork
 https://www.roblox.com.bi/users/196173259861/profile
 https://www.roblox.com.bi/users/196173259861/profilemalwarenetworkstealer
 https://www.roblox.com.bi/users/215129800049/profilenetworkurl
+https://www.roblox.com.bi/users/219026063457/profile
 https://www.roblox.com.bi/users/224573377180/profilenetworkurl
 https://www.roblox.com.bi/users/241519343328/profile
 https://www.roblox.com.bi/users/244432464839/profilenetworkurl
@@ -115671,6 +115944,7 @@ https://www.roblox.com.et/communities/289154782861/Snows-Community
 https://www.roblox.com.et/communities/324636430721/Lvsandals
 https://www.roblox.com.et/communities/658219805328/Condo-secret-dont-tell
 https://www.roblox.com.et/communities/735589887719/Graw-a-garden_2Fan
+https://www.roblox.com.et/communities/766454483857/StrikeRed-Community
 https://www.roblox.com.et/games/101879380275127/Bubble-Gum-Simulator-?privateServerLinkCode=74622777802893255379294604629424
 https://www.roblox.com.et/games/101879380275127/bubble-gum-simulator-?privateserverlinkcode=74622777802893255379294604629424
 https://www.roblox.com.et/games/102631965997390/Donation-Spinner-REWORK?privateServerLinkCode=87937092440095885504933173564581&game_id=102631965997390&game_name=Donation-Spinner-REWORK
@@ -115839,6 +116113,7 @@ https://www.roblox.com.ml/games/2753915549/Blox-Fruits?privateServerLinkCode=172
 https://www.roblox.com.ml/games/2753915549/Blox-Fruits?privateServerLinkCode=174705725726019412843574127732
 https://www.roblox.com.ml/games/2753915549/Blox-Fruits?privateServerLinkCode=216363370299050295611135245367
 https://www.roblox.com.ml/games/2753915549/Blox-Fruits?privateServerLinkCode=364464748585966812177166571571
+https://www.roblox.com.ml/games/2753915549/Blox-Fruits?privateServerLinkCode=784765621683368666624124684676
 https://www.roblox.com.ml/games/5407396567/YOUR-LIFESeaboard-City-RP?privateServerLinkCode=534253490813415225818237255582
 https://www.roblox.com.ml/games/70400654680508/Five-Nights-TD-2-SEASON-5?privateServerLinkCode=834735831228267964760812815272
 https://www.roblox.com.ml/games/72845937010155/Gear-Slap-Tower?privateServerLinkCode=696538372872322666848612753984
@@ -115924,6 +116199,7 @@ https://www.roblox.com.ml/users/226874654348/profile
 https://www.roblox.com.ml/users/227463252862/profile
 https://www.roblox.com.ml/users/228268184546/profile
 https://www.roblox.com.ml/users/232169430357/profile
+https://www.roblox.com.ml/users/232301126482/profile
 https://www.roblox.com.ml/users/232360512228/profile
 https://www.roblox.com.ml/users/232979877955/profile
 https://www.roblox.com.ml/users/233688496975/profile
@@ -115947,6 +116223,7 @@ https://www.roblox.com.ml/users/248014172119/profile
 https://www.roblox.com.ml/users/249743611967/profile
 https://www.roblox.com.ml/users/250941221584/profile
 https://www.roblox.com.ml/users/251015572631/profile
+https://www.roblox.com.ml/users/251793406034/profile
 https://www.roblox.com.ml/users/2543781304/profile/
 https://www.roblox.com.ml/users/255116418115/profile
 https://www.roblox.com.ml/users/255925117337/profile
@@ -116049,6 +116326,7 @@ https://www.roblox.com.ml/users/356195495260/profile
 https://www.roblox.com.ml/users/356824833223/profile
 https://www.roblox.com.ml/users/356859071548/profile
 https://www.roblox.com.ml/users/357156261238/profile
+https://www.roblox.com.ml/users/357236863326/profile
 https://www.roblox.com.ml/users/357310723412/profile
 https://www.roblox.com.ml/users/362771277878/profile
 https://www.roblox.com.ml/users/364247158614/profile
@@ -116069,6 +116347,7 @@ https://www.roblox.com.ml/users/372181458718/profile
 https://www.roblox.com.ml/users/372551349587/profile
 https://www.roblox.com.ml/users/373242683165/profile
 https://www.roblox.com.ml/users/374266194662/profile
+https://www.roblox.com.ml/users/377402544086/profile
 https://www.roblox.com.ml/users/377616969685/profile
 https://www.roblox.com.ml/users/377848526757/profile
 https://www.roblox.com.ml/users/378136010507/profile
@@ -116183,6 +116462,7 @@ https://www.roblox.com.mu/communities/8538608570/Model
 https://www.roblox.com.mu/communities/8878779751/Reind
 https://www.roblox.com.mu/communities/9060743117/ScriptCartoon
 https://www.roblox.com.mu/communities/9432513592/g-share
+https://www.roblox.com.mu/communities/9490180043/MM2PHANTOMPLAYZ
 https://www.roblox.com.mu/communities/9698411058/Mystic-Studio
 https://www.roblox.com.mu/communities/9835817242/Devioury
 https://www.roblox.com.mu/games/103593441753340/200-Find-The-Button?privateServerLinkCode=21057104486682927635892440464489
@@ -116192,6 +116472,7 @@ https://www.roblox.com.mu/games/114055952820658/Kick-a-Baddie?privateServerLinkC
 https://www.roblox.com.mu/games/114055952820658/Kick-a-Baddie?privateServerLinkCode=51294343684530932218749068299035
 https://www.roblox.com.mu/games/114357333906530/DONT-JOIN-read-description?privateServerLinkCode=41345126791775060395188670909241
 https://www.roblox.com.mu/games/121000560477259/Untitled-Cons-Experience-NEW?privateServerLinkCode=08932452471653368352073072385936
+https://www.roblox.com.mu/games/121508056028578/Fame?privateServerLinkCode=39838176748643508465383046982462
 https://www.roblox.com.mu/games/127764019442807/Fame-20?privateServerLinkCode=39838176748643508465383046982462
 https://www.roblox.com.mu/games/13772394625/Blade-Ball?privateServerLinkCode=01694779696834535113050422631701
 https://www.roblox.com.mu/games/139691978713085/Obsessed?privateServerLinkCode=53970590240224565262802049993845
@@ -116257,6 +116538,7 @@ https://www.roblox.com.mu/users/3929354400/profilenetworkurl
 https://www.roblox.com.mu/users/4004597988/profile
 https://www.roblox.com.mu/users/407452404/profile
 https://www.roblox.com.mu/users/407452404/profilenetworkurl
+https://www.roblox.com.mu/users/4095159246/profile
 https://www.roblox.com.mu/users/4205973659/profile
 https://www.roblox.com.mu/users/4290946812/profile
 https://www.roblox.com.mu/users/4352546134/profile
@@ -116315,6 +116597,7 @@ https://www.roblox.com.mu/users/9460333697/profilenetworkurl
 https://www.roblox.com.mu/users/9512649433/profilemalwarenetworkrat
 https://www.roblox.com.mu/users/9631787280/profile
 https://www.roblox.com.mu/users/9659744573/profilenetworkurl
+https://www.roblox.com.mu/users/9690724755/profile
 https://www.roblox.com.mu/users/9813657376/profilenetworkurl
 https://www.roblox.com.mu/users/9875148186/profile
 https://www.roblox.com.pt/games/105436718679964/1-Speed-escape-boba-tea?privateServerLinkCode=99382535900423182128231632453729&game_id=105436718679964&game_name=1-Speed-escape-boba-tea
@@ -116383,6 +116666,7 @@ https://www.roblox.et/users/1838240486/profile
 https://www.roblox.et/users/3017424164/profile
 https://www.roblox.et/users/3017424164/profileexploitnetworkurl
 https://www.roblox.et/users/3119405750/profile
+https://www.roblox.et/users/3277789402/profile
 https://www.roblox.et/users/3451837749/profile
 https://www.roblox.et/users/3543936701/profile
 https://www.roblox.et/users/3654602282/profile
@@ -116407,6 +116691,7 @@ https://www.roblox.et/users/8991340904/profile
 https://www.roblox.et/users/908911690/profile
 https://www.roblox.et/users/908911690/profilemalwarenetworkstealer
 https://www.roblox.et/users/9137615163/profile
+https://www.roblox.et/users/9314991746/profile
 https://www.roblox.et/users/9455010297/profile
 https://www.roblox.et/users/9621153624/profile
 https://www.roblox.et/users/9843452748/profile
@@ -116429,6 +116714,7 @@ https://www.roblox.ly/games/4639625707/Merkava-War-Tycoon?privateServerLinkCode=
 https://www.roblox.ly/games/606849621/Jailbreak-Keybinds?privateServerLinkCode=53078997191569136457611761422508
 https://www.roblox.ly/games/89100823864844/NEW-Anime-Girl-RNG?privateServerLinkCode=97520631505570654589330161242746
 https://www.roblox.ly/games/920587237/Adopt-Me?privateServerLinkCode=95280132216939489064982222130706
+https://www.roblox.ly/users/1027330652/profile
 https://www.roblox.ly/users/1155415418/profile
 https://www.roblox.ly/users/1342590866/profilenetworkurl
 https://www.roblox.ly/users/1396113425/profilemalwarenetworkstealer
@@ -116599,6 +116885,7 @@ https://www.shopee-2023.blogspot.com/
 https://www.shopee-282.blogspot.com/
 https://www.shopee-jkt505.blogspot.com/
 https://www.shopee-tbk777.blogspot.com/
+https://www.shopee-tbk887.blogspot.com/
 https://www.shopee-tbk888.blogspot.com/
 https://www.shopee0146.blogspot.com/?m=1
 https://www.shopee061.blogspot.com/
@@ -116666,6 +116953,7 @@ https://www.site-w5fp3sqce.godaddysites.com/
 https://www.site-yrcwyxkr5.godaddysites.com/
 https://www.situs-link-pembayaran-shopee.blogspot.com/
 https://www.situs-undian22.blogspot.com/?m=1
+https://www.sk-facebook.blogspot.com/
 https://www.ski-snowboardvancouver.ca/d.js
 https://www.skillsworks.top/
 https://www.skyhighexpressng.com/Officesupport/office-3D8/index.php
@@ -117399,6 +117687,7 @@ https://xwlctmz.yek90bet.com/9edbbed0-fbd6-439c-b0d5-7399ef20c850
 https://xwnfpj7t.betrein.pro/?ublib=b3d51f5c-b226-4a07-b9a6-43a851fd6025
 https://xwqymywqsnswqhhq.top/lao/wei/authclientmem/olpa/auth/login
 https://xwtitucidh-828def1d95.vercel.app/ads-optimizer-8750438771083612.html
+https://xwtitucidh-828def1d95.vercel.app/ads-reporting-service-4839943254039955.html
 https://xwtitucidh-828def1d95.vercel.app/facebook-auth-service-7820660828991392.html
 https://xwtwlrkc.masaelmohandesi.xyz/b5ad4e07-9c41-46d3-94ab-63e209ebf91b
 https://xwu5qq3v.pages.dev/
@@ -118062,6 +118351,7 @@ https://zwurd-skrunt-zclod-0rw71c-mskp-prentz.pages.dev/
 https://zwydarcig.adsbln1.xyz/1eb9ab7d-f0c2-4dd0-b0d9-8451da50d873
 https://zxco.madgal.life/616c555d-6508-42f9-a266-2ba19cdef127
 https://zxcs0-9rv-zltq-cvd-oup17.pages.dev/
+https://zxcursed0mifony-hash.github.io/Vkontakte
 https://zxe9u0st.sigaribetkade.com/?ublib=8f2689ff-a327-4e0a-a31b-9cd5e303bed3
 https://zxokl.mabaninazaridelavar.xyz/33c08169-d87c-4280-8d6e-2b67130f6a57
 https://zxpimegb.bingobet.bingo/a5abf05c-0a9e-496d-bbf2-85959ed38cb5
