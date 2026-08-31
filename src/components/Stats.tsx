@@ -1,8 +1,11 @@
-import { useEffect, useState, useMemo } from 'react'
-import { motion, useReducedMotion } from 'framer-motion'
+import { useMemo } from 'react'
+import { motion, type Variants } from 'framer-motion'
 import { Activity, Database, Radio } from 'lucide-react'
 import { fmt, INDICATOR_ACCENT, type IndicatorKey } from '../utils'
 import Section from './layout/Section'
+import { SectionHeading } from './motion/SectionHeading'
+import { Spotlight } from './motion/Spotlight'
+import { useCountUp } from '../lib/useCountUp'
 
 type MetricDef = {
   key: IndicatorKey
@@ -33,33 +36,12 @@ function ValueSkeleton({ className = '' }: { className?: string }) {
   )
 }
 
-/** Count up to a target, easing out. Jumps straight to the value when the user prefers reduced motion. */
-function useCountUp(target: number | null, duration = 1700) {
-  const reduceMotion = useReducedMotion()
-  const [value, setValue] = useState(0)
-  useEffect(() => {
-    if (target == null) return
-    if (reduceMotion) { setValue(target); return }
-    let raf = 0
-    const start = performance.now()
-    const tick = (now: number) => {
-      const p = Math.min((now - start) / duration, 1)
-      const eased = 1 - Math.pow(1 - p, 4)
-      setValue(Math.round(target * eased))
-      if (p < 1) raf = requestAnimationFrame(tick)
-    }
-    raf = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(raf)
-  }, [target, duration, reduceMotion])
-  return value
-}
-
-const gridVariants = {
+const gridVariants: Variants = {
   hidden: {},
   show: { transition: { staggerChildren: 0.07 } },
 }
 
-const cardVariants = {
+const cardVariants: Variants = {
   hidden: { opacity: 0, y: 24 },
   show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const } },
 }
@@ -86,29 +68,17 @@ export default function Stats({ statsData }: any) {
     <Section id="stats" className="overflow-hidden" containerClassName="relative z-10">
 
         {/* Section header — NO eyebrow (tasteskill budget) */}
-        <motion.div
-          className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-5"
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, ease: 'easeOut' }}
-        >
-          <div>
-            <h2 className="text-3xl md:text-5xl font-bold text-white tracking-tight">
-              Threat database at a glance
-            </h2>
-            <p className="mt-3 text-slate-400 text-base md:text-lg font-medium max-w-2xl leading-relaxed">
-              Aggregated, de-duplicated indicators of compromise, refreshed continuously and ready for ingestion.
-            </p>
-          </div>
-          {lastUpdated && (
+        <SectionHeading
+          title="Threat database at a glance"
+          subtitle="Aggregated, de-duplicated indicators of compromise, refreshed continuously and ready for ingestion."
+          aside={lastUpdated && (
             <div className="shrink-0 flex items-center gap-2 text-[11px] font-semibold text-slate-500 bg-white/[0.03] border border-white/[0.06] rounded-xl px-3.5 py-2">
               <Activity size={13} className="text-red-400" />
               <span className="uppercase tracking-wider">Synced</span>
               <span className="text-slate-300 font-bold">{lastUpdated}</span>
             </div>
           )}
-        </motion.div>
+        />
 
         {/* Summary strip */}
         <SummaryStrip total={totalTracked} feeds={statsData?.active_feeds ?? null} />
@@ -195,12 +165,13 @@ function FeaturedStatCard({ metric, target }: { metric: MetricDef; target: numbe
   const accent = INDICATOR_ACCENT[metric.key]
 
   return (
-    <motion.div
-      variants={cardVariants}
-      whileHover={{ y: -4 }}
-      transition={{ type: 'spring', stiffness: 300, damping: 24 }}
-      className="group glass-card glass-hover relative flex flex-col overflow-hidden p-7 md:p-8"
-    >
+    <Spotlight className="rounded-2xl h-full">
+      <motion.div
+        variants={cardVariants}
+        whileHover={{ y: -4 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 24 }}
+        className="group glass-card glass-hover relative flex flex-col overflow-hidden p-7 md:p-8 h-full"
+      >
       {/* Accent glow on hover */}
       <div
         className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
@@ -241,7 +212,8 @@ function FeaturedStatCard({ metric, target }: { metric: MetricDef; target: numbe
           {metric.sub}
         </span>
       </div>
-    </motion.div>
+      </motion.div>
+    </Spotlight>
   )
 }
 
@@ -252,12 +224,13 @@ function CompactStatCard({ metric, target }: { metric: MetricDef; target: number
   const accent = INDICATOR_ACCENT[metric.key]
 
   return (
-    <motion.div
-      variants={cardVariants}
-      whileHover={{ y: -3 }}
-      transition={{ type: 'spring', stiffness: 300, damping: 24 }}
-      className="group glass-card glass-hover relative flex flex-col overflow-hidden p-5"
-    >
+    <Spotlight className="rounded-2xl h-full">
+      <motion.div
+        variants={cardVariants}
+        whileHover={{ y: -3 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 24 }}
+        className="group glass-card glass-hover relative flex flex-col overflow-hidden p-5 h-full"
+      >
       {/* Top accent line on hover */}
       <div
         className="absolute top-0 inset-x-0 h-px opacity-0 group-hover:opacity-100 transition-opacity duration-500"
@@ -292,6 +265,7 @@ function CompactStatCard({ metric, target }: { metric: MetricDef; target: number
           {metric.sub}
         </span>
       </div>
-    </motion.div>
+      </motion.div>
+    </Spotlight>
   )
 }

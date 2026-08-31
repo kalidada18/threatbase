@@ -1,7 +1,10 @@
 import { Download } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { motion, type Variants } from 'framer-motion'
 import Section from './layout/Section'
 import Container from './layout/Container'
+import { SectionHeading } from './motion/SectionHeading'
+import { Spotlight } from './motion/Spotlight'
+import { Magnetic } from './motion/Magnetic'
 import { getDomainUrl, getHashUrl, INDICATOR_ACCENT } from '../utils'
 
 /**
@@ -62,7 +65,7 @@ export const feeds = [
 
 type Feed = typeof feeds[number]
 
-const cardVariants = {
+const cardVariants: Variants = {
   hidden: { opacity: 0, y: 18 },
   show: (i: number) => ({
     opacity: 1,
@@ -82,14 +85,10 @@ export default function Feeds({ statsData }: { statsData?: any }) {
   return (
     <Section id="feeds" container={false} className="overflow-hidden">
       <Container width="wide" className="relative z-10">
-        <div className="mb-12 max-w-2xl">
-          <h2 className="text-3xl md:text-5xl font-bold text-white tracking-tight">
-            Threat intelligence feeds
-          </h2>
-          <p className="mt-4 text-slate-400 text-lg font-medium leading-relaxed">
-            Plain-text indicators that drop straight into your firewalls, IDS/IPS, and SIEMs. Updated continuously as the community reports new threats.
-          </p>
-        </div>
+        <SectionHeading
+          title="Threat intelligence feeds"
+          subtitle="Plain-text indicators that drop straight into your firewalls, IDS/IPS, and SIEMs. Updated continuously as the community reports new threats."
+        />
 
         {/* Asymmetric 6-column bento on desktop, horizontal scroll-snap on mobile.
             Different layout family from the Stats bento (tasteskill §4.7) */}
@@ -155,12 +154,13 @@ function FeedCard({ f, isSplit, chunks, wide = false }: { f: Feed; isSplit: bool
     : `https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/${f.file}`
 
   return (
-    <div className="group glass-card glass-hover relative flex flex-col h-full overflow-hidden">
-      {/* Category-color accent stripe at top */}
-      <div
-        className="h-[2px] w-full"
-        style={{ background: `linear-gradient(90deg, transparent, ${f.accent}, transparent)` }}
-      />
+    <Spotlight className="rounded-2xl h-full">
+      <div className="group glass-card glass-hover relative flex flex-col h-full overflow-hidden">
+        {/* Category-color accent stripe at top */}
+        <div
+          className="h-[2px] w-full"
+          style={{ background: `linear-gradient(90deg, transparent, ${f.accent}, transparent)` }}
+        />
 
       <div className={`flex flex-1 p-5 sm:p-6 ${wide ? 'flex-col md:flex-row md:items-center gap-6' : 'flex-col'}`}>
         <div className="flex items-start gap-4 flex-1">
@@ -192,17 +192,20 @@ function FeedCard({ f, isSplit, chunks, wide = false }: { f: Feed; isSplit: bool
         </div>
 
         <div className={wide ? 'shrink-0 md:w-52' : 'mt-auto pt-5'}>
-          <a
-            href={href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-red-500 px-4 sm:px-5 h-11 text-sm font-semibold text-white shadow-glow-red hover:bg-red-400 transition-all duration-200 active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400/50"
-          >
-            <Download size={16} className="transition-transform group-hover:-translate-y-0.5" />
-            Download
-          </a>
+          <Magnetic strength={0.18}>
+            <a
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-red-500 px-4 sm:px-5 h-11 text-sm font-semibold text-white shadow-glow-red hover:bg-red-400 transition-all duration-200 active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400/50"
+            >
+              <Download size={16} className="transition-transform group-hover:-translate-y-0.5" />
+              Download
+            </a>
+          </Magnetic>
         </div>
       </div>
-    </div>
+      </div>
+    </Spotlight>
   )
 }

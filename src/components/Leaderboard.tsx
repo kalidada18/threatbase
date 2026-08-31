@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { motion, type Variants } from 'framer-motion'
 import { Diamond, Star, Shield, Trophy, Medal } from 'lucide-react'
 import supabaseClient from '../supabaseClient'
 import { fmt, getAvatarForName } from '../utils'
+import { useCountUp } from '../lib/useCountUp'
 
 // Ranks based on number of reports. Each rank exposes a single `accent` token
 // so the badge border, 10%-opacity background, and text color stay in sync.
@@ -71,20 +72,30 @@ const podiumStyle = (index: number) => {
 
 const MEDALS = ['1streward.png', '2ndmedal.png', '3rdmedal.png']
 
-const container = {
+const container: Variants = {
   hidden: {},
   show: {
     transition: { staggerChildren: 0.07, delayChildren: 0.05 },
   },
 }
 
-const rowVariants = {
+const rowVariants: Variants = {
   hidden: { opacity: 0, y: 14 },
   show: {
     opacity: 1,
     y: 0,
     transition: { type: 'spring', stiffness: 260, damping: 26 },
   },
+}
+
+/** Per-row count-up for the reports score (needs its own component to own the hook). */
+function RowScore({ count, active }: { count: number; active: boolean }) {
+  const value = useCountUp(active ? count : null, 1400)
+  return (
+    <div className="font-elegant text-lg sm:text-xl font-bold leading-none tracking-tight text-white tabular-nums">
+      {fmt(value)}
+    </div>
+  )
 }
 
 export default function Leaderboard() {
@@ -160,14 +171,20 @@ export default function Leaderboard() {
             <div className={`pointer-events-none absolute inset-0 opacity-70 transition-opacity duration-500 group-hover:opacity-100 ${podium.glow}`} />
 
             <div className="relative z-10 grid grid-cols-[2.75rem_1fr_auto] sm:grid-cols-[3rem_1fr_auto] items-center gap-3 sm:gap-4 px-3 sm:px-4 py-3.5">
-              {/* Rank / medal */}
+              {/* Rank / medal — top-3 get a shine sweep across the medal on hover */}
               <div className="flex items-center justify-center">
                 {index < 3 ? (
-                  <img
-                    src={`${import.meta.env.BASE_URL}img/${MEDALS[index]}`}
-                    alt={`Rank ${index + 1}`}
-                    className="w-8 h-8 sm:w-9 sm:h-9 object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)] transition-transform duration-300 group-hover:scale-110"
-                  />
+                  <span className="relative inline-block overflow-hidden rounded-full">
+                    <img
+                      src={`${import.meta.env.BASE_URL}img/${MEDALS[index]}`}
+                      alt={`Rank ${index + 1}`}
+                      className="w-8 h-8 sm:w-9 sm:h-9 object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)] transition-transform duration-300 group-hover:scale-110"
+                    />
+                    <span
+                      aria-hidden
+                      className="pointer-events-none absolute inset-0 -translate-x-[130%] skew-x-12 bg-gradient-to-r from-transparent via-white/50 to-transparent transition-transform duration-700 ease-out group-hover:translate-x-[130%] motion-reduce:hidden"
+                    />
+                  </span>
                 ) : (
                   <span className="flex h-9 w-9 items-center justify-center rounded-full font-elegant text-sm font-bold text-slate-500 tabular-nums transition-colors duration-300 group-hover:text-slate-300">
                     {index + 1}
@@ -204,11 +221,9 @@ export default function Leaderboard() {
                 </div>
               </div>
 
-              {/* Score */}
+              {/* Score — counts up when the row mounts */}
               <div className="flex flex-col items-end justify-center pl-1 text-right">
-                <div className="font-elegant text-lg sm:text-xl font-bold leading-none tracking-tight text-white tabular-nums">
-                  {fmt(leader.reports_count)}
-                </div>
+                <RowScore count={leader.reports_count} active={true} />
                 <div className="mt-1 text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500 whitespace-nowrap">
                   Intel Reports
                 </div>

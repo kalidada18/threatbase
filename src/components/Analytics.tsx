@@ -8,20 +8,18 @@ import { Doughnut } from 'react-chartjs-2'
 import { fmt, DATA_RAMP } from '../utils'
 import AnimatedHighlightedAreaChart from './blocks/animated-area-chart'
 import Section from './layout/Section'
+import { SectionHeading } from './motion/SectionHeading'
 
 ChartJS.register(ArcElement, Tooltip, Legend)
 
 export default function Analytics({ statsData, feedVersion }: any) {
   return (
     <Section id="analytics" className="overflow-hidden" containerClassName="relative z-10">
-        <div className="mb-14 max-w-2xl">
-          <h2 className="text-3xl md:text-5xl font-bold text-white tracking-tight">
-            Threat landscape
-          </h2>
-          <p className="mt-4 text-slate-400 text-lg font-medium leading-relaxed">
-            How the database has grown, day by day, since we started keeping history. Rebuilt on every feed refresh.
-          </p>
-        </div>
+        <SectionHeading
+          title="Threat landscape"
+          subtitle="How the database has grown, day by day, since we started keeping history. Rebuilt on every feed refresh."
+          className="mb-14"
+        />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">

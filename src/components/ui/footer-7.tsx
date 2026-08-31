@@ -74,7 +74,14 @@ export const Footer7 = ({
                       key={linkIdx}
                       className="font-medium hover:text-white transition-colors"
                     >
-                      <a href={link.href}>{link.name}</a>
+                      {/* Underline slides in from the left on hover */}
+                      <a href={link.href} className="group/flink relative inline-block">
+                        {link.name}
+                        <span
+                          aria-hidden
+                          className="absolute -bottom-0.5 left-0 h-px w-full origin-left scale-x-0 bg-red-500/70 transition-transform duration-300 ease-out group-hover/flink:scale-x-100 motion-reduce:transition-none"
+                        />
+                      </a>
                     </li>
                   ))}
                 </ul>

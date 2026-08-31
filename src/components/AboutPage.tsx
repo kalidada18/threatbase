@@ -1,9 +1,11 @@
-import React from 'react'
-import { motion, useReducedMotion } from 'framer-motion'
+import React, { useRef } from 'react'
+import { motion, useReducedMotion, useScroll, useSpring } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import IsoPageShell from './layout/IsoPageShell'
 import { Search, ShieldCheck, Share2, ArrowRight, Github, Database, Radar, Zap } from 'lucide-react'
 import { useSEO } from '@/useSEO'
+import { TiltCard } from './motion/TiltCard'
+import { Typewriter } from './motion/Typewriter'
 
 export default function AboutPage() {
   useSEO({
@@ -88,7 +90,8 @@ export default function AboutPage() {
           <div className="inline-block p-[1px] rounded-2xl bg-gradient-to-r from-red-500/40 to-red-800/40 mb-16 shadow-glow-ruby">
             <div className="px-8 py-4 rounded-2xl bg-slate-950/80 backdrop-blur-xl">
               <span className="font-mono text-lg text-metal tracking-wide">
-                <span className="text-destructive">&gt;</span> Curiosity fuels discovery.
+                <span className="text-destructive">&gt;</span>{' '}
+                <Typewriter text="Curiosity fuels discovery." speed={42} startDelay={700} />
               </span>
             </div>
           </div>
@@ -102,18 +105,23 @@ export default function AboutPage() {
           transition={{ delay: 0.15, duration: 0.5 }}
           className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto w-full mb-24"
         >
-          {stats.map((s) => (
-            <div
-              key={s.label}
-              className="glass-card px-4 py-6 text-center"
-            >
-              <div className="text-3xl md:text-4xl font-extrabold text-white tracking-tight">
-                {s.value}
-              </div>
-              <div className="mt-1 text-xs uppercase tracking-widest text-slate-400 font-semibold">
-                {s.label}
-              </div>
-            </div>
+          {stats.map((s, i) => (
+            <TiltCard key={s.label} max={7} className="rounded-2xl">
+              <motion.div
+                initial={prefersReducedMotion ? false : { opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.15 + i * 0.07, duration: 0.5 }}
+                className="glass-card px-4 py-6 text-center h-full"
+              >
+                <div className="text-3xl md:text-4xl font-extrabold text-white tracking-tight">
+                  {s.value}
+                </div>
+                <div className="mt-1 text-xs uppercase tracking-widest text-slate-400 font-semibold">
+                  {s.label}
+                </div>
+              </motion.div>
+            </TiltCard>
           ))}
         </motion.div>
 
@@ -164,34 +172,7 @@ export default function AboutPage() {
             </p>
           </motion.div>
 
-          <div className="relative space-y-12">
-            {/* Connecting line */}
-            <div className="absolute left-[27px] md:left-[35px] top-8 bottom-8 w-px bg-gradient-to-b from-red-500/40 via-white/10 to-transparent" />
-
-            {steps.map((s, i) => {
-              const Icon = s.icon
-              return (
-                <motion.div
-                  key={s.title}
-                  initial={prefersReducedMotion ? false : { opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true, margin: '-40px' }}
-                  transition={{ delay: i * 0.1, duration: 0.5 }}
-                  className="group relative flex gap-6 md:gap-8 items-start"
-                >
-                  <div className="relative z-10 shrink-0">
-                    <div className="icon-chip h-14 w-14 md:h-16 md:w-16 shadow-glass-lux group-hover:border-red-500/30 group-hover:shadow-[0_0_24px_-4px_rgba(207,23,51,0.25)] transition-all duration-300">
-                      <Icon className="h-6 w-6 text-red-400 group-hover:text-red-300 transition-colors" strokeWidth={1.8} />
-                    </div>
-                  </div>
-                  <div className="pt-2">
-                    <h3 className="text-xl md:text-2xl font-bold text-white mb-2 tracking-tight group-hover:text-red-50 transition-colors">{s.title}</h3>
-                    <p className="text-slate-400 leading-relaxed max-w-lg group-hover:text-slate-300 transition-colors">{s.desc}</p>
-                  </div>
-                </motion.div>
-              )
-            })}
-          </div>
+          <AboutTimeline steps={steps} prefersReducedMotion={prefersReducedMotion} />
         </div>
 
         {/* CTA */}
@@ -234,5 +215,50 @@ export default function AboutPage() {
         </motion.div>
 
     </IsoPageShell>
+  )
+}
+
+/** About-page step timeline with a connecting line that draws as you scroll. */
+function AboutTimeline({ steps, prefersReducedMotion }: { steps: { icon: React.ComponentType<{ className?: string; strokeWidth?: number }>; title: string; desc: string }[]; prefersReducedMotion: boolean | null }) {
+  const timelineRef = useRef<HTMLDivElement>(null)
+  const { scrollYProgress } = useScroll({
+    target: timelineRef,
+    offset: ['start 0.85', 'end 0.45'],
+  })
+  const lineScale = useSpring(scrollYProgress, { stiffness: 90, damping: 24 })
+
+  return (
+    <div ref={timelineRef} className="relative space-y-12">
+      {/* Track + scroll-linked fill */}
+      <div className="absolute left-[27px] md:left-[35px] top-8 bottom-8 w-px bg-white/[0.07]" />
+      <motion.div
+        className="absolute left-[27px] md:left-[35px] top-8 bottom-8 w-px origin-top bg-gradient-to-b from-red-500/70 via-red-500/30 to-transparent"
+        style={{ scaleY: prefersReducedMotion ? 1 : lineScale }}
+      />
+
+      {steps.map((s, i) => {
+        const Icon = s.icon
+        return (
+          <motion.div
+            key={s.title}
+            initial={prefersReducedMotion ? false : { opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true, margin: '-40px' }}
+            transition={{ delay: i * 0.1, duration: 0.5 }}
+            className="group relative flex gap-6 md:gap-8 items-start"
+          >
+            <div className="relative z-10 shrink-0">
+              <div className="icon-chip h-14 w-14 md:h-16 md:w-16 shadow-glass-lux group-hover:border-red-500/30 group-hover:shadow-[0_0_24px_-4px_rgba(207,23,51,0.25)] group-hover:scale-105 transition-all duration-300">
+                <Icon className="h-6 w-6 text-red-400 group-hover:text-red-300 transition-colors" strokeWidth={1.8} />
+              </div>
+            </div>
+            <div className="pt-2">
+              <h3 className="text-xl md:text-2xl font-bold text-white mb-2 tracking-tight group-hover:text-red-50 transition-colors">{s.title}</h3>
+              <p className="text-slate-400 leading-relaxed max-w-lg group-hover:text-slate-300 transition-colors">{s.desc}</p>
+            </div>
+          </motion.div>
+        )
+      })}
+    </div>
   )
 }

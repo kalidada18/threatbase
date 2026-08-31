@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react'
 import { Routes, Route, useLocation } from 'react-router-dom'
-import { MotionConfig } from 'framer-motion'
+import { MotionConfig, AnimatePresence } from 'framer-motion'
 import { HeroSection } from './components/blocks/hero-section-5'
 import ReportScanner from './components/ReportScanner'
 import Stats from './components/Stats'
@@ -10,6 +10,7 @@ import Analytics from './components/Analytics'
 import Footer from './components/Footer'
 import ToastContainer from './components/ToastContainer'
 import Navbar from './components/Navbar'
+import { PageTransition } from './components/motion/PageTransition'
 
 // Route-level code splitting: each non-home page (and its heavy deps — e.g.
 // three.js + tsparticles on /thanks) loads in its own chunk on demand instead
@@ -55,6 +56,7 @@ export default function App() {
   const [showReport, setShowReport] = useState(false)
   const lastScanTime = useRef<number>(0)
   const SCAN_COOLDOWN = 300 // 300ms
+  const prevPathRef = useRef<string>(location.pathname)
 
   // Initial verification
   const [isHumanVerified, setIsHumanVerified] = useState(() => {
@@ -63,7 +65,7 @@ export default function App() {
   })
 
   // Toast state
-  const [toasts, setToasts] = useState([])
+  const [toasts, setToasts] = useState<any[]>([])
 
   const addToast = useCallback((message: string, type = 'success') => {
     const id = Date.now() + Math.random()
@@ -184,10 +186,15 @@ export default function App() {
           element.scrollIntoView({ behavior: 'smooth' })
         }, 100)
       }
-    } else {
+    } else if (location.pathname !== prevPathRef.current) {
+      // Route change (not initial load): reset scroll to the top. The custom
+      // event lets Lenis (when active) fast-forward its internal scroll
+      // position instead of fighting the native jump.
+      window.dispatchEvent(new CustomEvent('tb:route-scroll', { detail: { scrollTo: 'top' } }))
       window.scrollTo(0, 0)
+      prevPathRef.current = location.pathname
     }
-  }, [location.hash])
+  }, [location])
 
   if (!isHumanVerified) {
     return <InitialVerification onSuccess={(token) => {
@@ -202,8 +209,10 @@ export default function App() {
       <Navbar />
 
       <Suspense fallback={<div className="min-h-[100dvh]" aria-hidden />}>
-      <Routes>
+      <AnimatePresence mode="wait" initial={false}>
+      <Routes location={location} key={location.pathname}>
         <Route path="/" element={
+          <PageTransition>
           <main id="main-content">
             <HomeSeo />
             <HeroSection scanInput={scanInput} setScanInput={setScanInput} handleScan={handleScan} />
@@ -224,23 +233,25 @@ export default function App() {
             <Feeds statsData={statsData} />
             <Analytics statsData={statsData} feedVersion={feedVersion} />
           </main>
+          </PageTransition>
         } />
-        
-        <Route path="/about" element={<AboutPage />} />
-        <Route path="/terms" element={<TermsPage />} />
-        <Route path="/privacy" element={<PrivacyPage />} />
-        <Route path="/policy" element={<PolicyPage />} />
-        <Route path="/report" element={<ReportIP addToast={addToast} />} />
-        <Route path="/contributors" element={<ContributorsPage />} />
-        <Route path="/api" element={<ApiDocsPage />} />
+
+        <Route path="/about" element={<PageTransition><AboutPage /></PageTransition>} />
+        <Route path="/terms" element={<PageTransition><TermsPage /></PageTransition>} />
+        <Route path="/privacy" element={<PageTransition><PrivacyPage /></PageTransition>} />
+        <Route path="/policy" element={<PageTransition><PolicyPage /></PageTransition>} />
+        <Route path="/report" element={<PageTransition><ReportIP addToast={addToast} /></PageTransition>} />
+        <Route path="/contributors" element={<PageTransition><ContributorsPage /></PageTransition>} />
+        <Route path="/api" element={<PageTransition><ApiDocsPage /></PageTransition>} />
         {/* Profiles are private to their owner — there is no public/by-username
             view. Only the owner's own profile is reachable, at /profile. Any
             username-bearing URL (/u/:username, /profile/:username) is gone so the
             GUI never advertises a browsable profile path. */}
-        <Route path="/profile" element={<Profile addToast={addToast} />} />
-        <Route path="/thanks" element={<ThanksPage />} />
-        <Route path="*" element={<NotFound />} />
+        <Route path="/profile" element={<PageTransition><Profile addToast={addToast} /></PageTransition>} />
+        <Route path="/thanks" element={<PageTransition><ThanksPage /></PageTransition>} />
+        <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Routes>
+      </AnimatePresence>
       </Suspense>
 
       <ToastContainer toasts={toasts} />

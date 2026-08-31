@@ -1,10 +1,11 @@
 import React from 'react'
 import { Menu, X, Github, LogIn, LogOut, User as UserIcon, ChevronDown, Heart } from 'lucide-react'
-import { useScroll, motion, AnimatePresence, useMotionValueEvent } from 'framer-motion'
+import { useScroll, motion, AnimatePresence, useMotionValueEvent, type Variants } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../AuthContext'
+import { EASE_EXPO } from './motion/primitives'
 
 const menuItems = [
     { name: 'Dashboard', href: '/#stats' },
@@ -15,16 +16,34 @@ const menuItems = [
     { name: 'Top Contributors', href: '/contributors' }
 ]
 
+/** Real active state for every item: routes match by path, home anchors only
+ *  count as active while the home page (and matching hash) is open. */
+function isItemActive(pathname: string, hash: string, href: string) {
+    if (href.startsWith('/#')) {
+        return pathname === '/' && pathname + hash === href
+    }
+    return pathname === href
+}
+
+const mobileList: Variants = {
+    hidden: {},
+    show: { transition: { staggerChildren: 0.05, delayChildren: 0.08 } },
+}
+
+const mobileItem: Variants = {
+    hidden: { opacity: 0, x: -14 },
+    show: { opacity: 1, x: 0, transition: { duration: 0.35, ease: EASE_EXPO } },
+}
+
 export default function Navbar() {
     const navigate = useNavigate()
-    const location = useLocation()
-    const isReportActive = location.pathname === '/report'
+    const { pathname, hash } = useLocation()
     const { user, profile, loading, signInWithGoogle, signInWithGithub, signOut } = useAuth()
     const [dropdownOpen, setDropdownOpen] = React.useState(false)
     const [menuState, setMenuState] = React.useState(false)
     const [scrolled, setScrolled] = React.useState(false)
     const [hidden, setHidden] = React.useState(false)
-    const { scrollY } = useScroll()
+    const { scrollY, scrollYProgress } = useScroll()
 
     useMotionValueEvent(scrollY, "change", (latest) => {
         const previous = scrollY.getPrevious() || 0
@@ -63,6 +82,12 @@ export default function Navbar() {
                         : "bg-transparent border-b border-transparent py-3.5"
                 )}
             >
+                {/* Reading progress — red hairline filling across the very top. */}
+                <motion.div
+                    aria-hidden
+                    className="absolute top-0 inset-x-0 h-[2px] origin-left bg-gradient-to-r from-red-600 via-red-500 to-red-400"
+                    style={{ scaleX: scrollYProgress }}
+                />
                 <div className="w-full px-4 lg:px-8">
                     <div className="relative flex flex-wrap items-center justify-between">
                         <div className="flex w-full items-center justify-between gap-10 xl:w-auto">
@@ -95,18 +120,27 @@ export default function Navbar() {
                             <div className="hidden xl:block">
                                 <ul className="flex items-center gap-1 text-sm font-medium">
                                     {menuItems.map((item, index) => {
-                                        const isActive = item.name === 'Report IP' && isReportActive
+                                        const isActive = isItemActive(pathname, hash, item.href)
                                         return (
                                             <li key={index} className="flex items-center">
                                                 <Link
                                                     to={item.href}
                                                     className={cn(
-                                                        "transition-colors duration-200 tracking-tight font-semibold text-[0.9rem] px-3 py-2 rounded-full whitespace-nowrap",
+                                                        "relative transition-colors duration-200 tracking-tight font-semibold text-[0.9rem] px-3 py-2 rounded-full whitespace-nowrap",
                                                         isActive
-                                                            ? "bg-red-500/10 text-white ring-1 ring-red-500/20"
-                                                            : "text-slate-400 hover:text-white hover:bg-white/[0.06]"
+                                                            ? "text-white"
+                                                            : "text-slate-400 hover:text-white"
                                                     )}>
-                                                    {item.name}
+                                                    {/* Sliding active pill — layoutId lets it glide
+                                                        between links on route change. */}
+                                                    {isActive && (
+                                                        <motion.span
+                                                            layoutId="nav-active-pill"
+                                                            className="absolute inset-0 rounded-full bg-red-500/10 ring-1 ring-red-500/20"
+                                                            transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+                                                        />
+                                                    )}
+                                                    <span className="relative z-10">{item.name}</span>
                                                 </Link>
                                             </li>
                                         )
@@ -118,25 +152,30 @@ export default function Navbar() {
 
                         <div className="bg-[#080b12]/95 backdrop-blur-xl border border-white/10 group-data-[state=active]:flex xl:group-data-[state=active]:flex mb-4 hidden w-full flex-col xl:flex-row flex-wrap items-center justify-center xl:justify-end space-y-8 xl:space-y-0 rounded-2xl p-6 shadow-2xl max-h-[calc(100dvh-6rem)] overflow-y-auto xl:max-h-none xl:overflow-visible md:flex-nowrap xl:m-0 xl:flex xl:w-fit xl:gap-6 xl:border-transparent xl:bg-transparent xl:p-0 xl:shadow-none mt-4 xl:mt-0 transition-all duration-300">
                             <div className="xl:hidden w-full">
-                                <ul className="space-y-2 text-base font-medium">
+                                <motion.ul
+                                    className="space-y-2 text-base font-medium"
+                                    variants={mobileList}
+                                    initial="hidden"
+                                    animate={menuState ? 'show' : 'hidden'}
+                                >
                                     {menuItems.map((item, index) => {
-                                        const isActive = item.name === 'Report IP' && isReportActive
+                                        const isActive = isItemActive(pathname, hash, item.href)
                                         return (
-                                            <li key={index}>
+                                            <motion.li key={index} variants={mobileItem}>
                                                 <Link
                                                     to={item.href}
                                                     onClick={() => setMenuState(false)}
                                                     className={cn(
                                                         "flex min-h-[44px] items-center justify-center transition-all duration-200 px-4 py-2.5 rounded-xl text-center",
-                                                        isActive ? "bg-white/10 text-white font-bold" : "text-slate-400 hover:text-white hover:bg-white/5 font-semibold"
+                                                        isActive ? "bg-red-500/10 text-white font-bold ring-1 ring-red-500/20" : "text-slate-400 hover:text-white hover:bg-white/5 font-semibold"
                                                     )}>
                                                     {item.name}
                                                 </Link>
-                                            </li>
+                                            </motion.li>
                                         )
                                     })}
 
-                                </ul>
+                                </motion.ul>
                             </div>
 
                             <div className="flex w-full flex-col space-y-4 sm:flex-row sm:items-center sm:justify-center xl:justify-end sm:gap-4 sm:space-y-0 md:w-fit relative mt-6 xl:mt-0">
