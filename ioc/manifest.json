@@ -1,5 +1,5 @@
 {
-  "generated": "2026-09-01T10:19:18.748450+00:00",
+  "generated": "2026-09-01T18:19:01.162523+00:00",
   "note": "threatbase-domain.txt and threatbase-hash.txt exceed GitHub's file size limits and are committed as the chunks listed here. Chunks partition the sorted feed, so each covers a contiguous key range and can be binary searched on its own. Always read this list rather than assuming a chunk count: the count grows with the feed.",
   "unsplit_downloads": "https://github.com/kalidada18/threatbase/releases/download/latest/",
   "chunk_base": "https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/",
@@ -8,32 +8,32 @@
       {
         "file": "threatbase-domain-01.txt",
         "first": "0--foodwarez.da.ru",
-        "last": "moncleroutletshopping.top",
-        "lines": 1706262,
-        "bytes": 32772590
+        "last": "moncompte-chronopost.fr",
+        "lines": 1706680,
+        "bytes": 32782497
       },
       {
         "file": "threatbase-domain-02.txt",
-        "first": "moncleroutletuk.top",
+        "first": "moncompte-cic.com",
         "last": "zzzzzzzzzzzzz.com",
-        "lines": 1609276,
-        "bytes": 32772544
+        "lines": 1609587,
+        "bytes": 32782452
       }
     ],
     "threatbase-hash.txt": [
       {
         "file": "threatbase-hash-01.txt",
         "first": "00000077553a5b27a610ac98f29563bbd6e0decc020c2d49e4fa0d89197e7fd8",
-        "last": "7fbd517af91c4f1f9d15a887ba82e1f45cbb29eb7e2e0ca767e143b7469d1fd2",
-        "lines": 565896,
-        "bytes": 36783240
+        "last": "7fbd50e14a36801139f328e07ebc0122976234f730ba6cf2a874c0e4c01d1ae2",
+        "lines": 565973,
+        "bytes": 36788245
       },
       {
         "file": "threatbase-hash-02.txt",
-        "first": "7fbd61b3875260fc6ba82aad937104afecdaf4c5c0bb2ba11b1057cdb74f245c",
+        "first": "7fbd517af91c4f1f9d15a887ba82e1f45cbb29eb7e2e0ca767e143b7469d1fd2",
         "last": "ffffe8b36158ae710a9fbf0941f83625ae69f9f2070b3b04def6171b890a6dde",
-        "lines": 565895,
-        "bytes": 36783175
+        "lines": 565973,
+        "bytes": 36788245
       }
     ]
   }
