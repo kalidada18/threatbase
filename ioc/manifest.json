@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-31T18:18:54.178797+00:00",
+  "generated": "2026-09-01T02:19:14.492892+00:00",
   "note": "threatbase-domain.txt and threatbase-hash.txt exceed GitHub's file size limits and are committed as the chunks listed here. Chunks partition the sorted feed, so each covers a contiguous key range and can be binary searched on its own. Always read this list rather than assuming a chunk count: the count grows with the feed.",
   "unsplit_downloads": "https://github.com/kalidada18/threatbase/releases/download/latest/",
   "chunk_base": "https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/",
@@ -8,16 +8,16 @@
       {
         "file": "threatbase-domain-01.txt",
         "first": "0--foodwarez.da.ru",
-        "last": "mon-espaceameii.fr",
-        "lines": 1704436,
-        "bytes": 32735629
+        "last": "monclerphilippines.com",
+        "lines": 1706222,
+        "bytes": 32771599
       },
       {
         "file": "threatbase-domain-02.txt",
-        "first": "mon-espaceameli.fr",
+        "first": "monclerpiumini.top",
         "last": "zzzzzzzzzzzzz.com",
-        "lines": 1607803,
-        "bytes": 32735621
+        "lines": 1609233,
+        "bytes": 32771598
       }
     ],
     "threatbase-hash.txt": [
@@ -25,15 +25,15 @@
         "file": "threatbase-hash-01.txt",
         "first": "00000077553a5b27a610ac98f29563bbd6e0decc020c2d49e4fa0d89197e7fd8",
         "last": "7fbd8b70c4ec11802a8a4e9b857278bf81e4f57ad278f3309a87726f2b79fce6",
-        "lines": 565786,
-        "bytes": 36776090
+        "lines": 565823,
+        "bytes": 36778495
       },
       {
         "file": "threatbase-hash-02.txt",
         "first": "7fbd90ecc017dddf16fc3e56b2d058b46df9f07bd7a3f6c7731d270e7059a179",
         "last": "ffffe8b36158ae710a9fbf0941f83625ae69f9f2070b3b04def6171b890a6dde",
-        "lines": 565785,
-        "bytes": 36776025
+        "lines": 565822,
+        "bytes": 36778430
       }
     ]
   }
