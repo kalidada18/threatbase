@@ -12,6 +12,7 @@ const menuItems = [
     { name: 'About Us', href: '/about' },
     { name: 'Threat Feeds', href: '/#feeds' },
     { name: 'Report IP', href: '/report' },
+    { name: 'Hall of Shame', href: '/hall-of-shame' },
     { name: 'API Docs', href: '/api' },
     { name: 'Top Contributors', href: '/contributors' }
 ]
@@ -114,7 +115,7 @@ export default function Navbar() {
                                 <X className="group-data-[state=active]:rotate-0 group-data-[state=active]:scale-100 group-data-[state=active]:opacity-100 absolute inset-0 m-auto size-6 -rotate-180 scale-0 opacity-0 duration-200" />
                             </button>
 
-                            {/* Full nav only from xl up: six labels + wordmark + the action
+                            {/* Full nav only from xl up: seven labels + wordmark + the action
                                 cluster measure wider than 1024px, which used to wrap the bar
                                 onto a second line between lg and xl. */}
                             <div className="hidden xl:block">
@@ -126,7 +127,7 @@ export default function Navbar() {
                                                 <Link
                                                     to={item.href}
                                                     className={cn(
-                                                        "relative transition-colors duration-200 tracking-tight font-semibold text-[0.9rem] px-3 py-2 rounded-full whitespace-nowrap",
+                                                        "relative transition-colors duration-200 tracking-tight font-semibold text-[0.9rem] px-2.5 py-2 rounded-full whitespace-nowrap",
                                                         isActive
                                                             ? "text-white"
                                                             : "text-slate-400 hover:text-white"

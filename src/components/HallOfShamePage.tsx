@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, useReducedMotion } from 'framer-motion'
-import { ShieldAlert, Radar } from 'lucide-react'
 import IsoPageShell from './layout/IsoPageShell'
 import { useSEO } from '@/useSEO'
 import { getBaseUrl, fmt } from '@/utils'
@@ -69,8 +68,8 @@ export default function HallOfShamePage() {
       </motion.div>
 
       {failed ? (
-        <div className="glass-card max-w-md mx-auto text-center px-8 py-10">
-          <ShieldAlert className="h-8 w-8 mx-auto mb-4 text-red-400" strokeWidth={1.8} />
+        <div className="max-w-md mx-auto text-center border border-red-500/20 rounded-2xl bg-red-950/20 px-8 py-10">
+          <p className="font-mono text-xs uppercase tracking-[0.25em] text-red-400 mb-3">Feed unavailable</p>
           <p className="text-slate-300 mb-1">Couldn&apos;t load the ranking.</p>
           <p className="text-sm text-slate-500">The feed may be mid-update. Reload in a minute.</p>
         </div>
@@ -82,8 +81,8 @@ export default function HallOfShamePage() {
           ))}
         </div>
       ) : show.length === 0 ? (
-        <div className="glass-card max-w-md mx-auto text-center px-8 py-10">
-          <Radar className="h-8 w-8 mx-auto mb-4 text-slate-400" strokeWidth={1.8} />
+        <div className="max-w-md mx-auto text-center border border-white/[0.08] rounded-2xl bg-white/[0.02] px-8 py-10">
+          <p className="font-mono text-xs uppercase tracking-[0.25em] text-slate-400 mb-3">Awaiting first publish</p>
           <p className="text-slate-300">The ranking hasn&apos;t been published yet.</p>
           <p className="text-sm text-slate-500 mt-1">It lands with the next feed update.</p>
         </div>

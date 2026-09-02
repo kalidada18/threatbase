@@ -19,6 +19,8 @@ const IMPROVEMENTS: { date: string; title: string; items: string[] }[] = [
       'New feed-health monitor flags upstream sources that stop producing novel IOCs for 3+ consecutive runs.',
       'Feed updates can now be triggered on any schedule via the workflow_dispatch API.',
       'New Hall of Shame page ranks the 100 worst IPs by how many independent sources flagged them.',
+      'Hall of Shame added to the main navigation.',
+      'Search deep links (?search=indicator) now scan reliably on fresh loads and in-app navigation.',
     ],
   },
   {
