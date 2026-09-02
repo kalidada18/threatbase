@@ -17,7 +17,7 @@ const IMPROVEMENTS: { date: string; title: string; items: string[] }[] = [
       'Every indicator now carries first-seen / last-seen timestamps across all feeds.',
       'Age-based decay: indicators unseen for 90+ days drop a severity tier and gain a Stale tag; unseen for 365+ days are removed entirely.',
       'New feed-health monitor flags upstream sources that stop producing novel IOCs for 3+ consecutive runs.',
-      'Feed updates now run automatically every 4 hours instead of manual dispatch.',
+      'Feed updates can now be triggered on any schedule via the workflow_dispatch API.',
     ],
   },
   {
