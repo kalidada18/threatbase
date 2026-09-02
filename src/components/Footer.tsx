@@ -29,6 +29,7 @@ export default function Footer() {
               { name: "Dashboard", href: "/#stats" },
               { name: "Threat Feeds", href: "/#feeds" },
               { name: "Report IP", href: "/report" },
+              { name: "Hall of Shame", href: "/hall-of-shame" },
               { name: "Reporting Policy", href: "/policy" },
             ],
           },

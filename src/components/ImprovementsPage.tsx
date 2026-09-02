@@ -18,6 +18,7 @@ const IMPROVEMENTS: { date: string; title: string; items: string[] }[] = [
       'Age-based decay: indicators unseen for 90+ days drop a severity tier and gain a Stale tag; unseen for 365+ days are removed entirely.',
       'New feed-health monitor flags upstream sources that stop producing novel IOCs for 3+ consecutive runs.',
       'Feed updates can now be triggered on any schedule via the workflow_dispatch API.',
+      'New Hall of Shame page ranks the 100 worst IPs by how many independent sources flagged them.',
     ],
   },
   {

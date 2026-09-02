@@ -7,7 +7,8 @@ Highly optimized: fully asynchronous I/O with streaming, C-level fast IP validat
 Outputs CSV, JSON, TXT.
 
 Writes to ioc/ folder:
-  - threatbase-ip.txt       (sorted by IP, CSV: IP,FeedCount,RiskScore,Tags)
+  - threatbase-ip.txt       (sorted by IP, CSV: IP,FeedCount,RiskScore,Tags,FirstSeen,LastSeen)
+  - top_ips.json            (top 100 IPs by feed corroboration, powers /hall-of-shame)
   - threatbase-ip.json      (detailed JSON with tags and sources)
   - threatbase-ipv6.txt     (sorted)
   - threatbase-cidr.txt     (sorted)
@@ -1419,6 +1420,35 @@ async def run_async_collector():
         log.info("  Wrote ioc/geo.json")
     else:
         log.warning("  Skipped ioc/geo.json (no geo data)")
+
+    # ── Hall of Shame: ioc/top_ips.json ────────────────────────────────────
+    # Top 100 IPs by corroboration (independent upstream feeds listing them,
+    # risk tier as tiebreak). Small, self-contained JSON so the /hall-of-shame
+    # page never has to touch the multi-MB master feed.
+    log.info("Writing ioc/top_ips.json...")
+    _tier_rank = {"HIGH": 2, "MEDIUM": 1, "LOW": 0}
+    top_keys = sorted(
+        filtered_ip_info,
+        key=lambda k: (filtered_ip_info[k]["count"], _tier_rank.get(filtered_ip_info[k]["score"], 0)),
+        reverse=True,
+    )[:100]
+    gi_starts, gi_ranges = geo_index if geo_index else (None, None)
+    with open("ioc/top_ips.json", "w", encoding="utf-8") as f:
+        json.dump({
+            "generated_at": timestamp,
+            "ips": [
+                {
+                    "ip": filtered_ip_info[k]["ip"],
+                    "feeds": filtered_ip_info[k]["count"],
+                    "score": filtered_ip_info[k]["score"],
+                    "tags": sorted(filtered_ip_info[k]["tags"]),
+                    "country": (country_for_ip(k, gi_starts, gi_ranges) or "") if gi_starts else "",
+                    "first_seen": filtered_ip_info[k]["first_seen"],
+                    "last_seen": filtered_ip_info[k]["last_seen"],
+                }
+                for k in top_keys
+            ],
+        }, f, indent=1)
 
 
     # ── Apply staleness filter to the non-IP feeds ─────────────────────────
