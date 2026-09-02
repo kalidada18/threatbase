@@ -59,6 +59,20 @@ Threatbase is a **fully-automated threat-intelligence pipeline**. It ingests, va
 | **Archives** | GitHub Releases | Daily ZIP snapshots for retrospective hunting |
 | **Large-feed mirrors** | Git chunks + Release assets | Domain/hash feeds ship as ~31 MiB chunks in `ioc/` and unsplit as release assets |
 
+### 📁 Repository Structure
+
+```
+threatbase/
+├── pipeline/    Feed engine: update_feed.py, sync_community_reports.py,
+│                requirements, whitelist, custom IOCs (run from repo root)
+├── ioc/         Generated feeds, stats, history, geo, top_ips.json (public)
+├── src/         React dashboard (Cloudflare Pages)
+├── functions/   API endpoints: /api/v1/* scan, report, community (Cloudflare)
+├── db/          Supabase SQL: schema, RLS, RPCs (apply manually, see db/README)
+├── public/      Static assets, _redirects/_headers, robots, sitemap
+└── .github/     update-feed.yml workflow (triggered via workflow_dispatch)
+```
+
 ---
 
 ## 🛡️ IOC Coverage

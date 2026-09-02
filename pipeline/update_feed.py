@@ -42,6 +42,10 @@ from collections import defaultdict, Counter
 from datetime import datetime, timezone
 from typing import Dict, List, Optional, Set
 
+# Data files that ship with the pipeline live next to the script, so it works
+# from any cwd (CI runs it from the repo root).
+PIPELINE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 import aiohttp
 import ipaddress
 from datetime import date, datetime, timedelta, timezone
@@ -332,9 +336,9 @@ def load_false_positives() -> FalsePositivesSet:
             log.error(f"Failed to load ioc/false_positives.txt: {e}")
             
     # Load static manual whitelist
-    if os.path.exists("whitelist.txt"):
+    if os.path.exists(os.path.join(PIPELINE_DIR, "whitelist.txt")):
         try:
-            with open("whitelist.txt", "r", encoding="utf-8") as f:
+            with open(os.path.join(PIPELINE_DIR, "whitelist.txt"), "r", encoding="utf-8") as f:
                 for line in f:
                     line = line.strip()
                     if line and not line.startswith(('#', '//')):
@@ -351,10 +355,10 @@ def load_custom_iocs() -> dict:
     custom = {"ips": set(), "domains": set(), "hashes": set(), "urls": set()}
     
     # Parse custom_iocs.txt
-    if os.path.exists("custom_iocs.txt"):
+    if os.path.exists(os.path.join(PIPELINE_DIR, "custom_iocs.txt")):
         current_section = "ips"  # default section
         try:
-            with open("custom_iocs.txt", "r", encoding="utf-8") as f:
+            with open(os.path.join(PIPELINE_DIR, "custom_iocs.txt"), "r", encoding="utf-8") as f:
                 for line in f:
                     line = line.strip()
                     if not line or line.startswith('#'):
@@ -915,7 +919,7 @@ FEED_TRUST_TIERS = {
 
 # ── Geolocation (IP → country) via iptoasn.com free dataset ─────────────────
 GEO_DB_URL = "https://iptoasn.com/data/ip2asn-v4.tsv.gz"
-GEO_DB_PATH = "ip2asn-v4.tsv.gz"
+GEO_DB_PATH = os.path.join(PIPELINE_DIR, "ip2asn-v4.tsv.gz")
 
 
 def load_geo_index() -> Optional[tuple]:
