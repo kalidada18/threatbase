@@ -3,7 +3,7 @@ import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { Bug, ShieldCheck, AlertTriangle, AlertOctagon, ChevronRight, Search, Check, ShieldAlert, Copy } from 'lucide-react'
 import DOMPurify from 'dompurify'
 import supabaseClient from '../supabaseClient'
-import { timeAgo, getCategoryIconPath, normalizeTags, categoryTier, TIER_CHIP, TIER_ACCENT } from '../utils'
+import { timeAgo, normalizeTags, categoryTier, TIER_CHIP, TIER_ACCENT } from '../utils'
 import { useAuth } from '../AuthContext'
 import ScanPulse from './ui/scan-pulse'
 import { getMalwareDescription } from '../malwareDictionary'
@@ -59,16 +59,11 @@ function MalwareDescriptionBlock({ tag }: { tag: string }) {
 
   return (
     <div className={`mt-5 p-4 rounded-xl bg-slate-950/40 border ${accent.card} shadow-inner`}>
-      <div className="flex items-start gap-3">
-        <div className={`${accent.bg} p-1.5 rounded-lg border ${accent.border} shrink-0 mt-0.5`}>
-          <img src={getCategoryIconPath(tag)} className="w-4 h-4 object-contain drop-shadow-sm" alt={`${tag} Icon`} />
-        </div>
-        <div>
-          <h4 className="text-slate-200 font-bold text-sm tracking-tight flex items-center gap-2">
-            {tag}
-          </h4>
-          <p className="text-slate-400 text-sm mt-1 leading-relaxed">{desc}</p>
-        </div>
+      <div>
+        <h4 className="text-slate-200 font-bold text-sm tracking-tight">
+          {tag}
+        </h4>
+        <p className="text-slate-400 text-sm mt-1 leading-relaxed">{desc}</p>
       </div>
     </div>
   )
@@ -377,7 +372,6 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
                           <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-platinum-500">Known Threats</span>
                           {scanResult.tags.map((tag: string) => (
                             <span key={tag} className="flex items-center gap-1.5 rounded-md border border-white/10 bg-white/[0.04] px-2.5 py-0.5 text-xs font-semibold text-platinum-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
-                              <img src={getCategoryIconPath(tag)} className="w-3.5 h-3.5 object-contain opacity-90" alt="Threat Icon" />
                               {tag}
                             </span>
                           ))}
@@ -575,7 +569,6 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
                                   <div className="flex flex-wrap md:justify-end gap-1.5 pt-1 md:pt-0">
                                     {categories.map((cat: string) => (
                                       <span key={cat} className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold tracking-wider ${getCategoryColor(cat)}`}>
-                                        <img src={getCategoryIconPath(cat)} alt={cat} className="w-3 h-3 object-contain drop-shadow-sm" />
                                         {cat}
                                       </span>
                                     ))}
