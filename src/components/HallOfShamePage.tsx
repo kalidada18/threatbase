@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, useReducedMotion } from 'framer-motion'
-import { Skull, ShieldAlert, Radar, ArrowUpRight } from 'lucide-react'
+import { ShieldAlert, Radar } from 'lucide-react'
 import IsoPageShell from './layout/IsoPageShell'
 import { useSEO } from '@/useSEO'
 import { getBaseUrl, fmt } from '@/utils'
@@ -98,23 +98,17 @@ export default function HallOfShamePage() {
             className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-14"
           >
             <Link to={`/?search=${podium[0].ip}`} className="group md:col-span-3 relative overflow-hidden rounded-2xl border border-red-500/30 bg-gradient-to-br from-red-950/60 via-slate-950/80 to-slate-950/90 p-8 transition-colors hover:border-red-500/50">
-              <div className="absolute -right-8 -top-8 opacity-[0.07] group-hover:opacity-[0.12] transition-opacity pointer-events-none">
-                <Skull className="h-48 w-48 text-red-500" strokeWidth={1} />
+              <div className="font-mono text-xs uppercase tracking-[0.2em] text-red-400 mb-6">Most wanted</div>
+              <div className="font-mono text-3xl md:text-4xl text-white font-bold tracking-tight break-all mb-4 group-hover:text-red-100 transition-colors">
+                {podium[0].ip}
               </div>
-              <div className="relative">
-                <div className="font-mono text-xs uppercase tracking-[0.2em] text-red-400 mb-6">Most wanted</div>
-                <div className="font-mono text-3xl md:text-4xl text-white font-bold tracking-tight break-all mb-4 group-hover:text-red-100 transition-colors">
-                  {podium[0].ip}
-                </div>
-                <RankMeta e={podium[0]} />
-              </div>
+              <RankMeta e={podium[0]} />
             </Link>
             <div className="md:col-span-2 grid grid-rows-2 gap-4">
               {podium.slice(1, 3).map((e, i) => (
                 <Link key={e.ip} to={`/?search=${e.ip}`} className="group glass-card glass-hover rounded-2xl p-6 flex flex-col justify-between">
                   <div className="flex items-baseline justify-between gap-3">
                     <span className="font-mono text-xs uppercase tracking-[0.2em] text-slate-500">Rank {i + 2}</span>
-                    <ArrowUpRight className="h-4 w-4 text-slate-600 group-hover:text-red-400 transition-colors" />
                   </div>
                   <div>
                     <div className="font-mono text-lg md:text-xl text-white font-semibold tracking-tight break-all mb-2 group-hover:text-red-100 transition-colors">{e.ip}</div>
@@ -166,13 +160,11 @@ export default function HallOfShamePage() {
 
 function RankMeta({ e, compact }: { e: Entry; compact?: boolean }) {
   return (
-    <div className={`flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-400 ${compact ? '' : 'text-sm'}`}>
-      <span className="inline-flex items-center gap-1.5 font-mono text-red-400">
-        <Skull className="h-3.5 w-3.5" strokeWidth={2} />
-        {e.feeds} independent feeds
-      </span>
-      {e.country && <span className="font-mono">{e.country}</span>}
-      <span>{cleanTags(e).slice(0, 3).join(' / ') || 'Mixed'}</span>
+    <div className={`flex flex-wrap items-center gap-x-5 gap-y-2 text-xs ${compact ? '' : 'text-sm'}`}>
+      <span className="font-mono text-red-400 tabular-nums">{e.feeds} feeds</span>
+      <span className="font-mono uppercase tracking-wider text-red-300/80">{e.score} risk</span>
+      {e.country && <span className="font-mono uppercase text-slate-400">{e.country}</span>}
+      <span className="text-slate-400">{cleanTags(e).slice(0, 3).join(' / ') || 'Mixed'}</span>
       <span className="font-mono text-slate-500">last seen {e.last_seen}</span>
     </div>
   )
