@@ -31,6 +31,7 @@ import json
 import logging
 import csv
 import os
+import hashlib
 import re
 import socket
 import sys
@@ -1621,6 +1622,19 @@ async def run_async_collector():
         "chunk_base": "https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/",
         "feeds": chunk_meta,
     }
+    # Per-file SHA-256 so defenders can verify a blocklist survived transit
+    # (proxies, CDNs and firewalls have been known to mangle text feeds).
+    def _sha256(path):
+        h = hashlib.sha256()
+        with open(path, "rb") as fh:
+            for chunk in iter(lambda: fh.read(1 << 20), b""):
+                h.update(chunk)
+        return h.hexdigest()
+    manifest["checksums"] = {
+        os.path.relpath(p, "ioc").replace(os.sep, "/"): _sha256(p)
+        for p in sorted(glob.glob("ioc/**/*.txt", recursive=True))
+    }
+
     with open("ioc/manifest.json", "w", encoding="utf-8") as f:
         json.dump(manifest, f, indent=2)
 

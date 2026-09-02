@@ -21,6 +21,8 @@ const IMPROVEMENTS: { date: string; title: string; items: string[] }[] = [
       'New Hall of Shame page ranks the 100 worst IPs by how many independent sources flagged them.',
       'Hall of Shame added to the main navigation.',
       'Search deep links (?search=indicator) now scan reliably on fresh loads and in-app navigation.',
+      'Every feed file now ships a SHA-256 checksum in manifest.json, so blocklists can be verified after download.',
+      'Improvements added to the main navigation.',
     ],
   },
   {
