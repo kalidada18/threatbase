@@ -101,12 +101,14 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
       setLoadingReports(true)
 
       if (supabaseClient) {
-        void supabaseClient
+        // Promise.resolve: the Supabase builder is only *thenable*, so a
+        // trailing .catch is not on its type without a real Promise.
+        void Promise.resolve(supabaseClient
           .from('reported_ips')
           .select('*')
           .eq('ip', ip)
           .order('created_at', { ascending: false })
-          .limit(100)
+          .limit(100))
           .then(({ data }) => {
             if (data) setReports(data)
             setLoadingReports(false)
