@@ -595,7 +595,7 @@ export default function ReportIP({ addToast }: any) {
                             <span className="text-[12px] font-medium text-slate-400">{row.reporter_alias || 'Anonymous'}</span>
                           </div>
                           <div className="flex gap-1.5">
-                            {categories.map(cat => (
+                            {categories.map((cat: string) => (
                               <span key={cat} className={`flex items-center gap-1 rounded-md px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${getCategoryColor(cat)}`}>
                                 {cat}
                               </span>

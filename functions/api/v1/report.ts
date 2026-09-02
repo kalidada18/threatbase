@@ -2,11 +2,7 @@ import supabaseClient from '../../../src/supabaseClient'
 import { createClient } from '@supabase/supabase-js'
 import { SUPABASE_URL } from '../../../src/lib/supabaseConfig'
 import { isValidPublicIp, isValidCategory, MAX_COMMENT_LENGTH } from '../../../src/lib/apiValidation'
-
-/** Minimal server-side HTML sanitiser — strips all HTML tags. */
-function stripHtml(str: string): string {
-  return str.replace(/<[^>]*>/g, '')
-}
+import { stripHtml } from '../_common'
 
 export const onRequestPost = async (context: any) => {
   const { request, data, env } = context;
@@ -60,19 +56,10 @@ export const onRequestPost = async (context: any) => {
       });
     }
 
-    // 1. Fetch user's alias (display label only — NOT used for dedup anymore,
-    //    since usernames are mutable and not guaranteed unique across users
-    //    without a profile row).
-    let reporter_alias = "API User";
-    const { data: profile } = await supabaseClient
-      .from('profiles')
-      .select('username')
-      .eq('id', userId)
-      .single();
-
-    if (profile && profile.username) {
-      reporter_alias = profile.username;
-    }
+    // reporter_alias is a display label only — NOT used for dedup. Dedup is
+    // enforced at the DB level via a unique constraint on (ip, user_id), so
+    // fetching the profile username on every request was a redundant roundtrip.
+    const reporter_alias = "API User";
 
     // 2. Insert via the SECURITY DEFINER RPC using the server-only service_role
     //    key. The API key was already validated by the middleware, so the

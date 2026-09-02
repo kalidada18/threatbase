@@ -7,11 +7,10 @@ import {
   CHUNKED_FEEDS,
 } from './utils'
 import supabaseClient from './supabaseClient'
-import { BloomFilter } from './bloomFilter'
 
 type CompareFn = (query: string, line: string) => number
 
-const feedCache: Record<string, { text: string; filter: null }> = {}
+const feedCache: Record<string, { text: string }> = {}
 const statsCache: Record<string, any> = {}
 
 /**
@@ -39,7 +38,7 @@ async function fetchAndCacheFeedText(
   baseUrl: string,
   filename: string,
   feedVersion: string | number,
-): Promise<{ text: string; filter: null }> {
+): Promise<{ text: string }> {
   const cacheKey = `${filename}?v=${feedVersion}`
   if (feedCache[cacheKey]) return feedCache[cacheKey]
 
@@ -62,7 +61,7 @@ async function fetchAndCacheFeedText(
     console.error(`GitHub Raw fetch failed for ${filename}:`, e)
   }
 
-  feedCache[cacheKey] = { text, filter: null }
+  feedCache[cacheKey] = { text }
   return feedCache[cacheKey]
 }
 
@@ -85,7 +84,7 @@ async function fetchFeedTextForQuery(
   query: string,
   feedVersion: string | number,
   stats: any,
-): Promise<{ text: string; filter: null }> {
+): Promise<{ text: string }> {
   if (!(CHUNKED_FEEDS as readonly string[]).includes(filename)) {
     return fetchAndCacheFeedText(baseUrl, filename, feedVersion)
   }
@@ -94,7 +93,7 @@ async function fetchFeedTextForQuery(
   if (chunks.length === 0) return fetchAndCacheFeedText(baseUrl, filename, feedVersion)
 
   const chunk = selectChunkFor(chunks, query)
-  if (!chunk) return { text: '', filter: null }
+  if (!chunk) return { text: '' }
 
   return fetchAndCacheFeedText(baseUrl, chunk.file, feedVersion)
 }
@@ -343,28 +342,25 @@ export async function scanIndicatorLogic(rawInput: string, feedVersion: string |
 
   try {
     let textData = ''
-    let filter: BloomFilter | null = null
     let compareFn: CompareFn = stringCompare
 
     if (isIP) {
       ;({ text: textData } = await fetchAndCacheFeedText(RAW, 'threatbase-ip.txt', feedVersion))
       compareFn = createIpCsvCompare(ip)
     } else if (isIPv6) {
-      ;({ text: textData, filter } = await fetchAndCacheFeedText(RAW, 'threatbase-ipv6.txt', feedVersion))
+      ;({ text: textData } = await fetchAndCacheFeedText(RAW, 'threatbase-ipv6.txt', feedVersion))
     } else if (isCIDR) {
-      ;({ text: textData, filter } = await fetchAndCacheFeedText(RAW, 'threatbase-cidr.txt', feedVersion))
+      ;({ text: textData } = await fetchAndCacheFeedText(RAW, 'threatbase-cidr.txt', feedVersion))
     } else if (isDomain) {
-      ;({ text: textData, filter } = await fetchFeedTextForQuery(RAW, 'threatbase-domain.txt', ip, feedVersion, stats))
+      ;({ text: textData } = await fetchFeedTextForQuery(RAW, 'threatbase-domain.txt', ip, feedVersion, stats))
     } else if (isHash) {
-      ;({ text: textData, filter } = await fetchFeedTextForQuery(RAW, 'threatbase-hash.txt', ip, feedVersion, stats))
+      ;({ text: textData } = await fetchFeedTextForQuery(RAW, 'threatbase-hash.txt', ip, feedVersion, stats))
     } else if (isURL) {
-      ;({ text: textData, filter } = await fetchAndCacheFeedText(RAW, 'threatbase-url.txt', feedVersion))
+      ;({ text: textData } = await fetchAndCacheFeedText(RAW, 'threatbase-url.txt', feedVersion))
     }
 
     let result: string | null = null
-    if (!filter || filter.has(ip)) {
-      result = binarySearchString(textData, ip, compareFn)
-    }
+    result = binarySearchString(textData, ip, compareFn)
 
     // CIDR fallback: an IPv4 with no exact row may still be malicious because
     // it falls inside a listed malicious subnet (Spamhaus/FireHOL/etc).
@@ -380,9 +376,8 @@ export async function scanIndicatorLogic(rawInput: string, feedVersion: string |
     // distinct chunk touched.
     if (!result && isDomain) {
       for (const parent of parentDomains(ip)) {
-        const { text: dText, filter: dFilter } = await fetchFeedTextForQuery(RAW, 'threatbase-domain.txt', parent, feedVersion, stats)
+        const { text: dText } = await fetchFeedTextForQuery(RAW, 'threatbase-domain.txt', parent, feedVersion, stats)
         if (!dText) continue
-        if (dFilter && !dFilter.has(parent)) continue
         const hit = binarySearchString(dText, parent, stringCompare)
         if (hit) {
           relatedMatch = { indicator: parent, reason: 'Subdomain of listed malicious domain' }
@@ -399,13 +394,11 @@ export async function scanIndicatorLogic(rawInput: string, feedVersion: string |
       if (host) {
         const hostIsIp = ipv4ToLong(host) !== null
         if (hostIsIp) {
-          const { text: ipText, filter: ipFilter } = await fetchAndCacheFeedText(RAW, 'threatbase-ip.txt', feedVersion)
-          if (!ipFilter || ipFilter.has(host)) {
-            const hit = binarySearchString(ipText, host, ipCsvCompare)
-            if (hit) {
-              relatedMatch = { indicator: host, reason: 'URL hosted on listed malicious IP' }
-              result = hit
-            }
+          const { text: ipText } = await fetchAndCacheFeedText(RAW, 'threatbase-ip.txt', feedVersion)
+          const hit = binarySearchString(ipText, host, ipCsvCompare)
+          if (hit) {
+            relatedMatch = { indicator: host, reason: 'URL hosted on listed malicious IP' }
+            result = hit
           }
           if (!result) {
             const { text: cidrText } = await fetchAndCacheFeedText(RAW, 'threatbase-cidr.txt', feedVersion)
@@ -417,9 +410,8 @@ export async function scanIndicatorLogic(rawInput: string, feedVersion: string |
           }
         } else {
           for (const candidate of [host, ...parentDomains(host)]) {
-            const { text: dText, filter: dFilter } = await fetchFeedTextForQuery(RAW, 'threatbase-domain.txt', candidate, feedVersion, stats)
+            const { text: dText } = await fetchFeedTextForQuery(RAW, 'threatbase-domain.txt', candidate, feedVersion, stats)
             if (!dText) continue
-            if (dFilter && !dFilter.has(candidate)) continue
             const hit = binarySearchString(dText, candidate, stringCompare)
             if (hit) {
               relatedMatch = { indicator: candidate, reason: candidate === host ? 'URL host is a listed malicious domain' : 'URL host is a subdomain of a listed malicious domain' }

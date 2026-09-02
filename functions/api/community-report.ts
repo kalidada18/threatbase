@@ -2,6 +2,7 @@ import supabaseClient from '../../src/supabaseClient'
 import { createClient } from '@supabase/supabase-js'
 import { SUPABASE_URL } from '../../src/lib/supabaseConfig'
 import { isValidPublicIp, isValidCategory, MAX_COMMENT_LENGTH } from '../../src/lib/apiValidation'
+import { corsHeaders, stripHtml, json } from './_common'
 
 // Web (browser) report endpoint. Unlike /api/v1/report (programmatic, API-key
 // auth), this path is for the website's report form. It enforces three things
@@ -12,38 +13,6 @@ import { isValidPublicIp, isValidCategory, MAX_COMMENT_LENGTH } from '../../src/
 // Because verification and the privileged write happen in the same request,
 // none of the client-side bypasses apply.
 
-// Allowed origins for CORS. In production only the main domain should be
-// permitted; locally we fall back to '*' for dev convenience.
-const ALLOWED_ORIGIN = 'https://threatbase.qzz.io'
-
-/**
- * Strict dev-origin check: exact host + optional port only, so a suffix trick
- * like http://localhost.attacker.com can't satisfy a prefix match.
- */
-function isDevOrigin(origin: string): boolean {
-  return /^http:\/\/(localhost|127\.0\.0\.1)(:\d{1,5})?$/.test(origin)
-}
-
-function corsHeaders(request: Request) {
-  const origin = request.headers.get('Origin') || ''
-  const isAllowed = origin === ALLOWED_ORIGIN || isDevOrigin(origin)
-  return {
-    'Access-Control-Allow-Origin': isAllowed ? origin : ALLOWED_ORIGIN,
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  }
-}
-
-/** Minimal server-side HTML sanitiser — strips all HTML tags. */
-function stripHtml(str: string): string {
-  return str.replace(/<[^>]*>/g, '')
-}
-
-const json = (obj: any, status = 200, request?: Request) =>
-  new Response(JSON.stringify(obj), {
-    status,
-    headers: { 'Content-Type': 'application/json', ...(request ? corsHeaders(request) : { 'Access-Control-Allow-Origin': ALLOWED_ORIGIN }) },
-  })
 
 export const onRequestOptions = async (context: any) => {
   return new Response(null, { status: 204, headers: corsHeaders(context.request) })

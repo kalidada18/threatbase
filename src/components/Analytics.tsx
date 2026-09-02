@@ -1,16 +1,8 @@
-import {
-  Chart as ChartJS,
-  ArcElement,
-  Tooltip,
-  Legend,
-} from 'chart.js'
-import { Doughnut } from 'react-chartjs-2'
+import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { fmt, DATA_RAMP } from '../utils'
 import AnimatedHighlightedAreaChart from './blocks/animated-area-chart'
 import Section from './layout/Section'
 import { SectionHeading } from './motion/SectionHeading'
-
-ChartJS.register(ArcElement, Tooltip, Legend)
 
 export default function Analytics({ statsData, feedVersion }: any) {
   return (
@@ -50,63 +42,63 @@ export default function Analytics({ statsData, feedVersion }: any) {
 
 
 function CategoryChart({ categories }: any) {
-  const textColor = '#cbd5e1'
-
   const sorted = Object.entries(categories)
     .filter(([k]) => k !== 'Mixed' && k !== 'Unknown')
     .sort((a: any, b: any) => b[1] - a[1])
-  const labels = sorted.map(([k]) => k)
-  const vals = sorted.map(([, v]) => v)
 
-  const data = {
-    labels,
-    datasets: [
-      {
-        data: vals,
-        // Segments are sorted by volume, so ramp position reads as rank:
-        // hottest ruby at the top, cooling to platinum down the tail.
-        backgroundColor: labels.map((_, i) => DATA_RAMP[i % DATA_RAMP.length]),
-        borderWidth: 0, // Remove stroke for sleek modern look
-        borderRadius: 8, // Rounded segments
-        hoverOffset: 8,
-      },
-    ],
-  }
+  const chartData = sorted.map(([name, value], i) => ({
+    name,
+    value: value as number,
+    color: DATA_RAMP[i % DATA_RAMP.length],
+  }))
 
-  const options: any = {
-    responsive: true,
-    maintainAspectRatio: false,
-    cutout: '80%', // Thinner sleek ring
-    // MotionConfig governs framer-motion only; chart.js runs its own animation
-    // engine, so honor prefers-reduced-motion here explicitly.
-    animation: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? false : undefined,
-    plugins: {
-      legend: {
-        position: 'bottom',
-        labels: {
-          color: textColor,
-          font: { size: 12, family: "'Manrope', sans-serif", weight: '500' },
-          usePointStyle: true,
-          pointStyle: 'circle',
-          padding: 20 
-        },
-      },
-      tooltip: {
-        backgroundColor: 'rgba(15, 23, 42, 0.95)',
-        titleColor: '#ffffff',
-        bodyColor: '#e2e8f0',
-        borderColor: 'rgba(255, 255, 255, 0.1)',
-        borderWidth: 1,
-        padding: 16,
-        usePointStyle: true,
-        boxPadding: 6,
-        bodyFont: { size: 14, family: "'Manrope', sans-serif", weight: '600' },
-        callbacks: {
-          label: (context: any) => ' ' + context.label + ': ' + fmt(context.parsed),
-        },
-      },
-    },
-  }
+  const reducedMotion =
+    typeof window !== 'undefined' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-  return <Doughnut data={data} options={options} />
+  return (
+    <ResponsiveContainer width="100%" height={320}>
+      <PieChart>
+        <Pie
+          data={chartData}
+          cx="50%"
+          cy="50%"
+          innerRadius="60%"
+          outerRadius="80%"
+          paddingAngle={3}
+          dataKey="value"
+          isAnimationActive={!reducedMotion}
+          animationDuration={800}
+        >
+          {chartData.map((entry, index) => (
+            <Cell key={`cell-${index}`} fill={entry.color} stroke="transparent" />
+          ))}
+        </Pie>
+        <Tooltip
+          contentStyle={{
+            backgroundColor: 'rgba(15, 23, 42, 0.95)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '8px',
+            color: '#e2e8f0',
+            fontSize: '14px',
+            fontFamily: "'Manrope', sans-serif",
+            fontWeight: '600',
+            padding: '12px 16px',
+          }}
+          formatter={(value: number, name: string) => [fmt(value), name]}
+          labelStyle={{ display: 'none' }}
+          cursor={false}
+        />
+        <Legend
+          iconType="circle"
+          iconSize={8}
+          formatter={(value: string) => (
+            <span style={{ color: '#cbd5e1', fontSize: '12px', fontFamily: "'Manrope', sans-serif", fontWeight: '500' }}>
+              {value}
+            </span>
+          )}
+        />
+      </PieChart>
+    </ResponsiveContainer>
+  )
 }

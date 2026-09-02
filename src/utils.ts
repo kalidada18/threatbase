@@ -1,5 +1,5 @@
 /** Number formatter */
-export const fmt = (n) => new Intl.NumberFormat('en-US').format(n)
+export const fmt = (n: number) => new Intl.NumberFormat('en-US').format(n)
 
 /**
  * The one ordered accent ramp for every data surface on the site: hot ruby,
@@ -92,11 +92,10 @@ export function getBaseUrl() {
 
 /**
  * Base URL for the rolling `latest` release, which always holds the current
- * build of the two large feeds as single unsplit files. This is the recommended
- * download for humans and for anyone who wants one whole file; the scanner uses
- * the committed chunks instead (see CHUNKED_FEEDS below).
+ * build of the two large feeds as single unsplit files. The scanner uses the
+ * committed chunks instead (see CHUNKED_FEEDS below).
  */
-export function getReleaseUrl() {
+function getReleaseUrl() {
   return 'https://github.com/kalidada18/threatbase/releases/download/latest/'
 }
 
@@ -162,8 +161,8 @@ export function selectChunkFor(chunks: FeedChunk[], query: string): FeedChunk | 
 }
 
 /** Format a sync timestamp for display */
-export function formatSyncTime(timestamp) {
-  const options = { timeZone: 'Asia/Kathmandu', hour: '2-digit', minute: '2-digit', hour12: true }
+export function formatSyncTime(timestamp: number | string | null | undefined): string {
+  const options: Intl.DateTimeFormatOptions = { timeZone: 'Asia/Kathmandu', hour: '2-digit', minute: '2-digit', hour12: true }
   if (timestamp) {
     return 'Synced ' + new Intl.DateTimeFormat('en-US', options).format(new Date(timestamp)) + ' (NPT)'
   }
@@ -171,10 +170,10 @@ export function formatSyncTime(timestamp) {
 }
 
 /** Simple relative time formatting */
-export function timeAgo(dateStr) {
+export function timeAgo(dateStr: string | number | Date): string {
   const now = new Date()
   const date = new Date(dateStr)
-  const seconds = Math.floor((now - date) / 1000)
+  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000)
 
   if (seconds < 60) return 'just now'
   if (seconds < 3600) return Math.floor(seconds / 60) + 'm ago'
@@ -197,7 +196,7 @@ const safeBaseUrl = () => {
 }
 
 /** Predict male/female avatar based on name heuristically */
-export function getAvatarForName(name) {
+export function getAvatarForName(name: string | null | undefined): string {
   if (!name || name === 'Anonymous') return `${safeBaseUrl()}img/maledefender.png`
   
   const n = name.toLowerCase()
@@ -216,7 +215,7 @@ export function getAvatarForName(name) {
 }
 
 /** Get the PNG icon path for a threat category label */
-export function getCategoryIconPath(label) {
+export function getCategoryIconPath(label: string | null | undefined): string {
   if (!label) return `${safeBaseUrl()}img/other.png`
   const l = label.toLowerCase()
   if (l.includes('malware') || l.includes('exploit') || l.includes('zero-day') || l.includes('malicious')) return `${safeBaseUrl()}img/malware.png`

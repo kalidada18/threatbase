@@ -105,17 +105,21 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
     if (scanResult && (scanResult.isIP || scanResult.isIPv6 || scanResult.isDomain) && ip) {
       setLoadingReports(true)
 
-      supabaseClient
-        .from('reported_ips')
-        .select('*')
-        .eq('ip', ip)
-        .order('created_at', { ascending: false })
-        .limit(100)
-        .then(({ data }) => {
-          if (data) setReports(data)
-          setLoadingReports(false)
-        })
-        .catch(() => setLoadingReports(false))
+      if (supabaseClient) {
+        void supabaseClient
+          .from('reported_ips')
+          .select('*')
+          .eq('ip', ip)
+          .order('created_at', { ascending: false })
+          .limit(100)
+          .then(({ data }) => {
+            if (data) setReports(data)
+            setLoadingReports(false)
+          })
+          .catch(() => setLoadingReports(false))
+      } else {
+        setLoadingReports(false)
+      }
 
       if (scanResult.isIP || scanResult.isIPv6) {
         setLoadingIpInfo(true)
