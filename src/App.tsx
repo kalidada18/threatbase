@@ -113,8 +113,8 @@ export default function App() {
     performScan()
   }, [scanInput, addToast])
 
-  const performScan = useCallback(async () => {
-    let raw = scanInput.trim().replace(/[<>"'&]/g, '')
+  const performScan = useCallback(async (inputOverride?: string) => {
+    let raw = (inputOverride ?? scanInput).trim().replace(/[<>"'&]/g, '')
     
     setIsScanning(true)
     setShowReport(true)
@@ -167,17 +167,21 @@ export default function App() {
     }
   }, [])
 
-  // Auto-scan from URL parameter
+  // Auto-scan from ?search= / ?q=. Runs whenever the query, the route, or the
+  // verification gate changes — not just on first mount — so Hall-of-Shame and
+  // other deep links work both on fresh page loads and in-app navigation.
+  // performScan is called directly instead of faking a scan-btn click, since
+  // the button may not be mounted yet when this fires.
+  const lastAutoScan = useRef<string | null>(null)
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search)
+    if (!isHumanVerified || location.pathname !== '/') return
+    const urlParams = new URLSearchParams(location.search)
     const searchParam = urlParams.get('search') || urlParams.get('q')
-    if (searchParam) {
-      setScanInput(searchParam)
-      setTimeout(() => {
-        document.getElementById('scan-btn')?.click()
-      }, 300)
-    }
-  }, [])
+    if (!searchParam || searchParam === lastAutoScan.current) return
+    lastAutoScan.current = searchParam
+    setScanInput(searchParam)
+    performScan(searchParam)
+  }, [location, isHumanVerified, performScan])
 
   // Scroll to hash on page load or navigation
   useEffect(() => {
