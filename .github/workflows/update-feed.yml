@@ -4,6 +4,10 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 on:
+  # ── Scheduled: every 4 hours keeps freshness without hammering upstream feeds
+  schedule:
+    # Offset from :00 to avoid thundering-herd runs against the same providers.
+    - cron: '17 */4 * * *'
   # ── Manual: trigger from the Actions tab any time ─────────────────────────
   workflow_dispatch:
 

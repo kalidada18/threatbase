@@ -1,5 +1,5 @@
 {
-  "generated": "2026-09-02T10:20:18.296160+00:00",
+  "generated": "2026-09-02T10:28:25.838457+00:00",
   "note": "threatbase-domain.txt and threatbase-hash.txt exceed GitHub's file size limits and are committed as the chunks listed here. Chunks partition the sorted feed, so each covers a contiguous key range and can be binary searched on its own. Always read this list rather than assuming a chunk count: the count grows with the feed.",
   "unsplit_downloads": "https://github.com/kalidada18/threatbase/releases/download/latest/",
   "chunk_base": "https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/",
@@ -7,33 +7,40 @@
     "threatbase-domain.txt": [
       {
         "file": "threatbase-domain-01.txt",
-        "first": "0--foodwarez.da.ru",
-        "last": "moncolissimo.fr",
-        "lines": 1706890,
-        "bytes": 32787909
+        "first": "0--foodwarez.da.ru,2026-09-02",
+        "last": "gapegrid.click,2026-09-02",
+        "lines": 1118498,
+        "bytes": 34010017
       },
       {
         "file": "threatbase-domain-02.txt",
-        "first": "moncolissuivi.fr",
-        "last": "zzzzzzzzzzzzz.com",
-        "lines": 1609804,
-        "bytes": 32787886
+        "first": "gapeheyoncollective36.digital,2026-09-02",
+        "last": "shaardners.shop,2026-09-02",
+        "lines": 1129717,
+        "bytes": 34010013
+      },
+      {
+        "file": "threatbase-domain-03.txt",
+        "first": "shaarks.com,2026-09-02",
+        "last": "zzzzzzzzzzzzz.com,2026-09-02",
+        "lines": 1067745,
+        "bytes": 34009997
       }
     ],
     "threatbase-hash.txt": [
       {
         "file": "threatbase-hash-01.txt",
-        "first": "00000077553a5b27a610ac98f29563bbd6e0decc020c2d49e4fa0d89197e7fd8",
-        "last": "7fbd44f2b17ec946cf765f9897f2c8e91d12cf9901afe74980c947e41856167d",
-        "lines": 566061,
-        "bytes": 36793965
+        "first": "00000077553a5b27a610ac98f29563bbd6e0decc020c2d49e4fa0d89197e7fd8,2026-09-02",
+        "last": "7fbd4113e379ed1b1313a24ab43c55dd6cfa6fd1f7500a85a4e3c0cbdee5dfff,2026-09-02",
+        "lines": 566058,
+        "bytes": 43020408
       },
       {
         "file": "threatbase-hash-02.txt",
-        "first": "7fbd4b4f6369b6f5435a07a117fb13a1fcc6d4597f5a7ece51966d8758eefebd",
-        "last": "ffffe8b36158ae710a9fbf0941f83625ae69f9f2070b3b04def6171b890a6dde",
-        "lines": 566060,
-        "bytes": 36793900
+        "first": "7fbd44f2b17ec946cf765f9897f2c8e91d12cf9901afe74980c947e41856167d,2026-09-02",
+        "last": "ffffe8b36158ae710a9fbf0941f83625ae69f9f2070b3b04def6171b890a6dde,2026-09-02",
+        "lines": 566058,
+        "bytes": 43020408
       }
     ]
   }

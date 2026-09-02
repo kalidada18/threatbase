@@ -1,81 +1,96 @@
 {
-  "total_unique_ips": 880387,
-  "total_unique_ipv6": 15140,
-  "total_unique_cidrs": 20683,
-  "total_unique_domains": 3316694,
-  "total_unique_hashes": 1132121,
-  "total_unique_urls": 119872,
-  "active_feeds": 54,
+  "total_unique_ips": 877168,
+  "total_unique_ipv6": 15067,
+  "total_unique_cidrs": 20643,
+  "total_unique_domains": 3315960,
+  "total_unique_hashes": 1132116,
+  "total_unique_urls": 119356,
+  "active_feeds": 51,
   "category_counts": {
-    "Mixed": 653757,
-    "Malicious": 188264,
-    "Tor": 7461,
-    "Brute-Force": 30833,
-    "Spam": 12485,
+    "Mixed": 659104,
+    "Malicious": 182890,
+    "Brute-Force": 30996,
+    "Spam": 12507,
     "Compromised": 15511,
-    "Malware": 2728,
+    "Malware": 2708,
     "C2": 7607,
+    "Tor": 1421,
     "Exploit": 9672,
-    "Botnet": 2696
+    "Botnet": 2828
   },
   "ip_category_files": {
-    "threatbase-ip-botnet.txt": 2696,
-    "threatbase-ip-bruteforce.txt": 30833,
+    "threatbase-ip-botnet.txt": 2828,
+    "threatbase-ip-bruteforce.txt": 30996,
     "threatbase-ip-c2.txt": 7607,
     "threatbase-ip-compromised.txt": 15511,
     "threatbase-ip-exploit.txt": 9672,
-    "threatbase-ip-malicious.txt": 188264,
-    "threatbase-ip-malware.txt": 2728,
-    "threatbase-ip-mixed.txt": 653757,
-    "threatbase-ip-spam.txt": 12485,
-    "threatbase-ip-tor.txt": 7461
+    "threatbase-ip-malicious.txt": 182890,
+    "threatbase-ip-malware.txt": 2708,
+    "threatbase-ip-mixed.txt": 659104,
+    "threatbase-ip-spam.txt": 12507,
+    "threatbase-ip-tor.txt": 1421
   },
   "top_sources": {
     "ipsum": 145381,
     "romainmarcoux_outgoing_aa": 131072,
-    "romainmarcoux_outgoing_ab": 51254,
+    "romainmarcoux_outgoing_ab": 51323,
     "romainmarcoux_outgoing_40k": 40000,
-    "blocklist_de": 28688
+    "blocklist_de": 28870
   },
-  "last_updated": "2026-09-02T10:20:18.296160+00:00",
+  "last_updated": "2026-09-02T10:28:25.838457+00:00",
+  "stale_indicators": 0,
+  "avg_freshness_days": 0.0,
+  "decay_config": {
+    "half_life_days": 90,
+    "stale_threshold_days": 365
+  },
+  "stale_feeds": [],
   "chunks": {
     "threatbase-domain.txt": [
       {
         "file": "threatbase-domain-01.txt",
-        "first": "0--foodwarez.da.ru",
-        "last": "moncolissimo.fr",
-        "lines": 1706890,
-        "bytes": 32787909
+        "first": "0--foodwarez.da.ru,2026-09-02",
+        "last": "gapegrid.click,2026-09-02",
+        "lines": 1118498,
+        "bytes": 34010017
       },
       {
         "file": "threatbase-domain-02.txt",
-        "first": "moncolissuivi.fr",
-        "last": "zzzzzzzzzzzzz.com",
-        "lines": 1609804,
-        "bytes": 32787886
+        "first": "gapeheyoncollective36.digital,2026-09-02",
+        "last": "shaardners.shop,2026-09-02",
+        "lines": 1129717,
+        "bytes": 34010013
+      },
+      {
+        "file": "threatbase-domain-03.txt",
+        "first": "shaarks.com,2026-09-02",
+        "last": "zzzzzzzzzzzzz.com,2026-09-02",
+        "lines": 1067745,
+        "bytes": 34009997
       }
     ],
     "threatbase-hash.txt": [
       {
         "file": "threatbase-hash-01.txt",
-        "first": "00000077553a5b27a610ac98f29563bbd6e0decc020c2d49e4fa0d89197e7fd8",
-        "last": "7fbd44f2b17ec946cf765f9897f2c8e91d12cf9901afe74980c947e41856167d",
-        "lines": 566061,
-        "bytes": 36793965
+        "first": "00000077553a5b27a610ac98f29563bbd6e0decc020c2d49e4fa0d89197e7fd8,2026-09-02",
+        "last": "7fbd4113e379ed1b1313a24ab43c55dd6cfa6fd1f7500a85a4e3c0cbdee5dfff,2026-09-02",
+        "lines": 566058,
+        "bytes": 43020408
       },
       {
         "file": "threatbase-hash-02.txt",
-        "first": "7fbd4b4f6369b6f5435a07a117fb13a1fcc6d4597f5a7ece51966d8758eefebd",
-        "last": "ffffe8b36158ae710a9fbf0941f83625ae69f9f2070b3b04def6171b890a6dde",
-        "lines": 566060,
-        "bytes": 36793900
+        "first": "7fbd44f2b17ec946cf765f9897f2c8e91d12cf9901afe74980c947e41856167d,2026-09-02",
+        "last": "ffffe8b36158ae710a9fbf0941f83625ae69f9f2070b3b04def6171b890a6dde,2026-09-02",
+        "lines": 566058,
+        "bytes": 43020408
       }
     ]
   },
   "chunk_files": {
     "threatbase-domain.txt": [
       "threatbase-domain-01.txt",
-      "threatbase-domain-02.txt"
+      "threatbase-domain-02.txt",
+      "threatbase-domain-03.txt"
     ],
     "threatbase-hash.txt": [
       "threatbase-hash-01.txt",

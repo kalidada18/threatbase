@@ -43,6 +43,7 @@ from typing import Dict, List, Optional, Set
 
 import aiohttp
 import ipaddress
+from datetime import date, datetime, timedelta, timezone
 
 logging.basicConfig(
     level=logging.INFO,
@@ -156,6 +157,14 @@ CATEGORY_SLUGS: Dict[str, str] = {
     "Scanner": "scanner",
     "Mixed": "mixed",
 }
+
+# ── IOC Decay Configuration ────────────────────────────────────────────────
+# Indicators not re-observed within the half-life get their risk score
+# downgraded one tier. Indicators older than the stale threshold are dropped
+# from the feed entirely. This prevents the accumulative database from
+# drowning fresh intelligence in noise.
+DECAY_HALF_LIFE_DAYS = 90
+STALE_THRESHOLD_DAYS = 365
 
 DOMAIN_FEEDS: Dict[str, str] = {
     "openphish": "https://raw.githubusercontent.com/openphish/public_feed/refs/heads/main/feed.txt",
@@ -404,6 +413,29 @@ def load_previous_ips(path: str) -> Set[int]:
                     if ip_int: ips.add(ip_int)
     return ips
 
+def load_previous_ips_with_meta(path: str) -> tuple:
+    """Like load_previous_ips, but also returns {ip_int: {"fs": first_seen, "ls": last_seen}}.
+
+    The IP feed format is `IP,FeedCount,RiskScore,Tags,FirstSeen,LastSeen`, so
+    the dates are the last two CSV columns when present (feeds written before the
+    decay change have only four columns and get no metadata).
+    """
+    ips: Set[int] = set()
+    meta: dict = {}
+    if os.path.exists(path):
+        with open(path, "r", encoding="utf-8") as f:
+            for line in f:
+                if line.startswith("#"): continue
+                parts = line.strip().split(',')
+                if not parts:
+                    continue
+                ip_int = is_valid_ipv4_fast(parts[0])
+                if ip_int:
+                    ips.add(ip_int)
+                    if len(parts) >= 6:
+                        meta[ip_int] = {"fs": parts[4].strip(), "ls": parts[5].strip()}
+    return ips, meta
+
 def load_previous_list(path: str) -> Set[str]:
     items = set()
     if os.path.exists(path):
@@ -422,6 +454,35 @@ def load_previous_list(path: str) -> Set[str]:
                     continue
                 items.add(item)
     return items
+
+def load_previous_list_with_meta(path: str) -> tuple:
+    """Like load_previous_list, but also returns {indicator: last_seen_date_str}.
+
+    Domains/hashes/urls/ipv6/cidrs are one-per-line feeds; the new format
+    appends a date as the only comma-separated field (`evil.com,2026-08-31`).
+    The indicator is everything before the first comma, the date the rest.
+    Old-format lines have no comma and get no metadata.
+    """
+    items: Set[str] = set()
+    meta: dict = {}
+    if os.path.exists(path):
+        with open(path, "r", encoding="utf-8") as f:
+            for line in f:
+                if line.startswith("#"): continue
+                line = line.strip()
+                if not line: continue
+                if line.startswith("version https://git-lfs") or line.startswith("oid sha256:") \
+                   or (line.startswith("size ") and line[5:].isdigit()):
+                    continue
+                if "," in line:
+                    item, _, when = line.partition(",")
+                    item = item.strip()
+                    if not item: continue
+                    items.add(item)
+                    meta[item] = when.strip()
+                else:
+                    items.add(line)
+    return items, meta
 
 
 import glob
@@ -490,7 +551,24 @@ def load_previous_list_chunked(path: str) -> Set[str]:
     return items
 
 
-def write_chunked_feed(path: str, items: list, false_positives=None) -> list:
+def load_previous_list_chunked_with_meta(path: str) -> tuple:
+    """Metadata-aware variant of load_previous_list_chunked."""
+    if os.path.exists(path):
+        return load_previous_list_with_meta(path)
+
+    items: Set[str] = set()
+    meta: dict = {}
+    base, ext = os.path.splitext(path)
+    for chunk in sorted(glob.glob(f"{base}-[0-9][0-9]{ext}")):
+        c_items, c_meta = load_previous_list_with_meta(chunk)
+        items |= c_items
+        meta.update(c_meta)
+    if items:
+        log.info(f"  Reassembled {len(items):,} items (with meta) from chunks of {os.path.basename(path)}")
+    return items, meta
+
+
+def write_chunked_feed(path: str, items: list, false_positives=None, metadata: dict = None, today: str = None) -> list:
     """
     Write `items` to `path` as one unsplit file plus size-bounded chunks.
 
@@ -500,9 +578,24 @@ def write_chunked_feed(path: str, items: list, false_positives=None) -> list:
     recorded first/last keys to fetch only the single chunk that could contain a
     query, instead of downloading the whole feed.
 
+    When `metadata` (indicator -> last_seen date) is given, each line is written
+    as `key,date` so consumers can see freshness. New keys with no metadata get
+    `today`. The appended date is part of the line, so chunk first/last ranges
+    still describe the key (line start).
+
     Returns a list of per-chunk metadata dicts for stats.json / manifest.json.
     """
-    lines = [f"{i}\n" for i in items if false_positives is None or i not in false_positives]
+    if today is None:
+        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    lines = []
+    for i in items:
+        if false_positives is not None and i in false_positives:
+            continue
+        if metadata is not None:
+            when = metadata.get(i) or today
+            lines.append(f"{i},{when}\n")
+        else:
+            lines.append(f"{i}\n")
 
     with open(path, "w", encoding="utf-8") as f:
         f.writelines(lines)
@@ -897,9 +990,26 @@ def compute_geo(sorted_ips: list, geo_index: Optional[tuple]) -> Optional[dict]:
     }
 
 
-def process_ip_metadata(ip_sources: Dict[str, Set[int]], false_positives: FalsePositivesSet) -> Dict[int, dict]:
-    """Generates rich IP tagging and assigns trust scores."""
+def process_ip_metadata(ip_sources: Dict[str, Set[int]], false_positives: FalsePositivesSet,
+                        ip_meta: dict = None, today: str = None) -> tuple:
+    """Generates rich IP tagging and assigns trust scores with decay.
+
+    `ip_meta` is a dict of {ip_int: last_seen_date_str} from the previous run.
+    Indicators not re-observed this run have their last_seen unchanged; if older
+    than STALE_THRESHOLD_DAYS they are dropped. If older than DECAY_HALF_LIFE_DAYS
+    but not stale, the risk score is downgraded one tier.
+
+    Returns (filtered_metadata, stale_count) where filter metadata is
+    {ip_int: {...}} and stale_count is how many IPs were dropped.
+    """
+    if today is None:
+        today_dt = datetime.now(timezone.utc).date()
+    else:
+        today_dt = datetime.strptime(today, "%Y-%m-%d").replace(tzinfo=timezone.utc).date()
+
     ip_metadata = defaultdict(lambda: {"sources": set(), "tags": set()})
+    stale_count = 0
+    seen_this_run: Set[int] = set()
     
     for src, ips in ip_sources.items():
         cat = FEED_CATEGORIES.get(src, "Mixed")
@@ -911,9 +1021,15 @@ def process_ip_metadata(ip_sources: Dict[str, Set[int]], false_positives: FalseP
                 is_fp = True
             elif isinstance(ip, int) and hasattr(false_positives, "check_int"):
                 is_fp = false_positives.check_int(ip)
-                
+
             if is_fp: continue
-            
+
+            # Only a live (non-historical) sighting refreshes last_seen. The
+            # historical cache is the previous feed — counting it would set every
+            # cached IOC to "seen today" and nothing would ever decay.
+            if isinstance(ip, int) and src != "historical":
+                seen_this_run.add(ip)
+
             ip_metadata[ip]["sources"].add(src)
             if cat != "Mixed":
                 ip_metadata[ip]["tags"].add(cat)
@@ -923,28 +1039,60 @@ def process_ip_metadata(ip_sources: Dict[str, Set[int]], false_positives: FalseP
         sources = data["sources"]
         num_sources = len(sources)
         tiers = [FEED_TRUST_TIERS.get(s, "LOW") for s in sources]
-        
+
         score = "LOW"
         if "HIGH" in tiers:
             score = "HIGH"
         elif "MEDIUM" in tiers:
             score = "MEDIUM"
-            
+
+        # ── Decay: last_seen and staleness ─────────────────────────────────
+        last_seen = today_dt
+        first_seen = today_dt
+        prior = (ip_meta or {}).get(ip) if isinstance(ip, int) else None
+        if prior:
+            try:
+                last_seen = datetime.strptime(prior.get("ls") or "", "%Y-%m-%d").replace(tzinfo=timezone.utc).date()
+            except ValueError:
+                last_seen = today_dt
+            try:
+                first_seen = datetime.strptime(prior.get("fs") or "", "%Y-%m-%d").replace(tzinfo=timezone.utc).date()
+            except ValueError:
+                first_seen = last_seen
+
+        if ip in seen_this_run:
+            last_seen = today_dt
+
+        days_since = (today_dt - last_seen).days
+        if days_since > STALE_THRESHOLD_DAYS:
+            stale_count += 1
+            continue
+
+        if days_since > DECAY_HALF_LIFE_DAYS:
+            # Downgrade one tier: HIGH→MEDIUM, MEDIUM→LOW, LOW stays LOW.
+            score = {"HIGH": "MEDIUM", "MEDIUM": "LOW"}.get(score, score)
+            tags = set(data["tags"])
+            tags.add("Stale")
+            data["tags"] = tags
+
+        tags_list = sorted(list(data["tags"])) if data["tags"] else ["Mixed"]
         filtered[ip] = {
             "ip": int_to_ip(ip),
             "count": num_sources,
             "score": score,
-            "tags": sorted(list(data["tags"])) if data["tags"] else ["Mixed"],
-            "sources": list(sources)
+            "tags": tags_list,
+            "sources": list(sources),
+            "first_seen": first_seen.isoformat(),
+            "last_seen": last_seen.isoformat(),
         }
-    return filtered
+    return filtered, stale_count
 
 
 def update_history(stats: dict) -> None:
     """Append today's stats snapshot to ioc/history.json for trend charts."""
     history_path = "ioc/history.json"
     history = []
-    
+
     if os.path.exists(history_path):
         try:
             with open(history_path, "r", encoding="utf-8") as f:
@@ -952,9 +1100,9 @@ def update_history(stats: dict) -> None:
         except Exception as e:
             log.warning(f"Could not parse existing history.json, starting fresh: {e}")
             history = []
-    
+
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    
+
     # Build today's entry
     today_entry = {
         "date": today,
@@ -967,8 +1115,10 @@ def update_history(stats: dict) -> None:
         "active_feeds": stats.get("active_feeds", 0),
         "category_counts": stats.get("category_counts", {}),
         "top_sources": stats.get("top_sources", {}),
+        "stale_count": stats.get("stale_indicators", 0),
+        "avg_freshness": stats.get("avg_freshness_days", 0),
     }
-    
+
     # Replace today's entry if it already exists, otherwise append
     updated = False
     for i, entry in enumerate(history):
@@ -976,17 +1126,69 @@ def update_history(stats: dict) -> None:
             history[i] = today_entry
             updated = True
             break
-    
+
     if not updated:
         history.append(today_entry)
-    
+
     # Keep last 90 days of history
     history = history[-90:]
-    
+
     with open(history_path, "w", encoding="utf-8") as f:
         json.dump(history, f, indent=2)
-    
+
     log.info(f"  Updated history.json: {len(history)} entries (today = {today})")
+
+
+# ── Feed Freshness Monitoring ──────────────────────────────────────────────
+# Tracks per-feed health between runs: when a feed stops producing new IOCs
+# (not just returning zero data, but returning zero NOVEL data) it is logged
+# so operators can investigate. The cache is persisted to ioc/feed_health.json
+# and carries over between CI runs.
+FEED_HEALTH_PATH = "ioc/feed_health.json"
+
+
+def load_feed_health() -> dict:
+    """Load the per-feed freshness cache from disk."""
+    if os.path.exists(FEED_HEALTH_PATH):
+        try:
+            with open(FEED_HEALTH_PATH, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception as e:
+            log.warning(f"Could not parse {FEED_HEALTH_PATH}, starting fresh: {e}")
+    return {}
+
+
+def save_feed_health(health: dict) -> None:
+    """Persist the per-feed freshness cache."""
+    with open(FEED_HEALTH_PATH, "w", encoding="utf-8") as f:
+        json.dump(health, f, indent=2)
+    log.info(f"  Wrote feed_health.json ({len(health)} feeds tracked)")
+
+
+def check_feed_freshness(name: str, new_count: int, health: dict) -> dict:
+    """Update a single feed's freshness record and return a warning message if stale.
+
+    Returns None if the feed is healthy, or a warning string if it has been
+    producing no new IOCs for 3+ consecutive runs.
+    """
+    entry = health.get(name, {"last_data": None, "last_new_count": 0, "consecutive_empty": 0})
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+    if new_count > 0:
+        entry["last_data"] = today
+        entry["last_new_count"] = new_count
+        entry["consecutive_empty"] = 0
+        warning = None
+    else:
+        entry["consecutive_empty"] = entry.get("consecutive_empty", 0) + 1
+        warning = (
+            f"  ⚠ Feed '{name}' returned no NEW IOCs for {entry['consecutive_empty']} consecutive "
+            f"run(s) (last new data: {entry.get('last_data', 'never')}). "
+            f"Check if the feed is still alive."
+        ) if entry["consecutive_empty"] >= 3 else None
+
+    health[name] = entry
+    return warning
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1009,13 +1211,22 @@ async def run_async_collector():
     url_sources = {}
 
     # ── Load historical IOCs from previous run (accumulative database) ──────
+    # Metadata (last_seen dates) is carried forward so decay can age out
+    # indicators that are no longer being observed.
     log.info("Loading previous IOCs from cache...")
-    ip_sources["historical"] = load_previous_ips("ioc/threatbase-ip.txt")
-    ipv6_sources["historical"] = load_previous_list("ioc/threatbase-ipv6.txt")
-    cidr_sources["historical"] = load_previous_list("ioc/threatbase-cidr.txt")
-    domain_results["historical"] = load_previous_list_chunked("ioc/threatbase-domain.txt")
-    hash_sources["historical"] = load_previous_list_chunked("ioc/threatbase-hash.txt")
-    url_sources["historical"] = load_previous_list("ioc/threatbase-url.txt")
+    ip_meta = {}
+    _hist_ips, ip_meta = load_previous_ips_with_meta("ioc/threatbase-ip.txt")
+    ip_sources["historical"] = _hist_ips
+    ipv6_meta = {}
+    ipv6_sources["historical"], ipv6_meta = load_previous_list_with_meta("ioc/threatbase-ipv6.txt")
+    cidr_meta = {}
+    cidr_sources["historical"], cidr_meta = load_previous_list_with_meta("ioc/threatbase-cidr.txt")
+    domain_meta = {}
+    domain_results["historical"], domain_meta = load_previous_list_chunked_with_meta("ioc/threatbase-domain.txt")
+    hash_meta = {}
+    hash_sources["historical"], hash_meta = load_previous_list_chunked_with_meta("ioc/threatbase-hash.txt")
+    url_meta = {}
+    url_sources["historical"], url_meta = load_previous_list_with_meta("ioc/threatbase-url.txt")
     
     log.info(f"  Historical cache: {len(ip_sources['historical'])} IPs, "
              f"{len(domain_results['historical'])} domains, "
@@ -1113,13 +1324,47 @@ async def run_async_collector():
         log.warning("    (historical cache preserves their previously-seen IOCs — nothing is lost)")
     else:
         log.info("  ✓ All feeds returned data.")
-    
-    # ── Process Trust Tiers & IP Tagging ────────────────────────────────────
-    log.info("Processing rich IP tags and trust scores...")
-    filtered_ip_info = process_ip_metadata(ip_sources, false_positives)
-    
+
+    # ── Feed Freshness: compute new-IOC counts per feed ─────────────────────
+    # "New" means not present in the historical cache (the previous full feed).
+    # This catches silent feeds that return data but stop producing novel
+    # indicators, which plain fetch success/failure never would.
+    log.info("Checking feed freshness...")
+    feed_health = load_feed_health()
+    ip_historical = ip_sources.get("historical", set())
+    for name, ips in ip_sources.items():
+        if name == "historical" or not isinstance(ips, set):
+            continue
+        new_count = len(ips - ip_historical)
+        warning = check_feed_freshness(name, new_count, feed_health)
+        if warning:
+            log.warning(warning)
+
+    # ── Process Trust Tiers & IP Tagging (with decay) ───────────────────────
+    log.info("Processing rich IP tags and trust scores with decay...")
+    today_dt = datetime.now(timezone.utc).date()
+    today_str = today_dt.strftime("%Y-%m-%d")
+    filtered_ip_info, stale_ip_count = process_ip_metadata(
+        ip_sources, false_positives, ip_meta=ip_meta, today=today_str
+    )
+
     # Sort IPs rapidly using their integer values
     sorted_ips = sorted(filtered_ip_info.keys())
+
+    # Compute average freshness (days since last_seen) for stats
+    fresh_days = []
+    for ip in sorted_ips:
+        info = filtered_ip_info[ip]
+        try:
+            ls = datetime.strptime(info["last_seen"], "%Y-%m-%d").replace(tzinfo=timezone.utc).date()
+            fresh_days.append((today_dt - ls).days)
+        except (ValueError, KeyError):
+            pass
+    avg_freshness_days = round(sum(fresh_days) / len(fresh_days), 1) if fresh_days else 0
+
+    if stale_ip_count:
+        log.info(f"  Decay: dropped {stale_ip_count:,} stale IPs (> {STALE_THRESHOLD_DAYS}d), "
+                 f"avg freshness {avg_freshness_days}d across {len(sorted_ips):,} IPs")
     
 
 
@@ -1131,11 +1376,11 @@ async def run_async_collector():
     with open(txt_output_path, "w", encoding="utf-8", buffering=1 << 16) as f:
         f.write("# Threatbase Threat Intelligence Feed - IPs\n")
         f.write(f"# Last update: {timestamp}\n")
-        f.write("# Format: IP,FeedCount,RiskScore,Tags\n")
+        f.write("# Format: IP,FeedCount,RiskScore,Tags,FirstSeen,LastSeen\n")
         for ip in sorted_ips:
             info = filtered_ip_info[ip]
             tags_str = "|".join(info["tags"])
-            f.write(f"{info['ip']},{info['count']},{info['score']},{tags_str}\n")
+            f.write(f"{info['ip']},{info['count']},{info['score']},{tags_str},{info['first_seen']},{info['last_seen']}\n")
 
     # ── Write category-split IP feeds ──────────────────────────────────────
     # One blocklist per threat category so defenders can apply different
@@ -1156,11 +1401,11 @@ async def run_async_collector():
             f.write(f"# Threatbase Threat Intelligence Feed - {cat} IPs\n")
             f.write(f"# Last update: {timestamp}\n")
             f.write(f"# Count: {len(ips)}\n")
-            f.write("# Format: IP,FeedCount,RiskScore,Tags\n")
+            f.write("# Format: IP,FeedCount,RiskScore,Tags,FirstSeen,LastSeen\n")
             for ip in ips:
                 info = filtered_ip_info[ip]
                 tags_str = "|".join(info["tags"])
-                f.write(f"{info['ip']},{info['count']},{info['score']},{tags_str}\n")
+                f.write(f"{info['ip']},{info['count']},{info['score']},{tags_str},{info['first_seen']},{info['last_seen']}\n")
         ip_category_files[fname] = len(ips)
     log.info(f"  Wrote {len(ip_category_files)} category feeds to ioc/categories/")
 
@@ -1176,36 +1421,106 @@ async def run_async_collector():
         log.warning("  Skipped ioc/geo.json (no geo data)")
 
 
+    # ── Apply staleness filter to the non-IP feeds ─────────────────────────
+    # Domains/hashes/urls/ipv6/cidrs also decay: an indicator whose last_seen is
+    # older than STALE_THRESHOLD_DAYS is dropped from the feed. This stops the
+    # accumulative database from growing without bound, and matches the IP path.
+    stale_ip6_cidr = 0
+    for meta, name in ((ipv6_meta, "IPv6"), (cidr_meta, "CIDR")):
+        for key, when in list(meta.items()):
+            try:
+                ls = datetime.strptime(when, "%Y-%m-%d").replace(tzinfo=timezone.utc).date()
+            except (ValueError, TypeError):
+                continue
+            if (today_dt - ls).days > STALE_THRESHOLD_DAYS:
+                del meta[key]
+                stale_ip6_cidr += 1
+                # Also remove from the source set so it isn't re-emitted today.
+                src = ipv6_sources if name == "IPv6" else cidr_sources
+                for k in src:
+                    if k == "historical":
+                        src[k] = {x for x in src[k] if x != key}
+
+    stale_domains = 0
+    for key, when in list(domain_meta.items()):
+        try:
+            ls = datetime.strptime(when, "%Y-%m-%d").replace(tzinfo=timezone.utc).date()
+        except (ValueError, TypeError):
+            continue
+        if (today_dt - ls).days > STALE_THRESHOLD_DAYS:
+            del domain_meta[key]
+            stale_domains += 1
+            for k in domain_results:
+                if k == "historical":
+                    domain_results[k] = {x for x in domain_results[k] if x != key}
+
+    stale_hashes = 0
+    for key, when in list(hash_meta.items()):
+        try:
+            ls = datetime.strptime(when, "%Y-%m-%d").replace(tzinfo=timezone.utc).date()
+        except (ValueError, TypeError):
+            continue
+        if (today_dt - ls).days > STALE_THRESHOLD_DAYS:
+            del hash_meta[key]
+            stale_hashes += 1
+            for k in hash_sources:
+                if k == "historical":
+                    hash_sources[k] = {x for x in hash_sources[k] if x != key}
+
+    stale_urls = 0
+    for key, when in list(url_meta.items()):
+        try:
+            ls = datetime.strptime(when, "%Y-%m-%d").replace(tzinfo=timezone.utc).date()
+        except (ValueError, TypeError):
+            continue
+        if (today_dt - ls).days > STALE_THRESHOLD_DAYS:
+            del url_meta[key]
+            stale_urls += 1
+            for k in url_sources:
+                if k == "historical":
+                    url_sources[k] = {x for x in url_sources[k] if x != key}
+
+    stale_other = stale_ip6_cidr + stale_domains + stale_hashes + stale_urls
+    if stale_other:
+        log.info(f"  Decay: dropped {stale_other:,} stale non-IP IOCs "
+                 f"({stale_domains} domains, {stale_hashes} hashes, {stale_urls} URLs, "
+                 f"{stale_ip6_cidr} IPv6/CIDR)")
+
     # ── Write domains (sorted for binary search, chunked for git) ───────────
-    log.info("Writing threatbase-domain.txt...")
+    log.info("Writing threatbase-domain.txt (with date metadata)...")
     all_domains = sorted(set().union(*domain_results.values()))
-    domain_chunks = write_chunked_feed("ioc/threatbase-domain.txt", all_domains, false_positives)
+    domain_chunks = write_chunked_feed("ioc/threatbase-domain.txt", all_domains, false_positives, metadata=domain_meta, today=today_str)
 
     # ── Write hashes (sorted for binary search, chunked for git) ────────────
-    log.info("Writing threatbase-hash.txt...")
+    log.info("Writing threatbase-hash.txt (with date metadata)...")
     all_hashes = sorted(set().union(*hash_sources.values()))
-    hash_chunks = write_chunked_feed("ioc/threatbase-hash.txt", all_hashes)
+    hash_chunks = write_chunked_feed("ioc/threatbase-hash.txt", all_hashes, metadata=hash_meta, today=today_str)
             
-    # ── Write urls (sorted for binary search) ──────────────────────────────
-    log.info("Writing threatbase-url.txt...")
+    # ── Write urls (sorted for binary search, with date metadata) ───────────
+    log.info("Writing threatbase-url.txt (with date metadata)...")
     all_urls = sorted(set().union(*url_sources.values()))
     with open("ioc/threatbase-url.txt", "w", encoding="utf-8") as f:
         for u in all_urls:
-            f.write(f"{u}\n")
-            
-    # ── Write IPv6 (sorted) ────────────────────────────────────────────────
-    log.info("Writing threatbase-ipv6.txt...")
+            when = url_meta.get(u) or today_str
+            f.write(f"{u},{when}\n")
+
+    # ── Write IPv6 (sorted, with date metadata) ────────────────────────────
+    log.info("Writing threatbase-ipv6.txt (with date metadata)...")
     all_ipv6 = sorted(set().union(*ipv6_sources.values()))
     with open("ioc/threatbase-ipv6.txt", "w", encoding="utf-8") as f:
         for ipv6 in all_ipv6:
-            if ipv6 not in false_positives: f.write(f"{ipv6}\n")
-            
-    # ── Write CIDRs (sorted) ──────────────────────────────────────────────
-    log.info("Writing threatbase-cidr.txt...")
+            if ipv6 in false_positives: continue
+            when = ipv6_meta.get(ipv6) or today_str
+            f.write(f"{ipv6},{when}\n")
+
+    # ── Write CIDRs (sorted, with date metadata) ────────────────────────────
+    log.info("Writing threatbase-cidr.txt (with date metadata)...")
     all_cidrs = sorted(set().union(*cidr_sources.values()))
     with open("ioc/threatbase-cidr.txt", "w", encoding="utf-8") as f:
         for cidr in all_cidrs:
-            if cidr not in false_positives: f.write(f"{cidr}\n")
+            if cidr in false_positives: continue
+            when = cidr_meta.get(cidr) or today_str
+            f.write(f"{cidr},{when}\n")
     
     # ── Build category counts ──────────────────────────────────────────────
     category_counts = defaultdict(int)
@@ -1241,6 +1556,14 @@ async def run_async_collector():
         "ip_category_files": ip_category_files,
         "top_sources": top_sources,
         "last_updated": now_utc.isoformat(),
+        # Decay / freshness health metrics
+        "stale_indicators": stale_ip_count,
+        "avg_freshness_days": avg_freshness_days,
+        "decay_config": {
+            "half_life_days": DECAY_HALF_LIFE_DAYS,
+            "stale_threshold_days": STALE_THRESHOLD_DAYS,
+        },
+        "stale_feeds": [n for n, e in feed_health.items() if e.get("consecutive_empty", 0) >= 3],
         # Full per-chunk detail (ranges, sizes) for the scanner.
         "chunks": chunk_meta,
         # Flat filename lists, which is the shape the Feeds UI consumes.
@@ -1271,9 +1594,12 @@ async def run_async_collector():
     log.info("Updating history.json...")
     update_history(stats)
 
+    # ── Persist feed freshness health ──────────────────────────────────────
+    save_feed_health(feed_health)
+
     # ── Cleanup ────────────────────────────────────────────────────────────
     clean_temporary_files()
-        
+
     elapsed = time.time() - t_start
     log.info("═" * 55)
     log.info(f"  Finished gracefully in {elapsed:.1f}s")
@@ -1284,6 +1610,7 @@ async def run_async_collector():
     log.info(f"  Total Hashes:  {len(all_hashes):>10,}")
     log.info(f"  Total URLs:    {len(all_urls):>10,}")
     log.info(f"  Active Feeds:  {len(successful_feeds):>10,}")
+    log.info(f"  Stale dropped: {stale_ip_count:>10,}")
     log.info("═" * 55)
 
 
