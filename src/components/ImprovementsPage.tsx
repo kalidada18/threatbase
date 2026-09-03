@@ -14,7 +14,7 @@ const IMPROVEMENTS: { date: string; title: string; items: string[] }[] = [
     date: '2026-09-03',
     title: 'Top APT Leaderboard',
     items: [
-      'New /top-apt page ranks the most active APT groups by fresh campaign reports from AlienVault OTX.',
+      'New /top-apt page ranks the most active APT groups by fresh campaign intelligence.',
       'Each group expands to the campaigns attributed to it, every claim linked to its source pulse.',
       '24-hour and 7-day activity windows, with sponsor attribution and known aliases per group.',
       'Leaderboard refreshes automatically with the feed pipeline run.',

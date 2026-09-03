@@ -23,6 +23,7 @@ import os
 import re
 import sys
 import time
+from collections import Counter
 from concurrent.futures import ThreadPoolExecutor, wait
 from datetime import datetime, timedelta, timezone
 
@@ -99,6 +100,7 @@ def collect_group(name: str, aliases: list, sponsor: str, now: datetime):
     """One group's leaderboard entry, or None if no activity in the window."""
     matched = [p for p in search_pulses(aliases[0]) if matches(p, aliases)]
     campaigns, c24 = [], 0
+    malware, countries = Counter(), Counter()
     for p in matched:
         try:
             mod = datetime.fromisoformat(p["modified"]).replace(tzinfo=timezone.utc)
@@ -114,6 +116,13 @@ def collect_group(name: str, aliases: list, sponsor: str, now: datetime):
             "modified": p["modified"],
             "last_24h": fresh,
         })
+        for m in p.get("malware_families", []):
+            if isinstance(m, str) and m.strip():
+                malware[m.strip()] += 1
+        for c in p.get("targeted_countries", []):
+            label = c.get("name") if isinstance(c, dict) else c
+            if isinstance(label, str) and label.strip():
+                countries[label.strip()] += 1
     campaigns.sort(key=lambda c: c["modified"], reverse=True)
     log.info("  %-17s %d active (7d), %d in 24h", name, len(campaigns), c24)
     if not campaigns:
@@ -124,6 +133,8 @@ def collect_group(name: str, aliases: list, sponsor: str, now: datetime):
         "sponsor": sponsor,
         "pulses_24h": c24,
         "pulses_7d": len(campaigns),
+        "malware": [m for m, _ in malware.most_common(4)],
+        "targets": [c for c, _ in countries.most_common(4)],
         "campaigns": campaigns[:MAX_CAMPAIGNS],
     }
 
