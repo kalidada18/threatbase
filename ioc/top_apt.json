@@ -1,8 +1,34 @@
 {
- "generated_at": "2026-09-03T04:07:12+00:00",
+ "generated_at": "2026-09-03T04:22:46+00:00",
  "source": "AlienVault OTX pulse search",
  "note": "Activity = threat-intel pulses (campaign reports) mentioning the group in the window. Vendor/community reporting \u2014 follow each link to its source.",
  "actors": [
+  {
+   "name": "Gamaredon",
+   "aka": [
+    "Primitive Bear",
+    "ShallowBurrow"
+   ],
+   "sponsor": "Russia (GRU)",
+   "pulses_24h": 0,
+   "pulses_7d": 2,
+   "malware": [],
+   "targets": [],
+   "campaigns": [
+    {
+     "title": "Gamaredon",
+     "url": "https://otx.alienvault.com/pulse/6a955ef277b0404ca4ed2856",
+     "modified": "2026-08-31T11:01:06.712000",
+     "last_24h": false
+    },
+    {
+     "title": "Gamaredon",
+     "url": "https://otx.alienvault.com/pulse/6a8ff98c93e90abe5352e260",
+     "modified": "2026-08-27T08:47:08.018000",
+     "last_24h": false
+    }
+   ]
+  },
   {
    "name": "Kimsuky",
    "aka": [
@@ -26,32 +52,6 @@
      "title": "IOC - Analysis of Kimsuky's Attack on a South Korean Groupware Vendor Using a New Gomir Family Variant",
      "url": "https://otx.alienvault.com/pulse/6a69719dcf523dafa0e877f4",
      "modified": "2026-08-28T03:00:14.461000",
-     "last_24h": false
-    }
-   ]
-  },
-  {
-   "name": "Gamaredon",
-   "aka": [
-    "Primitive Bear",
-    "ShallowBurrow"
-   ],
-   "sponsor": "Russia (GRU)",
-   "pulses_24h": 0,
-   "pulses_7d": 2,
-   "malware": [],
-   "targets": [],
-   "campaigns": [
-    {
-     "title": "Gamaredon",
-     "url": "https://otx.alienvault.com/pulse/6a955ef277b0404ca4ed2856",
-     "modified": "2026-08-31T11:01:06.712000",
-     "last_24h": false
-    },
-    {
-     "title": "Gamaredon",
-     "url": "https://otx.alienvault.com/pulse/6a8ff98c93e90abe5352e260",
-     "modified": "2026-08-27T08:47:08.018000",
      "last_24h": false
     }
    ]

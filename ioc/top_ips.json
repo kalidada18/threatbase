@@ -1,9 +1,22 @@
 {
- "generated_at": "Thu, 03 Sep 2026 03:45:19 +0000",
+ "generated_at": "Thu, 03 Sep 2026 04:22:07 +0000",
  "ips": [
   {
    "ip": "2.57.121.112",
    "feeds": 15,
+   "score": "HIGH",
+   "tags": [
+    "Brute-Force",
+    "Compromised",
+    "Malicious"
+   ],
+   "country": "GB",
+   "first_seen": "2026-09-02",
+   "last_seen": "2026-09-03"
+  },
+  {
+   "ip": "85.239.149.72",
+   "feeds": 14,
    "score": "HIGH",
    "tags": [
     "Brute-Force",
@@ -28,30 +41,15 @@
    "last_seen": "2026-09-03"
   },
   {
-   "ip": "79.72.3.119",
-   "feeds": 13,
+   "ip": "154.127.69.0",
+   "feeds": 14,
    "score": "HIGH",
    "tags": [
-    "Botnet",
     "Brute-Force",
     "Compromised",
     "Malicious"
    ],
-   "country": "US",
-   "first_seen": "2026-09-02",
-   "last_seen": "2026-09-03"
-  },
-  {
-   "ip": "103.205.107.170",
-   "feeds": 13,
-   "score": "HIGH",
-   "tags": [
-    "Botnet",
-    "Brute-Force",
-    "Compromised",
-    "Malicious"
-   ],
-   "country": "VN",
+   "country": "LY",
    "first_seen": "2026-09-02",
    "last_seen": "2026-09-03"
   },
@@ -78,19 +76,6 @@
     "Malicious"
    ],
    "country": "IN",
-   "first_seen": "2026-09-02",
-   "last_seen": "2026-09-03"
-  },
-  {
-   "ip": "85.239.149.72",
-   "feeds": 13,
-   "score": "HIGH",
-   "tags": [
-    "Brute-Force",
-    "Compromised",
-    "Malicious"
-   ],
-   "country": "GB",
    "first_seen": "2026-09-02",
    "last_seen": "2026-09-03"
   },
@@ -161,33 +146,6 @@
    "last_seen": "2026-09-03"
   },
   {
-   "ip": "154.127.69.0",
-   "feeds": 13,
-   "score": "HIGH",
-   "tags": [
-    "Brute-Force",
-    "Compromised",
-    "Malicious"
-   ],
-   "country": "LY",
-   "first_seen": "2026-09-02",
-   "last_seen": "2026-09-03"
-  },
-  {
-   "ip": "103.63.101.24",
-   "feeds": 13,
-   "score": "HIGH",
-   "tags": [
-    "Botnet",
-    "Brute-Force",
-    "Compromised",
-    "Malicious"
-   ],
-   "country": "ID",
-   "first_seen": "2026-09-02",
-   "last_seen": "2026-09-03"
-  },
-  {
    "ip": "217.160.171.212",
    "feeds": 12,
    "score": "HIGH",
@@ -216,6 +174,32 @@
    "last_seen": "2026-09-03"
   },
   {
+   "ip": "181.65.211.141",
+   "feeds": 12,
+   "score": "HIGH",
+   "tags": [
+    "Brute-Force",
+    "Compromised",
+    "Malicious"
+   ],
+   "country": "PE",
+   "first_seen": "2026-09-02",
+   "last_seen": "2026-09-03"
+  },
+  {
+   "ip": "181.129.250.18",
+   "feeds": 12,
+   "score": "HIGH",
+   "tags": [
+    "Brute-Force",
+    "Compromised",
+    "Malicious"
+   ],
+   "country": "CO",
+   "first_seen": "2026-09-02",
+   "last_seen": "2026-09-03"
+  },
+  {
    "ip": "69.5.21.194",
    "feeds": 12,
    "score": "HIGH",
@@ -229,7 +213,7 @@
    "last_seen": "2026-09-03"
   },
   {
-   "ip": "163.7.4.169",
+   "ip": "121.134.90.172",
    "feeds": 12,
    "score": "HIGH",
    "tags": [
@@ -237,15 +221,16 @@
     "Compromised",
     "Malicious"
    ],
-   "country": "SG",
+   "country": "KR",
    "first_seen": "2026-09-02",
    "last_seen": "2026-09-03"
   },
   {
-   "ip": "104.199.59.59",
+   "ip": "79.72.3.119",
    "feeds": 12,
    "score": "HIGH",
    "tags": [
+    "Botnet",
     "Brute-Force",
     "Compromised",
     "Malicious"
@@ -255,21 +240,33 @@
    "last_seen": "2026-09-03"
   },
   {
-   "ip": "31.76.9.4",
+   "ip": "220.90.220.204",
    "feeds": 12,
    "score": "HIGH",
    "tags": [
-    "Botnet",
     "Brute-Force",
     "Compromised",
     "Malicious"
    ],
-   "country": "GB",
+   "country": "KR",
    "first_seen": "2026-09-02",
    "last_seen": "2026-09-03"
   },
   {
-   "ip": "130.12.182.107",
+   "ip": "94.204.15.80",
+   "feeds": 12,
+   "score": "HIGH",
+   "tags": [
+    "Brute-Force",
+    "Compromised",
+    "Malicious"
+   ],
+   "country": "AE",
+   "first_seen": "2026-09-02",
+   "last_seen": "2026-09-03"
+  },
+  {
+   "ip": "130.12.182.225",
    "feeds": 12,
    "score": "HIGH",
    "tags": [
@@ -308,10 +305,24 @@
    "last_seen": "2026-09-03"
   },
   {
-   "ip": "103.78.2.252",
+   "ip": "106.13.107.71",
    "feeds": 12,
    "score": "HIGH",
    "tags": [
+    "Brute-Force",
+    "Compromised",
+    "Malicious"
+   ],
+   "country": "CN",
+   "first_seen": "2026-09-02",
+   "last_seen": "2026-09-03"
+  },
+  {
+   "ip": "103.205.107.170",
+   "feeds": 12,
+   "score": "HIGH",
+   "tags": [
+    "Botnet",
     "Brute-Force",
     "Compromised",
     "Malicious"
@@ -321,7 +332,7 @@
    "last_seen": "2026-09-03"
   },
   {
-   "ip": "34.78.8.179",
+   "ip": "193.77.126.62",
    "feeds": 12,
    "score": "HIGH",
    "tags": [
@@ -329,7 +340,20 @@
     "Compromised",
     "Malicious"
    ],
-   "country": "US",
+   "country": "SI",
+   "first_seen": "2026-09-02",
+   "last_seen": "2026-09-03"
+  },
+  {
+   "ip": "103.78.2.252",
+   "feeds": 12,
+   "score": "HIGH",
+   "tags": [
+    "Brute-Force",
+    "Compromised",
+    "Malicious"
+   ],
+   "country": "VN",
    "first_seen": "2026-09-02",
    "last_seen": "2026-09-03"
   },
@@ -360,7 +384,7 @@
    "last_seen": "2026-09-03"
   },
   {
-   "ip": "185.113.9.199",
+   "ip": "154.16.115.37",
    "feeds": 12,
    "score": "HIGH",
    "tags": [
@@ -368,7 +392,7 @@
     "Compromised",
     "Malicious"
    ],
-   "country": "IR",
+   "country": "GB",
    "first_seen": "2026-09-02",
    "last_seen": "2026-09-03"
   },
@@ -382,45 +406,6 @@
     "Malicious"
    ],
    "country": "KR",
-   "first_seen": "2026-09-02",
-   "last_seen": "2026-09-03"
-  },
-  {
-   "ip": "160.120.191.213",
-   "feeds": 12,
-   "score": "HIGH",
-   "tags": [
-    "Brute-Force",
-    "Compromised",
-    "Malicious"
-   ],
-   "country": "CI",
-   "first_seen": "2026-09-02",
-   "last_seen": "2026-09-03"
-  },
-  {
-   "ip": "49.248.197.50",
-   "feeds": 12,
-   "score": "HIGH",
-   "tags": [
-    "Brute-Force",
-    "Compromised",
-    "Malicious"
-   ],
-   "country": "IN",
-   "first_seen": "2026-09-02",
-   "last_seen": "2026-09-03"
-  },
-  {
-   "ip": "45.153.34.158",
-   "feeds": 12,
-   "score": "HIGH",
-   "tags": [
-    "Brute-Force",
-    "Compromised",
-    "Malicious"
-   ],
-   "country": "SC",
    "first_seen": "2026-09-02",
    "last_seen": "2026-09-03"
   },
@@ -451,6 +436,32 @@
    "last_seen": "2026-09-03"
   },
   {
+   "ip": "94.26.106.19",
+   "feeds": 12,
+   "score": "HIGH",
+   "tags": [
+    "Brute-Force",
+    "Compromised",
+    "Malicious"
+   ],
+   "country": "SC",
+   "first_seen": "2026-09-02",
+   "last_seen": "2026-09-03"
+  },
+  {
+   "ip": "37.186.122.154",
+   "feeds": 12,
+   "score": "HIGH",
+   "tags": [
+    "Brute-Force",
+    "Compromised",
+    "Malicious"
+   ],
+   "country": "AM",
+   "first_seen": "2026-09-02",
+   "last_seen": "2026-09-03"
+  },
+  {
    "ip": "223.123.92.56",
    "feeds": 12,
    "score": "HIGH",
@@ -460,33 +471,6 @@
     "Malicious"
    ],
    "country": "PK",
-   "first_seen": "2026-09-02",
-   "last_seen": "2026-09-03"
-  },
-  {
-   "ip": "208.92.220.138",
-   "feeds": 12,
-   "score": "HIGH",
-   "tags": [
-    "Botnet",
-    "Brute-Force",
-    "Compromised",
-    "Malicious"
-   ],
-   "country": "US",
-   "first_seen": "2026-09-02",
-   "last_seen": "2026-09-03"
-  },
-  {
-   "ip": "115.190.53.236",
-   "feeds": 12,
-   "score": "HIGH",
-   "tags": [
-    "Brute-Force",
-    "Compromised",
-    "Malicious"
-   ],
-   "country": "CN",
    "first_seen": "2026-09-02",
    "last_seen": "2026-09-03"
   },
@@ -513,6 +497,20 @@
     "Malicious"
    ],
    "country": "IL",
+   "first_seen": "2026-09-02",
+   "last_seen": "2026-09-03"
+  },
+  {
+   "ip": "103.63.101.24",
+   "feeds": 12,
+   "score": "HIGH",
+   "tags": [
+    "Botnet",
+    "Brute-Force",
+    "Compromised",
+    "Malicious"
+   ],
+   "country": "ID",
    "first_seen": "2026-09-02",
    "last_seen": "2026-09-03"
   },
@@ -556,19 +554,6 @@
    "last_seen": "2026-09-03"
   },
   {
-   "ip": "152.32.186.39",
-   "feeds": 11,
-   "score": "HIGH",
-   "tags": [
-    "Brute-Force",
-    "Compromised",
-    "Malicious"
-   ],
-   "country": "HK",
-   "first_seen": "2026-09-02",
-   "last_seen": "2026-09-03"
-  },
-  {
    "ip": "212.33.195.84",
    "feeds": 11,
    "score": "HIGH",
@@ -582,7 +567,7 @@
    "last_seen": "2026-09-03"
   },
   {
-   "ip": "181.65.211.141",
+   "ip": "43.226.36.17",
    "feeds": 11,
    "score": "HIGH",
    "tags": [
@@ -590,20 +575,7 @@
     "Compromised",
     "Malicious"
    ],
-   "country": "PE",
-   "first_seen": "2026-09-02",
-   "last_seen": "2026-09-03"
-  },
-  {
-   "ip": "181.129.250.18",
-   "feeds": 11,
-   "score": "HIGH",
-   "tags": [
-    "Brute-Force",
-    "Compromised",
-    "Malicious"
-   ],
-   "country": "CO",
+   "country": "CN",
    "first_seen": "2026-09-02",
    "last_seen": "2026-09-03"
   },
@@ -777,19 +749,6 @@
    "last_seen": "2026-09-03"
   },
   {
-   "ip": "121.134.90.172",
-   "feeds": 11,
-   "score": "HIGH",
-   "tags": [
-    "Brute-Force",
-    "Compromised",
-    "Malicious"
-   ],
-   "country": "KR",
-   "first_seen": "2026-09-02",
-   "last_seen": "2026-09-03"
-  },
-  {
    "ip": "71.6.232.27",
    "feeds": 11,
    "score": "HIGH",
@@ -800,6 +759,19 @@
     "Spam"
    ],
    "country": "US",
+   "first_seen": "2026-09-02",
+   "last_seen": "2026-09-03"
+  },
+  {
+   "ip": "163.7.4.169",
+   "feeds": 11,
+   "score": "HIGH",
+   "tags": [
+    "Brute-Force",
+    "Compromised",
+    "Malicious"
+   ],
+   "country": "SG",
    "first_seen": "2026-09-02",
    "last_seen": "2026-09-03"
   },
@@ -817,16 +789,15 @@
    "last_seen": "2026-09-03"
   },
   {
-   "ip": "183.103.13.130",
+   "ip": "104.199.59.59",
    "feeds": 11,
    "score": "HIGH",
    "tags": [
     "Brute-Force",
     "Compromised",
-    "Malicious",
-    "Spam"
+    "Malicious"
    ],
-   "country": "KR",
+   "country": "US",
    "first_seen": "2026-09-02",
    "last_seen": "2026-09-03"
   },
@@ -870,19 +841,6 @@
    "last_seen": "2026-09-03"
   },
   {
-   "ip": "220.90.220.204",
-   "feeds": 11,
-   "score": "HIGH",
-   "tags": [
-    "Brute-Force",
-    "Compromised",
-    "Malicious"
-   ],
-   "country": "KR",
-   "first_seen": "2026-09-02",
-   "last_seen": "2026-09-03"
-  },
-  {
    "ip": "163.41.112.89",
    "feeds": 11,
    "score": "HIGH",
@@ -892,32 +850,6 @@
     "Malicious"
    ],
    "country": "US",
-   "first_seen": "2026-09-02",
-   "last_seen": "2026-09-03"
-  },
-  {
-   "ip": "36.138.78.195",
-   "feeds": 11,
-   "score": "HIGH",
-   "tags": [
-    "Brute-Force",
-    "Compromised",
-    "Malicious"
-   ],
-   "country": "CN",
-   "first_seen": "2026-09-02",
-   "last_seen": "2026-09-03"
-  },
-  {
-   "ip": "192.42.116.96",
-   "feeds": 11,
-   "score": "HIGH",
-   "tags": [
-    "Brute-Force",
-    "Malicious",
-    "Tor"
-   ],
-   "country": "NL",
    "first_seen": "2026-09-02",
    "last_seen": "2026-09-03"
   },
@@ -988,15 +920,16 @@
    "last_seen": "2026-09-03"
   },
   {
-   "ip": "94.204.15.80",
+   "ip": "31.76.9.4",
    "feeds": 11,
    "score": "HIGH",
    "tags": [
+    "Botnet",
     "Brute-Force",
     "Compromised",
     "Malicious"
    ],
-   "country": "AE",
+   "country": "GB",
    "first_seen": "2026-09-02",
    "last_seen": "2026-09-03"
   },
@@ -1010,19 +943,6 @@
     "Malicious"
    ],
    "country": "TR",
-   "first_seen": "2026-09-02",
-   "last_seen": "2026-09-03"
-  },
-  {
-   "ip": "167.172.52.88",
-   "feeds": 11,
-   "score": "HIGH",
-   "tags": [
-    "Brute-Force",
-    "Compromised",
-    "Malicious"
-   ],
-   "country": "US",
    "first_seen": "2026-09-02",
    "last_seen": "2026-09-03"
   },
@@ -1053,7 +973,7 @@
    "last_seen": "2026-09-03"
   },
   {
-   "ip": "130.12.182.225",
+   "ip": "130.12.182.107",
    "feeds": 11,
    "score": "HIGH",
    "tags": [
@@ -1066,7 +986,7 @@
    "last_seen": "2026-09-03"
   },
   {
-   "ip": "106.13.107.71",
+   "ip": "34.78.8.179",
    "feeds": 11,
    "score": "HIGH",
    "tags": [
@@ -1074,33 +994,7 @@
     "Compromised",
     "Malicious"
    ],
-   "country": "CN",
-   "first_seen": "2026-09-02",
-   "last_seen": "2026-09-03"
-  },
-  {
-   "ip": "193.77.126.62",
-   "feeds": 11,
-   "score": "HIGH",
-   "tags": [
-    "Brute-Force",
-    "Compromised",
-    "Malicious"
-   ],
-   "country": "SI",
-   "first_seen": "2026-09-02",
-   "last_seen": "2026-09-03"
-  },
-  {
-   "ip": "31.77.227.120",
-   "feeds": 11,
-   "score": "HIGH",
-   "tags": [
-    "Brute-Force",
-    "Compromised",
-    "Malicious"
-   ],
-   "country": "RO",
+   "country": "US",
    "first_seen": "2026-09-02",
    "last_seen": "2026-09-03"
   },
@@ -1131,6 +1025,19 @@
    "last_seen": "2026-09-03"
   },
   {
+   "ip": "128.14.232.142",
+   "feeds": 11,
+   "score": "HIGH",
+   "tags": [
+    "Brute-Force",
+    "Compromised",
+    "Malicious"
+   ],
+   "country": "HK",
+   "first_seen": "2026-09-02",
+   "last_seen": "2026-09-03"
+  },
+  {
    "ip": "27.79.5.21",
    "feeds": 11,
    "score": "HIGH",
@@ -1157,33 +1064,7 @@
    "last_seen": "2026-09-03"
   },
   {
-   "ip": "120.48.90.166",
-   "feeds": 11,
-   "score": "HIGH",
-   "tags": [
-    "Brute-Force",
-    "Compromised",
-    "Malicious"
-   ],
-   "country": "CN",
-   "first_seen": "2026-09-02",
-   "last_seen": "2026-09-03"
-  },
-  {
    "ip": "154.16.115.34",
-   "feeds": 11,
-   "score": "HIGH",
-   "tags": [
-    "Brute-Force",
-    "Compromised",
-    "Malicious"
-   ],
-   "country": "GB",
-   "first_seen": "2026-09-02",
-   "last_seen": "2026-09-03"
-  },
-  {
-   "ip": "154.16.115.37",
    "feeds": 11,
    "score": "HIGH",
    "tags": [
@@ -1209,6 +1090,19 @@
    "last_seen": "2026-09-03"
   },
   {
+   "ip": "185.113.9.199",
+   "feeds": 11,
+   "score": "HIGH",
+   "tags": [
+    "Brute-Force",
+    "Compromised",
+    "Malicious"
+   ],
+   "country": "IR",
+   "first_seen": "2026-09-02",
+   "last_seen": "2026-09-03"
+  },
+  {
    "ip": "45.145.154.192",
    "feeds": 11,
    "score": "HIGH",
@@ -1218,19 +1112,6 @@
     "Malicious"
    ],
    "country": "US",
-   "first_seen": "2026-09-02",
-   "last_seen": "2026-09-03"
-  },
-  {
-   "ip": "103.241.168.70",
-   "feeds": 11,
-   "score": "HIGH",
-   "tags": [
-    "Brute-Force",
-    "Compromised",
-    "Malicious"
-   ],
-   "country": "IN",
    "first_seen": "2026-09-02",
    "last_seen": "2026-09-03"
   },
@@ -1310,6 +1191,126 @@
     "Malicious"
    ],
    "country": "RO",
+   "first_seen": "2026-09-02",
+   "last_seen": "2026-09-03"
+  },
+  {
+   "ip": "1.245.140.132",
+   "feeds": 11,
+   "score": "HIGH",
+   "tags": [
+    "Brute-Force",
+    "Compromised",
+    "Malicious"
+   ],
+   "country": "KR",
+   "first_seen": "2026-09-02",
+   "last_seen": "2026-09-03"
+  },
+  {
+   "ip": "123.117.152.61",
+   "feeds": 11,
+   "score": "HIGH",
+   "tags": [
+    "Brute-Force",
+    "Compromised",
+    "Malicious"
+   ],
+   "country": "CN",
+   "first_seen": "2026-09-02",
+   "last_seen": "2026-09-03"
+  },
+  {
+   "ip": "52.21.227.35",
+   "feeds": 11,
+   "score": "HIGH",
+   "tags": [
+    "Brute-Force",
+    "Compromised",
+    "Malicious",
+    "Spam"
+   ],
+   "country": "US",
+   "first_seen": "2026-09-02",
+   "last_seen": "2026-09-03"
+  },
+  {
+   "ip": "91.150.79.138",
+   "feeds": 11,
+   "score": "HIGH",
+   "tags": [
+    "Brute-Force",
+    "Compromised",
+    "Malicious"
+   ],
+   "country": "RS",
+   "first_seen": "2026-09-02",
+   "last_seen": "2026-09-03"
+  },
+  {
+   "ip": "34.22.130.192",
+   "feeds": 11,
+   "score": "HIGH",
+   "tags": [
+    "Brute-Force",
+    "Compromised",
+    "Exploit",
+    "Malicious"
+   ],
+   "country": "US",
+   "first_seen": "2026-09-02",
+   "last_seen": "2026-09-03"
+  },
+  {
+   "ip": "85.214.166.40",
+   "feeds": 11,
+   "score": "HIGH",
+   "tags": [
+    "Brute-Force",
+    "Compromised",
+    "Malicious"
+   ],
+   "country": "DE",
+   "first_seen": "2026-09-02",
+   "last_seen": "2026-09-03"
+  },
+  {
+   "ip": "161.118.212.147",
+   "feeds": 11,
+   "score": "HIGH",
+   "tags": [
+    "Brute-Force",
+    "Compromised",
+    "Malicious"
+   ],
+   "country": "US",
+   "first_seen": "2026-09-02",
+   "last_seen": "2026-09-03"
+  },
+  {
+   "ip": "203.55.81.2",
+   "feeds": 11,
+   "score": "HIGH",
+   "tags": [
+    "Brute-Force",
+    "Exploit",
+    "Malicious",
+    "Tor"
+   ],
+   "country": "FR",
+   "first_seen": "2026-09-02",
+   "last_seen": "2026-09-03"
+  },
+  {
+   "ip": "94.154.43.60",
+   "feeds": 11,
+   "score": "HIGH",
+   "tags": [
+    "Brute-Force",
+    "Compromised",
+    "Malicious"
+   ],
+   "country": "US",
    "first_seen": "2026-09-02",
    "last_seen": "2026-09-03"
   }
