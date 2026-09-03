@@ -43,10 +43,11 @@ export default function TopAptPage() {
 
   const count = (a: Actor) => (window_ === '24h' ? a.pulses_24h : a.pulses_7d)
   const show = useMemo(() => {
+    const key = window_ === '24h' ? 'pulses_24h' : 'pulses_7d'
+    const other = window_ === '24h' ? 'pulses_7d' : 'pulses_24h'
     return (actors ?? [])
-      .filter((a) => count(a) > 0)
-      .sort((a, b) => count(b) - count(a) || (window_ === '24h' ? b.pulses_7d - a.pulses_7d : b.pulses_24h - a.pulses_24h))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+      .filter((a) => a[key] > 0)
+      .sort((a, b) => b[key] - a[key] || b[other] - a[other])
   }, [actors, window_])
   const max = show.length ? count(show[0]) : 1
   const totalReports = (actors ?? []).reduce((s, a) => s + count(a), 0)
