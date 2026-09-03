@@ -1,34 +1,8 @@
 {
- "generated_at": "2026-09-03T04:22:46+00:00",
+ "generated_at": "2026-09-03T10:20:50+00:00",
  "source": "AlienVault OTX pulse search",
  "note": "Activity = threat-intel pulses (campaign reports) mentioning the group in the window. Vendor/community reporting \u2014 follow each link to its source.",
  "actors": [
-  {
-   "name": "Gamaredon",
-   "aka": [
-    "Primitive Bear",
-    "ShallowBurrow"
-   ],
-   "sponsor": "Russia (GRU)",
-   "pulses_24h": 0,
-   "pulses_7d": 2,
-   "malware": [],
-   "targets": [],
-   "campaigns": [
-    {
-     "title": "Gamaredon",
-     "url": "https://otx.alienvault.com/pulse/6a955ef277b0404ca4ed2856",
-     "modified": "2026-08-31T11:01:06.712000",
-     "last_24h": false
-    },
-    {
-     "title": "Gamaredon",
-     "url": "https://otx.alienvault.com/pulse/6a8ff98c93e90abe5352e260",
-     "modified": "2026-08-27T08:47:08.018000",
-     "last_24h": false
-    }
-   ]
-  },
   {
    "name": "Kimsuky",
    "aka": [
@@ -57,21 +31,42 @@
    ]
   },
   {
-   "name": "SideWinder",
+   "name": "MuddyWater",
    "aka": [
-    "Ropycoder",
-    "TargetedThreatCluster"
+    "Mercury",
+    "STATIC KITTEN",
+    "Seedur"
    ],
-   "sponsor": "Suspected India",
+   "sponsor": "Iran (MOIS)",
    "pulses_24h": 0,
    "pulses_7d": 1,
    "malware": [],
    "targets": [],
    "campaigns": [
     {
-     "title": "SideWinder",
-     "url": "https://otx.alienvault.com/pulse/6a8ff99045b58a660a42462f",
-     "modified": "2026-08-27T08:47:12.119000",
+     "title": "MuddyWater: Snakes by the riverbank [WeLiveSecurity]",
+     "url": "https://otx.alienvault.com/pulse/6a6ce21f20b9164d05b9f9b2",
+     "modified": "2026-08-30T17:09:23.303000",
+     "last_24h": false
+    }
+   ]
+  },
+  {
+   "name": "Gamaredon",
+   "aka": [
+    "Primitive Bear",
+    "ShallowBurrow"
+   ],
+   "sponsor": "Russia (GRU)",
+   "pulses_24h": 0,
+   "pulses_7d": 1,
+   "malware": [],
+   "targets": [],
+   "campaigns": [
+    {
+     "title": "Gamaredon",
+     "url": "https://otx.alienvault.com/pulse/6a955ef277b0404ca4ed2856",
+     "modified": "2026-08-31T11:01:06.712000",
      "last_24h": false
     }
    ]
@@ -93,27 +88,6 @@
      "title": "Open Directory Exposes Moobot Source Code and Ongoing Activity Post 2024 Court-Authorized Disruption",
      "url": "https://otx.alienvault.com/pulse/6a90f19bbcdbb55af3412789",
      "modified": "2026-08-28T08:49:30.535000",
-     "last_24h": false
-    }
-   ]
-  },
-  {
-   "name": "MuddyWater",
-   "aka": [
-    "Mercury",
-    "STATIC KITTEN",
-    "Seedur"
-   ],
-   "sponsor": "Iran (MOIS)",
-   "pulses_24h": 0,
-   "pulses_7d": 1,
-   "malware": [],
-   "targets": [],
-   "campaigns": [
-    {
-     "title": "MuddyWater: Snakes by the riverbank [WeLiveSecurity]",
-     "url": "https://otx.alienvault.com/pulse/6a6ce21f20b9164d05b9f9b2",
-     "modified": "2026-08-30T17:09:23.303000",
      "last_24h": false
     }
    ]

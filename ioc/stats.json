@@ -1,43 +1,43 @@
 {
-  "total_unique_ips": 891069,
-  "total_unique_ipv6": 15227,
-  "total_unique_cidrs": 20733,
-  "total_unique_domains": 3317716,
-  "total_unique_hashes": 1132505,
-  "total_unique_urls": 120395,
+  "total_unique_ips": 892630,
+  "total_unique_ipv6": 15307,
+  "total_unique_cidrs": 20736,
+  "total_unique_domains": 3317989,
+  "total_unique_hashes": 1132566,
+  "total_unique_urls": 120631,
   "active_feeds": 54,
   "category_counts": {
-    "Mixed": 665536,
-    "Malicious": 188580,
-    "Tor": 7009,
-    "Brute-Force": 32536,
-    "Spam": 12594,
+    "Mixed": 666339,
+    "Malicious": 188557,
+    "Tor": 7004,
+    "Brute-Force": 31277,
+    "Spam": 12633,
     "Malware": 2728,
     "C2": 7607,
-    "Exploit": 9605,
-    "Compromised": 15510,
-    "Botnet": 3384
+    "Exploit": 9527,
+    "Compromised": 15520,
+    "Botnet": 3224
   },
   "ip_category_files": {
-    "threatbase-ip-botnet.txt": 3384,
-    "threatbase-ip-bruteforce.txt": 32536,
+    "threatbase-ip-botnet.txt": 3224,
+    "threatbase-ip-bruteforce.txt": 31277,
     "threatbase-ip-c2.txt": 7607,
-    "threatbase-ip-compromised.txt": 15510,
-    "threatbase-ip-exploit.txt": 9605,
-    "threatbase-ip-malicious.txt": 188580,
+    "threatbase-ip-compromised.txt": 15520,
+    "threatbase-ip-exploit.txt": 9527,
+    "threatbase-ip-malicious.txt": 188557,
     "threatbase-ip-malware.txt": 2728,
-    "threatbase-ip-mixed.txt": 665536,
-    "threatbase-ip-spam.txt": 12594,
-    "threatbase-ip-tor.txt": 7009
+    "threatbase-ip-mixed.txt": 666339,
+    "threatbase-ip-spam.txt": 12633,
+    "threatbase-ip-tor.txt": 7004
   },
   "top_sources": {
     "ipsum": 152652,
     "romainmarcoux_outgoing_aa": 131072,
-    "romainmarcoux_outgoing_ab": 51589,
+    "romainmarcoux_outgoing_ab": 51608,
     "romainmarcoux_outgoing_40k": 40000,
-    "blocklist_de": 29408
+    "blocklist_de": 29188
   },
-  "last_updated": "2026-09-03T04:22:45.067225+00:00",
+  "last_updated": "2026-09-03T10:20:48.918397+00:00",
   "stale_indicators": 0,
   "avg_freshness_days": 0.6,
   "decay_config": {
@@ -73,39 +73,39 @@
       {
         "file": "threatbase-domain-01.txt",
         "first": "0--foodwarez.da.ru,2026-09-02",
-        "last": "garagedoorrepaircoventryri.com,2026-09-02",
-        "lines": 1119076,
-        "bytes": 34029828
+        "last": "garagedoorrepairfairfieldct.com,2026-09-02",
+        "lines": 1119165,
+        "bytes": 34032659
       },
       {
         "file": "threatbase-domain-02.txt",
-        "first": "garagedoorrepaircumberland.com,2026-09-02",
-        "last": "shabequestudio.digital,2026-09-02",
-        "lines": 1130328,
-        "bytes": 34029802
+        "first": "garagedoorrepairfallriver.com,2026-09-02",
+        "last": "shabashindian.co.uk,2026-09-02",
+        "lines": 1130423,
+        "bytes": 34032673
       },
       {
         "file": "threatbase-domain-03.txt",
-        "first": "shabflow.digital,2026-09-02",
+        "first": "shabatrading.com,2026-09-02",
         "last": "zzzzzzzzzzzzz.com,2026-09-02",
-        "lines": 1068312,
-        "bytes": 34029761
+        "lines": 1068401,
+        "bytes": 34032606
       }
     ],
     "threatbase-hash.txt": [
       {
         "file": "threatbase-hash-01.txt",
         "first": "00000077553a5b27a610ac98f29563bbd6e0decc020c2d49e4fa0d89197e7fd8,2026-09-02",
-        "last": "7fbdacc83093cfc1e3c037463221fc735890db1f3eb2d9e23cc5e2443618e9c0,2026-09-02",
-        "lines": 566253,
-        "bytes": 43035228
+        "last": "7fbdc1b6e92a12b8a36118ca129b2fd15b7298bd5f0724eaf133579f2eb4ce94,2026-09-02",
+        "lines": 566283,
+        "bytes": 43037508
       },
       {
         "file": "threatbase-hash-02.txt",
-        "first": "7fbdc1b6e92a12b8a36118ca129b2fd15b7298bd5f0724eaf133579f2eb4ce94,2026-09-02",
+        "first": "7fbdcc7c0be32510a62b231fa8b1f12298b5380e0f72b756e37827fb63803bcc,2026-09-02",
         "last": "ffffe8b36158ae710a9fbf0941f83625ae69f9f2070b3b04def6171b890a6dde,2026-09-02",
-        "lines": 566252,
-        "bytes": 43035152
+        "lines": 566283,
+        "bytes": 43037508
       }
     ]
   },
