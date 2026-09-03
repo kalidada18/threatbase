@@ -1,43 +1,43 @@
 {
-  "total_unique_ips": 890457,
-  "total_unique_ipv6": 15208,
+  "total_unique_ips": 890771,
+  "total_unique_ipv6": 15217,
   "total_unique_cidrs": 20733,
-  "total_unique_domains": 3317710,
-  "total_unique_hashes": 1132484,
-  "total_unique_urls": 120376,
+  "total_unique_domains": 3317712,
+  "total_unique_hashes": 1132497,
+  "total_unique_urls": 120388,
   "active_feeds": 54,
   "category_counts": {
-    "Mixed": 665696,
-    "Malicious": 188048,
-    "Tor": 7006,
-    "Brute-Force": 32572,
-    "Compromised": 15509,
-    "Spam": 12566,
+    "Mixed": 665583,
+    "Malicious": 188390,
+    "Tor": 7001,
+    "Brute-Force": 32561,
+    "Compromised": 15513,
+    "Spam": 12591,
     "Malware": 2728,
     "C2": 7607,
-    "Exploit": 9648,
-    "Botnet": 3395
+    "Exploit": 9608,
+    "Botnet": 3384
   },
   "ip_category_files": {
-    "threatbase-ip-botnet.txt": 3395,
-    "threatbase-ip-bruteforce.txt": 32572,
+    "threatbase-ip-botnet.txt": 3384,
+    "threatbase-ip-bruteforce.txt": 32561,
     "threatbase-ip-c2.txt": 7607,
-    "threatbase-ip-compromised.txt": 15509,
-    "threatbase-ip-exploit.txt": 9648,
-    "threatbase-ip-malicious.txt": 188048,
+    "threatbase-ip-compromised.txt": 15513,
+    "threatbase-ip-exploit.txt": 9608,
+    "threatbase-ip-malicious.txt": 188390,
     "threatbase-ip-malware.txt": 2728,
-    "threatbase-ip-mixed.txt": 665696,
-    "threatbase-ip-spam.txt": 12566,
-    "threatbase-ip-tor.txt": 7006
+    "threatbase-ip-mixed.txt": 665583,
+    "threatbase-ip-spam.txt": 12591,
+    "threatbase-ip-tor.txt": 7001
   },
   "top_sources": {
     "ipsum": 152652,
     "romainmarcoux_outgoing_aa": 131072,
-    "romainmarcoux_outgoing_ab": 51372,
+    "romainmarcoux_outgoing_ab": 51589,
     "romainmarcoux_outgoing_40k": 40000,
-    "blocklist_de": 29458
+    "blocklist_de": 29430
   },
-  "last_updated": "2026-09-03T02:36:43.315628+00:00",
+  "last_updated": "2026-09-03T03:45:56.537057+00:00",
   "stale_indicators": 0,
   "avg_freshness_days": 0.6,
   "decay_config": {
@@ -57,6 +57,7 @@
     "spamhaus_edrop",
     "spamhaus_dropv6",
     "criticalpath_security",
+    "tor_bulk_exit",
     "alienvault_reputation",
     "sslbl_abuse_ch",
     "stopforumspam_toxic",
@@ -79,32 +80,32 @@
       {
         "file": "threatbase-domain-02.txt",
         "first": "garagedoorrepaircumberland.com,2026-09-02",
-        "last": "shabequelabsco.click,2026-09-02",
-        "lines": 1130326,
-        "bytes": 34029736
+        "last": "shabequestudio.digital,2026-09-02",
+        "lines": 1130327,
+        "bytes": 34029770
       },
       {
         "file": "threatbase-domain-03.txt",
-        "first": "shabequestudio.digital,2026-09-02",
+        "first": "shabflow.digital,2026-09-02",
         "last": "zzzzzzzzzzzzz.com,2026-09-02",
-        "lines": 1068310,
-        "bytes": 34029713
+        "lines": 1068311,
+        "bytes": 34029733
       }
     ],
     "threatbase-hash.txt": [
       {
         "file": "threatbase-hash-01.txt",
         "first": "00000077553a5b27a610ac98f29563bbd6e0decc020c2d49e4fa0d89197e7fd8,2026-09-02",
-        "last": "7fbd8b70c4ec11802a8a4e9b857278bf81e4f57ad278f3309a87726f2b79fce6,2026-09-02",
-        "lines": 566242,
-        "bytes": 43034392
+        "last": "7fbd90ecc017dddf16fc3e56b2d058b46df9f07bd7a3f6c7731d270e7059a179,2026-09-02",
+        "lines": 566249,
+        "bytes": 43034924
       },
       {
         "file": "threatbase-hash-02.txt",
-        "first": "7fbd90ecc017dddf16fc3e56b2d058b46df9f07bd7a3f6c7731d270e7059a179,2026-09-02",
+        "first": "7fbdacc83093cfc1e3c037463221fc735890db1f3eb2d9e23cc5e2443618e9c0,2026-09-02",
         "last": "ffffe8b36158ae710a9fbf0941f83625ae69f9f2070b3b04def6171b890a6dde,2026-09-02",
-        "lines": 566242,
-        "bytes": 43034392
+        "lines": 566248,
+        "bytes": 43034848
       }
     ]
   },
