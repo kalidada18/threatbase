@@ -112,7 +112,7 @@ export default function TopAptPage() {
         <p className="text-lg text-slate-300 max-w-xl mx-auto leading-relaxed mb-8">
           Advanced threat groups ranked by fresh campaign intelligence, refreshed with every feed run.
         </p>
-        {actors && (
+        {actors && show.length > 0 && (
           <div className="inline-flex items-center gap-5 md:gap-7 font-mono text-xs text-slate-500">
             <span><span className="text-white text-sm tabular-nums mr-1.5">{show.length}</span>active {show.length === 1 ? 'group' : 'groups'}</span>
             <span className="w-px h-4 bg-white/10" />
@@ -194,11 +194,8 @@ export default function TopAptPage() {
               <div className="absolute -top-24 -right-16 w-72 h-72 rounded-full bg-red-500/[0.07] blur-3xl pointer-events-none" />
               <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-red-500/50 to-transparent" />
               <div className="relative p-7 md:p-9">
-                <div className="flex items-baseline justify-between gap-4 mb-5">
-                  <span className="font-mono text-xs uppercase tracking-[0.2em] text-red-400">Most active this {window_}</span>
-                  <span className="font-mono text-6xl font-extrabold text-white/[0.06] leading-none select-none">01</span>
-                </div>
-                <h2 className="font-extrabold tracking-tighter text-white text-3xl md:text-5xl mb-3 break-words">{first.name}</h2>
+                <span className="absolute top-6 right-7 font-mono text-6xl font-extrabold text-white/[0.06] leading-none select-none pointer-events-none" aria-hidden>01</span>
+                <h2 className="font-extrabold tracking-tighter text-white text-3xl md:text-5xl mb-3 break-words pr-16">{first.name}</h2>
                 <div className="flex flex-wrap items-center gap-1.5 mb-7">
                   <Chip tone="red">{first.sponsor}</Chip>
                   {first.aka.slice(0, 3).map((a) => <Chip key={a}>{a}</Chip>)}
