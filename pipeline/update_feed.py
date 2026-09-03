@@ -422,9 +422,10 @@ def load_previous_ips(path: str) -> Set[int]:
 def load_previous_ips_with_meta(path: str) -> tuple:
     """Like load_previous_ips, but also returns {ip_int: {"fs": first_seen, "ls": last_seen}}.
 
-    The IP feed format is `IP,FeedCount,RiskScore,Tags,FirstSeen,LastSeen`, so
-    the dates are the last two CSV columns when present (feeds written before the
-    decay change have only four columns and get no metadata).
+    The IP feed format is `IP,FeedCount,RiskScore,Tags,FirstSeen,LastSeen[,Sources]`,
+    so the dates are columns 5-6 when present (feeds written before the decay
+    change have only four columns and get no metadata) and the listing sources
+    are column 7 (feeds written before the sources change carry none forward).
     """
     ips: Set[int] = set()
     meta: dict = {}
@@ -439,7 +440,10 @@ def load_previous_ips_with_meta(path: str) -> tuple:
                 if ip_int:
                     ips.add(ip_int)
                     if len(parts) >= 6:
-                        meta[ip_int] = {"fs": parts[4].strip(), "ls": parts[5].strip()}
+                        m = {"fs": parts[4].strip(), "ls": parts[5].strip()}
+                        if len(parts) >= 7 and parts[6].strip():
+                            m["src"] = parts[6].strip()
+                        meta[ip_int] = m
     return ips, meta
 
 def load_previous_list(path: str) -> Set[str]:
@@ -1082,12 +1086,18 @@ def process_ip_metadata(ip_sources: Dict[str, Set[int]], false_positives: FalseP
             data["tags"] = tags
 
         tags_list = sorted(list(data["tags"])) if data["tags"] else ["Mixed"]
+        # Human-visible sources: the "historical" cache key is internal. An IP
+        # carried over without any fresh feed sighting keeps the vendors recorded
+        # in the previous feed's Sources column, so the attribution never goes dark.
+        visible_sources = sorted(src for src in sources if src != "historical")
+        if not visible_sources and prior:
+            visible_sources = [s for s in prior.get("src", "").split("|") if s]
         filtered[ip] = {
             "ip": int_to_ip(ip),
             "count": num_sources,
             "score": score,
             "tags": tags_list,
-            "sources": list(sources),
+            "sources": visible_sources,
             "first_seen": first_seen.isoformat(),
             "last_seen": last_seen.isoformat(),
         }
@@ -1382,11 +1392,12 @@ async def run_async_collector():
     with open(txt_output_path, "w", encoding="utf-8", buffering=1 << 16) as f:
         f.write("# Threatbase Threat Intelligence Feed - IPs\n")
         f.write(f"# Last update: {timestamp}\n")
-        f.write("# Format: IP,FeedCount,RiskScore,Tags,FirstSeen,LastSeen\n")
+        f.write("# Format: IP,FeedCount,RiskScore,Tags,FirstSeen,LastSeen,Sources\n")
         for ip in sorted_ips:
             info = filtered_ip_info[ip]
             tags_str = "|".join(info["tags"])
-            f.write(f"{info['ip']},{info['count']},{info['score']},{tags_str},{info['first_seen']},{info['last_seen']}\n")
+            sources_str = "|".join(info["sources"])
+            f.write(f"{info['ip']},{info['count']},{info['score']},{tags_str},{info['first_seen']},{info['last_seen']},{sources_str}\n")
 
     # ── Write category-split IP feeds ──────────────────────────────────────
     # One blocklist per threat category so defenders can apply different
@@ -1407,11 +1418,12 @@ async def run_async_collector():
             f.write(f"# Threatbase Threat Intelligence Feed - {cat} IPs\n")
             f.write(f"# Last update: {timestamp}\n")
             f.write(f"# Count: {len(ips)}\n")
-            f.write("# Format: IP,FeedCount,RiskScore,Tags,FirstSeen,LastSeen\n")
+            f.write("# Format: IP,FeedCount,RiskScore,Tags,FirstSeen,LastSeen,Sources\n")
             for ip in ips:
                 info = filtered_ip_info[ip]
                 tags_str = "|".join(info["tags"])
-                f.write(f"{info['ip']},{info['count']},{info['score']},{tags_str},{info['first_seen']},{info['last_seen']}\n")
+                sources_str = "|".join(info["sources"])
+                f.write(f"{info['ip']},{info['count']},{info['score']},{tags_str},{info['first_seen']},{info['last_seen']},{sources_str}\n")
         ip_category_files[fname] = len(ips)
     log.info(f"  Wrote {len(ip_category_files)} category feeds to ioc/categories/")
 

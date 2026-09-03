@@ -48,6 +48,38 @@ const getConfidenceTier = (score: number) => {
 
 const getCategoryColor = (cat: string) => TIER_CHIP[categoryTier(cat)]
 
+// Feed keys (pipeline/update_feed.py) → human vendor names. Several raw keys
+// collapse to one vendor (both Feodo lists are "Feodo Tracker"), so the chip
+// row dedupes after mapping.
+const SOURCE_LABELS: Record<string, string> = {
+  feodo_tracker: 'Feodo Tracker', feodo_tracker_aggressive: 'Feodo Tracker',
+  threatfox_full: 'ThreatFox', sslbl_abuse_ch: 'SSL Blacklist',
+  bbcan177_ms1: 'BBcan177', ipsum: 'IPsum', blackbook: 'BlackBook',
+  firehol_level1: 'FireHOL L1', firehol_level2: 'FireHOL L2', firehol_level3: 'FireHOL L3',
+  cins_army: 'CINS Army',
+  emerging_threats: 'Emerging Threats', emerging_threats_fwrules: 'Emerging Threats',
+  blocklist_de: 'Blocklist.de', blocklist_de_ssh: 'Blocklist.de SSH', blocklist_de_mail: 'Blocklist.de Mail',
+  blocklist_de_apache: 'Blocklist.de Apache', blocklist_net_bots: 'blocklist.net Bots', blocklist_net_strongips: 'blocklist.net Strong_ips',
+  binary_defense: 'Binary Defense', greensnow: 'GreenSnow', abuseipdb: 'AbuseIPDB',
+  spamhaus_drop: 'Spamhaus DROP', spamhaus_edrop: 'Spamhaus eDROP', spamhaus_dropv6: 'Spamhaus DROPv6',
+  dshield_blocklist: 'SANS DShield', criticalpath_security: 'Critical Path',
+  bruteforceblocker: 'BruteForceBlocker', botvrij: 'Botvrij',
+  dan_tor: 'Tor List', tor_bulk_exit: 'Tor Project', snort_ip_filter: 'Snort',
+  alienvault_reputation: 'AlienVault OTX', stopforumspam_toxic: 'StopForumSpam',
+  romainmarcoux_outgoing_40k: 'R. Marcoux', romainmarcoux_outgoing_aa: 'R. Marcoux', romainmarcoux_outgoing_ab: 'R. Marcoux',
+  dataplane_sipinv: 'DataPlane SIP', dataplane_sshclient: 'DataPlane SSH', dataplane_sshpwauth: 'DataPlane SSH Auth', dataplane_vncrfb: 'DataPlane VNC',
+  custom: 'Threatbase Verified',
+}
+
+function labelSources(keys: string[]): string[] {
+  const out: string[] = []
+  for (const k of keys) {
+    const label = SOURCE_LABELS[k] || k
+    if (!out.includes(label)) out.push(label)
+  }
+  return out
+}
+
 function MalwareDescriptionBlock({ tag }: { tag: string }) {
   const desc = getMalwareDescription(tag) || getMalwareDescription('Malware');
 
@@ -276,6 +308,22 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
                           ? <Check size={15} className="text-primary shrink-0" strokeWidth={2.5} />
                           : <Copy size={15} className="text-slate-500 group-hover:text-platinum-200 shrink-0 transition-colors" />}
                       </button>
+                      {/* Which intel sources actually list this indicator. Neutral
+                          platinum pills: a vendor name is provenance, not severity,
+                          so it must not borrow the threat color scale. */}
+                      {type === 'danger' && scanResult?.sources?.length > 0 && (
+                        <div className="mt-3 flex flex-wrap items-center gap-1.5">
+                          <span className="mr-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-platinum-500">Flagged by</span>
+                          {labelSources(scanResult.sources).map((name) => (
+                            <span
+                              key={name}
+                              className="inline-flex cursor-default items-center rounded-full border border-platinum-400/25 bg-platinum-400/[0.06] px-2.5 py-0.5 text-[11px] font-semibold tracking-wide text-platinum-200 transition-colors hover:border-white/25 hover:text-white"
+                            >
+                              {name}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
 

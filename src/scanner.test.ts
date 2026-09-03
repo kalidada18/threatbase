@@ -9,6 +9,7 @@ import {
   refangIndicator,
   extractUrlHost,
   parentDomains,
+  parseIpFeedLine,
 } from './scanner'
 
 describe('classifyIndicator', () => {
@@ -101,6 +102,22 @@ describe('binarySearchString', () => {
     const domainFeed = ['aaa.com', 'bbb.com', 'ccc.com'].join('\n')
     expect(binarySearchString(domainFeed, 'bbb.com', stringCompare)).toBe('bbb.com')
     expect(binarySearchString(domainFeed, 'zzz.com', stringCompare)).toBeNull()
+  })
+})
+
+describe('parseIpFeedLine', () => {
+  it('reads tags and sources from the 7-column format', () => {
+    const r = parseIpFeedLine('8.8.8.8,2,HIGH,Spam|Tor,2026-01-01,2026-09-01,ipsum|firehol_level2')
+    expect(r.feedCount).toBe('2')
+    expect(r.riskScore).toBe('HIGH')
+    expect(r.tags).toEqual(['Spam', 'Tor'])
+    expect(r.sources).toEqual(['ipsum', 'firehol_level2'])
+  })
+
+  it('yields no sources for legacy 4-column lines and drops Mixed tags', () => {
+    const r = parseIpFeedLine('8.8.8.8,1,Low,Mixed')
+    expect(r.tags).toEqual([])
+    expect(r.sources).toEqual([])
   })
 })
 

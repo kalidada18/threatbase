@@ -309,6 +309,20 @@ export function classifyIndicator(rawInput: string) {
 }
 
 /**
+ * Parse a feed line `IP,FeedCount,RiskScore,Tags,FirstSeen,LastSeen,Sources`.
+ * Tags and Sources are pipe-joined. Legacy 4-column lines simply yield no
+ * sources. Pure and exported so the column rules can be unit-tested.
+ */
+export function parseIpFeedLine(line: string) {
+  const parts = line.split(',')
+  const feedCount = parts.length >= 3 ? parts[1] : '1'
+  const riskScore = parts.length >= 3 ? parts[2] : 'Low'
+  const tags = parts.length >= 4 ? parts[3].split('|').filter((t) => t.trim() !== '' && t !== 'Mixed') : []
+  const sources = parts.length >= 7 ? parts[6].split('|').filter(Boolean) : []
+  return { feedCount, riskScore, tags, sources }
+}
+
+/**
  * Classify the indicator type and search against cached feed files.
  *
  * `statsData` is optional: pass it when the caller already has stats.json (the
@@ -335,6 +349,7 @@ export async function scanIndicatorLogic(rawInput: string, feedVersion: string |
   let isDisputed = false
   let disputeCount = 0
   let tags: string[] = []
+  let sources: string[] = []
   let matchedCidr: string | null = null
   // Pivot detection: the exact indicator wasn't listed, but a related one was
   // (URL's host, a parent domain, the host's resolved-in-feed IP form, etc).
@@ -426,14 +441,11 @@ export async function scanIndicatorLogic(rawInput: string, feedVersion: string |
     if (result || matchedCidr) {
       isMalicious = true
       if (result) {
-        const parts = result.split(',')
-        if (parts.length >= 3) {
-          feedCount = parts[1]
-          riskScore = parts[2]
-        }
-        if (parts.length >= 4) {
-          tags = parts[3].split('|').filter((t) => t.trim() !== '' && t !== 'Mixed')
-        }
+        const parsed = parseIpFeedLine(result)
+        feedCount = parsed.feedCount
+        riskScore = parsed.riskScore
+        tags = parsed.tags
+        sources = parsed.sources
       } else if (matchedCidr) {
         // Range-based detection: high confidence, surface the matched subnet.
         riskScore = 'High'
@@ -467,5 +479,5 @@ export async function scanIndicatorLogic(rawInput: string, feedVersion: string |
     console.error(e)
   }
 
-  return { type: scanType, ip, isIP, isDomain, isHash, isURL, isIPv6, isCIDR, isMalicious, riskScore, feedCount, isDisputed, disputeCount, tags, matchedCidr, relatedMatch }
+  return { type: scanType, ip, isIP, isDomain, isHash, isURL, isIPv6, isCIDR, isMalicious, riskScore, feedCount, isDisputed, disputeCount, tags, sources, matchedCidr, relatedMatch }
 }
