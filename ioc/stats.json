@@ -1,43 +1,43 @@
 {
-  "total_unique_ips": 890428,
-  "total_unique_ipv6": 15206,
+  "total_unique_ips": 890457,
+  "total_unique_ipv6": 15208,
   "total_unique_cidrs": 20733,
-  "total_unique_domains": 3317654,
+  "total_unique_domains": 3317710,
   "total_unique_hashes": 1132484,
-  "total_unique_urls": 120374,
+  "total_unique_urls": 120376,
   "active_feeds": 54,
   "category_counts": {
-    "Mixed": 665706,
-    "Malicious": 188043,
-    "Tor": 7026,
-    "Brute-Force": 32549,
+    "Mixed": 665696,
+    "Malicious": 188048,
+    "Tor": 7006,
+    "Brute-Force": 32572,
     "Compromised": 15509,
+    "Spam": 12566,
     "Malware": 2728,
     "C2": 7607,
-    "Spam": 12538,
-    "Botnet": 3399,
-    "Exploit": 9649
+    "Exploit": 9648,
+    "Botnet": 3395
   },
   "ip_category_files": {
-    "threatbase-ip-botnet.txt": 3399,
-    "threatbase-ip-bruteforce.txt": 32549,
+    "threatbase-ip-botnet.txt": 3395,
+    "threatbase-ip-bruteforce.txt": 32572,
     "threatbase-ip-c2.txt": 7607,
     "threatbase-ip-compromised.txt": 15509,
-    "threatbase-ip-exploit.txt": 9649,
-    "threatbase-ip-malicious.txt": 188043,
+    "threatbase-ip-exploit.txt": 9648,
+    "threatbase-ip-malicious.txt": 188048,
     "threatbase-ip-malware.txt": 2728,
-    "threatbase-ip-mixed.txt": 665706,
-    "threatbase-ip-spam.txt": 12538,
-    "threatbase-ip-tor.txt": 7026
+    "threatbase-ip-mixed.txt": 665696,
+    "threatbase-ip-spam.txt": 12566,
+    "threatbase-ip-tor.txt": 7006
   },
   "top_sources": {
     "ipsum": 152652,
     "romainmarcoux_outgoing_aa": 131072,
-    "romainmarcoux_outgoing_ab": 51367,
+    "romainmarcoux_outgoing_ab": 51372,
     "romainmarcoux_outgoing_40k": 40000,
-    "blocklist_de": 29440
+    "blocklist_de": 29458
   },
-  "last_updated": "2026-09-03T02:19:34.375868+00:00",
+  "last_updated": "2026-09-03T02:36:43.315628+00:00",
   "stale_indicators": 0,
   "avg_freshness_days": 0.6,
   "decay_config": {
@@ -64,30 +64,31 @@
     "dataplane_sipinv",
     "dataplane_sshclient",
     "dataplane_sshpwauth",
-    "dataplane_vncrfb"
+    "dataplane_vncrfb",
+    "dshield_blocklist"
   ],
   "chunks": {
     "threatbase-domain.txt": [
       {
         "file": "threatbase-domain-01.txt",
         "first": "0--foodwarez.da.ru,2026-09-02",
-        "last": "garagedoorrepairsfranklinma.com,2026-09-02",
-        "lines": 1119047,
-        "bytes": 34029146
+        "last": "garagedoorrepaircoventryri.com,2026-09-02",
+        "lines": 1119074,
+        "bytes": 34029759
       },
       {
         "file": "threatbase-domain-02.txt",
-        "first": "garagedoorrepairspringfieldma.com,2026-09-02",
-        "last": "shabubet911xbet.net,2026-09-02",
-        "lines": 1130318,
-        "bytes": 34029128
+        "first": "garagedoorrepaircumberland.com,2026-09-02",
+        "last": "shabequelabsco.click,2026-09-02",
+        "lines": 1130326,
+        "bytes": 34029736
       },
       {
         "file": "threatbase-domain-03.txt",
-        "first": "shabubet911xbet.org,2026-09-02",
+        "first": "shabequestudio.digital,2026-09-02",
         "last": "zzzzzzzzzzzzz.com,2026-09-02",
-        "lines": 1068289,
-        "bytes": 34029104
+        "lines": 1068310,
+        "bytes": 34029713
       }
     ],
     "threatbase-hash.txt": [
