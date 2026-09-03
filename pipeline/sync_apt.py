@@ -158,6 +158,12 @@ def main() -> int:
             return 1
 
     actors = [a for a in (f.result() for f in done) if a]
+    if not actors:
+        # Zero hits for all 21 groups across a week cannot be real; every
+        # search silently failed (504 -> []). Same rule as the deadline:
+        # never overwrite a complete leaderboard with an empty one.
+        log.error("All OTX searches returned nothing — not writing top_apt.json.")
+        return 1
     actors.sort(key=lambda a: (a["pulses_24h"], a["pulses_7d"]), reverse=True)
     out = {
         "generated_at": now.isoformat(timespec="seconds"),

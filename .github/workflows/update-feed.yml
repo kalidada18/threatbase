@@ -117,8 +117,11 @@ jobs:
         run: python pipeline/update_feed.py
 
       # ── 6b. APT leaderboard (top_apt.json) ────────────────────────────────
-      # Exits 0 without OTX_API_KEY, so a missing secret never blocks the feed push.
+      # Exits 0 without OTX_API_KEY. Fails loudly (red step + annotation) when
+      # OTX is unreachable so a stale leaderboard is never overwritten — but
+      # continue-on-error keeps that from blocking the feed push below.
       - name: Sync APT leaderboard
+        continue-on-error: true
         env:
           OTX_API_KEY: ${{ secrets.OTX_API_KEY }}
           PYTHONUNBUFFERED: '1'
