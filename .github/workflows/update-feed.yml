@@ -17,7 +17,7 @@ jobs:
   update-feed:
     name: Fetch, Aggregate & Publish
     runs-on: ubuntu-latest
-    timeout-minutes: 10  # Optimized script completes in ~90s; 10min buffer for slow networks
+    timeout-minutes: 15  # aggregator ~90s + APT sync (OTX search can be slow)
 
     # Required so the built-in GITHUB_TOKEN can push commits back to the repo.
     # No PAT or extra secrets are needed.
@@ -113,9 +113,16 @@ jobs:
         env:
           URLHAUS_AUTH_KEY: ${{ secrets.URLHAUS_AUTH_KEY }}
           ABUSEIPDB_API_KEY: ${{ secrets.ABUSEIPDB_API_KEY }}
-          OTX_API_KEY: ${{ secrets.OTX_API_KEY }}
           PYTHONUNBUFFERED: '1'
         run: python pipeline/update_feed.py
+
+      # ── 6b. APT leaderboard (top_apt.json) ────────────────────────────────
+      # Exits 0 without OTX_API_KEY, so a missing secret never blocks the feed push.
+      - name: Sync APT leaderboard
+        env:
+          OTX_API_KEY: ${{ secrets.OTX_API_KEY }}
+          PYTHONUNBUFFERED: '1'
+        run: python pipeline/sync_apt.py
 
       # ── 7. Commit and push ───────────────────────────────────────────────────
       #
