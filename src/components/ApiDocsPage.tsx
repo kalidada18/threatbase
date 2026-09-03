@@ -607,6 +607,39 @@ export default function ApiDocsPage() {
         </div>
       </section>
 
+      {/* POST /scan (batch) */}
+      <section className="mx-auto mb-28 w-full max-w-4xl">
+        <div className="mb-6 flex flex-wrap items-center gap-3 glass-card px-5 py-4 shadow-none border-white/[0.04]">
+          <MethodBadge method="POST" />
+          <code className="font-mono text-sm font-semibold text-white sm:text-base">/api/v1/scan</code>
+          <span className="text-sm text-slate-400">Scan up to 100 indicators in one request.</span>
+        </div>
+
+        <div className="space-y-6">
+          <ParamTable rows={batchScanParams} title="JSON Body Parameters" />
+
+          <div>
+            <p className="mb-3 text-xs font-bold uppercase tracking-widest text-slate-400">Example Request</p>
+            <CodeBlock code={CURL_BATCH_SCAN} language="bash" filename="cURL" />
+          </div>
+
+          <div>
+            <p className="mb-3 text-xs font-bold uppercase tracking-widest text-slate-400">Example Response · 200 OK</p>
+            <CodeBlock code={BATCH_SCAN_RESPONSE} language="json" filename="200 OK" />
+          </div>
+
+          <div>
+            <p className="mb-3 text-xs font-bold uppercase tracking-widest text-slate-400">Per-Item Errors</p>
+            <p className="mb-3 max-w-2xl text-sm leading-relaxed text-slate-400">
+              A malformed indicator never fails the batch. It comes back as a{' '}
+              <code className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-xs text-platinum-300 border border-white/10">status: "error"</code>{' '}
+              entry, so you always get one result per submitted indicator. Structural problems (invalid JSON, an empty or oversized array) return a 400 instead.
+            </p>
+            <CodeBlock code={BATCH_ERROR_RESPONSE} language="json" filename="200 OK" />
+          </div>
+        </div>
+      </section>
+
       {/* POST /report */}
       <section className="mx-auto mb-28 w-full max-w-4xl">
         <div className="mb-6 flex flex-wrap items-center gap-3 glass-card px-5 py-4 shadow-none border-white/[0.04]">

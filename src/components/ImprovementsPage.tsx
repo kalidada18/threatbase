@@ -12,6 +12,16 @@ import { useSEO } from '@/useSEO'
 const IMPROVEMENTS: { date: string; title: string; items: string[] }[] = [
   {
     date: '2026-09-03',
+    title: 'Batch Scanning API',
+    items: [
+      'New POST /api/v1/scan endpoint scans up to 100 indicators in a single request.',
+      'Each indicator is validated against its declared type (ipv4, ipv6, domain, url, md5, sha1, sha256) before it is scanned.',
+      'A malformed indicator no longer fails the whole batch; it returns as a per-item error while every valid indicator still resolves.',
+      'Stricter IPv6 and hash-length validation on both the single and batch scan paths.',
+    ],
+  },
+  {
+    date: '2026-09-03',
     title: 'Top APT Leaderboard',
     items: [
       'New /top-apt page ranks the most active APT groups by fresh campaign intelligence.',
@@ -171,7 +181,7 @@ export default function ImprovementsPage() {
 
         {IMPROVEMENTS.map((entry, i) => (
           <motion.div
-            key={entry.date}
+            key={`${entry.date}-${entry.title}`}
             initial={reduce ? false : { opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-40px' }}
