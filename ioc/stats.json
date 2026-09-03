@@ -1,43 +1,43 @@
 {
-  "total_unique_ips": 892630,
-  "total_unique_ipv6": 15307,
-  "total_unique_cidrs": 20736,
-  "total_unique_domains": 3317989,
-  "total_unique_hashes": 1132566,
-  "total_unique_urls": 120631,
-  "active_feeds": 54,
+  "total_unique_ips": 894161,
+  "total_unique_ipv6": 15398,
+  "total_unique_cidrs": 20843,
+  "total_unique_domains": 3318523,
+  "total_unique_hashes": 1132663,
+  "total_unique_urls": 120903,
+  "active_feeds": 53,
   "category_counts": {
-    "Mixed": 666339,
-    "Malicious": 188557,
+    "Mixed": 669039,
+    "Malicious": 183252,
     "Tor": 7004,
-    "Brute-Force": 31277,
-    "Spam": 12633,
+    "Brute-Force": 31810,
+    "Spam": 12709,
     "Malware": 2728,
     "C2": 7607,
-    "Exploit": 9527,
-    "Compromised": 15520,
-    "Botnet": 3224
+    "Compromised": 15523,
+    "Exploit": 9578,
+    "Botnet": 3109
   },
   "ip_category_files": {
-    "threatbase-ip-botnet.txt": 3224,
-    "threatbase-ip-bruteforce.txt": 31277,
+    "threatbase-ip-botnet.txt": 3109,
+    "threatbase-ip-bruteforce.txt": 31810,
     "threatbase-ip-c2.txt": 7607,
-    "threatbase-ip-compromised.txt": 15520,
-    "threatbase-ip-exploit.txt": 9527,
-    "threatbase-ip-malicious.txt": 188557,
+    "threatbase-ip-compromised.txt": 15523,
+    "threatbase-ip-exploit.txt": 9578,
+    "threatbase-ip-malicious.txt": 183252,
     "threatbase-ip-malware.txt": 2728,
-    "threatbase-ip-mixed.txt": 666339,
-    "threatbase-ip-spam.txt": 12633,
+    "threatbase-ip-mixed.txt": 669039,
+    "threatbase-ip-spam.txt": 12709,
     "threatbase-ip-tor.txt": 7004
   },
   "top_sources": {
     "ipsum": 152652,
     "romainmarcoux_outgoing_aa": 131072,
-    "romainmarcoux_outgoing_ab": 51608,
+    "romainmarcoux_outgoing_ab": 51687,
     "romainmarcoux_outgoing_40k": 40000,
-    "blocklist_de": 29188
+    "blocklist_de": 29047
   },
-  "last_updated": "2026-09-03T10:20:48.918397+00:00",
+  "last_updated": "2026-09-03T18:19:54.881120+00:00",
   "stale_indicators": 0,
   "avg_freshness_days": 0.6,
   "decay_config": {
@@ -73,39 +73,39 @@
       {
         "file": "threatbase-domain-01.txt",
         "first": "0--foodwarez.da.ru,2026-09-02",
-        "last": "garagedoorrepairfairfieldct.com,2026-09-02",
-        "lines": 1119165,
-        "bytes": 34032659
+        "last": "garageforce.com.au,2026-09-02",
+        "lines": 1119324,
+        "bytes": 34038438
       },
       {
         "file": "threatbase-domain-02.txt",
-        "first": "garagedoorrepairfallriver.com,2026-09-02",
-        "last": "shabashindian.co.uk,2026-09-02",
-        "lines": 1130423,
-        "bytes": 34032673
+        "first": "garageforrest.be,2026-09-02",
+        "last": "shabrk.pro,2026-09-02",
+        "lines": 1130630,
+        "bytes": 34038440
       },
       {
         "file": "threatbase-domain-03.txt",
-        "first": "shabatrading.com,2026-09-02",
+        "first": "shabroonlabs.click,2026-09-02",
         "last": "zzzzzzzzzzzzz.com,2026-09-02",
-        "lines": 1068401,
-        "bytes": 34032606
+        "lines": 1068569,
+        "bytes": 34038385
       }
     ],
     "threatbase-hash.txt": [
       {
         "file": "threatbase-hash-01.txt",
         "first": "00000077553a5b27a610ac98f29563bbd6e0decc020c2d49e4fa0d89197e7fd8,2026-09-02",
-        "last": "7fbdc1b6e92a12b8a36118ca129b2fd15b7298bd5f0724eaf133579f2eb4ce94,2026-09-02",
-        "lines": 566283,
-        "bytes": 43037508
+        "last": "7fbdcc7c0be32510a62b231fa8b1f12298b5380e0f72b756e37827fb63803bcc,2026-09-02",
+        "lines": 566332,
+        "bytes": 43041232
       },
       {
         "file": "threatbase-hash-02.txt",
-        "first": "7fbdcc7c0be32510a62b231fa8b1f12298b5380e0f72b756e37827fb63803bcc,2026-09-02",
+        "first": "7fbdcce122af8b4fe1638f1ddf87c738a7499d89d52db78d3f86a812171b6454,2026-09-02",
         "last": "ffffe8b36158ae710a9fbf0941f83625ae69f9f2070b3b04def6171b890a6dde,2026-09-02",
-        "lines": 566283,
-        "bytes": 43037508
+        "lines": 566331,
+        "bytes": 43041156
       }
     ]
   },
