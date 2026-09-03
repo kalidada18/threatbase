@@ -10,6 +10,7 @@ import {
   extractUrlHost,
   parentDomains,
   parseIpFeedLine,
+  validateTypedIndicator,
 } from './scanner'
 
 describe('classifyIndicator', () => {
@@ -162,5 +163,53 @@ describe('parentDomains', () => {
   it('lists parents nearest-first, excluding the bare TLD', () => {
     expect(parentDomains('a.b.evil.com')).toEqual(['b.evil.com', 'evil.com'])
     expect(parentDomains('evil.com')).toEqual([])
+  })
+})
+
+describe('validateTypedIndicator (batch scan, issue #10)', () => {
+  it('accepts a value matching its declared type', () => {
+    expect(validateTypedIndicator('ipv4', '8.8.8.8')).toEqual({ value: '8.8.8.8' })
+    expect(validateTypedIndicator('ipv6', '2001:db8::1')).toEqual({ value: '2001:db8::1' })
+    expect(validateTypedIndicator('domain', 'example.com')).toEqual({ value: 'example.com' })
+    expect(validateTypedIndicator('url', 'https://example.com/login')).toEqual({ value: 'https://example.com/login' })
+    expect(validateTypedIndicator('md5', 'd41d8cd98f00b204e9800998ecf8427e')).toEqual({ value: 'd41d8cd98f00b204e9800998ecf8427e' })
+    expect(validateTypedIndicator('sha1', 'a'.repeat(40))).toEqual({ value: 'a'.repeat(40) })
+    expect(validateTypedIndicator('sha256', 'a'.repeat(64))).toEqual({ value: 'a'.repeat(64) })
+  })
+
+  it('rejects malformed values for the declared type', () => {
+    expect(validateTypedIndicator('ipv4', '256.1.1.1')).toHaveProperty('error')
+    expect(validateTypedIndicator('domain', 'not a thing!!')).toHaveProperty('error')
+    expect(validateTypedIndicator('url', 'example.com')).toHaveProperty('error')
+    // loose colon-hex forms classifyIndicator would call ipv6 must be rejected here
+    expect(validateTypedIndicator('ipv6', 'dead:beef')).toHaveProperty('error')
+    expect(validateTypedIndicator('ipv6', '::::')).toHaveProperty('error')
+    // 32 hex (MD5 length) submitted as sha256 must fail, not silently scan as hash
+    expect(validateTypedIndicator('sha256', 'd41d8cd98f00b204e9800998ecf8427e')).toHaveProperty('error')
+  })
+
+  it('rejects values whose real type differs from the declared type', () => {
+    const r = validateTypedIndicator('domain', '8.8.8.8')
+    expect(r).toHaveProperty('error')
+    if ('error' in r) expect(r.error).toContain('domain')
+  })
+
+  it('rejects unsupported types with a helpful message', () => {
+    const r = validateTypedIndicator('email', 'a@b.com')
+    expect(r).toHaveProperty('error')
+    if ('error' in r) {
+      expect(r.error).toContain('Unsupported indicator type')
+      expect(r.error).toContain('sha256')
+    }
+  })
+
+  it('accepts defanged input and returns the normalized value', () => {
+    expect(validateTypedIndicator('ipv4', '1.2.3[.]4')).toEqual({ value: '1.2.3.4' })
+    expect(validateTypedIndicator('url', 'hxxp://evil[.]com/x')).toEqual({ value: 'http://evil.com/x' })
+  })
+
+  it('is case-insensitive on the type and rejects empty values', () => {
+    expect(validateTypedIndicator('IPv4', '8.8.8.8')).toEqual({ value: '8.8.8.8' })
+    expect(validateTypedIndicator('ipv4', '   ')).toHaveProperty('error')
   })
 })

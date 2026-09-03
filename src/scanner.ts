@@ -309,6 +309,79 @@ export function classifyIndicator(rawInput: string) {
 }
 
 /**
+ * Indicator types accepted by POST /api/v1/scan batch requests.
+ * 'cidr' is deliberately absent — the batch API exposes exactly the types
+ * promised in issue #10; GET /scan still auto-detects CIDRs.
+ */
+export const BATCH_SCAN_TYPES = ['ipv4', 'ipv6', 'domain', 'url', 'md5', 'sha1', 'sha256'] as const
+
+const BATCH_TYPE_TO_CLASS: Record<string, string> = {
+  ipv4: 'IP Address',
+  ipv6: 'IPv6 Address',
+  domain: 'Domain',
+  url: 'URL',
+  md5: 'File Hash',
+  sha1: 'File Hash',
+  sha256: 'File Hash',
+}
+
+const BATCH_HASH_LENGTH: Record<string, number> = { md5: 32, sha1: 40, sha256: 64 }
+
+/**
+ * Strict IPv6: eight hextets, or exactly one '::' compression. The feeds only
+ * contain pure-hex forms, so no dotted v4-suffix support. classifyIndicator's
+ * auto-detect is deliberately loose (a colon-hex string just probes the ipv6
+ * feed and comes back clean); the batch API promises per-type validation, so
+ * 'dead:beef' and '::::' must be rejected there.
+ */
+function isStrictIpv6(s: string): boolean {
+  const hextet = /^[0-9a-fA-F]{1,4}$/
+  const ok = (groups: string[]) => groups.every((g) => hextet.test(g))
+  if (!s.includes(':') || s.includes(':::')) return false
+  if (!s.includes('::')) {
+    const g = s.split(':')
+    return g.length === 8 && ok(g)
+  }
+  const parts = s.split('::')
+  if (parts.length !== 2) return false
+  const head = parts[0] === '' ? [] : parts[0].split(':')
+  const tail = parts[1] === '' ? [] : parts[1].split(':')
+  return head.length + tail.length <= 7 && ok(head) && ok(tail)
+}
+
+/**
+ * Validate an indicator against its declared type for the batch scan API.
+ * Delegates detection to classifyIndicator (so refanged input is accepted and
+ * the regex rules live in one place), then checks the declaration matches:
+ * type mismatches (an IPv4 sent as 'domain') and wrong hash lengths are errors.
+ * Returns the normalized value or a human-readable error string.
+ */
+export function validateTypedIndicator(
+  rawType: string,
+  rawValue: string,
+): { value: string } | { error: string } {
+  const type = rawType.trim().toLowerCase()
+  const expected = BATCH_TYPE_TO_CLASS[type]
+  if (!expected) {
+    return { error: `Unsupported indicator type '${rawType}'. Supported: ${BATCH_SCAN_TYPES.join(', ')}` }
+  }
+  if (!rawValue.trim()) return { error: `Empty value for type '${type}'` }
+
+  const c = classifyIndicator(rawValue)
+  if (c.type === 'invalid') return { error: `'${rawValue}' is not a valid ${type}` }
+  if (c.type !== expected) return { error: `'${rawValue}' does not match declared type '${type}' (looks like a ${c.type})` }
+  if (BATCH_HASH_LENGTH[type] && c.ip.length !== BATCH_HASH_LENGTH[type]) {
+    return { error: `'${rawValue}' is not a valid ${type} (expected ${BATCH_HASH_LENGTH[type]} hex characters)` }
+  }
+  // classifyIndicator's ipv6 check is loose (any colon-hex string); the batch
+  // API promises strict per-type validation, so reject 'dead:beef' / '::::'.
+  if (type === 'ipv6' && !isStrictIpv6(c.ip)) {
+    return { error: `'${rawValue}' is not a valid ${type}` }
+  }
+  return { value: c.ip }
+}
+
+/**
  * Parse a feed line `IP,FeedCount,RiskScore,Tags,FirstSeen,LastSeen,Sources`.
  * Tags and Sources are pipe-joined. Legacy 4-column lines simply yield no
  * sources. Pure and exported so the column rules can be unit-tested.

@@ -336,11 +336,61 @@ const SCAN_RESPONSE = `{
   }
 }`
 
+const CURL_BATCH_SCAN = `curl -X POST "${BASE_URL}/api/v1/scan" \\
+  -H "Content-Type: application/json" \\
+  -H "x-api-key: tb_api_xxxxxxxxxxxxxxxx" \\
+  -d '{
+    "indicators": [
+      { "type": "ipv4", "value": "8.8.8.8" },
+      { "type": "domain", "value": "example.com" },
+      { "type": "url", "value": "https://example.com/login" },
+      { "type": "sha256", "value": "275a021bbfb6489e54d471899f7db9d1663fc695ec2fe2a2c4538aabf651fd0f" }
+    ]
+  }'`
+
+const BATCH_SCAN_RESPONSE = `{
+  "results": [
+    {
+      "type": "ipv4",
+      "value": "8.8.8.8",
+      "malicious": false,
+      "status": "clean",
+      "riskScore": "Low",
+      "feedCount": 1,
+      "tags": [],
+      "sources": []
+    },
+    {
+      "type": "domain",
+      "value": "example.com",
+      "malicious": true,
+      "status": "malicious",
+      "riskScore": "High",
+      "feedCount": 6,
+      "tags": ["Phishing", "C2"],
+      "sources": ["urlhaus", "phishtank"]
+    }
+  ],
+  "total": 2
+}`
+
+const BATCH_ERROR_RESPONSE = `{
+  "results": [
+    {
+      "type": "ipv4",
+      "value": "999.1.1.1",
+      "malicious": false,
+      "status": "error",
+      "error": "'999.1.1.1' is not a valid ipv4"
+    }
+  ],
+  "total": 1
+}`
+
 const CURL_REPORT = `curl -X POST "${BASE_URL}/api/v1/report" \\
   -H "x-api-key: tb_api_xxxxxxxxxxxxxxxx" \\
   -H "Content-Type: application/json" \\
   -d '{"ip": "45.155.205.233", "category": "Brute-Force", "comment": "SSH brute force"}'`
-
 const REPORT_RESPONSE = `{
   "success": true,
   "message": "IP reported successfully."
@@ -369,6 +419,27 @@ export default function ApiDocsPage() {
       type: 'string',
       required: true,
       desc: 'The indicator to scan. Accepts an IPv4/IPv6 address, domain, URL, or file hash. (Alias: indicator)',
+    },
+  ]
+
+  const batchScanParams: ParamRow[] = [
+    {
+      name: 'indicators',
+      type: 'array',
+      required: true,
+      desc: 'List of { type, value } objects to scan in one request. Maximum 100 per request.',
+    },
+    {
+      name: 'indicators[].type',
+      type: 'string',
+      required: true,
+      desc: 'One of: ipv4, ipv6, domain, url, md5, sha1, sha256. Each value is validated against its declared type.',
+    },
+    {
+      name: 'indicators[].value',
+      type: 'string',
+      required: true,
+      desc: 'The indicator. Defanged forms (hxxp://evil[.]com, 1.2.3[.]4) are accepted and normalized.',
     },
   ]
 
