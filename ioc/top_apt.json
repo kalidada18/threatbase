@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-09-03T10:20:50+00:00",
+ "generated_at": "2026-09-04T02:19:06+00:00",
  "source": "AlienVault OTX pulse search",
  "note": "Activity = threat-intel pulses (campaign reports) mentioning the group in the window. Vendor/community reporting \u2014 follow each link to its source.",
  "actors": [
@@ -11,11 +11,17 @@
     "Velvet Chollima"
    ],
    "sponsor": "North Korea",
-   "pulses_24h": 0,
-   "pulses_7d": 2,
+   "pulses_24h": 1,
+   "pulses_7d": 3,
    "malware": [],
    "targets": [],
    "campaigns": [
+    {
+     "title": "Kimsuky",
+     "url": "https://otx.alienvault.com/pulse/6a99fba08b6192c30cef4565",
+     "modified": "2026-09-03T22:58:40.443000",
+     "last_24h": true
+    },
     {
      "title": "Attack Cases by the Kimsuky Group Impersonating Diplomats (PebbleDash, PrxClient) [ASEC]",
      "url": "https://otx.alienvault.com/pulse/6a6ddf60ba600f68903d963e",
@@ -31,38 +37,23 @@
    ]
   },
   {
-   "name": "MuddyWater",
-   "aka": [
-    "Mercury",
-    "STATIC KITTEN",
-    "Seedur"
-   ],
-   "sponsor": "Iran (MOIS)",
-   "pulses_24h": 0,
-   "pulses_7d": 1,
-   "malware": [],
-   "targets": [],
-   "campaigns": [
-    {
-     "title": "MuddyWater: Snakes by the riverbank [WeLiveSecurity]",
-     "url": "https://otx.alienvault.com/pulse/6a6ce21f20b9164d05b9f9b2",
-     "modified": "2026-08-30T17:09:23.303000",
-     "last_24h": false
-    }
-   ]
-  },
-  {
    "name": "Gamaredon",
    "aka": [
     "Primitive Bear",
     "ShallowBurrow"
    ],
    "sponsor": "Russia (GRU)",
-   "pulses_24h": 0,
-   "pulses_7d": 1,
+   "pulses_24h": 1,
+   "pulses_7d": 2,
    "malware": [],
    "targets": [],
    "campaigns": [
+    {
+     "title": "Gamaredon",
+     "url": "https://otx.alienvault.com/pulse/6a994fe048ebef77e51310af",
+     "modified": "2026-09-03T10:45:52.024000",
+     "last_24h": true
+    },
     {
      "title": "Gamaredon",
      "url": "https://otx.alienvault.com/pulse/6a955ef277b0404ca4ed2856",
@@ -88,6 +79,27 @@
      "title": "Open Directory Exposes Moobot Source Code and Ongoing Activity Post 2024 Court-Authorized Disruption",
      "url": "https://otx.alienvault.com/pulse/6a90f19bbcdbb55af3412789",
      "modified": "2026-08-28T08:49:30.535000",
+     "last_24h": false
+    }
+   ]
+  },
+  {
+   "name": "MuddyWater",
+   "aka": [
+    "Mercury",
+    "STATIC KITTEN",
+    "Seedur"
+   ],
+   "sponsor": "Iran (MOIS)",
+   "pulses_24h": 0,
+   "pulses_7d": 1,
+   "malware": [],
+   "targets": [],
+   "campaigns": [
+    {
+     "title": "MuddyWater: Snakes by the riverbank [WeLiveSecurity]",
+     "url": "https://otx.alienvault.com/pulse/6a6ce21f20b9164d05b9f9b2",
+     "modified": "2026-08-30T17:09:23.303000",
      "last_24h": false
     }
    ]
