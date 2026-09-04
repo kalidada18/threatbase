@@ -1,41 +1,8 @@
 {
- "generated_at": "2026-09-04T02:19:06+00:00",
+ "generated_at": "2026-09-04T10:19:23+00:00",
  "source": "AlienVault OTX pulse search",
  "note": "Activity = threat-intel pulses (campaign reports) mentioning the group in the window. Vendor/community reporting \u2014 follow each link to its source.",
  "actors": [
-  {
-   "name": "Kimsuky",
-   "aka": [
-    "APT43",
-    "Thallium",
-    "Velvet Chollima"
-   ],
-   "sponsor": "North Korea",
-   "pulses_24h": 1,
-   "pulses_7d": 3,
-   "malware": [],
-   "targets": [],
-   "campaigns": [
-    {
-     "title": "Kimsuky",
-     "url": "https://otx.alienvault.com/pulse/6a99fba08b6192c30cef4565",
-     "modified": "2026-09-03T22:58:40.443000",
-     "last_24h": true
-    },
-    {
-     "title": "Attack Cases by the Kimsuky Group Impersonating Diplomats (PebbleDash, PrxClient) [ASEC]",
-     "url": "https://otx.alienvault.com/pulse/6a6ddf60ba600f68903d963e",
-     "modified": "2026-08-31T11:10:33.436000",
-     "last_24h": false
-    },
-    {
-     "title": "IOC - Analysis of Kimsuky's Attack on a South Korean Groupware Vendor Using a New Gomir Family Variant",
-     "url": "https://otx.alienvault.com/pulse/6a69719dcf523dafa0e877f4",
-     "modified": "2026-08-28T03:00:14.461000",
-     "last_24h": false
-    }
-   ]
-  },
   {
    "name": "Gamaredon",
    "aka": [
@@ -63,22 +30,28 @@
    ]
   },
   {
-   "name": "APT28",
+   "name": "Kimsuky",
    "aka": [
-    "Fancy Bear",
-    "Sofacy",
-    "STRONTIUM"
+    "APT43",
+    "Thallium",
+    "Velvet Chollima"
    ],
-   "sponsor": "Russia (GRU)",
-   "pulses_24h": 0,
-   "pulses_7d": 1,
+   "sponsor": "North Korea",
+   "pulses_24h": 1,
+   "pulses_7d": 2,
    "malware": [],
    "targets": [],
    "campaigns": [
     {
-     "title": "Open Directory Exposes Moobot Source Code and Ongoing Activity Post 2024 Court-Authorized Disruption",
-     "url": "https://otx.alienvault.com/pulse/6a90f19bbcdbb55af3412789",
-     "modified": "2026-08-28T08:49:30.535000",
+     "title": "Kimsuky",
+     "url": "https://otx.alienvault.com/pulse/6a99fba08b6192c30cef4565",
+     "modified": "2026-09-03T22:58:40.443000",
+     "last_24h": true
+    },
+    {
+     "title": "Attack Cases by the Kimsuky Group Impersonating Diplomats (PebbleDash, PrxClient) [ASEC]",
+     "url": "https://otx.alienvault.com/pulse/6a6ddf60ba600f68903d963e",
+     "modified": "2026-08-31T11:10:33.436000",
      "last_24h": false
     }
    ]
