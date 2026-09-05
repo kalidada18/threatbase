@@ -111,10 +111,18 @@ jobs:
           done
 
       # ── 6. Run the aggregator ────────────────────────────────────────────────
+      #
+      # PRO_ENABLED gates generation of the paid tier (ioc/ip/categories/ and
+      # ioc/firewall/) on the same secret that gates the publish in step 6b, so the
+      # two can never disagree: a run that builds the paid files is exactly a run
+      # that ships them. Unset the secret and the aggregator skips ~192 MB and ~9s
+      # of CPU it would otherwise write for nobody. Only the boolean crosses the
+      # boundary — update_feed.py has no use for the token itself.
       - name: Run feed aggregator
         env:
           URLHAUS_AUTH_KEY: ${{ secrets.URLHAUS_AUTH_KEY }}
           ABUSEIPDB_API_KEY: ${{ secrets.ABUSEIPDB_API_KEY }}
+          PRO_ENABLED: ${{ secrets.PRO_REPO_TOKEN != '' }}
           PYTHONUNBUFFERED: '1'
         run: python pipeline/update_feed.py
 
@@ -154,8 +162,10 @@ jobs:
           set -euo pipefail
           # The skip lives here, not in `if:` — the secrets context is not available
           # to step-level conditionals, and env set on this step can't gate itself.
+          # Step 6 reads the same secret as PRO_ENABLED, so when this skips there is
+          # nothing to copy below either.
           if [ -z "${PRO_REPO_TOKEN}" ]; then
-            echo "::warning::PRO_REPO_TOKEN unset — skipping Pro publish. Paid feeds will 503."
+            echo "::warning::PRO_REPO_TOKEN unset — Pro feeds were not generated or published. Paid feeds will 503."
             exit 0
           fi
           # Build the payload outside the main worktree so nothing here is disturbed.

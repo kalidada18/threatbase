@@ -16,6 +16,7 @@ Writes to ioc/, organized by consumer ("ip in ip, hash in hash, firewall in fire
   ioc/firewall/ deploy-ready shapes: plain/multisource/top50k EDLs, ip.ipset,
                 ip-suricata.rules, ip.jsonl.gz (no parsing needed downstream),
                 categories/<slug>/ the same six shapes per threat category
+                — Pro only, written when PRO_ENABLED is set (see PAID_DIRS)
   ioc/data/     stats.json, manifest.json, history.json, geo.json,
                 feed_health.json, top_apt.json, community_reports.json,
                 false_positives.txt
@@ -149,12 +150,22 @@ FEED_CATEGORIES: Dict[str, str] = {
     "custom": "Malicious",
 }
 
-# Threatbase Pro products. Still generated locally every run, but gitignored and
-# pushed to the private threatbase-pro repo by the workflow — a public copy makes
-# the paywall in functions/feed/[[path]].ts unenforceable. Paths are relative to
-# ioc/, matching manifest.json checksum keys. Keep in sync with PAID_PREFIXES in
+# Threatbase Pro products: gitignored here and pushed to the private
+# threatbase-pro repo by the workflow — a public copy makes the paywall in
+# functions/feed/[[path]].ts unenforceable. Paths are relative to ioc/, matching
+# manifest.json checksum keys. Keep in sync with PAID_PREFIXES in
 # functions/feed/[[path]].ts and functions/ioc/[[path]].ts.
 PAID_DIRS = ("ip/categories/", "firewall/")
+
+# ...and only generated when there is somewhere to publish them. Workflow step 6
+# sets PRO_ENABLED from `secrets.PRO_REPO_TOKEN != ''`, the same secret that gates
+# the publish in step 6b, so the two can never disagree — a run that generates the
+# paid tier is exactly a run that ships it. Off by default, which keeps ~192 MB and
+# ~9s of CPU out of forks and local runs that would only write gitignored files
+# nothing reads. Category line counts still land in stats.json either way; the
+# README advertises those as free to inspect even though the files are paid.
+# The workflow passes the boolean, never the token — this script has no use for it.
+PRO_ENABLED = os.environ.get("PRO_ENABLED", "").strip().lower() in ("1", "true", "yes")
 
 # Filename slugs for category-split IP feeds (ioc/ip/categories/threatbase-ip-<slug>.txt).
 # Any category not listed falls back to a lowercased, alphanumeric-only slug.
@@ -1602,17 +1613,24 @@ async def run_async_collector():
     # One blocklist per threat category so defenders can apply different
     # policies (e.g. hard-block C2, only alert on Tor). Same line format as
     # the master feed. Each IP appears in every category it is tagged with.
-    log.info("Writing category-split IP feeds...")
-    os.makedirs("ioc/ip/categories", exist_ok=True)
+    #
+    # Paid tier: the buckets and their counts are always computed (stats.json
+    # publishes the counts), but the files are only written when PRO_ENABLED.
     category_ips: Dict[str, list] = defaultdict(list)
     for ip in sorted_ips:  # sorted_ips is already ascending, so buckets stay sorted
         for tag in filtered_ip_info[ip]["tags"]:
             category_ips[tag].append(ip)
 
     ip_category_files: Dict[str, int] = {}
+    if PRO_ENABLED:
+        log.info("Writing category-split IP feeds...")
+        os.makedirs("ioc/ip/categories", exist_ok=True)
     for cat, ips in sorted(category_ips.items()):
         slug = CATEGORY_SLUGS.get(cat, re.sub(r"[^a-z0-9]+", "", cat.lower()))
         fname = f"threatbase-ip-{slug}.txt"
+        ip_category_files[fname] = len(ips)
+        if not PRO_ENABLED:
+            continue
         with open(f"ioc/ip/categories/{fname}", "w", encoding="utf-8", buffering=1 << 16) as f:
             f.write(f"# Threatbase Threat Intelligence Feed - {cat} IPs\n")
             f.write(f"# Last update: {timestamp}\n")
@@ -1623,27 +1641,31 @@ async def run_async_collector():
                 tags_str = "|".join(info["tags"])
                 sources_str = "|".join(info["sources"])
                 f.write(f"{info['ip']},{info['count']},{info['score']},{tags_str},{info['first_seen']},{info['last_seen']},{sources_str}\n")
-        ip_category_files[fname] = len(ips)
-    log.info(f"  Wrote {len(ip_category_files)} category feeds to ioc/ip/categories/")
 
     # ── Deploy-ready firewall / SIEM formats ───────────────────────────────
-    ip_format_files = write_firewall_formats(filtered_ip_info, sorted_ips, timestamp)
-
     # Same six shapes per category, so a category can be dropped into ipset /
     # Suricata / Splunk directly instead of the operator parsing the CSV. Each
     # gets its own ipset name and sid block — see CATEGORY_SID_BLOCKS for why
     # sharing either one silently loses coverage.
+    ip_format_files: Dict[str, int] = {}
     ip_category_format_files: Dict[str, Dict[str, int]] = {}
-    for cat, ips in sorted(category_ips.items()):
-        slug = CATEGORY_SLUGS.get(cat, re.sub(r"[^a-z0-9]+", "", cat.lower()))
-        ip_category_format_files[slug] = write_firewall_formats(
-            filtered_ip_info, ips, timestamp,
-            outdir=f"ioc/firewall/categories/{slug}",
-            setname=category_setname(slug),
-            sid_base=category_sid_base(slug),
-            label=f"{cat} IPs",
-        )
-    log.info(f"  Wrote deploy-ready formats for {len(ip_category_format_files)} categories")
+    if not PRO_ENABLED:
+        log.info(f"Pro tier not configured (PRO_ENABLED unset) — computed "
+                 f"{len(ip_category_files)} category counts for stats.json, skipped "
+                 f"writing ioc/ip/categories/ and ioc/firewall/")
+    else:
+        log.info(f"  Wrote {len(ip_category_files)} category feeds to ioc/ip/categories/")
+        ip_format_files = write_firewall_formats(filtered_ip_info, sorted_ips, timestamp)
+        for cat, ips in sorted(category_ips.items()):
+            slug = CATEGORY_SLUGS.get(cat, re.sub(r"[^a-z0-9]+", "", cat.lower()))
+            ip_category_format_files[slug] = write_firewall_formats(
+                filtered_ip_info, ips, timestamp,
+                outdir=f"ioc/firewall/categories/{slug}",
+                setname=category_setname(slug),
+                sid_base=category_sid_base(slug),
+                label=f"{cat} IPs",
+            )
+        log.info(f"  Wrote deploy-ready formats for {len(ip_category_format_files)} categories")
 
     # ── Geolocate IPs → ioc/data/geo.json (powers the live threat map) ──────────
     log.info("Computing IP geolocation for threat map...")
@@ -1884,19 +1906,20 @@ async def run_async_collector():
     # Same guarantee the public manifest gives, for the files customers pay for.
     # Globbed separately because the public globs are shallow (*.txt plus a
     # non-recursive firewall/*) and miss categories/<slug>/*.
-    pro_files = sorted(
-        (p, os.path.relpath(p, "ioc").replace(os.sep, "/"))
-        for d in PAID_DIRS
-        for p in glob.glob(f"ioc/{d}**/*", recursive=True)
-        if os.path.isfile(p) and not p.endswith("manifest-pro.json")
-    )
-    with open("ioc/firewall/manifest-pro.json", "w", encoding="utf-8") as f:
-        json.dump({
-            "generated": now_utc.isoformat(),
-            "base": "https://threatbase.qzz.io/feed/<your-api-key>/",
-            "checksums": {rp: _sha256(p) for p, rp in pro_files},
-        }, f, indent=2)
-    log.info(f"  Wrote manifest-pro.json ({len(pro_files)} Pro files)")
+    if PRO_ENABLED:
+        pro_files = sorted(
+            (p, os.path.relpath(p, "ioc").replace(os.sep, "/"))
+            for d in PAID_DIRS
+            for p in glob.glob(f"ioc/{d}**/*", recursive=True)
+            if os.path.isfile(p) and not p.endswith("manifest-pro.json")
+        )
+        with open("ioc/firewall/manifest-pro.json", "w", encoding="utf-8") as f:
+            json.dump({
+                "generated": now_utc.isoformat(),
+                "base": "https://threatbase.qzz.io/feed/<your-api-key>/",
+                "checksums": {rp: _sha256(p) for p, rp in pro_files},
+            }, f, indent=2)
+        log.info(f"  Wrote manifest-pro.json ({len(pro_files)} Pro files)")
 
     # ── Update history.json (for trend charts) ─────────────────────────────
     log.info("Updating history.json...")
