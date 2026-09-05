@@ -2,22 +2,22 @@
   "custom": {
     "last_data": null,
     "last_new_count": 0,
-    "consecutive_empty": 13
+    "consecutive_empty": 14
   },
   "feodo_tracker": {
     "last_data": null,
     "last_new_count": 0,
-    "consecutive_empty": 13
+    "consecutive_empty": 14
   },
   "feodo_tracker_aggressive": {
     "last_data": null,
     "last_new_count": 0,
-    "consecutive_empty": 13
+    "consecutive_empty": 14
   },
   "bbcan177_ms1": {
     "last_data": null,
     "last_new_count": 0,
-    "consecutive_empty": 13
+    "consecutive_empty": 14
   },
   "ipsum": {
     "last_data": "2026-09-05",
@@ -27,12 +27,12 @@
   "blackbook": {
     "last_data": null,
     "last_new_count": 0,
-    "consecutive_empty": 13
+    "consecutive_empty": 14
   },
   "firehol_level1": {
     "last_data": null,
     "last_new_count": 0,
-    "consecutive_empty": 13
+    "consecutive_empty": 14
   },
   "firehol_level2": {
     "last_data": "2026-09-05",
@@ -41,7 +41,7 @@
   },
   "cins_army": {
     "last_data": "2026-09-05",
-    "last_new_count": 466,
+    "last_new_count": 352,
     "consecutive_empty": 0
   },
   "emerging_threats": {
@@ -52,26 +52,26 @@
   "emerging_threats_fwrules": {
     "last_data": null,
     "last_new_count": 0,
-    "consecutive_empty": 13
+    "consecutive_empty": 14
   },
   "blocklist_de": {
     "last_data": "2026-09-05",
-    "last_new_count": 277,
+    "last_new_count": 255,
     "consecutive_empty": 0
   },
   "blocklist_de_ssh": {
     "last_data": "2026-09-05",
-    "last_new_count": 90,
+    "last_new_count": 72,
     "consecutive_empty": 0
   },
   "blocklist_de_mail": {
     "last_data": "2026-09-05",
-    "last_new_count": 77,
+    "last_new_count": 60,
     "consecutive_empty": 0
   },
   "blocklist_de_apache": {
     "last_data": "2026-09-05",
-    "last_new_count": 41,
+    "last_new_count": 51,
     "consecutive_empty": 0
   },
   "binary_defense": {
@@ -81,23 +81,23 @@
   },
   "greensnow": {
     "last_data": "2026-09-05",
-    "last_new_count": 35,
+    "last_new_count": 21,
     "consecutive_empty": 0
   },
   "spamhaus_drop": {
     "last_data": null,
     "last_new_count": 0,
-    "consecutive_empty": 13
+    "consecutive_empty": 14
   },
   "spamhaus_edrop": {
     "last_data": null,
     "last_new_count": 0,
-    "consecutive_empty": 13
+    "consecutive_empty": 14
   },
   "spamhaus_dropv6": {
     "last_data": null,
     "last_new_count": 0,
-    "consecutive_empty": 13
+    "consecutive_empty": 14
   },
   "criticalpath_security": {
     "last_data": "2026-09-05",
@@ -106,7 +106,7 @@
   },
   "bruteforceblocker": {
     "last_data": "2026-09-05",
-    "last_new_count": 8,
+    "last_new_count": 2,
     "consecutive_empty": 0
   },
   "botvrij": {
@@ -117,16 +117,16 @@
   "tor_bulk_exit": {
     "last_data": "2026-09-05",
     "last_new_count": 1,
-    "consecutive_empty": 1
+    "consecutive_empty": 2
   },
   "romainmarcoux_outgoing_40k": {
     "last_data": "2026-09-05",
-    "last_new_count": 4,
+    "last_new_count": 3,
     "consecutive_empty": 0
   },
   "romainmarcoux_outgoing_aa": {
     "last_data": "2026-09-05",
-    "last_new_count": 131,
+    "last_new_count": 129,
     "consecutive_empty": 0
   },
   "romainmarcoux_outgoing_ab": {
@@ -137,17 +137,17 @@
   "alienvault_reputation": {
     "last_data": null,
     "last_new_count": 0,
-    "consecutive_empty": 13
+    "consecutive_empty": 14
   },
   "sslbl_abuse_ch": {
     "last_data": null,
     "last_new_count": 0,
-    "consecutive_empty": 13
+    "consecutive_empty": 14
   },
   "stopforumspam_toxic": {
     "last_data": null,
     "last_new_count": 0,
-    "consecutive_empty": 13
+    "consecutive_empty": 14
   },
   "firehol_level3": {
     "last_data": "2026-09-05",
@@ -156,7 +156,7 @@
   },
   "blocklist_net_bots": {
     "last_data": "2026-09-05",
-    "last_new_count": 69,
+    "last_new_count": 96,
     "consecutive_empty": 0
   },
   "blocklist_net_strongips": {
@@ -167,46 +167,46 @@
   "snort_ip_filter": {
     "last_data": null,
     "last_new_count": 0,
-    "consecutive_empty": 13
+    "consecutive_empty": 14
   },
   "dataplane_sipinv": {
     "last_data": null,
     "last_new_count": 0,
-    "consecutive_empty": 13
+    "consecutive_empty": 14
   },
   "dataplane_sshclient": {
     "last_data": null,
     "last_new_count": 0,
-    "consecutive_empty": 13
+    "consecutive_empty": 14
   },
   "dataplane_sshpwauth": {
     "last_data": null,
     "last_new_count": 0,
-    "consecutive_empty": 13
+    "consecutive_empty": 14
   },
   "dataplane_vncrfb": {
     "last_data": null,
     "last_new_count": 0,
-    "consecutive_empty": 13
+    "consecutive_empty": 14
   },
   "threatfox_full": {
     "last_data": "2026-09-05",
-    "last_new_count": 44,
+    "last_new_count": 49,
     "consecutive_empty": 0
   },
   "dshield_blocklist": {
     "last_data": "2026-09-04",
     "last_new_count": 2,
-    "consecutive_empty": 4
+    "consecutive_empty": 5
   },
   "dan_tor": {
     "last_data": "2026-09-05",
-    "last_new_count": 38,
+    "last_new_count": 12,
     "consecutive_empty": 0
   },
   "abuseipdb": {
     "last_data": "2026-09-05",
-    "last_new_count": 249,
+    "last_new_count": 138,
     "consecutive_empty": 0
   }
 }
