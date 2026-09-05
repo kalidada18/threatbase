@@ -1208,6 +1208,87 @@ def check_feed_freshness(name: str, new_count: int, health: dict) -> dict:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Deploy-ready firewall / SIEM exports
+# ─────────────────────────────────────────────────────────────────────────────
+SURICATA_SID_BASE = 2100000
+
+def write_firewall_formats(filtered_ip_info: Dict[str, dict], sorted_ips: List[str],
+                           timestamp: str, outdir: str = "ioc/formats") -> Dict[str, int]:
+    """Emit the IPv4 feed in shapes firewalls/IPS/SIEMs load without parsing:
+    bare-IP EDLs (PAN-OS / pf / FortiGate / OPNsense), an ipset restore file,
+    Suricata drop rules, and gzipped NDJSON for bulk SIEM ingest.
+
+    Severity gates use corroboration (FeedCount), not the risk tier: ~99% of
+    the feed is tier HIGH, so tier says nothing. The count>=3 gate keeps the
+    Suricata file operationally sane, and gz keeps the NDJSON (which would be
+    ~140 MB plain) under GitHub's 100 MB per-file push limit. Returns per-file
+    line counts for stats.json.
+    """
+    log.info(f"Writing deploy-ready formats to {outdir}/...")
+    os.makedirs(outdir, exist_ok=True)
+    counts: Dict[str, int] = {}
+
+    def header(f, title: str, count: int):
+        f.write(f"# Threatbase Threat Intelligence Feed - {title}\n")
+        f.write(f"# Last update: {timestamp}\n")
+        f.write(f"# Count: {count}\n")
+
+    multisource = [ip for ip in sorted_ips if filtered_ip_info[ip]["count"] >= 2]
+    rule_eligible = [ip for ip in sorted_ips if filtered_ip_info[ip]["count"] >= 3]
+
+    # Bare-IP EDLs: '#' comments are skipped by every blocklist consumer.
+    for fname, title, ips in (
+        ("ip-plain.txt", "IPs (plain EDL)", sorted_ips),
+        ("ip-multisource.txt", "IPs, 2+ independent sources (conservative EDL)", multisource),
+    ):
+        with open(os.path.join(outdir, fname), "w", encoding="utf-8", buffering=1 << 16) as f:
+            header(f, title, len(ips))
+            f.writelines(ip + "\n" for ip in ips)
+        counts[fname] = len(ips)
+
+    # ipset restore file: `ipset restore < ip.ipset`, then a single
+    # `-m set --match-set threatbase src -j DROP` rule instead of N rules.
+    with open(os.path.join(outdir, "ip.ipset"), "w", encoding="utf-8", buffering=1 << 16) as f:
+        header(f, "IPs (ipset restore)", len(sorted_ips))
+        f.write("create threatbase hash:ip family inet4\n")
+        f.writelines(f"add threatbase {ip}\n" for ip in sorted_ips)
+    counts["ip.ipset"] = len(sorted_ips)
+
+    # Suricata drop rules. msg carries tags; ';' and '"' would terminate the
+    # options string, and tags are pipeline-controlled vocabulary, but escape
+    # anyway so a future tag can never break out of the rule.
+    with open(os.path.join(outdir, "ip-suricata.rules"), "w", encoding="utf-8", buffering=1 << 16) as f:
+        header(f, "IPs, 3+ independent sources (Suricata drop rules)", len(rule_eligible))
+        for n, ip in enumerate(rule_eligible):
+            info = filtered_ip_info[ip]
+            msg = "|".join(sorted(info["tags"])).replace('"', "'").replace(";", ",")
+            f.write(
+                f'drop ip {ip} any -> any any (msg:"Threatbase {msg}"; '
+                f"sid:{SURICATA_SID_BASE + n}; rev:1;)\n"
+            )
+    counts["ip-suricata.rules"] = len(rule_eligible)
+
+    # NDJSON for Splunk HEC / Elastic _bulk (both accept gz on bulk input).
+    # Sorted by IP, same order as every other output.
+    with gzip.open(os.path.join(outdir, "ip.jsonl.gz"), "wt", encoding="utf-8") as f:
+        for ip in sorted_ips:
+            info = filtered_ip_info[ip]
+            f.write(json.dumps({
+                "ip": info["ip"],
+                "feeds": info["count"],
+                "score": info["score"],
+                "tags": sorted(info["tags"]),
+                "sources": sorted(info["sources"]),
+                "first_seen": info["first_seen"],
+                "last_seen": info["last_seen"],
+            }, separators=(",", ":")) + "\n")
+    counts["ip.jsonl.gz"] = len(sorted_ips)
+
+    log.info("  " + ", ".join(f"{k}: {v:,}" for k, v in counts.items()))
+    return counts
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Main Async Runner
 # ─────────────────────────────────────────────────────────────────────────────
 async def run_async_collector():
@@ -1427,6 +1508,9 @@ async def run_async_collector():
         ip_category_files[fname] = len(ips)
     log.info(f"  Wrote {len(ip_category_files)} category feeds to ioc/categories/")
 
+    # ── Deploy-ready firewall / SIEM formats ───────────────────────────────
+    ip_format_files = write_firewall_formats(filtered_ip_info, sorted_ips, timestamp)
+
     # ── Geolocate IPs → ioc/geo.json (powers the live threat map) ──────────
     log.info("Computing IP geolocation for threat map...")
     geo_index = load_geo_index()
@@ -1601,6 +1685,7 @@ async def run_async_collector():
         "active_feeds": len(successful_feeds),
         "category_counts": dict(category_counts),
         "ip_category_files": ip_category_files,
+        "ip_format_files": ip_format_files,
         "top_sources": top_sources,
         "last_updated": now_utc.isoformat(),
         # Decay / freshness health metrics
@@ -1644,7 +1729,7 @@ async def run_async_collector():
         return h.hexdigest()
     manifest["checksums"] = {
         os.path.relpath(p, "ioc").replace(os.sep, "/"): _sha256(p)
-        for p in sorted(glob.glob("ioc/**/*.txt", recursive=True))
+        for p in sorted(glob.glob("ioc/**/*.txt", recursive=True) + glob.glob("ioc/formats/*"))
     }
 
     with open("ioc/manifest.json", "w", encoding="utf-8") as f:

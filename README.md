@@ -16,13 +16,22 @@
   </p>
 
   <p>
-    <a href="https://threatbase.qzz.io"><b>🌐 Live Dashboard</b></a>
+    <a href="https://threatbase.qzz.io"><b>🔍 Hunt an IOC</b></a>
+    &nbsp;·&nbsp;
+    <a href="https://threatbase.qzz.io/threatfeed"><b>📊 Threat Feed</b></a>
+    &nbsp;·&nbsp;
+    <a href="https://threatbase.qzz.io/api"><b>⚡ API Docs</b></a>
     &nbsp;·&nbsp;
     <a href="#-using-the-feeds"><b>📥 Raw Feeds</b></a>
     &nbsp;·&nbsp;
     <a href="https://github.com/kalidada18/threatbase/releases"><b>📦 Archives</b></a>
     &nbsp;·&nbsp;
     <a href="https://threatbase.qzz.io/thanks"><b>🙏 Sources</b></a>
+  </p>
+
+  <p>
+    <a href="https://github.com/kalidada18/threatbase"><img src="https://github-readme-stats.vercel.app/api?username=kalidada18&repo=threatbase&show_icons=true&bg_color=0d1117&hide_border=true&icon_color=ef4444&title_color=cf1733&count_private=false" alt="Repo stats"></a>
+    <a href="https://github.com/kalidada18/threatbase"><img src="https://github-readme-stats.vercel.app/api/top-langs/?username=kalidada18&repo=threatbase&layout=donut&bg_color=0d1117&hide_border=true&title_color=cf1733" alt="Top languages"></a>
   </p>
 
   <br/>
@@ -37,13 +46,13 @@
 
 ## 🧩 What is Threatbase?
 
-Threatbase is a **fully-automated threat-intelligence pipeline**. It ingests, validates, and deduplicates malicious indicators from **54 industry OSINT feeds**, then publishes them as ready-to-use blocklists and serves them through a fast React dashboard.
+Threatbase is a **fully-automated threat-intelligence pipeline**. It ingests, validates, and deduplicates malicious indicators from **54 industry OSINT feeds**, then publishes them as ready-to-use blocklists and serves them through a fast IOC-hunting console.
 
 > **Millions** of unique indicators · refreshed continuously · no auth, no rate limits.
 
 ```text
   54 OSINT Feeds ──▶ Python Aggregator ──▶ GitHub Actions ─┬─▶ Raw Blocklists
-                     (fetch · dedup ·                       ├─▶ React Dashboard
+                     (fetch · dedup ·                       ├─▶ Hunt Console
                       validate · classify)                  ├─▶ Daily ZIP Archive
                                                             └─▶ Chunked Git Mirrors
 ```
@@ -54,7 +63,8 @@ Threatbase is a **fully-automated threat-intelligence pipeline**. It ingests, va
 |:--|:--|:--|
 | **Intelligence Engine** | Python 3.11 · `ThreadPoolExecutor` | Concurrent ingestion, dedup, validation, classification |
 | **Automation** | GitHub Actions | Scheduled & on-demand pipeline runs |
-| **Dashboard** | React 19 · Chart.js · Cloudflare Pages | IOC search, live analytics, community reporting |
+| **Web Console** | React 19 · Tailwind · Framer Motion · Cloudflare Pages | IOC hunt, verdict cards, RDAP whois, community comments |
+| **API & Community** | Cloudflare Functions · Supabase · KV rate limiting | Scan/report endpoints, auth-gated reporting, Turnstile |
 | **Delivery** | GitHub Raw | Zero-infra, always-on blocklist serving |
 | **Archives** | GitHub Releases | Daily ZIP snapshots for retrospective hunting |
 | **Large-feed mirrors** | Git chunks + Release assets | Domain/hash feeds ship as ~31 MiB chunks in `ioc/` and unsplit as release assets |
@@ -66,7 +76,7 @@ threatbase/
 ├── pipeline/    Feed engine: update_feed.py, sync_community_reports.py,
 │                requirements, whitelist, custom IOCs (run from repo root)
 ├── ioc/         Generated feeds, stats, history, geo, top_ips.json (public)
-├── src/         React dashboard (Cloudflare Pages)
+├── src/         Web console (Cloudflare Pages)
 ├── functions/   API endpoints: /api/v1/* scan, report, community (Cloudflare)
 ├── db/          Supabase SQL: schema, RLS, RPCs (apply manually, see db/README)
 ├── public/      Static assets, _redirects/_headers, robots, sitemap
@@ -88,7 +98,7 @@ threatbase/
 | 🔵 &nbsp;**URLs** | Web proxy / NGFW blocking |
 | 🟣 &nbsp;**SHA-256 Hashes** | EDR ingestion, malware triage |
 
-<sub>Live indicator metrics are tracked in real-time on the <a href="https://threatbase.qzz.io">dashboard</a>. Indicators are classified into categories such as <code>C2</code>, <code>Botnet</code>, <code>Brute-Force</code>, <code>Exploit</code>, <code>Spam</code>, <code>Tor</code> &amp; more.</sub>
+<sub>Live indicator metrics are tracked in real-time on the <a href="https://threatbase.qzz.io/threatfeed">threat feed</a>. Indicators are classified into categories such as <code>C2</code>, <code>Botnet</code>, <code>Brute-Force</code>, <code>Exploit</code>, <code>Spam</code>, <code>Tor</code> &amp; more.</sub>
 
 </div>
 
@@ -224,6 +234,39 @@ https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/threatbase-hash
   it fetches only the one chunk that can contain the query.
 
 </details>
+
+---
+
+## 🔥 Deploy-Ready Formats
+
+> The pipeline publishes the IPv4 feed pre-shaped for firewalls, IPS and SIEMs —
+> no CSV parsing on your side. All under [`ioc/formats/`](ioc/formats/), all
+> hotlinkable, all checksummed in `manifest.json`.
+
+| File | Shape | For | ~Size |
+|:--|:--|:--|:--|
+| `ip-plain.txt` | one bare IP per line | PAN-OS EDL, pf, FortiGate, OPNsense, UFW | 14 MB |
+| `ip-multisource.txt` | bare IPs with **2+ independent sources** | conservative hard-block policies | 5 MB |
+| `ip.ipset` | `ipset restore` file (set name: `threatbase`) | Linux netfilter | 28 MB |
+| `ip-suricata.rules` | `drop` rules, IPs with **3+ sources** (sids 2100000+) | Suricata / Snort IPS | 10 MB |
+| `ip.jsonl.gz` | NDJSON: `{ip, feeds, score, tags[], sources[], first_seen, last_seen}` | Splunk HEC, Elastic `_bulk`, Wazuh | 5 MB |
+
+```bash
+# Linux firewall — one match rule instead of 900k:
+curl -sO https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/formats/ip.ipset
+sudo ipset restore < ip.ipset
+sudo iptables -I INPUT -m set --match-set threatbase src -j DROP
+
+# Suricata IPS — add to suricata.yaml:
+#   default-rule-path: /etc/suricata/rules
+#   rule-files: [threatbase-ip.rules]
+
+# SIEM bulk ingest (both Splunk HEC and Elastic _bulk accept gz):
+curl -s https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/formats/ip.jsonl.gz | gunzip
+```
+
+> Why gate on source count and not risk score? ~99% of the feed is tier HIGH —
+> tier doesn't discriminate. Independent corroboration does.
 
 ---
 

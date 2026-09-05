@@ -137,61 +137,76 @@ function WhoisSection({ scanResult, ip, abuseHref }: any) {
     setFailed(false)
     setFields(null)
 
-    const url = isDomain
-      ? `https://rdap.org/domain/${encodeURIComponent(ip)}`
-      : `https://rdap.org/ip/${encodeURIComponent(ip)}`
+    const urls = isDomain
+      ? [`https://rdap.org/domain/${encodeURIComponent(ip)}`]
+      // Any IP: rdap.org first; RIPE is a CORS-friendly bootstrap mirror that
+      // 301-redirects to the responsible RIR, so one flaky host never fails.
+      : [`https://rdap.org/ip/${encodeURIComponent(ip)}`, `https://rdap.db.ripe.net/ip/${encodeURIComponent(ip)}`]
 
-    fetch(url, { signal: controller.signal })
-      .then(r => {
-        if (!r.ok) throw new Error('rdap http')
-        return r.json()
-      })
-      .then(json => {
-        clearTimeout(timeoutId)
-        if (cancelled) return
-        const fmtDate = (s: any) => {
-          const d = new Date(String(s))
-          return isNaN(d.getTime()) ? '' : d.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })
-        }
-        const events: Record<string, string> = {}
-        for (const ev of Array.isArray(json?.events) ? json.events : []) {
-          const actions: string[] = Array.isArray(ev?.eventAction) ? ev.eventAction : [ev?.eventAction]
-          const action = actions.find(a => a === 'registration' || a === 'last changed' || a === 'expiration')
-          if (action && ev?.eventDate) events[action] = fmtDate(ev.eventDate)
-        }
-        const registrar = (Array.isArray(json?.entities) ? json.entities : []).find((e: any) => (e?.roles || []).includes('registrar'))
-        const vcards: any[] = Array.isArray(registrar?.vcardArray?.[1]) ? registrar.vcardArray[1] : []
-        const organization = vcards.find((v: any) => v?.[0] === 'fn')?.[3] || registrar?.name || ''
-        const adr = vcards.find((v: any) => v?.[0] === 'adr')
-        const country = (Array.isArray(json?.publicIds) ? json.publicIds : []).find((p: any) => p?.type === 'country')?.identifier || adr?.[3]?.[6] || ''
-        const rows: [string, string][] = []
-        // IPs: the card's intel grid already shows ISP/Country, and RDAP's
-        // network name/organization/country are the same entity in another
-        // casing. Keep registration data to what the grid does NOT have.
-        if (!isDomain) {
-          if (events['registration']) rows.push(['Registered', events['registration']])
-          if (events['last changed']) rows.push(['Last changed', events['last changed']])
-          if (events['expiration']) rows.push(['Expires', events['expiration']])
-          const cidr = Array.isArray(json?.cidr) ? json.cidr.join(', ') : (json?.cidr || '')
-          if (cidr) rows.push(['Network', String(cidr)])
-          if (json?.parentHandle) rows.push(['Parent handle', String(json.parentHandle)])
-        } else {
-          if (organization) rows.push(['Organization', String(organization)])
-          if (country) rows.push(['Country', String(country)])
-          if (events['registration']) rows.push(['Registered', events['registration']])
-          if (events['last changed']) rows.push(['Last changed', events['last changed']])
-          if (events['expiration']) rows.push(['Expires', events['expiration']])
-        }
-        setFields(rows)
-        setLoading(false)
-      })
-      .catch(() => {
-        clearTimeout(timeoutId)
-        if (!cancelled) {
-          setFailed(true)
+    const tryRdap = async () => {
+      for (const url of urls) {
+        try {
+          const r = await fetch(url, { signal: controller.signal })
+          // 404 is an answer ("not in the registry"), not a failure.
+          if (r.status === 404) {
+            if (!cancelled) {
+              setFields([])
+              setLoading(false)
+            }
+            return
+          }
+          if (!r.ok) throw new Error('rdap http')
+          const json = await r.json()
+          if (cancelled) return
+          const fmtDate = (s: any) => {
+            const d = new Date(String(s))
+            return isNaN(d.getTime()) ? '' : d.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })
+          }
+          const events: Record<string, string> = {}
+          for (const ev of Array.isArray(json?.events) ? json.events : []) {
+            const actions: string[] = Array.isArray(ev?.eventAction) ? ev.eventAction : [ev?.eventAction]
+            const action = actions.find(a => a === 'registration' || a === 'last changed' || a === 'expiration')
+            if (action && ev?.eventDate) events[action] = fmtDate(ev.eventDate)
+          }
+          const registrar = (Array.isArray(json?.entities) ? json.entities : []).find((e: any) => (e?.roles || []).includes('registrar'))
+          const vcards: any[] = Array.isArray(registrar?.vcardArray?.[1]) ? registrar.vcardArray[1] : []
+          const organization = vcards.find((v: any) => v?.[0] === 'fn')?.[3] || registrar?.name || ''
+          const adr = vcards.find((v: any) => v?.[0] === 'adr')
+          const country = (Array.isArray(json?.publicIds) ? json.publicIds : []).find((p: any) => p?.type === 'country')?.identifier || adr?.[3]?.[6] || ''
+          const rows: [string, string][] = []
+          // IPs: the card's intel grid already shows ISP/Country, and RDAP's
+          // network name/organization/country are the same entity in another
+          // casing. Keep registration data to what the grid does NOT have.
+          if (!isDomain) {
+            if (events['registration']) rows.push(['Registered', events['registration']])
+            if (events['last changed']) rows.push(['Last changed', events['last changed']])
+            if (events['expiration']) rows.push(['Expires', events['expiration']])
+            const cidr = Array.isArray(json?.cidr) ? json.cidr.join(', ') : (json?.cidr || '')
+            if (cidr) rows.push(['Network', String(cidr)])
+            if (json?.parentHandle) rows.push(['Parent handle', String(json.parentHandle)])
+          } else {
+            if (organization) rows.push(['Organization', String(organization)])
+            if (country) rows.push(['Country', String(country)])
+            if (events['registration']) rows.push(['Registered', events['registration']])
+            if (events['last changed']) rows.push(['Last changed', events['last changed']])
+            if (events['expiration']) rows.push(['Expires', events['expiration']])
+          }
+          setFields(rows)
           setLoading(false)
+          return
+        } catch {
+          // network error / 5xx: fall through to the next source
         }
-      })
+      }
+      clearTimeout(timeoutId)
+      // Only an 8s timeout can abort while still mounted (unmount/change sets
+      // cancelled first), so this is the "took too long" path.
+      if (!cancelled) {
+        setFailed(true)
+        setLoading(false)
+      }
+    }
+    void tryRdap()
 
     return () => {
       cancelled = true
@@ -248,6 +263,8 @@ function CommentsSection({ ip, addToast }: { ip: string; addToast: (msg: string,
   const [loading, setLoading] = useState(true)
   const [body, setBody] = useState('')
   const [posting, setPosting] = useState(false)
+  // Composer stays collapsed behind a quiet trigger; only opens on click.
+  const [open, setOpen] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -292,6 +309,7 @@ function CommentsSection({ ip, addToast }: { ip: string; addToast: (msg: string,
       if (error) throw error
       setComments(prev => [data || { id: crypto.randomUUID(), body: text, username: profile?.username || 'contributor', user_id: user.id, created_at: new Date().toISOString() }, ...prev])
       setBody('')
+      setOpen(false)
       addToast('Comment posted.', 'success')
     } catch (err: any) {
       console.error(err)
@@ -319,26 +337,45 @@ function CommentsSection({ ip, addToast }: { ip: string; addToast: (msg: string,
       </h3>
 
       {user ? (
+        open ? (
         <div className="mb-6 rounded-2xl border border-slate-800 bg-slate-900 p-5">
           <textarea
             value={body}
             onChange={e => setBody(e.target.value)}
             maxLength={1000}
             rows={3}
+            autoFocus
             placeholder="Share context about this indicator (e.g. seen scanning SSH, false positive on our network)..."
             className="w-full bg-slate-950/50 border border-slate-700 rounded-xl p-4 text-sm text-slate-300 focus:outline-none focus:border-slate-500 focus:ring-1 focus:ring-slate-500 resize-none transition-all shadow-inner"
           ></textarea>
           <div className="mt-3 flex items-center justify-between">
             <span className="text-[11px] font-medium text-slate-500 tabular-nums">{body.length}/1000</span>
-            <button
-              onClick={handlePost}
-              disabled={posting}
-              className="px-5 py-2.5 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-sm disabled:opacity-50 uppercase tracking-wider"
-            >
-              {posting ? 'Posting...' : 'Post comment'}
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => { setOpen(false); setBody('') }}
+                className="px-4 py-2.5 rounded-lg text-xs font-bold text-slate-400 transition-colors hover:text-slate-200 uppercase tracking-wider"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handlePost}
+                disabled={posting}
+                className="px-5 py-2.5 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-sm disabled:opacity-50 uppercase tracking-wider"
+              >
+                {posting ? 'Posting...' : 'Post comment'}
+              </button>
+            </div>
           </div>
         </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            className="mb-6 w-full rounded-xl border border-dashed border-slate-700 px-4 py-3 text-left text-sm text-slate-400 transition-colors hover:border-slate-500 hover:text-slate-200"
+          >
+            Write a comment
+          </button>
+        )
       ) : (
         <p className="mb-6 text-sm text-slate-400">
           <button

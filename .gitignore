@@ -87,3 +87,6 @@ skills/
 # Envs
 .env*
 !.env.example
+
+# Local pipeline self-checks (not shipped)
+pipeline/test_firewall_formats.py
