@@ -138,7 +138,9 @@ function WhoisSection({ scanResult, ip, abuseHref }: any) {
 
     const urls = isDomain
       ? [`https://rdap.org/domain/${encodeURIComponent(ip)}`]
-      : [`https://rdap.org/ip/${encodeURIComponent(ip)}`]
+      // Any IP: rdap.org first; RIPE is a CORS-friendly bootstrap mirror that
+      // 301-redirects to the responsible RIR, so one flaky host never fails.
+      : [`https://rdap.org/ip/${encodeURIComponent(ip)}`, `https://rdap.db.ripe.net/ip/${encodeURIComponent(ip)}`]
 
     const tryRdap = async () => {
       for (const url of urls) {
@@ -214,45 +216,31 @@ function WhoisSection({ scanResult, ip, abuseHref }: any) {
     }
   }, [ip, isDomain])
 
-  return (
-    <div className="w-full">
-      <h3 className="text-xl md:text-2xl font-black text-white tracking-tight mb-2">Registration data</h3>
-      {loading ? (
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(15rem,1fr))] gap-3">
-          {Array.from({ length: 6 }, (_, i) => (
-            <div key={i} className="rounded-xl border border-slate-800 bg-slate-900 px-4 py-4 animate-pulse">
-              <div className="mb-2 h-2 w-16 rounded bg-slate-800" />
-              <div className="h-3 w-2/3 rounded bg-slate-800" />
-            </div>
-          ))}
-        </div>
-      ) : failed ? (
-        <p className="text-sm text-slate-400">
-          Could not load registration data.{' '}
-          <a href={abuseHref} target="_blank" rel="noopener" className="font-semibold text-platinum-200 underline-offset-4 hover:underline">
-            Use an external whois lookup
-          </a>
-          .
-        </p>
-      ) : fields && fields.length > 0 ? (
-        <>
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(15rem,1fr))] gap-3">
-            {fields.map(([label, value]) => (
-              <div key={label} className="rounded-xl border border-slate-800 bg-slate-900 px-4 py-4">
-                <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-platinum-500">{label}</div>
-                <div className="break-all text-sm font-medium text-slate-100">{value}</div>
-              </div>
-            ))}
-          </div>
-          <a href={abuseHref} target="_blank" rel="noopener" className="mt-3 inline-flex items-center gap-1.5 text-xs text-slate-500 transition-colors hover:text-slate-300">
-            <Globe size={12} strokeWidth={2} />
-            Full whois record on whois.com
-          </a>
-        </>
-      ) : (
-        <p className="text-sm text-slate-400">No registration records returned for this {scanResult?.isDomain ? 'domain' : 'address'}.</p>
-      )}
+  // Renders as cells of the ISP/ASN data grid — registration data belongs in
+  // the data section, not in its own panel. Return a fragment so the parent
+  // grid keeps laying it out.
+  const cell = (label: string, value: any) => (
+    <div className="bg-slate-950/30 px-6 py-5 md:px-8">
+      <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-platinum-500">{label}</div>
+      <div className="break-all text-sm font-medium text-slate-100">{value}</div>
     </div>
+  )
+
+  if (loading) return <>{cell('Registered', 'Loading…')}{cell('Last changed', 'Loading…')}</>
+  if (failed) return <>{cell('Registration', (
+    <a href={abuseHref} target="_blank" rel="noopener" className="text-platinum-200 underline-offset-4 hover:underline">External whois lookup</a>
+  ))}</>
+  if (!fields || fields.length === 0) return null
+  return (
+    <>
+      {fields.map(([label, value]) => cell(label, value))}
+      {cell('Full record', (
+        <a href={abuseHref} target="_blank" rel="noopener" className="inline-flex items-center gap-1.5 text-platinum-200 underline-offset-4 hover:underline">
+          <Globe size={12} strokeWidth={2} />
+          whois.com
+        </a>
+      ))}
+    </>
   )
 }
 
@@ -866,6 +854,7 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
                         <div className="hidden bg-slate-950/30 md:block" aria-hidden="true" />
                       </>
                     )}
+                    <WhoisSection scanResult={scanResult} ip={ip} abuseHref={abuseHref} />
                   </div>
                 )}
 
@@ -920,10 +909,6 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
                   </div>
                 )}
               </motion.div>
-
-              {scanResult && (scanResult.isIP || scanResult.isIPv6 || scanResult.isDomain) && (
-                <WhoisSection scanResult={scanResult} ip={ip} abuseHref={abuseHref} />
-              )}
 
               {scanResult && type !== 'warn' && ip && (
                 <CommentsSection ip={ip} addToast={addToast} />
