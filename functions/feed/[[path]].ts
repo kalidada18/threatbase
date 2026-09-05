@@ -30,6 +30,30 @@ const DAILY_FETCH_LIMIT = 500 // firewalls polling hourly use ~24/day
 const ALLOWED_PREFIXES = ['ip/', 'firewall/']
 const ALLOWED_EXACT = ['data/false_positives.txt']
 
+/**
+ * The Pro-only products live in a PRIVATE repo (default kalidada18/threatbase-pro,
+ * pushed by .github/workflows/update-feed.yml), because a public origin means the
+ * paywall is decorative — anyone could hotlink raw.githubusercontent.com and skip
+ * this Worker entirely. Everything else still comes from the public mirror.
+ */
+const PAID_PREFIXES = ['ip/categories/', 'firewall/']
+const isPaid = (rel: string) => PAID_PREFIXES.some((p) => rel.startsWith(p))
+
+/**
+ * Private-repo read. The Contents API with the `raw` media type streams the file
+ * (up to 100 MB, so it clears our 36 MB worst case) and 302s to a signed URL that
+ * fetch() follows. `?ref=` is omitted: the workflow force-pushes an orphan commit
+ * to the default branch each run, so HEAD is always the fresh snapshot.
+ */
+const fetchPaid = (rel: string, env: any) =>
+  fetch(`https://api.github.com/repos/${env.PRO_REPO || 'kalidada18/threatbase-pro'}/contents/${rel}`, {
+    headers: {
+      Authorization: `Bearer ${env.PRO_REPO_TOKEN}`,
+      Accept: 'application/vnd.github.raw',
+      'User-Agent': 'threatbase-pro-feed',
+    },
+  })
+
 const headers = (contentType?: string | null) => ({
   'Content-Type': contentType || 'text/plain; charset=utf-8',
   'Access-Control-Allow-Origin': '*',
@@ -89,9 +113,23 @@ export const onRequestGet = async (context: any) => {
     } catch { /* KV read failure must not take down the feed */ }
   }
 
-  const upstream = await fetch(RAW_BASE + rel, { headers: { 'User-Agent': 'threatbase-pro-feed' } })
+  const paid = isPaid(rel)
+  if (paid && !env.PRO_REPO_TOKEN) {
+    console.error('PRO_REPO_TOKEN missing — paid feeds unreachable.')
+    return err('Feed service temporarily unavailable.', 503)
+  }
+  const upstream = paid
+    ? await fetchPaid(rel, env)
+    : await fetch(RAW_BASE + rel, { headers: { 'User-Agent': 'threatbase-pro-feed' } })
+
+  // A 404 from the private repo means the pipeline has not published that file
+  // (or the token lost access) — don't leak the upstream body to the customer.
+  if (paid && upstream.status === 404) return err('Feed not available', 404)
+
+  // Unknown length: stream through rather than buffer. Costs a KV miss per
+  // request, which beats risking the Worker's 128 MB memory ceiling.
   const len = Number(upstream.headers.get('Content-Length') || 0)
-  if (!kv || upstream.status !== 200 || len > KV_MAX) {
+  if (!kv || upstream.status !== 200 || !len || len > KV_MAX) {
     return new Response(upstream.body, { status: upstream.status, headers: headers(upstream.headers.get('Content-Type')) })
   }
 

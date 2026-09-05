@@ -15,6 +15,12 @@ const RAW_BASE = 'https://raw.githubusercontent.com/kalidada18/threatbase/main/i
 const KV_TTL = 21600 // 6 h
 const KV_MAX = 25_000_000 // Cloudflare KV hard limit per value
 
+// Pro-only products; they no longer exist in the public repo, so upstream would
+// 404 anyway — but this mirror caches for 6 h, and without the guard a key
+// cached before the cutover would keep serving a paid file for free.
+// The paywalled path is /feed/<token>/… (functions/feed/[[path]].ts).
+const PAID_PREFIXES = ['ip/categories/', 'firewall/']
+
 const baseHeaders = (contentType?: string | null) => ({
   'Content-Type': contentType || 'text/plain; charset=utf-8',
   'Access-Control-Allow-Origin': '*',
@@ -24,6 +30,9 @@ const baseHeaders = (contentType?: string | null) => ({
 export const onRequestGet = async (context: any) => {
   const rel = decodeURIComponent((context.params.path || []).join('/'))
   if (!rel || rel.includes('..')) return new Response('Not found', { status: 404 })
+  if (PAID_PREFIXES.some((p) => rel.startsWith(p))) {
+    return new Response('This is a Threatbase Pro feed — see /pricing.', { status: 402, headers: baseHeaders() })
+  }
 
   const kv = context.env.IOC_CACHE
   const key = 'feed/' + rel

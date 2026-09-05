@@ -975,7 +975,7 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
                           <Copy size={14} />
                         </button>
                       </div>
-                      <p className="text-[10px] text-slate-500 mt-1">Swap the last path segment for any category (c2, spam, botnet, …) or firewall/i&#8203;p.ipset formats.</p>
+                      <p className="text-[10px] text-slate-500 mt-1">Swap the last path segment for any category (c2, spam, botnet, …), or use the deploy-ready shapes: <code>firewall/ip.ipset</code>, <code>firewall/categories/c2/ip-suricata.rules</code>, <code>firewall/categories/tor/i&#8203;p.jsonl.gz</code>.</p>
                     </div>
                   )}
                 </div>

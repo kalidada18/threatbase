@@ -53,6 +53,14 @@ ip2asn-v4.tsv.gz
 ioc/domain/threatbase-domain.txt
 ioc/hash/threatbase-hash.txt
 
+# Threatbase Pro products — never committed to this PUBLIC repo. The workflow
+# pushes them to the private threatbase-pro repo instead, and the only public
+# door is /feed/<token>/… (functions/feed/[[path]].ts), which checks is_pro.
+# Committing them here is what made the paywall decorative: raw.githubusercontent
+# .com served the exact same bytes with no token.
+ioc/ip/categories/
+ioc/firewall/
+
 # API caches
 .otx_cache.json
 .abuseipdb_cache.txt

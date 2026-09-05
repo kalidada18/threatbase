@@ -13,8 +13,9 @@ Writes to ioc/, organized by consumer ("ip in ip, hash in hash, firewall in fire
   ioc/domain/   threatbase-domain.txt (git-ignored, release asset) + committed -NN chunks
   ioc/hash/     threatbase-hash.txt   (git-ignored, release asset) + committed -NN chunks
   ioc/url/      threatbase-url.txt
-  ioc/firewall/ deploy-ready shapes: plain/multisource EDLs, ip.ipset,
-                ip-suricata.rules, ip.jsonl.gz (no parsing needed downstream)
+  ioc/firewall/ deploy-ready shapes: plain/multisource/top50k EDLs, ip.ipset,
+                ip-suricata.rules, ip.jsonl.gz (no parsing needed downstream),
+                categories/<slug>/ the same six shapes per threat category
   ioc/data/     stats.json, manifest.json, history.json, geo.json,
                 feed_health.json, top_apt.json, community_reports.json,
                 false_positives.txt
@@ -148,6 +149,13 @@ FEED_CATEGORIES: Dict[str, str] = {
     "custom": "Malicious",
 }
 
+# Threatbase Pro products. Still generated locally every run, but gitignored and
+# pushed to the private threatbase-pro repo by the workflow — a public copy makes
+# the paywall in functions/feed/[[path]].ts unenforceable. Paths are relative to
+# ioc/, matching manifest.json checksum keys. Keep in sync with PAID_PREFIXES in
+# functions/feed/[[path]].ts and functions/ioc/[[path]].ts.
+PAID_DIRS = ("ip/categories/", "firewall/")
+
 # Filename slugs for category-split IP feeds (ioc/ip/categories/threatbase-ip-<slug>.txt).
 # Any category not listed falls back to a lowercased, alphanumeric-only slug.
 CATEGORY_SLUGS: Dict[str, str] = {
@@ -163,6 +171,58 @@ CATEGORY_SLUGS: Dict[str, str] = {
     "Scanner": "scanner",
     "Mixed": "mixed",
 }
+
+# Suricata SID range per category, for ioc/firewall/categories/<slug>/ip-suricata.rules.
+#
+# Every category file gets its own 1M-wide block because operators load several at
+# once (that is the whole point of splitting them) and Suricata silently keeps only
+# the LAST rule for a duplicate sid — colliding ranges would drop coverage without
+# an error. The full feed owns [SURICATA_SID_BASE, +SID_BLOCK_WIDTH), which
+# write_firewall_formats warns if it ever exceeds; categories follow above it.
+#
+# Threatbase claims 50,000,000-77,999,999, which is free in the self-organised
+# registry at https://sidallocation.org/ and sits ~22M clear of the nearest
+# neighbours (jpgview ends 27,999,999; Emerging Threats starts 100,000,000). Do NOT
+# pick round low numbers here: 2.1M-2.2M is ET Open, 4M ExtraHop, 5M Etnetera,
+# 6M Antiphishing, 10M-12M Positive Technologies, 12M-13M IPFire, and 902M abuse.ch.
+# A collision is silent — the operator just loses whichever ruleset loaded first.
+#
+# These numbers are a published contract: operators write `suppress`/`threshold`
+# rules against specific sids. Never renumber an existing entry; only append.
+SURICATA_SID_BASE = 50_000_000
+CATEGORY_SID_BLOCKS: Dict[str, int] = {
+    "c2":          51_000_000,
+    "botnet":      52_000_000,
+    "bruteforce":  53_000_000,
+    "tor":         54_000_000,
+    "spam":        55_000_000,
+    "exploit":     56_000_000,
+    "malware":     57_000_000,
+    "malicious":   58_000_000,
+    "compromised": 59_000_000,
+    "scanner":     60_000_000,
+    "mixed":       61_000_000,
+}
+SID_BLOCK_WIDTH = 1_000_000
+# Unlisted categories (a new tag ships before anyone adds it above) hash into the
+# tail of the claimed range instead of shifting anyone else's block. Stable because
+# it is derived from the slug, not from enumeration order, and bounded so a new tag
+# can never wander into another vendor's allocation.
+# ponytail: 16 buckets, so two unlisted slugs collide ~6% of the time; add an
+# explicit block above when a category graduates to being sold.
+SID_FALLBACK_BASE = 62_000_000
+SID_FALLBACK_SLOTS = 16
+def category_sid_base(slug: str) -> int:
+    if slug in CATEGORY_SID_BLOCKS:
+        return CATEGORY_SID_BLOCKS[slug]
+    bucket = int(hashlib.sha256(slug.encode()).hexdigest()[:8], 16) % SID_FALLBACK_SLOTS
+    return SID_FALLBACK_BASE + bucket * SID_BLOCK_WIDTH
+
+
+# ipset set names are capped at 31 chars by the kernel, and this file writes a
+# "<name>-tmp" staging set too: 11 ("threatbase-") + 16 + 4 ("-tmp") = 31.
+def category_setname(slug: str) -> str:
+    return "threatbase-" + slug[:16]
 
 # ── IOC Decay Configuration ────────────────────────────────────────────────
 # Indicators not re-observed within the half-life get their risk score
@@ -1214,16 +1274,26 @@ def check_feed_freshness(name: str, new_count: int, health: dict) -> dict:
 # ─────────────────────────────────────────────────────────────────────────────
 # Deploy-ready firewall / SIEM exports
 # ─────────────────────────────────────────────────────────────────────────────
-SURICATA_SID_BASE = 2100000
+# SURICATA_SID_BASE / CATEGORY_SID_BLOCKS live up top, next to CATEGORY_SLUGS —
+# the registry rationale for those numbers is documented there.
+EDL_CAP = 50_000  # smallest common appliance EDL capacity; see ip-top50k.txt below
 
 def write_firewall_formats(filtered_ip_info: Dict[int, dict], sorted_ips: List[int],
-                           timestamp: str, outdir: str = "ioc/firewall") -> Dict[str, int]:
-    """Emit the IPv4 feed in shapes firewalls/IPS/SIEMs load without parsing:
+                           timestamp: str, outdir: str = "ioc/firewall",
+                           setname: str = "threatbase",
+                           sid_base: int = SURICATA_SID_BASE,
+                           label: str = "IPs") -> Dict[str, int]:
+    """Emit an IPv4 list in shapes firewalls/IPS/SIEMs load without parsing:
     bare-IP EDLs (PAN-OS / pf / FortiGate / OPNsense), an ipset restore file,
     Suricata drop rules, and gzipped NDJSON for bulk SIEM ingest.
 
     sorted_ips / filtered_ip_info are keyed by IP *integer* (that's how the
     whole pipeline sorts and indexes); the dotted-quad lives in info["ip"].
+
+    Called once for the full feed and once per threat category. `setname` and
+    `sid_base` MUST differ per call: two ipset files with the same set name
+    overwrite each other on restore, and Suricata keeps only the last rule for a
+    duplicate sid — both fail silently. `label` only decorates the header lines.
 
     Severity gates use corroboration (FeedCount), not the risk tier: ~99% of
     the feed is tier HIGH, so tier says nothing. The count>=3 gate keeps the
@@ -1244,35 +1314,74 @@ def write_firewall_formats(filtered_ip_info: Dict[int, dict], sorted_ips: List[i
     multisource = [filtered_ip_info[ip]["ip"] for ip in sorted_ips if filtered_ip_info[ip]["count"] >= 2]
     rule_eligible = [ip for ip in sorted_ips if filtered_ip_info[ip]["count"] >= 3]
 
+    # Appliance EDLs are capacity-bounded and the box does not tell you it dropped
+    # the overflow: PAN-OS caps IP entries at 50,000 across ALL external dynamic
+    # lists (150,000 only on the PA-5000/PA-7000 series), and FortiGate's limit is
+    # per model (300,000 on a 6K, far less below it). The plain list is ~912k, so on
+    # a standard PAN-OS it loads ~5% of itself and the operator never sees why.
+    # Hence a third EDL: the EDL_CAP best-corroborated IPs, which is the subset that
+    # actually fits. Sorted by source count descending (stable, so ties keep IP
+    # order → no churn between runs), then re-sorted by IP like every other output.
+    # Renaming EDL_CAP means renaming the file too; it is in a consumer's config.
+    capped = sorted(sorted(sorted_ips, key=lambda i: -filtered_ip_info[i]["count"])[:EDL_CAP])
+
     # Bare-IP EDLs: '#' comments are skipped by every blocklist consumer.
     for fname, title, ips in (
-        ("ip-plain.txt", "IPs (plain EDL)", plain),
-        ("ip-multisource.txt", "IPs, 2+ independent sources (conservative EDL)", multisource),
+        ("ip-plain.txt", f"{label} (plain EDL)", plain),
+        ("ip-multisource.txt", f"{label}, 2+ independent sources (conservative EDL)", multisource),
+        ("ip-top50k.txt", f"{label}, top {EDL_CAP:,} by corroboration (appliance-capped EDL)",
+         [filtered_ip_info[ip]["ip"] for ip in capped]),
     ):
         with open(os.path.join(outdir, fname), "w", encoding="utf-8", buffering=1 << 16) as f:
             header(f, title, len(ips))
             f.writelines(ip + "\n" for ip in ips)
         counts[fname] = len(ips)
 
-    # ipset restore file: `ipset restore < ip.ipset`, then a single
-    # `-m set --match-set threatbase src -j DROP` rule instead of N rules.
+    # ipset restore file: `ipset -exist restore < ip.ipset`, then a single
+    # `-m set --match-set <setname> src -j DROP` rule instead of N rules.
+    #
+    # Two things this file has to get right to be pollable unattended:
+    #  - maxelem: hash:ip defaults to 65536 and then refuses further adds with
+    #    "Hash is full". Every list here is bigger, so size it to the content.
+    #  - load into <set>-tmp and `swap`: the live set keeps its identity, so the
+    #    iptables rule referencing it survives a reload, and traffic is never
+    #    matched against a half-loaded set.
+    #
+    # Idempotence is the caller's `-exist` flag, not a token in this file: the
+    # ipset man page only documents options BEFORE the command word ("ipset
+    # [OPTIONS] COMMAND"), so a trailing `-exist` on a create line is not a form
+    # it promises to parse. Without the flag the second poll aborts the whole
+    # restore on "set with the same name already exists" — hence the usage line
+    # in the header, which restore skips along with the other '#' comments.
     with open(os.path.join(outdir, "ip.ipset"), "w", encoding="utf-8", buffering=1 << 16) as f:
-        header(f, "IPs (ipset restore)", len(sorted_ips))
-        f.write("create threatbase hash:ip family inet4\n")
-        f.writelines(f"add threatbase {filtered_ip_info[ip]['ip']}\n" for ip in sorted_ips)
+        header(f, f"{label} (ipset restore)", len(sorted_ips))
+        f.write(f"# Usage: ipset -exist restore < ip.ipset   ('-exist' is required to reload)\n")
+        f.write(f"#        iptables -I INPUT -m set --match-set {setname} src -j DROP\n")
+        spec = f"hash:ip family inet4 maxelem {max(65536, 1 << len(sorted_ips).bit_length())}"
+        f.write(f"create {setname} {spec}\n")
+        f.write(f"create {setname}-tmp {spec}\n")
+        f.write(f"flush {setname}-tmp\n")
+        f.writelines(f"add {setname}-tmp {filtered_ip_info[ip]['ip']}\n" for ip in sorted_ips)
+        f.write(f"swap {setname}-tmp {setname}\n")
+        f.write(f"destroy {setname}-tmp\n")
     counts["ip.ipset"] = len(sorted_ips)
 
     # Suricata drop rules. msg carries tags; ';' and '"' would terminate the
     # options string, and tags are pipeline-controlled vocabulary, but escape
     # anyway so a future tag can never break out of the rule.
+    if len(rule_eligible) > SID_BLOCK_WIDTH:
+        log.warning(f"  {outdir}: {len(rule_eligible):,} rules exceeds the "
+                    f"{SID_BLOCK_WIDTH:,}-wide sid block — sids will overlap the next category.")
     with open(os.path.join(outdir, "ip-suricata.rules"), "w", encoding="utf-8", buffering=1 << 16) as f:
-        header(f, "IPs, 3+ independent sources (Suricata drop rules)", len(rule_eligible))
+        header(f, f"{label}, 3+ independent sources (Suricata drop rules)", len(rule_eligible))
+        f.write(f"# sid range: {sid_base}-{sid_base + SID_BLOCK_WIDTH - 1} — Threatbase only "
+                f"(see https://sidallocation.org/), so suppress/threshold rules stay valid.\n")
         for n, ip in enumerate(rule_eligible):
             info = filtered_ip_info[ip]
             msg = "|".join(sorted(info["tags"])).replace('"', "'").replace(";", ",")
             f.write(
                 f'drop ip {info["ip"]} any -> any any (msg:"Threatbase {msg}"; '
-                f"sid:{SURICATA_SID_BASE + n}; rev:1;)\n"
+                f"sid:{sid_base + n}; rev:1;)\n"
             )
     counts["ip-suricata.rules"] = len(rule_eligible)
 
@@ -1520,6 +1629,22 @@ async def run_async_collector():
     # ── Deploy-ready firewall / SIEM formats ───────────────────────────────
     ip_format_files = write_firewall_formats(filtered_ip_info, sorted_ips, timestamp)
 
+    # Same six shapes per category, so a category can be dropped into ipset /
+    # Suricata / Splunk directly instead of the operator parsing the CSV. Each
+    # gets its own ipset name and sid block — see CATEGORY_SID_BLOCKS for why
+    # sharing either one silently loses coverage.
+    ip_category_format_files: Dict[str, Dict[str, int]] = {}
+    for cat, ips in sorted(category_ips.items()):
+        slug = CATEGORY_SLUGS.get(cat, re.sub(r"[^a-z0-9]+", "", cat.lower()))
+        ip_category_format_files[slug] = write_firewall_formats(
+            filtered_ip_info, ips, timestamp,
+            outdir=f"ioc/firewall/categories/{slug}",
+            setname=category_setname(slug),
+            sid_base=category_sid_base(slug),
+            label=f"{cat} IPs",
+        )
+    log.info(f"  Wrote deploy-ready formats for {len(ip_category_format_files)} categories")
+
     # ── Geolocate IPs → ioc/data/geo.json (powers the live threat map) ──────────
     log.info("Computing IP geolocation for threat map...")
     geo_index = load_geo_index()
@@ -1695,6 +1820,8 @@ async def run_async_collector():
         "category_counts": dict(category_counts),
         "ip_category_files": ip_category_files,
         "ip_format_files": ip_format_files,
+        # {slug: {filename: count}} for ioc/firewall/categories/<slug>/.
+        "ip_category_format_files": ip_category_format_files,
         "top_sources": top_sources,
         "last_updated": now_utc.isoformat(),
         # Decay / freshness health metrics
@@ -1736,13 +1863,40 @@ async def run_async_collector():
             for chunk in iter(lambda: fh.read(1 << 20), b""):
                 h.update(chunk)
         return h.hexdigest()
+    # PAID_DIRS are excluded: manifest.json is committed to the public repo, and
+    # those files are Pro-only (served from the private repo via /feed/<token>/…).
+    # isfile() because the firewall glob is non-recursive and now also matches the
+    # categories/ directory itself.
+    _all_outputs = sorted(
+        (p, os.path.relpath(p, "ioc").replace(os.sep, "/"))
+        for p in glob.glob("ioc/**/*.txt", recursive=True) + glob.glob("ioc/firewall/*")
+        if os.path.isfile(p)
+    )
     manifest["checksums"] = {
-        os.path.relpath(p, "ioc").replace(os.sep, "/"): _sha256(p)
-        for p in sorted(glob.glob("ioc/**/*.txt", recursive=True) + glob.glob("ioc/firewall/*"))
+        rp: _sha256(p) for p, rp in _all_outputs if not rp.startswith(PAID_DIRS)
     }
 
     with open("ioc/data/manifest.json", "w", encoding="utf-8") as f:
         json.dump(manifest, f, indent=2)
+
+    # Pro files get their own manifest, written INTO the paid payload so it ships
+    # to the private repo and is served at /feed/<token>/firewall/manifest-pro.json.
+    # Same guarantee the public manifest gives, for the files customers pay for.
+    # Globbed separately because the public globs are shallow (*.txt plus a
+    # non-recursive firewall/*) and miss categories/<slug>/*.
+    pro_files = sorted(
+        (p, os.path.relpath(p, "ioc").replace(os.sep, "/"))
+        for d in PAID_DIRS
+        for p in glob.glob(f"ioc/{d}**/*", recursive=True)
+        if os.path.isfile(p) and not p.endswith("manifest-pro.json")
+    )
+    with open("ioc/firewall/manifest-pro.json", "w", encoding="utf-8") as f:
+        json.dump({
+            "generated": now_utc.isoformat(),
+            "base": "https://threatbase.qzz.io/feed/<your-api-key>/",
+            "checksums": {rp: _sha256(p) for p, rp in pro_files},
+        }, f, indent=2)
+    log.info(f"  Wrote manifest-pro.json ({len(pro_files)} Pro files)")
 
     # ── Update history.json (for trend charts) ─────────────────────────────
     log.info("Updating history.json...")

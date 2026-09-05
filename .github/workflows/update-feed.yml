@@ -129,6 +129,59 @@ jobs:
           PYTHONUNBUFFERED: '1'
         run: python pipeline/sync_apt.py
 
+      # ── 6b. Publish Pro products to the PRIVATE repo ─────────────────────────
+      #
+      # ioc/ip/categories/ and ioc/firewall/ (including firewall/categories/<slug>/,
+      # the per-category ipset / Suricata / NDJSON shapes) are the paid tier. They are
+      # gitignored here, because a copy in this public repo means anyone can hotlink
+      # raw.githubusercontent.com and skip the is_pro check in
+      # functions/feed/[[path]].ts entirely — the paywall was decorative.
+      #
+      # Each run force-pushes a single ORPHAN commit: ~280 MB is rewritten in full
+      # every time, so keeping history would add that much permanent storage per run
+      # (the same mistake that burned the LFS quota — see .gitattributes). Consumers
+      # never read this repo directly, only the Worker via the Contents API, so
+      # rewritten SHAs break nothing.
+      #
+      # Needs PRO_REPO_TOKEN (a PAT with `contents:write` on the private repo) in
+      # repository secrets, and the same token as a Cloudflare Pages env var so the
+      # Worker can read it back. Skipped when unset, so forks still build.
+      - name: Publish Pro feeds to private repo
+        env:
+          PRO_REPO_TOKEN: ${{ secrets.PRO_REPO_TOKEN }}
+          PRO_REPO: ${{ vars.PRO_REPO || 'kalidada18/threatbase-pro' }}
+        run: |
+          set -euo pipefail
+          # The skip lives here, not in `if:` — the secrets context is not available
+          # to step-level conditionals, and env set on this step can't gate itself.
+          if [ -z "${PRO_REPO_TOKEN}" ]; then
+            echo "::warning::PRO_REPO_TOKEN unset — skipping Pro publish. Paid feeds will 503."
+            exit 0
+          fi
+          # Build the payload outside the main worktree so nothing here is disturbed.
+          # cp -r pulls firewall/categories/ and manifest-pro.json along with it.
+          rm -rf /tmp/pro && mkdir -p /tmp/pro/ip
+          cp -r ioc/ip/categories /tmp/pro/ip/categories
+          cp -r ioc/firewall      /tmp/pro/firewall
+          cd /tmp/pro
+          # Nothing here may cross GitHub's 100 MB per-file push limit, or the whole
+          # paid tier stops publishing. ip-suricata.rules is the one that grows with
+          # corroboration, so fail loudly here rather than on the push.
+          if find . -type f -size +99M | grep .; then
+            echo "::error::Pro payload has a file over 99 MB (GitHub push limit is 100 MB)."
+            exit 1
+          fi
+          git init --quiet --initial-branch=main
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit --quiet -m "Pro feeds — $(date -u +'%Y-%m-%d %H:%M UTC')"
+          # x-access-token is the PAT form the git credential helper accepts; the URL
+          # is never echoed (set -x is off) so the token stays out of the run log.
+          git push --force --quiet \
+            "https://x-access-token:${PRO_REPO_TOKEN}@github.com/${PRO_REPO}.git" main
+          echo "✓ Pushed $(find . -type f -not -path './.git/*' | wc -l) Pro files ($(du -sh . | cut -f1)) to ${PRO_REPO}"
+
       # ── 7. Commit and push ───────────────────────────────────────────────────
       #
       # Uses the official github-actions[bot] identity so commit history is clean.
@@ -140,15 +193,19 @@ jobs:
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          # Stage all generated output files: stats.json, manifest.json, history,
-          # the category files, and the threatbase-domain-NN.txt / -hash-NN.txt
-          # chunks. Only the two UNSPLIT feeds are excluded — they go out as release
-          # assets instead. The explicit pathspec exclusions make that guarantee
-          # independent of .gitignore, which would not apply if the files were ever
-          # re-tracked by accident. Note these pathspecs are exact filenames, so they
-          # do not match the -NN chunks, which is intended.
+          # Stage all generated output files: stats.json, manifest.json, history, and
+          # the threatbase-domain-NN.txt / -hash-NN.txt chunks. Two sets are excluded:
+          # the UNSPLIT feeds (they go out as release assets) and the Pro products
+          # (they went to the private repo in step 6b). The explicit pathspec
+          # exclusions make that guarantee independent of .gitignore, which would not
+          # apply if the files were ever re-tracked by accident. Note the unsplit
+          # pathspecs are exact filenames, so they do not match the -NN chunks, which
+          # is intended.
           git add ioc/
           git reset HEAD ioc/domain/threatbase-domain.txt ioc/hash/threatbase-hash.txt 2>/dev/null || true
+          # Pro products (step 6b). .gitignore covers these, but .gitignore is silent
+          # once a path is tracked, so keep the pathspec reset as the real guarantee.
+          git rm -r --cached --quiet --ignore-unmatch ioc/ip/categories ioc/firewall
           git add -f pipeline/custom_iocs.txt 2>/dev/null || true
 
           # Check whether any staged file actually changed
