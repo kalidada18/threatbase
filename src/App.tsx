@@ -24,6 +24,7 @@ const ImprovementsPage = lazy(() => import('./components/ImprovementsPage'))
 const HallOfShamePage = lazy(() => import('./components/HallOfShamePage'))
 const TopAptPage = lazy(() => import('./components/TopAptPage'))
 const ApiDocsPage = lazy(() => import('./components/ApiDocsPage'))
+const PricingPage = lazy(() => import('./components/PricingPage'))
 const ThreatFeedPage = lazy(() => import('./components/ThreatFeedPage'))
 import { AuthProvider } from './AuthContext'
 import { getBaseUrl, formatSyncTime, feedPath } from './utils'
@@ -257,6 +258,7 @@ export default function App() {
         <Route path="/hall-of-shame" element={<PageTransition><HallOfShamePage /></PageTransition>} />
         <Route path="/top-apt" element={<PageTransition><TopAptPage /></PageTransition>} />
         <Route path="/api" element={<PageTransition><ApiDocsPage /></PageTransition>} />
+        <Route path="/pricing" element={<PageTransition><PricingPage /></PageTransition>} />
         {/* Profiles are private to their owner — there is no public/by-username
             view. Only the owner's own profile is reachable, at /profile. Any
             username-bearing URL (/u/:username, /profile/:username) is gone so the

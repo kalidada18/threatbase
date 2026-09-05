@@ -274,6 +274,7 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
   const [apiKeys, setApiKeys] = useState<any[]>([])
   const [loadingApiKeys, setLoadingApiKeys] = useState(false)
   const [newlyGeneratedKey, setNewlyGeneratedKey] = useState<string | null>(null)
+  const [newKeyIsPro, setNewKeyIsPro] = useState(false)
   const [generatingKey, setGeneratingKey] = useState(false)
   const [hasMfaEnrolled, setHasMfaEnrolled] = useState(false)
 
@@ -457,6 +458,7 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
 
       setApiKeys([newKeyData, ...apiKeys])
       setNewlyGeneratedKey(plainKey)
+      setNewKeyIsPro(!!newKeyData?.is_pro)
       addToast('API Key generated successfully!', 'success')
     } catch (err: any) {
       addToast(err.message || 'Failed to generate API Key', 'error')
@@ -960,6 +962,22 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
                       {copiedIp === newlyGeneratedKey ? <Check size={14} className="text-platinum-200" /> : <Copy size={14} />}
                     </button>
                   </div>
+                  {newKeyIsPro && (
+                    <div className="mt-3">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-amber-400 mb-1">Pro feed URL — point your firewall at this</p>
+                      <div className="flex items-center gap-2 bg-black/50 border border-amber-500/20 p-2 rounded">
+                        <code className="text-xs text-amber-200 font-mono flex-1 select-all break-all">{`${window.location.origin}/feed/${newlyGeneratedKey}/ip/categories/threatbase-ip-bruteforce.txt`}</code>
+                        <button
+                          onClick={() => handleCopySecret(`${window.location.origin}/feed/${newlyGeneratedKey}/ip/categories/threatbase-ip-bruteforce.txt`)}
+                          className="p-2 text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 rounded transition-colors shrink-0"
+                          title="Copy Pro Feed URL"
+                        >
+                          <Copy size={14} />
+                        </button>
+                      </div>
+                      <p className="text-[10px] text-slate-500 mt-1">Swap the last path segment for any category (c2, spam, botnet, …) or firewall/i&#8203;p.ipset formats.</p>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -973,6 +991,9 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
                     <div key={key.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-lg bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.03] transition-colors">
                       <div>
                         <code className="text-xs text-slate-300 font-mono bg-black/50 px-2 py-1 rounded">{key.prefix}•••••••••••••••••</code>
+                        {key.is_pro && (
+                          <span className="ml-2 align-middle rounded bg-amber-500/15 border border-amber-500/30 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-400">Pro</span>
+                        )}
                         <p className="text-[10px] text-slate-500 mt-1.5">
                           Created {new Date(key.created_at).toLocaleDateString()}
                         </p>
