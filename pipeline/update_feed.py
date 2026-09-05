@@ -176,7 +176,8 @@ DOMAIN_FEEDS: Dict[str, str] = {
     "openphish": "https://raw.githubusercontent.com/openphish/public_feed/refs/heads/main/feed.txt",
     "urlhaus": "https://urlhaus.abuse.ch/downloads/text_online/",
     "romainmarcoux": "https://raw.githubusercontent.com/romainmarcoux/malicious-domains/refs/heads/main/full-domains-aa.txt",
-    "hagezi_ultimate": "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/domains/ultimate.txt",
+    # hagezi moved domains/ to adblock/+wildcard/ in 2026; onlydomains is the bare-domain format our parser expects
+    "hagezi_ultimate": "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/ultimate-onlydomains.txt",
     "stevenblack_hosts": "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts",
     "blocklist_malware": "https://blocklistproject.github.io/Lists/malware.txt",
     "blocklist_torrent": "https://blocklistproject.github.io/Lists/torrent.txt",
@@ -1215,11 +1216,14 @@ def check_feed_freshness(name: str, new_count: int, health: dict) -> dict:
 # ─────────────────────────────────────────────────────────────────────────────
 SURICATA_SID_BASE = 2100000
 
-def write_firewall_formats(filtered_ip_info: Dict[str, dict], sorted_ips: List[str],
+def write_firewall_formats(filtered_ip_info: Dict[int, dict], sorted_ips: List[int],
                            timestamp: str, outdir: str = "ioc/firewall") -> Dict[str, int]:
     """Emit the IPv4 feed in shapes firewalls/IPS/SIEMs load without parsing:
     bare-IP EDLs (PAN-OS / pf / FortiGate / OPNsense), an ipset restore file,
     Suricata drop rules, and gzipped NDJSON for bulk SIEM ingest.
+
+    sorted_ips / filtered_ip_info are keyed by IP *integer* (that's how the
+    whole pipeline sorts and indexes); the dotted-quad lives in info["ip"].
 
     Severity gates use corroboration (FeedCount), not the risk tier: ~99% of
     the feed is tier HIGH, so tier says nothing. The count>=3 gate keeps the
@@ -1236,12 +1240,13 @@ def write_firewall_formats(filtered_ip_info: Dict[str, dict], sorted_ips: List[s
         f.write(f"# Last update: {timestamp}\n")
         f.write(f"# Count: {count}\n")
 
-    multisource = [ip for ip in sorted_ips if filtered_ip_info[ip]["count"] >= 2]
+    plain = [filtered_ip_info[ip]["ip"] for ip in sorted_ips]
+    multisource = [filtered_ip_info[ip]["ip"] for ip in sorted_ips if filtered_ip_info[ip]["count"] >= 2]
     rule_eligible = [ip for ip in sorted_ips if filtered_ip_info[ip]["count"] >= 3]
 
     # Bare-IP EDLs: '#' comments are skipped by every blocklist consumer.
     for fname, title, ips in (
-        ("ip-plain.txt", "IPs (plain EDL)", sorted_ips),
+        ("ip-plain.txt", "IPs (plain EDL)", plain),
         ("ip-multisource.txt", "IPs, 2+ independent sources (conservative EDL)", multisource),
     ):
         with open(os.path.join(outdir, fname), "w", encoding="utf-8", buffering=1 << 16) as f:
@@ -1254,7 +1259,7 @@ def write_firewall_formats(filtered_ip_info: Dict[str, dict], sorted_ips: List[s
     with open(os.path.join(outdir, "ip.ipset"), "w", encoding="utf-8", buffering=1 << 16) as f:
         header(f, "IPs (ipset restore)", len(sorted_ips))
         f.write("create threatbase hash:ip family inet4\n")
-        f.writelines(f"add threatbase {ip}\n" for ip in sorted_ips)
+        f.writelines(f"add threatbase {filtered_ip_info[ip]['ip']}\n" for ip in sorted_ips)
     counts["ip.ipset"] = len(sorted_ips)
 
     # Suricata drop rules. msg carries tags; ';' and '"' would terminate the
@@ -1266,7 +1271,7 @@ def write_firewall_formats(filtered_ip_info: Dict[str, dict], sorted_ips: List[s
             info = filtered_ip_info[ip]
             msg = "|".join(sorted(info["tags"])).replace('"', "'").replace(";", ",")
             f.write(
-                f'drop ip {ip} any -> any any (msg:"Threatbase {msg}"; '
+                f'drop ip {info["ip"]} any -> any any (msg:"Threatbase {msg}"; '
                 f"sid:{SURICATA_SID_BASE + n}; rev:1;)\n"
             )
     counts["ip-suricata.rules"] = len(rule_eligible)
