@@ -87,7 +87,10 @@ export const TIER_ACCENT: Record<SeverityTier, { bg: string; border: string; car
 
 /** Get the base URL for IOC data files */
 export function getBaseUrl() {
-  return 'https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/'
+  // Same-origin feed mirror served by functions/ioc/[[path]].ts:
+  // browser → Pages Function → KV cache (small files, 6 h TTL) → GitHub raw.
+  // Old direct-raw consumers keep working; that URL is still the origin.
+  return 'https://threatbase.qzz.io/ioc/'
 }
 
 /**
