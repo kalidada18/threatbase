@@ -138,14 +138,11 @@ function WhoisSection({ scanResult, ip, abuseHref }: any) {
 
     const urls = isDomain
       ? [`https://rdap.org/domain/${encodeURIComponent(ip)}`]
-      // Any IP: rdap.org first; RIPE is a CORS-friendly bootstrap mirror that
-      // 301-redirects to the responsible RIR, so one flaky host never fails.
-      : [`https://rdap.org/ip/${encodeURIComponent(ip)}`, `https://rdap.db.ripe.net/ip/${encodeURIComponent(ip)}`]
+      : [`https://rdap.org/ip/${encodeURIComponent(ip)}`]
 
     const tryRdap = async () => {
       for (const url of urls) {
-        // Each source gets its own window: a slow first host must never abort
-        // the fallback attempt with it.
+        // Per-attempt window so a hung lookup can't strand the skeleton forever.
         const controller = new AbortController()
         active = controller
         const timeoutId = setTimeout(() => controller.abort(), 10000)
