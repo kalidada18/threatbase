@@ -6,18 +6,18 @@ Collects malicious IPv4 addresses, Domains, Hashes, and URLs from public feeds.
 Highly optimized: fully asynchronous I/O with streaming, C-level fast IP validation.
 Outputs CSV, JSON, TXT.
 
-Writes to ioc/ folder:
-  - threatbase-ip.txt       (sorted by IP, CSV: IP,FeedCount,RiskScore,Tags,FirstSeen,LastSeen)
-  - top_ips.json            (top 100 IPs by feed corroboration, powers /hall-of-shame)
-  - threatbase-ip.json      (detailed JSON with tags and sources)
-  - threatbase-ipv6.txt     (sorted)
-  - threatbase-cidr.txt     (sorted)
-  - threatbase-domain.txt   (sorted; also split into -NN chunks, see below)
-  - threatbase-hash.txt     (sorted; also split into -NN chunks, see below)
-  - threatbase-url.txt      (sorted)
-  - stats.json              (summary counts + last_updated + chunk layout)
-  - manifest.json           (chunk layout for third-party consumers)
-  - history.json            (daily snapshots for trend charts)
+Writes to ioc/, organized by consumer ("ip in ip, hash in hash, firewall in firewall"):
+  ioc/ip/       threatbase-ip.txt (CSV: IP,FeedCount,RiskScore,Tags,FirstSeen,LastSeen,Sources),
+                threatbase-ipv6.txt, threatbase-cidr.txt, top_ips.json,
+                categories/threatbase-ip-<slug>.txt
+  ioc/domain/   threatbase-domain.txt (git-ignored, release asset) + committed -NN chunks
+  ioc/hash/     threatbase-hash.txt   (git-ignored, release asset) + committed -NN chunks
+  ioc/url/      threatbase-url.txt
+  ioc/firewall/ deploy-ready shapes: plain/multisource EDLs, ip.ipset,
+                ip-suricata.rules, ip.jsonl.gz (no parsing needed downstream)
+  ioc/data/     stats.json, manifest.json, history.json, geo.json,
+                feed_health.json, top_apt.json, community_reports.json,
+                false_positives.txt
 
 The domain and hash feeds are additionally written as threatbase-domain-01.txt,
 -02.txt, … chunks of at most CHUNK_TARGET_BYTES each. The chunks are what gets
@@ -148,7 +148,7 @@ FEED_CATEGORIES: Dict[str, str] = {
     "custom": "Malicious",
 }
 
-# Filename slugs for category-split IP feeds (ioc/categories/threatbase-ip-<slug>.txt).
+# Filename slugs for category-split IP feeds (ioc/ip/categories/threatbase-ip-<slug>.txt).
 # Any category not listed falls back to a lowercased, alphanumeric-only slug.
 CATEGORY_SLUGS: Dict[str, str] = {
     "C2": "c2",
@@ -326,15 +326,15 @@ def load_false_positives() -> FalsePositivesSet:
     result = FalsePositivesSet()
     
     # Load dynamic community false positives
-    if os.path.exists("ioc/false_positives.txt"):
+    if os.path.exists("ioc/data/false_positives.txt"):
         try:
-            with open("ioc/false_positives.txt", "r", encoding="utf-8") as f:
+            with open("ioc/data/false_positives.txt", "r", encoding="utf-8") as f:
                 for line in f:
                     line = line.strip()
                     if line and not line.startswith(('#', '//')):
                         result.add_item(line)
         except Exception as e:
-            log.error(f"Failed to load ioc/false_positives.txt: {e}")
+            log.error(f"Failed to load ioc/data/false_positives.txt: {e}")
             
     # Load static manual whitelist
     if os.path.exists(os.path.join(PIPELINE_DIR, "whitelist.txt")):
@@ -390,9 +390,9 @@ def load_custom_iocs() -> dict:
             log.error(f"Failed to load custom_iocs.txt: {e}")
     
     # Parse community_reports.json for extra IPs
-    if os.path.exists("ioc/community_reports.json"):
+    if os.path.exists("ioc/data/community_reports.json"):
         try:
-            with open("ioc/community_reports.json", "r", encoding="utf-8") as f:
+            with open("ioc/data/community_reports.json", "r", encoding="utf-8") as f:
                 reports = json.load(f)
             for report in reports:
                 ip_str = report.get("ip", "").strip()
@@ -534,7 +534,7 @@ CHUNK_TARGET_BYTES = 48 * 1024 * 1024
 
 
 def chunk_name(path: str, index: int) -> str:
-    """ioc/threatbase-domain.txt + 1 -> ioc/threatbase-domain-01.txt"""
+    """ioc/domain/threatbase-domain.txt + 1 -> ioc/domain/threatbase-domain-01.txt"""
     base, ext = os.path.splitext(path)
     return f"{base}-{index:02d}{ext}"
 
@@ -625,7 +625,10 @@ def write_chunked_feed(path: str, items: list, false_positives=None, metadata: d
         with open(out, "w", encoding="utf-8") as f:
             f.writelines(part)
         meta.append({
-            "file": os.path.basename(out),
+            # Path relative to ioc/ (e.g. "domain/threatbase-domain-01.txt"):
+            # clients concatenate it onto the manifest chunk_base, so the chunk
+            # folders travel with the data instead of being hardcoded per consumer.
+            "file": os.path.relpath(out, "ioc").replace(os.sep, "/"),
             "first": part[0].strip(),
             "last": part[-1].strip(),
             "lines": len(part),
@@ -1105,8 +1108,8 @@ def process_ip_metadata(ip_sources: Dict[str, Set[int]], false_positives: FalseP
 
 
 def update_history(stats: dict) -> None:
-    """Append today's stats snapshot to ioc/history.json for trend charts."""
-    history_path = "ioc/history.json"
+    """Append today's stats snapshot to ioc/data/history.json for trend charts."""
+    history_path = "ioc/data/history.json"
     history = []
 
     if os.path.exists(history_path):
@@ -1158,9 +1161,9 @@ def update_history(stats: dict) -> None:
 # ── Feed Freshness Monitoring ──────────────────────────────────────────────
 # Tracks per-feed health between runs: when a feed stops producing new IOCs
 # (not just returning zero data, but returning zero NOVEL data) it is logged
-# so operators can investigate. The cache is persisted to ioc/feed_health.json
+# so operators can investigate. The cache is persisted to ioc/data/feed_health.json
 # and carries over between CI runs.
-FEED_HEALTH_PATH = "ioc/feed_health.json"
+FEED_HEALTH_PATH = "ioc/data/feed_health.json"
 
 
 def load_feed_health() -> dict:
@@ -1213,7 +1216,7 @@ def check_feed_freshness(name: str, new_count: int, health: dict) -> dict:
 SURICATA_SID_BASE = 2100000
 
 def write_firewall_formats(filtered_ip_info: Dict[str, dict], sorted_ips: List[str],
-                           timestamp: str, outdir: str = "ioc/formats") -> Dict[str, int]:
+                           timestamp: str, outdir: str = "ioc/firewall") -> Dict[str, int]:
     """Emit the IPv4 feed in shapes firewalls/IPS/SIEMs load without parsing:
     bare-IP EDLs (PAN-OS / pf / FortiGate / OPNsense), an ipset restore file,
     Suricata drop rules, and gzipped NDJSON for bulk SIEM ingest.
@@ -1297,7 +1300,8 @@ async def run_async_collector():
     log.info("  Threatbase v5 — Async Threat Aggregator")
     log.info("═" * 55)
     
-    os.makedirs("ioc", exist_ok=True)
+    for d in ["ioc/ip", "ioc/domain", "ioc/hash", "ioc/url", "ioc/firewall", "ioc/data"]:
+        os.makedirs(d, exist_ok=True)
     false_positives = load_false_positives()
     
     ip_sources = {}
@@ -1312,18 +1316,18 @@ async def run_async_collector():
     # indicators that are no longer being observed.
     log.info("Loading previous IOCs from cache...")
     ip_meta = {}
-    _hist_ips, ip_meta = load_previous_ips_with_meta("ioc/threatbase-ip.txt")
+    _hist_ips, ip_meta = load_previous_ips_with_meta("ioc/ip/threatbase-ip.txt")
     ip_sources["historical"] = _hist_ips
     ipv6_meta = {}
-    ipv6_sources["historical"], ipv6_meta = load_previous_list_with_meta("ioc/threatbase-ipv6.txt")
+    ipv6_sources["historical"], ipv6_meta = load_previous_list_with_meta("ioc/ip/threatbase-ipv6.txt")
     cidr_meta = {}
-    cidr_sources["historical"], cidr_meta = load_previous_list_with_meta("ioc/threatbase-cidr.txt")
+    cidr_sources["historical"], cidr_meta = load_previous_list_with_meta("ioc/ip/threatbase-cidr.txt")
     domain_meta = {}
-    domain_results["historical"], domain_meta = load_previous_list_chunked_with_meta("ioc/threatbase-domain.txt")
+    domain_results["historical"], domain_meta = load_previous_list_chunked_with_meta("ioc/domain/threatbase-domain.txt")
     hash_meta = {}
-    hash_sources["historical"], hash_meta = load_previous_list_chunked_with_meta("ioc/threatbase-hash.txt")
+    hash_sources["historical"], hash_meta = load_previous_list_chunked_with_meta("ioc/hash/threatbase-hash.txt")
     url_meta = {}
-    url_sources["historical"], url_meta = load_previous_list_with_meta("ioc/threatbase-url.txt")
+    url_sources["historical"], url_meta = load_previous_list_with_meta("ioc/url/threatbase-url.txt")
     
     log.info(f"  Historical cache: {len(ip_sources['historical'])} IPs, "
              f"{len(domain_results['historical'])} domains, "
@@ -1467,7 +1471,7 @@ async def run_async_collector():
 
     # ── Write Text outputs ──────────────────────────────────────────────────
     log.info("Writing threatbase-ip.txt...")
-    txt_output_path = "ioc/threatbase-ip.txt"
+    txt_output_path = "ioc/ip/threatbase-ip.txt"
     timestamp = datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S +0000")
     
     with open(txt_output_path, "w", encoding="utf-8", buffering=1 << 16) as f:
@@ -1485,7 +1489,7 @@ async def run_async_collector():
     # policies (e.g. hard-block C2, only alert on Tor). Same line format as
     # the master feed. Each IP appears in every category it is tagged with.
     log.info("Writing category-split IP feeds...")
-    os.makedirs("ioc/categories", exist_ok=True)
+    os.makedirs("ioc/ip/categories", exist_ok=True)
     category_ips: Dict[str, list] = defaultdict(list)
     for ip in sorted_ips:  # sorted_ips is already ascending, so buckets stay sorted
         for tag in filtered_ip_info[ip]["tags"]:
@@ -1495,7 +1499,7 @@ async def run_async_collector():
     for cat, ips in sorted(category_ips.items()):
         slug = CATEGORY_SLUGS.get(cat, re.sub(r"[^a-z0-9]+", "", cat.lower()))
         fname = f"threatbase-ip-{slug}.txt"
-        with open(f"ioc/categories/{fname}", "w", encoding="utf-8", buffering=1 << 16) as f:
+        with open(f"ioc/ip/categories/{fname}", "w", encoding="utf-8", buffering=1 << 16) as f:
             f.write(f"# Threatbase Threat Intelligence Feed - {cat} IPs\n")
             f.write(f"# Last update: {timestamp}\n")
             f.write(f"# Count: {len(ips)}\n")
@@ -1506,27 +1510,27 @@ async def run_async_collector():
                 sources_str = "|".join(info["sources"])
                 f.write(f"{info['ip']},{info['count']},{info['score']},{tags_str},{info['first_seen']},{info['last_seen']},{sources_str}\n")
         ip_category_files[fname] = len(ips)
-    log.info(f"  Wrote {len(ip_category_files)} category feeds to ioc/categories/")
+    log.info(f"  Wrote {len(ip_category_files)} category feeds to ioc/ip/categories/")
 
     # ── Deploy-ready firewall / SIEM formats ───────────────────────────────
     ip_format_files = write_firewall_formats(filtered_ip_info, sorted_ips, timestamp)
 
-    # ── Geolocate IPs → ioc/geo.json (powers the live threat map) ──────────
+    # ── Geolocate IPs → ioc/data/geo.json (powers the live threat map) ──────────
     log.info("Computing IP geolocation for threat map...")
     geo_index = load_geo_index()
     geo_data = compute_geo(sorted_ips, geo_index)
     if geo_data:
-        with open("ioc/geo.json", "w", encoding="utf-8") as f:
+        with open("ioc/data/geo.json", "w", encoding="utf-8") as f:
             json.dump(geo_data, f, indent=2)
-        log.info("  Wrote ioc/geo.json")
+        log.info("  Wrote ioc/data/geo.json")
     else:
-        log.warning("  Skipped ioc/geo.json (no geo data)")
+        log.warning("  Skipped ioc/data/geo.json (no geo data)")
 
-    # ── Hall of Shame: ioc/top_ips.json ────────────────────────────────────
+    # ── Hall of Shame: ioc/ip/top_ips.json ────────────────────────────────────
     # Top 100 IPs by corroboration (independent upstream feeds listing them,
     # risk tier as tiebreak). Small, self-contained JSON so the /hall-of-shame
     # page never has to touch the multi-MB master feed.
-    log.info("Writing ioc/top_ips.json...")
+    log.info("Writing ioc/ip/top_ips.json...")
     _tier_rank = {"HIGH": 2, "MEDIUM": 1, "LOW": 0}
     top_keys = sorted(
         filtered_ip_info,
@@ -1534,7 +1538,7 @@ async def run_async_collector():
         reverse=True,
     )[:100]
     gi_starts, gi_ranges = geo_index if geo_index else (None, None)
-    with open("ioc/top_ips.json", "w", encoding="utf-8") as f:
+    with open("ioc/ip/top_ips.json", "w", encoding="utf-8") as f:
         json.dump({
             "generated_at": timestamp,
             "ips": [
@@ -1620,17 +1624,17 @@ async def run_async_collector():
     # ── Write domains (sorted for binary search, chunked for git) ───────────
     log.info("Writing threatbase-domain.txt (with date metadata)...")
     all_domains = sorted(set().union(*domain_results.values()))
-    domain_chunks = write_chunked_feed("ioc/threatbase-domain.txt", all_domains, false_positives, metadata=domain_meta, today=today_str)
+    domain_chunks = write_chunked_feed("ioc/domain/threatbase-domain.txt", all_domains, false_positives, metadata=domain_meta, today=today_str)
 
     # ── Write hashes (sorted for binary search, chunked for git) ────────────
     log.info("Writing threatbase-hash.txt (with date metadata)...")
     all_hashes = sorted(set().union(*hash_sources.values()))
-    hash_chunks = write_chunked_feed("ioc/threatbase-hash.txt", all_hashes, metadata=hash_meta, today=today_str)
+    hash_chunks = write_chunked_feed("ioc/hash/threatbase-hash.txt", all_hashes, metadata=hash_meta, today=today_str)
             
     # ── Write urls (sorted for binary search, with date metadata) ───────────
     log.info("Writing threatbase-url.txt (with date metadata)...")
     all_urls = sorted(set().union(*url_sources.values()))
-    with open("ioc/threatbase-url.txt", "w", encoding="utf-8") as f:
+    with open("ioc/url/threatbase-url.txt", "w", encoding="utf-8") as f:
         for u in all_urls:
             when = url_meta.get(u) or today_str
             f.write(f"{u},{when}\n")
@@ -1638,7 +1642,7 @@ async def run_async_collector():
     # ── Write IPv6 (sorted, with date metadata) ────────────────────────────
     log.info("Writing threatbase-ipv6.txt (with date metadata)...")
     all_ipv6 = sorted(set().union(*ipv6_sources.values()))
-    with open("ioc/threatbase-ipv6.txt", "w", encoding="utf-8") as f:
+    with open("ioc/ip/threatbase-ipv6.txt", "w", encoding="utf-8") as f:
         for ipv6 in all_ipv6:
             if ipv6 in false_positives: continue
             when = ipv6_meta.get(ipv6) or today_str
@@ -1647,7 +1651,7 @@ async def run_async_collector():
     # ── Write CIDRs (sorted, with date metadata) ────────────────────────────
     log.info("Writing threatbase-cidr.txt (with date metadata)...")
     all_cidrs = sorted(set().union(*cidr_sources.values()))
-    with open("ioc/threatbase-cidr.txt", "w", encoding="utf-8") as f:
+    with open("ioc/ip/threatbase-cidr.txt", "w", encoding="utf-8") as f:
         for cidr in all_cidrs:
             if cidr in false_positives: continue
             when = cidr_meta.get(cidr) or today_str
@@ -1701,7 +1705,7 @@ async def run_async_collector():
         # Flat filename lists, which is the shape the Feeds UI consumes.
         "chunk_files": {k: [c["file"] for c in v] for k, v in chunk_meta.items()},
     }
-    with open("ioc/stats.json", "w", encoding="utf-8") as f:
+    with open("ioc/data/stats.json", "w", encoding="utf-8") as f:
         json.dump(stats, f, indent=2)
 
     # ── Write manifest.json (standalone, for third-party consumers) ────────
@@ -1729,10 +1733,10 @@ async def run_async_collector():
         return h.hexdigest()
     manifest["checksums"] = {
         os.path.relpath(p, "ioc").replace(os.sep, "/"): _sha256(p)
-        for p in sorted(glob.glob("ioc/**/*.txt", recursive=True) + glob.glob("ioc/formats/*"))
+        for p in sorted(glob.glob("ioc/**/*.txt", recursive=True) + glob.glob("ioc/firewall/*"))
     }
 
-    with open("ioc/manifest.json", "w", encoding="utf-8") as f:
+    with open("ioc/data/manifest.json", "w", encoding="utf-8") as f:
         json.dump(manifest, f, indent=2)
 
     # ── Update history.json (for trend charts) ─────────────────────────────

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { getBaseUrl, fmt, timeAgo, DATA_RAMP } from '../utils'
+import { getBaseUrl, fmt, timeAgo, DATA_RAMP, feedPath } from '../utils'
 import { COUNTRY_COORDS } from '../lib/countryCoords'
 
 // Category → accent colour. The breakdown is always rendered in descending
@@ -52,7 +52,7 @@ export default function LiveThreatIntel() {
   useEffect(() => {
     let cancelled = false
 
-    fetch(getBaseUrl() + 'geo.json?_=' + Date.now())
+    fetch(getBaseUrl() + feedPath('geo.json') + '?_=' + Date.now())
       .then(r => r.json())
       .then((geo: { countries?: Record<string, number> }) => {
         if (cancelled || !geo?.countries) return
@@ -75,7 +75,7 @@ export default function LiveThreatIntel() {
       })
       .catch(() => { /* top-attackers list stays empty */ })
 
-    fetch(getBaseUrl() + 'stats.json?_=' + Date.now())
+    fetch(getBaseUrl() + feedPath('stats.json') + '?_=' + Date.now())
       .then(r => r.json())
       .then((data: { category_counts?: Record<string, number>; total_unique_ips?: number; active_feeds?: number; last_updated?: string }) => {
         if (cancelled || !data?.category_counts) return
@@ -90,7 +90,7 @@ export default function LiveThreatIntel() {
       .catch(() => { /* panel stays hidden */ })
 
     // Daily history → real "last 24h" delta + 14-day trend sparkline.
-    fetch(getBaseUrl() + 'history.json?_=' + Date.now())
+    fetch(getBaseUrl() + feedPath('history.json') + '?_=' + Date.now())
       .then(r => r.json())
       .then((hist: Array<{ total_unique_ips?: number }>) => {
         if (cancelled || !Array.isArray(hist)) return

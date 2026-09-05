@@ -3,6 +3,7 @@ import IsoPageShell from './layout/IsoPageShell'
 import Container from './layout/Container'
 import Section from './layout/Section'
 import LiveThreatIntel from './LiveThreatIntel'
+import FeedHealth from './FeedHealth'
 import Stats from './Stats'
 import Feeds from './Feeds'
 import Analytics from './Analytics'
@@ -41,6 +42,7 @@ export default function ThreatFeedPage({ statsData, feedVersion }: { statsData: 
 
         <Stats statsData={statsData} />
         <Feeds statsData={statsData} />
+        <FeedHealth />
         <Analytics statsData={statsData} feedVersion={feedVersion} />
 
         {/* Live intel panel — the old hero threat-map HUD, now a closing

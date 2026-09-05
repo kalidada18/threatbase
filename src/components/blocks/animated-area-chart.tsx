@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/area-chart";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import React, { useEffect, useState, useMemo } from "react";
-import { getBaseUrl, fmt, INDICATOR_ACCENT } from "../../utils";
+import { getBaseUrl, fmt, INDICATOR_ACCENT, feedPath } from "../../utils";
 
 type SeriesKey = "ipv4" | "ipv6" | "cidrs" | "domains" | "hashes" | "urls";
 
@@ -64,7 +64,7 @@ export default function AnimatedHighlightedAreaChart({ feedVersion }: { feedVers
     const loadHistory = async () => {
       const bust = 'v=' + (feedVersion || '') + '&_=' + Date.now()
       try {
-        const r = await fetch(GITHUB_RAW + 'history.json?' + bust)
+        const r = await fetch(GITHUB_RAW + feedPath('history.json') + '?' + bust)
         if (!r.ok) throw new Error('HTTP ' + r.status)
         apply(await r.json())
       } catch (err: any) {

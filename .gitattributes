@@ -1,7 +1,8 @@
 # Git LFS is intentionally NOT used in this repository.
 #
-# History: ioc/threatbase-domain.txt (~90 MiB) and ioc/threatbase-hash.txt
-# (~69 MiB) were tracked in LFS until 2026-08-16. Because they are regenerated
+# History: the unsplit threatbase-domain.txt (~90 MiB) and threatbase-hash.txt
+# (~69 MiB) — now under ioc/domain/ and ioc/hash/ — were tracked in LFS until
+# 2026-08-16. Because they are regenerated
 # in full on every feed run, each run stored a complete new blob — LFS never
 # deltas — which exhausted the 10 GB LFS budget in about two months.
 #
@@ -37,4 +38,4 @@
 #   3. Do not force text/eol conversion on the feeds. They are written with \n
 #      by update_feed.py and are byte-compared during verification; a CRLF
 #      rewrite on checkout would corrupt the reassembly check.
-ioc/*.txt -text
+ioc/**/*.txt -text

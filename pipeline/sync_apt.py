@@ -4,7 +4,7 @@ Threatbase — Top APT Attackers of the Day
 ==========================================
 Queries AlienVault OTX pulse search for a curated registry of well-known APT
 groups, counts pulses modified in the last 24h / 7d per group, and writes
-ioc/top_apt.json (powers /top-apt). Campaign list = the matching pulse titles
+ioc/data/top_apt.json (powers /top-apt). Campaign list = the matching pulse titles
 with links back to the source pulse.
 
 Requires OTX_API_KEY (GitHub Secret, already wired in update-feed.yml).
@@ -171,10 +171,10 @@ def main() -> int:
         "note": "Activity = threat-intel pulses (campaign reports) mentioning the group in the window. Vendor/community reporting — follow each link to its source.",
         "actors": actors,
     }
-    os.makedirs("ioc", exist_ok=True)
-    with open("ioc/top_apt.json", "w", encoding="utf-8") as f:
+    os.makedirs("ioc/data", exist_ok=True)
+    with open("ioc/data/top_apt.json", "w", encoding="utf-8") as f:
         json.dump(out, f, indent=1)
-    log.info("Wrote ioc/top_apt.json (%d active groups)", len(actors))
+    log.info("Wrote ioc/data/top_apt.json (%d active groups)", len(actors))
     return 0
 
 

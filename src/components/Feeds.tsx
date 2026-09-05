@@ -5,7 +5,7 @@ import Container from './layout/Container'
 import { SectionHeading } from './motion/SectionHeading'
 import { Spotlight } from './motion/Spotlight'
 import { Magnetic } from './motion/Magnetic'
-import { getDomainUrl, getHashUrl, INDICATOR_ACCENT } from '../utils'
+import { getDomainUrl, getHashUrl, INDICATOR_ACCENT, feedPath } from '../utils'
 
 /**
  * Icons are `img` + `invert` rather than inline JSX (same shape as Stats.tsx)
@@ -151,7 +151,7 @@ function FeedCard({ f, isSplit, chunks, wide = false }: { f: Feed; isSplit: bool
   const href =
     f.file === 'threatbase-domain.txt' ? getDomainUrl()
     : f.file === 'threatbase-hash.txt' ? getHashUrl()
-    : `https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/${f.file}`
+    : `https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/${feedPath(f.file)}`
 
   return (
     <Spotlight className="rounded-2xl h-full">
@@ -178,7 +178,7 @@ function FeedCard({ f, isSplit, chunks, wide = false }: { f: Feed; isSplit: bool
               <h3 className="text-lg font-bold text-white tracking-tight truncate">{f.name}</h3>
               {isSplit && (
                 <span
-                  title={`Also mirrored in this repo as ${chunks.length} chunks (${chunks.join(', ')}). Concatenating them in order reproduces this file exactly. See ioc/manifest.json for the chunk list and key ranges.`}
+                  title={`Also mirrored in this repo as ${chunks.length} chunks (${chunks.join(', ')}). Concatenating them in order reproduces this file exactly. See ioc/data/manifest.json for the chunk list and key ranges.`}
                   className="shrink-0 rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 font-mono text-[10px] font-medium text-slate-400 cursor-help"
                 >
                   {chunks.length} parts

@@ -47,11 +47,11 @@ ip2asn-v4.tsv.gz
 # They are rewritten in full every run, and committing them as single blobs is
 # what burned ~160 MiB of permanent Git LFS storage per run.
 #
-# Their size-bounded chunks (ioc/threatbase-domain-01.txt, -02.txt, …) ARE
-# committed, and are deliberately NOT matched by the two exact paths below.
+# Their size-bounded chunks (ioc/domain/threatbase-domain-01.txt, -02.txt, …)
+# ARE committed, and are deliberately NOT matched by the two exact paths below.
 # Ordinary git deltas them to ~14 KiB per run. See .gitattributes for the story.
-ioc/threatbase-domain.txt
-ioc/threatbase-hash.txt
+ioc/domain/threatbase-domain.txt
+ioc/hash/threatbase-hash.txt
 
 # API caches
 .otx_cache.json

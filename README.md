@@ -67,7 +67,7 @@ Threatbase is a **fully-automated threat-intelligence pipeline**. It ingests, va
 | **API & Community** | Cloudflare Functions · Supabase · KV rate limiting | Scan/report endpoints, auth-gated reporting, Turnstile |
 | **Delivery** | GitHub Raw | Zero-infra, always-on blocklist serving |
 | **Archives** | GitHub Releases | Daily ZIP snapshots for retrospective hunting |
-| **Large-feed mirrors** | Git chunks + Release assets | Domain/hash feeds ship as ~31 MiB chunks in `ioc/` and unsplit as release assets |
+| **Large-feed mirrors** | Git chunks + Release assets | Domain/hash feeds ship as ~31 MiB chunks in `ioc/domain/` + `ioc/hash/` and unsplit as release assets |
 
 ### 📁 Repository Structure
 
@@ -75,7 +75,13 @@ Threatbase is a **fully-automated threat-intelligence pipeline**. It ingests, va
 threatbase/
 ├── pipeline/    Feed engine: update_feed.py, sync_community_reports.py,
 │                requirements, whitelist, custom IOCs (run from repo root)
-├── ioc/         Generated feeds, stats, history, geo, top_ips.json (public)
+├── ioc/         Generated feeds, organised by type (public):
+│   ├── ip/      IPv4/IPv6/CIDR feeds, categories/, top_ips.json
+│   ├── domain/  domain feed chunks
+│   ├── hash/    hash feed chunks
+│   ├── url/     URL feed
+│   ├── firewall/ deploy-ready formats (EDL, ipset, Suricata, NDJSON.gz)
+│   └── data/    stats, manifest, history, geo, feed_health, community data
 ├── src/         Web console (Cloudflare Pages)
 ├── functions/   API endpoints: /api/v1/* scan, report, community (Cloudflare)
 ├── db/          Supabase SQL: schema, RLS, RPCs (apply manually, see db/README)
@@ -134,12 +140,16 @@ Threatbase curates and deduplicates from authoritative providers, including:
 
 Every feed is committed to this repo and served continuously via **GitHub Raw** — drop them straight into your tooling. No auth. No rate limits.
 
+> Feeds now live in type folders — `ioc/ip/`, `ioc/domain/`, `ioc/hash/`,
+> `ioc/url/`, `ioc/firewall/`, `ioc/data/`. The old flat `ioc/<file>` raw URLs
+> are retired; update your hotlinks. Release asset download URLs are unchanged.
+
 ### 🌐 Network Blocklists
 
 ```text
-https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/threatbase-ip.txt
-https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/threatbase-ipv6.txt
-https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/threatbase-cidr.txt
+https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/ip/threatbase-ip.txt
+https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/ip/threatbase-ipv6.txt
+https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/ip/threatbase-cidr.txt
 ```
 
 | Feed | File | Format |
@@ -152,16 +162,16 @@ https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/threatbase-cidr
 
 > Apply different policies per threat type — hard-block C2, just alert on Tor.
 
-Per-category IPv4 blocklists (same `IP,FeedCount,RiskScore,Tags` format) live under [`ioc/categories/`](ioc/categories/):
+Per-category IPv4 blocklists (same `IP,FeedCount,RiskScore,Tags` format) live under [`ioc/ip/categories/`](ioc/ip/categories/):
 
 ```text
-https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/categories/threatbase-ip-c2.txt
-https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/categories/threatbase-ip-botnet.txt
-https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/categories/threatbase-ip-bruteforce.txt
-https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/categories/threatbase-ip-tor.txt
-https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/categories/threatbase-ip-spam.txt
-https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/categories/threatbase-ip-exploit.txt
-https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/categories/threatbase-ip-malware.txt
+https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/ip/categories/threatbase-ip-c2.txt
+https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/ip/categories/threatbase-ip-botnet.txt
+https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/ip/categories/threatbase-ip-bruteforce.txt
+https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/ip/categories/threatbase-ip-tor.txt
+https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/ip/categories/threatbase-ip-spam.txt
+https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/ip/categories/threatbase-ip-exploit.txt
+https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/ip/categories/threatbase-ip-malware.txt
 ```
 
 | Category | File | Use Case |
@@ -174,7 +184,7 @@ https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/categories/thre
 | Exploit | `threatbase-ip-exploit.txt` | Active exploitation attempts |
 | Malware | `threatbase-ip-malware.txt` | Malware-hosting / delivery |
 
-<sub>Per-file counts are published in <a href="ioc/stats.json"><code>stats.json</code></a> under <code>ip_category_files</code>.</sub>
+<sub>Per-file counts are published in <a href="ioc/data/stats.json"><code>stats.json</code></a> under <code>ip_category_files</code>.</sub>
 
 ### 🕸️ DNS & Web Blocklists
 
@@ -182,7 +192,7 @@ https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/categories/thre
 
 ```text
 https://github.com/kalidada18/threatbase/releases/download/latest/threatbase-domain.txt
-https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/threatbase-url.txt
+https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/url/threatbase-url.txt
 ```
 
 | Feed | File | Format |
@@ -205,15 +215,16 @@ https://github.com/kalidada18/threatbase/releases/download/latest/threatbase-has
 ### 🧩 Chunked Mirrors of the Large Feeds
 
 > The domain and hash feeds exceed GitHub's 100 MiB single-file limit, so this
-> repo **also** carries them split into git-committed chunks under [`ioc/`](ioc/).
+> repo **also** carries them split into git-committed chunks under
+> [`ioc/domain/`](ioc/domain/) and [`ioc/hash/`](ioc/hash/).
 > Release assets (above) stay the recommended download for humans; the chunks are
 > for tooling that prefers plain raw.githubusercontent.com pulls.
 
 ```text
-https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/threatbase-domain-01.txt
-https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/threatbase-domain-02.txt
-https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/threatbase-hash-01.txt
-https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/threatbase-hash-02.txt
+https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/domain/threatbase-domain-01.txt
+https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/domain/threatbase-domain-02.txt
+https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/hash/threatbase-hash-01.txt
+https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/hash/threatbase-hash-02.txt
 ```
 
 <details>
@@ -225,8 +236,8 @@ https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/threatbase-hash
   individually sorted, and concatenating them in numeric order reproduces the
   unsplit file byte-for-byte.
 - The chunk **count is never fixed** — it grows as the feed grows. Read the
-  authoritative layout from [`ioc/manifest.json`](ioc/manifest.json) or the
-  `chunks` / `chunk_files` keys of [`ioc/stats.json`](ioc/stats.json) instead of
+  authoritative layout from [`ioc/data/manifest.json`](ioc/data/manifest.json) or the
+  `chunks` / `chunk_files` keys of [`ioc/data/stats.json`](ioc/data/stats.json) instead of
   hardcoding `2`.
 - Because ranges are contiguous, a lookup tool can binary-search a chunk
   directly, or skip all downloads when a query falls between two chunks' ranges.
@@ -240,7 +251,7 @@ https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/threatbase-hash
 ## 🔥 Deploy-Ready Formats
 
 > The pipeline publishes the IPv4 feed pre-shaped for firewalls, IPS and SIEMs —
-> no CSV parsing on your side. All under [`ioc/formats/`](ioc/formats/), all
+> no CSV parsing on your side. All under [`ioc/firewall/`](ioc/firewall/), all
 > hotlinkable, all checksummed in `manifest.json`.
 
 | File | Shape | For | ~Size |
@@ -253,7 +264,7 @@ https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/threatbase-hash
 
 ```bash
 # Linux firewall — one match rule instead of 900k:
-curl -sO https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/formats/ip.ipset
+curl -sO https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/firewall/ip.ipset
 sudo ipset restore < ip.ipset
 sudo iptables -I INPUT -m set --match-set threatbase src -j DROP
 
@@ -262,7 +273,7 @@ sudo iptables -I INPUT -m set --match-set threatbase src -j DROP
 #   rule-files: [threatbase-ip.rules]
 
 # SIEM bulk ingest (both Splunk HEC and Elastic _bulk accept gz):
-curl -s https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/formats/ip.jsonl.gz | gunzip
+curl -s https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/firewall/ip.jsonl.gz | gunzip
 ```
 
 > Why gate on source count and not risk score? ~99% of the feed is tier HIGH —
@@ -278,7 +289,7 @@ curl -s https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/formats
 <br/>
 
 ```bash
-curl -s https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/threatbase-ip.txt \
+curl -s https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/firewall/ip-plain.txt \
   | grep -v '^#' \
   | xargs -I{} sudo iptables -A INPUT -s {} -j DROP
 ```

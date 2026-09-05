@@ -63,7 +63,7 @@ jobs:
       # ── 5. Restore the accumulative feed database ─────────────────────────────
       #
       # update_feed.py is accumulative: it seeds each run from the PREVIOUS contents
-      # of ioc/*.txt (see load_previous_list). Steady state is that the committed
+      # of ioc/**/*.txt (see load_previous_list). Steady state is that the committed
       # threatbase-domain-NN.txt chunks are already in the checkout and
       # load_previous_list_chunked() reassembles them with no download at all.
       #
@@ -79,12 +79,14 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          mkdir -p ioc
+          mkdir -p ioc/domain ioc/hash
 
           for base in threatbase-domain threatbase-hash; do
-            count=$(ls -1 ioc/${base}-[0-9][0-9].txt 2>/dev/null | wc -l)
+            # Feeds live in their type folder: ioc/domain/, ioc/hash/.
+            dir=ioc/${base#threatbase-}
+            count=$(ls -1 "$dir/${base}"-[0-9][0-9].txt 2>/dev/null | wc -l)
             if [ "$count" -gt 0 ]; then
-              lines=$(cat ioc/${base}-[0-9][0-9].txt | wc -l)
+              lines=$(cat "$dir/${base}"-[0-9][0-9].txt | wc -l)
               echo "  ✓ ${base}: seeding from ${count} committed chunk(s), ${lines} lines"
               continue
             fi
@@ -96,16 +98,16 @@ jobs:
               continue
             fi
 
-            if ! gh release download latest --pattern "${base}.txt" --output "ioc/${base}.txt" --clobber; then
+            if ! gh release download latest --pattern "${base}.txt" --output "$dir/${base}.txt" --clobber; then
               echo "::error::Failed to download ${base}.txt from the 'latest' release."
               echo "::error::Refusing to continue — proceeding would silently truncate the feed."
               exit 1
             fi
-            if [ ! -s "ioc/${base}.txt" ]; then
-              echo "::error::Restored ioc/${base}.txt is empty. Refusing to continue."
+            if [ ! -s "$dir/${base}.txt" ]; then
+              echo "::error::Restored $dir/${base}.txt is empty. Refusing to continue."
               exit 1
             fi
-            echo "  ✓ ${base}: restored $(wc -l < "ioc/${base}.txt") lines from the release"
+            echo "  ✓ ${base}: restored $(wc -l < "$dir/${base}.txt") lines from the release"
           done
 
       # ── 6. Run the aggregator ────────────────────────────────────────────────
@@ -146,7 +148,7 @@ jobs:
           # re-tracked by accident. Note these pathspecs are exact filenames, so they
           # do not match the -NN chunks, which is intended.
           git add ioc/
-          git reset HEAD ioc/threatbase-domain.txt ioc/threatbase-hash.txt 2>/dev/null || true
+          git reset HEAD ioc/domain/threatbase-domain.txt ioc/hash/threatbase-hash.txt 2>/dev/null || true
           git add -f pipeline/custom_iocs.txt 2>/dev/null || true
 
           # Check whether any staged file actually changed
@@ -154,20 +156,20 @@ jobs:
             echo "✓ No changes detected — feed is already up-to-date. Skipping commit."
           else
             # Get current counts from stats.json
-            IP_COUNT=$(jq -r '.total_unique_ips' ioc/stats.json 2>/dev/null || echo "0")
-            IPV6_COUNT=$(jq -r '.total_unique_ipv6' ioc/stats.json 2>/dev/null || echo "0")
-            CIDR_COUNT=$(jq -r '.total_unique_cidrs' ioc/stats.json 2>/dev/null || echo "0")
-            DOMAIN_COUNT=$(jq -r '.total_unique_domains' ioc/stats.json 2>/dev/null || echo "0")
-            HASH_COUNT=$(jq -r '.total_unique_hashes' ioc/stats.json 2>/dev/null || echo "0")
-            URL_COUNT=$(jq -r '.total_unique_urls' ioc/stats.json 2>/dev/null || echo "0")
+            IP_COUNT=$(jq -r '.total_unique_ips' ioc/data/stats.json 2>/dev/null || echo "0")
+            IPV6_COUNT=$(jq -r '.total_unique_ipv6' ioc/data/stats.json 2>/dev/null || echo "0")
+            CIDR_COUNT=$(jq -r '.total_unique_cidrs' ioc/data/stats.json 2>/dev/null || echo "0")
+            DOMAIN_COUNT=$(jq -r '.total_unique_domains' ioc/data/stats.json 2>/dev/null || echo "0")
+            HASH_COUNT=$(jq -r '.total_unique_hashes' ioc/data/stats.json 2>/dev/null || echo "0")
+            URL_COUNT=$(jq -r '.total_unique_urls' ioc/data/stats.json 2>/dev/null || echo "0")
             
             # Get previous counts from HEAD
-            PREV_IP=$(git show HEAD:ioc/stats.json 2>/dev/null | jq -r '.total_unique_ips' 2>/dev/null || echo "0")
-            PREV_IPV6=$(git show HEAD:ioc/stats.json 2>/dev/null | jq -r '.total_unique_ipv6' 2>/dev/null || echo "0")
-            PREV_CIDR=$(git show HEAD:ioc/stats.json 2>/dev/null | jq -r '.total_unique_cidrs' 2>/dev/null || echo "0")
-            PREV_DOMAIN=$(git show HEAD:ioc/stats.json 2>/dev/null | jq -r '.total_unique_domains' 2>/dev/null || echo "0")
-            PREV_HASH=$(git show HEAD:ioc/stats.json 2>/dev/null | jq -r '.total_unique_hashes' 2>/dev/null || echo "0")
-            PREV_URL=$(git show HEAD:ioc/stats.json 2>/dev/null | jq -r '.total_unique_urls' 2>/dev/null || echo "0")
+            PREV_IP=$(git show HEAD:ioc/data/stats.json 2>/dev/null | jq -r '.total_unique_ips' 2>/dev/null || echo "0")
+            PREV_IPV6=$(git show HEAD:ioc/data/stats.json 2>/dev/null | jq -r '.total_unique_ipv6' 2>/dev/null || echo "0")
+            PREV_CIDR=$(git show HEAD:ioc/data/stats.json 2>/dev/null | jq -r '.total_unique_cidrs' 2>/dev/null || echo "0")
+            PREV_DOMAIN=$(git show HEAD:ioc/data/stats.json 2>/dev/null | jq -r '.total_unique_domains' 2>/dev/null || echo "0")
+            PREV_HASH=$(git show HEAD:ioc/data/stats.json 2>/dev/null | jq -r '.total_unique_hashes' 2>/dev/null || echo "0")
+            PREV_URL=$(git show HEAD:ioc/data/stats.json 2>/dev/null | jq -r '.total_unique_urls' 2>/dev/null || echo "0")
             
             # Calculate deltas
             fmt_diff() {
@@ -225,12 +227,12 @@ jobs:
           DATE_DOT=$(date -u +'%Y.%m.%d')
           echo "ARCHIVE_DATE=${DATE_DASH}" >> $GITHUB_ENV
           zip -j threatbase-archive-${DATE_DOT}.zip \
-            ioc/threatbase-ip.txt \
-            ioc/threatbase-ipv6.txt \
-            ioc/threatbase-cidr.txt \
-            ioc/threatbase-domain.txt \
-            ioc/threatbase-hash.txt \
-            ioc/threatbase-url.txt
+            ioc/ip/threatbase-ip.txt \
+            ioc/ip/threatbase-ipv6.txt \
+            ioc/ip/threatbase-cidr.txt \
+            ioc/domain/threatbase-domain.txt \
+            ioc/hash/threatbase-hash.txt \
+            ioc/url/threatbase-url.txt
 
       - name: Create Daily Archive Release
         uses: ncipollo/release-action@v1
@@ -238,7 +240,7 @@ jobs:
           tag: archive-${{ env.ARCHIVE_DATE }}
           name: Daily Feed Archive - ${{ env.ARCHIVE_DATE }}
           artifacts: >-
-            ioc/threatbase-ip.txt,ioc/threatbase-ipv6.txt,ioc/threatbase-cidr.txt,ioc/threatbase-domain.txt,ioc/threatbase-hash.txt,ioc/threatbase-url.txt,ioc/threatbase-ip.json,ioc/stats.json,ioc/manifest.json,threatbase-archive-*.zip
+            ioc/ip/threatbase-ip.txt,ioc/ip/threatbase-ipv6.txt,ioc/ip/threatbase-cidr.txt,ioc/domain/threatbase-domain.txt,ioc/hash/threatbase-hash.txt,ioc/url/threatbase-url.txt,ioc/data/stats.json,ioc/data/manifest.json,threatbase-archive-*.zip
           allowUpdates: true
           replacesArtifacts: true
           body: "Automated daily archive of the Threatbase threat intelligence database."
@@ -267,7 +269,7 @@ jobs:
           tag: latest
           name: Latest Feed
           artifacts: >-
-            ioc/threatbase-ip.txt,ioc/threatbase-ipv6.txt,ioc/threatbase-cidr.txt,ioc/threatbase-domain.txt,ioc/threatbase-hash.txt,ioc/threatbase-url.txt,ioc/threatbase-ip.json,ioc/stats.json,ioc/manifest.json
+            ioc/ip/threatbase-ip.txt,ioc/ip/threatbase-ipv6.txt,ioc/ip/threatbase-cidr.txt,ioc/domain/threatbase-domain.txt,ioc/hash/threatbase-hash.txt,ioc/url/threatbase-url.txt,ioc/data/stats.json,ioc/data/manifest.json
           allowUpdates: true
           replacesArtifacts: true
           makeLatest: true
@@ -283,11 +285,11 @@ jobs:
             | URLs | `https://github.com/kalidada18/threatbase/releases/download/latest/threatbase-url.txt` |
 
             The domain and hash feeds are too large for a single file in git, so the
-            repository also carries them split into ~45 MiB chunks under `ioc/`
-            (`threatbase-domain-01.txt`, `-02.txt`, …). Concatenating the chunks in
-            order reproduces the file above byte for byte. Read `manifest.json` for
-            the current chunk list and each chunk's key range — the number of chunks
-            grows with the feed, so please don't hardcode it.
+            repository also carries them split into ~45 MiB chunks under `ioc/domain/`
+            and `ioc/hash/` (`threatbase-domain-01.txt`, `-02.txt`, …). Concatenating
+            the chunks in order reproduces the file above byte for byte. Read
+            `manifest.json` for the current chunk list and each chunk's key range —
+            the number of chunks grows with the feed, so please don't hardcode it.
 
             For a point-in-time snapshot, use the dated `archive-YYYY-MM-DD` releases.
         env:

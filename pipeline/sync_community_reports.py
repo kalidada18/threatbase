@@ -4,7 +4,7 @@ Threatbase — Sync Community-Reported IPs from Supabase
 ========================================================
 Fetches new (unprocessed) reports from the Supabase `reported_ips` table,
 appends them to `custom_iocs.txt` (which update_feed.py already reads),
-marks them as processed in Supabase, and backs up to `ioc/community_reports.json`.
+marks them as processed in Supabase, and backs up to `ioc/data/community_reports.json`.
 """
 
 import json
@@ -107,8 +107,8 @@ def append_to_custom_iocs(ips):
 
 
 def backup_to_json(reports):
-    """Save a full backup of community reports to ioc/community_reports.json."""
-    backup_file = "ioc/community_reports.json"
+    """Save a full backup of community reports to ioc/data/community_reports.json."""
+    backup_file = "ioc/data/community_reports.json"
 
     existing = []
     if os.path.exists(backup_file):
@@ -153,12 +153,12 @@ def fetch_false_positives():
                 
         false_positives = [ip for ip, count in counts.items() if count >= 3]
         
-        os.makedirs("ioc", exist_ok=True)
-        with open("ioc/false_positives.txt", "w", encoding="utf-8") as f:
+        os.makedirs("ioc/data", exist_ok=True)
+        with open("ioc/data/false_positives.txt", "w", encoding="utf-8") as f:
             for ip in false_positives:
                 f.write(ip + "\n")
                 
-        log.info(f"  Saved {len(false_positives)} false positive IPs to ioc/false_positives.txt")
+        log.info(f"  Saved {len(false_positives)} false positive IPs to ioc/data/false_positives.txt")
         return false_positives
     except Exception as e:
         log.error(f"  Failed to fetch disputes: {e}")
@@ -328,7 +328,7 @@ def main():
     append_to_custom_iocs(valid_ips)
 
     # 4. Backup to JSON
-    log.info("Backing up reports to ioc/community_reports.json...")
+    log.info("Backing up reports to ioc/data/community_reports.json...")
     backup_to_json(reports)
 
     # 5. Mark as processed in Supabase

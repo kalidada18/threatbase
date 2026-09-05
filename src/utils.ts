@@ -91,6 +91,31 @@ export function getBaseUrl() {
 }
 
 /**
+ * Folder each ioc/ file now lives in, keyed by plain filename. The feed tree is
+ * organised by type (ip/, domain/, hash/, url/, data/); this map keeps every
+ * consumer spelling feeds by plain filename as before. Names that already carry
+ * a '/' (chunk metadata from stats.json/manifest.json) pass through untouched.
+ */
+const FEED_DIR: Record<string, string> = {
+  'threatbase-ip.txt': 'ip/',
+  'threatbase-ipv6.txt': 'ip/',
+  'threatbase-cidr.txt': 'ip/',
+  'top_ips.json': 'ip/',
+  'threatbase-domain.txt': 'domain/',
+  'threatbase-hash.txt': 'hash/',
+  'threatbase-url.txt': 'url/',
+}
+
+export function feedPath(filename: string): string {
+  if (filename.includes('/')) return filename
+  // Chunk names (threatbase-domain-01.txt, …) arrive verbatim from already
+  // published stats.json/manifest.json files, so route the prefixes too.
+  if (filename.startsWith('threatbase-domain-')) return 'domain/' + filename
+  if (filename.startsWith('threatbase-hash-')) return 'hash/' + filename
+  return (FEED_DIR[filename] ?? 'data/') + filename
+}
+
+/**
  * Base URL for the rolling `latest` release, which always holds the current
  * build of the two large feeds as single unsplit files. The scanner uses the
  * committed chunks instead (see CHUNKED_FEEDS below).

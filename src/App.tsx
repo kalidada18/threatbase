@@ -26,7 +26,7 @@ const TopAptPage = lazy(() => import('./components/TopAptPage'))
 const ApiDocsPage = lazy(() => import('./components/ApiDocsPage'))
 const ThreatFeedPage = lazy(() => import('./components/ThreatFeedPage'))
 import { AuthProvider } from './AuthContext'
-import { getBaseUrl, formatSyncTime } from './utils'
+import { getBaseUrl, formatSyncTime, feedPath } from './utils'
 import { scanIndicatorLogic } from './scanner'
 import { useSEO } from './useSEO'
 import InitialVerification from './components/InitialVerification'
@@ -140,7 +140,7 @@ export default function App() {
 
     const loadStats = async () => {
       try {
-        const r = await fetch(GITHUB_RAW + 'stats.json?_=' + Date.now())
+        const r = await fetch(GITHUB_RAW + feedPath('stats.json') + '?_=' + Date.now())
         if (!r.ok) throw new Error('HTTP ' + r.status)
         const d = await r.json()
         if (cancelled) return

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import IsoPageShell from './layout/IsoPageShell'
 import { useSEO } from '@/useSEO'
-import { getBaseUrl } from '@/utils'
+import { getBaseUrl, feedPath } from '@/utils'
 
 type Campaign = { title: string; url: string; modified: string; last_24h: boolean }
 type Actor = {
@@ -71,7 +71,7 @@ export default function TopAptPage() {
 
   useEffect(() => {
     let cancelled = false
-    fetch(getBaseUrl() + 'top_apt.json?_=' + Date.now())
+    fetch(getBaseUrl() + feedPath('top_apt.json') + '?_=' + Date.now())
       .then((r) => r.json())
       .then((d) => {
         if (cancelled) return

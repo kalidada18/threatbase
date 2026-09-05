@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { motion, useReducedMotion } from 'framer-motion'
 import IsoPageShell from './layout/IsoPageShell'
 import { useSEO } from '@/useSEO'
-import { getBaseUrl, fmt } from '@/utils'
+import { getBaseUrl, fmt, feedPath } from '@/utils'
 
 type Entry = {
   ip: string
@@ -33,8 +33,8 @@ export default function HallOfShamePage() {
   useEffect(() => {
     let cancelled = false
     Promise.all([
-      fetch(getBaseUrl() + 'top_ips.json?_=' + Date.now()).then((r) => r.json()),
-      fetch(getBaseUrl() + 'stats.json?_=' + Date.now()).then((r) => r.json()).catch(() => null),
+      fetch(getBaseUrl() + feedPath('top_ips.json') + '?_=' + Date.now()).then((r) => r.json()),
+      fetch(getBaseUrl() + feedPath('stats.json') + '?_=' + Date.now()).then((r) => r.json()).catch(() => null),
     ])
       .then(([top, stats]) => {
         if (cancelled) return

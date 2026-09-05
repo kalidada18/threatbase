@@ -5,6 +5,7 @@ import {
   getFeedChunks,
   selectChunkFor,
   CHUNKED_FEEDS,
+  feedPath,
 } from './utils'
 import supabaseClient from './supabaseClient'
 import { isStrictIpv6 } from './lib/ipValidation'
@@ -26,7 +27,7 @@ async function fetchStats(baseUrl: string, feedVersion: string | number, provide
   const key = `stats?v=${feedVersion}`
   if (key in statsCache) return statsCache[key]
   try {
-    const r = await fetch(`${baseUrl}stats.json?v=${feedVersion}`)
+    const r = await fetch(`${baseUrl}${feedPath('stats.json')}?v=${feedVersion}`)
     statsCache[key] = r.ok ? await r.json() : null
   } catch (e) {
     console.error('stats.json fetch failed, falling back to unsplit feeds:', e)
@@ -50,7 +51,7 @@ async function fetchAndCacheFeedText(
       ? `${getDomainUrl()}?v=${feedVersion}`
       : filename === 'threatbase-hash.txt'
       ? `${getHashUrl()}?v=${feedVersion}`
-      : `${baseUrl}${filename}?v=${feedVersion}`
+      : `${baseUrl}${feedPath(filename)}?v=${feedVersion}`
     const r = await fetch(url)
 
     if (r.ok) {
