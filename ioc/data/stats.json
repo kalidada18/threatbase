@@ -1,50 +1,45 @@
 {
-  "total_unique_ips": 912794,
-  "total_unique_ipv6": 15678,
-  "total_unique_cidrs": 20927,
-  "total_unique_domains": 3509276,
-  "total_unique_hashes": 1133317,
-  "total_unique_urls": 122372,
+  "total_unique_ips": 914100,
+  "total_unique_ipv6": 15778,
+  "total_unique_cidrs": 21026,
+  "total_unique_domains": 3509546,
+  "total_unique_hashes": 1133452,
+  "total_unique_urls": 122677,
   "active_feeds": 55,
   "category_counts": {
-    "Mixed": 687800,
-    "Malicious": 185581,
-    "Tor": 6809,
-    "Botnet": 2280,
-    "Brute-Force": 30249,
+    "Mixed": 686881,
+    "Malicious": 185795,
+    "Compromised": 15545,
+    "Tor": 6806,
+    "Botnet": 2311,
+    "Brute-Force": 30909,
     "Malware": 2728,
     "C2": 7607,
-    "Compromised": 15548,
-    "Exploit": 9812,
-    "Spam": 12634
+    "Exploit": 9717,
+    "Spam": 12627
   },
   "ip_category_files": {
-    "threatbase-ip-botnet.txt": 2280,
-    "threatbase-ip-bruteforce.txt": 30249,
+    "threatbase-ip-botnet.txt": 2311,
+    "threatbase-ip-bruteforce.txt": 30909,
     "threatbase-ip-c2.txt": 7607,
-    "threatbase-ip-compromised.txt": 15548,
-    "threatbase-ip-exploit.txt": 9812,
-    "threatbase-ip-malicious.txt": 185581,
+    "threatbase-ip-compromised.txt": 15545,
+    "threatbase-ip-exploit.txt": 9717,
+    "threatbase-ip-malicious.txt": 185795,
     "threatbase-ip-malware.txt": 2728,
-    "threatbase-ip-mixed.txt": 687800,
-    "threatbase-ip-spam.txt": 12634,
-    "threatbase-ip-tor.txt": 6809
+    "threatbase-ip-mixed.txt": 686881,
+    "threatbase-ip-spam.txt": 12627,
+    "threatbase-ip-tor.txt": 6806
   },
-  "ip_format_files": {
-    "ip-plain.txt": 912794,
-    "ip-multisource.txt": 304748,
-    "ip.ipset": 912794,
-    "ip-suricata.rules": 106486,
-    "ip.jsonl.gz": 912794
-  },
+  "ip_format_files": {},
+  "ip_category_format_files": {},
   "top_sources": {
     "ipsum": 132757,
     "romainmarcoux_outgoing_aa": 131072,
-    "romainmarcoux_outgoing_ab": 48503,
+    "romainmarcoux_outgoing_ab": 48600,
     "romainmarcoux_outgoing_40k": 40000,
-    "blocklist_de": 28006
+    "blocklist_de": 28064
   },
-  "last_updated": "2026-09-05T10:19:06.983680+00:00",
+  "last_updated": "2026-09-05T18:20:24.947179+00:00",
   "stale_indicators": 0,
   "avg_freshness_days": 1.9,
   "decay_config": {
@@ -77,39 +72,39 @@
       {
         "file": "domain/threatbase-domain-01.txt",
         "first": "0--4.com,2026-09-05",
-        "last": "gamethailand.xyz,2026-09-02",
-        "lines": 1183280,
-        "bytes": 36015605
+        "last": "gametogel2d.id,2026-09-02",
+        "lines": 1183372,
+        "bytes": 36018704
       },
       {
         "file": "domain/threatbase-domain-02.txt",
-        "first": "gamethethaotructuyen.xyz,2026-09-02",
-        "last": "setupnow.videosearchingspace2update.download,2026-09-02",
-        "lines": 1193934,
-        "bytes": 36015583
+        "first": "gametogetherz.com,2026-09-02",
+        "last": "setupoffice.co.uk,2026-09-02",
+        "lines": 1194021,
+        "bytes": 36018704
       },
       {
         "file": "domain/threatbase-domain-03.txt",
-        "first": "setupnow.videosearchingspace2update.stream,2026-09-02",
+        "first": "setupoffice.online,2026-09-02",
         "last": "zzzzzzzzzzzzz.com,2026-09-02",
-        "lines": 1132062,
-        "bytes": 36015561
+        "lines": 1132153,
+        "bytes": 36018692
       }
     ],
     "threatbase-hash.txt": [
       {
         "file": "hash/threatbase-hash-01.txt",
         "first": "00000077553a5b27a610ac98f29563bbd6e0decc020c2d49e4fa0d89197e7fd8,2026-09-02",
-        "last": "7fbd90ecc017dddf16fc3e56b2d058b46df9f07bd7a3f6c7731d270e7059a179,2026-09-02",
-        "lines": 566659,
-        "bytes": 43066084
+        "last": "7fbd517af91c4f1f9d15a887ba82e1f45cbb29eb7e2e0ca767e143b7469d1fd2,2026-09-02",
+        "lines": 566726,
+        "bytes": 43071176
       },
       {
         "file": "hash/threatbase-hash-02.txt",
-        "first": "7fbdacc83093cfc1e3c037463221fc735890db1f3eb2d9e23cc5e2443618e9c0,2026-09-02",
+        "first": "7fbd61b3875260fc6ba82aad937104afecdaf4c5c0bb2ba11b1057cdb74f245c,2026-09-02",
         "last": "ffffe8b36158ae710a9fbf0941f83625ae69f9f2070b3b04def6171b890a6dde,2026-09-02",
-        "lines": 566658,
-        "bytes": 43066008
+        "lines": 566726,
+        "bytes": 43071176
       }
     ]
   },
