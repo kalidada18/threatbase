@@ -1,5 +1,5 @@
 # Threatbase Threat Intelligence Feed - C2 IPs
-# Last update: Sat, 05 Sep 2026 02:19:00 +0000
+# Last update: Sat, 05 Sep 2026 06:52:29 +0000
 # Count: 7607
 # Format: IP,FeedCount,RiskScore,Tags,FirstSeen,LastSeen,Sources
 1.53.101.75,2,HIGH,C2,2026-09-02,2026-09-05,feodo_tracker_aggressive
@@ -1222,7 +1222,7 @@
 49.175.72.188,2,HIGH,C2,2026-09-02,2026-09-05,feodo_tracker_aggressive
 49.176.188.184,2,HIGH,C2,2026-09-02,2026-09-05,feodo_tracker_aggressive
 49.205.197.13,2,HIGH,C2,2026-09-02,2026-09-05,feodo_tracker_aggressive
-49.206.16.156,4,HIGH,C2|Malicious,2026-09-02,2026-09-05,feodo_tracker_aggressive|romainmarcoux_outgoing_40k|romainmarcoux_outgoing_aa
+49.206.16.156,3,HIGH,C2|Malicious,2026-09-02,2026-09-05,feodo_tracker_aggressive|romainmarcoux_outgoing_aa
 49.206.29.127,2,HIGH,C2,2026-09-02,2026-09-05,feodo_tracker_aggressive
 49.212.179.180,2,HIGH,C2,2026-09-02,2026-09-05,feodo_tracker_aggressive
 49.231.16.102,2,HIGH,C2,2026-09-02,2026-09-05,feodo_tracker_aggressive
@@ -5044,7 +5044,7 @@
 151.236.30.38,2,HIGH,C2,2026-09-02,2026-09-05,feodo_tracker_aggressive
 151.237.76.117,2,HIGH,C2,2026-09-02,2026-09-05,feodo_tracker_aggressive
 151.251.50.117,2,HIGH,C2,2026-09-02,2026-09-05,feodo_tracker_aggressive
-152.32.75.74,3,HIGH,C2|Malicious,2026-09-02,2026-09-05,feodo_tracker_aggressive|romainmarcoux_outgoing_ab
+152.32.75.74,3,HIGH,C2|Malicious,2026-09-02,2026-09-05,feodo_tracker_aggressive|romainmarcoux_outgoing_aa
 152.89.239.34,2,HIGH,C2,2026-09-02,2026-09-05,feodo_tracker_aggressive
 152.89.247.79,2,HIGH,C2,2026-09-02,2026-09-05,feodo_tracker_aggressive
 152.89.247.212,2,HIGH,C2,2026-09-02,2026-09-05,feodo_tracker_aggressive
