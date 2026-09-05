@@ -30,8 +30,11 @@
   </p>
 
   <p>
-    <a href="https://github.com/kalidada18/threatbase"><img src="https://github-readme-stats.vercel.app/api?username=kalidada18&repo=threatbase&show_icons=true&bg_color=0d1117&hide_border=true&icon_color=ef4444&title_color=cf1733&count_private=false" alt="Repo stats"></a>
-    <a href="https://github.com/kalidada18/threatbase"><img src="https://github-readme-stats.vercel.app/api/top-langs/?username=kalidada18&repo=threatbase&layout=donut&bg_color=0d1117&hide_border=true&title_color=cf1733" alt="Top languages"></a>
+    <a href="https://github.com/kalidada18/threatbase/stargazers"><img src="https://img.shields.io/github/stars/kalidada18/threatbase?style=social" alt="Stars"></a>
+    <a href="https://github.com/kalidada18/threatbase/network/members"><img src="https://img.shields.io/github/forks/kalidada18/threatbase?style=social" alt="Forks"></a>
+    <img src="https://img.shields.io/github/issues/kalidada18/threatbase" alt="Open issues">
+    <img src="https://img.shields.io/github/languages/top/kalidada18/threatbase" alt="Top language">
+    <img src="https://img.shields.io/github/last-commit/kalidada18/threatbase" alt="Last commit">
   </p>
 
   <br/>
