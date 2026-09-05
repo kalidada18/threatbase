@@ -28,6 +28,6 @@ export function isValidCategory(category: string): boolean {
   return (
     category.length > 0 &&
     category.length <= MAX_CATEGORY_LENGTH &&
-    /^[A-Za-z0-9 _\-/]+$/.test(category)
+    /^[A-Za-z0-9 ,_\-/]+$/.test(category)
   )
 }

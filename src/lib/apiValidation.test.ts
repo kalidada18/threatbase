@@ -47,6 +47,7 @@ describe('isValidCategory', () => {
     expect(isValidCategory('Malware')).toBe(true)
     expect(isValidCategory('C2/Botnet')).toBe(true)
     expect(isValidCategory('Brute-Force')).toBe(true)
+    expect(isValidCategory('Web App Attack, SQL Injection, Port Scan')).toBe(true)
   })
 
   it('rejects empty, overlong, or markup-bearing labels', () => {
