@@ -78,6 +78,8 @@
   html {
     -webkit-text-size-adjust: 100%;
     scrollbar-gutter: stable;
+    /* Liquid anchor jumps — compositor-driven, no cost on scroll frames. */
+    scroll-behavior: smooth;
   }
 
   body {
@@ -150,9 +152,11 @@
     @apply relative rounded-2xl border border-white/[0.06] bg-white/[0.025] backdrop-blur-xl;
     box-shadow: theme('boxShadow.glass-lux');
   }
-  /* Brighten + lift the hairline on hover (pairs with .glass-card). */
+  /* Brighten the hairline and lift on hover (pairs with .glass-card).
+     Transform-only lift: animating box-shadow repaints the whole card every
+     frame, which is the one hover effect that measurably drops framerate. */
   .glass-hover {
-    @apply transition-[border-color,background-color,box-shadow] duration-300 hover:border-white/[0.12] hover:bg-white/[0.04];
+    @apply transition-[border-color,background-color,transform] duration-300 ease-out hover:border-white/[0.12] hover:bg-white/[0.04] hover:-translate-y-0.5;
   }
   /* Unified accent chip for section icons (red = the locked accent). */
   .icon-chip {

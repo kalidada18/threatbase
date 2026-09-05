@@ -2,18 +2,25 @@ import { motion, useReducedMotion } from 'framer-motion'
 import type { ReactNode } from 'react'
 
 /**
- * Route-change wrapper: fade + slight rise + de-blur. Short exit keeps lazy
- * chunk swaps feeling instant. Collapses to opacity-only under reduced motion.
+ * Route-change wrapper: fade + slight rise on a light spring. Springs are
+ * frame-rate adaptive, so it settles identically smooth at 60 or 120 fps.
+ * (The old per-frame full-page blur was dropped: animating a filter
+ * re-rasterizes the whole viewport every frame — the one real jank source
+ * here.) Short tweened exit keeps lazy chunk swaps feeling instant.
  */
 export function PageTransition({ children, className }: { children: ReactNode; className?: string }) {
   const reduceMotion = useReducedMotion()
   return (
     <motion.div
       className={className}
-      initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 12, filter: 'blur(4px)' }}
-      animate={reduceMotion ? { opacity: 1 } : { opacity: 1, y: 0, filter: 'blur(0px)' }}
-      exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -8, filter: 'blur(4px)' }}
-      transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+      initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 10 }}
+      animate={reduceMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
+      exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -6 }}
+      transition={
+        reduceMotion
+          ? { duration: 0.2 }
+          : { type: 'spring', stiffness: 280, damping: 30, mass: 0.8 }
+      }
     >
       {children}
     </motion.div>
