@@ -3,10 +3,6 @@ import { Routes, Route, useLocation } from 'react-router-dom'
 import { MotionConfig, AnimatePresence } from 'framer-motion'
 import { HeroSection } from './components/blocks/hero-section-5'
 import ReportScanner from './components/ReportScanner'
-import Stats from './components/Stats'
-import Feeds from './components/Feeds'
-import HowItWorks from './components/HowItWorks'
-import Analytics from './components/Analytics'
 import Footer from './components/Footer'
 import ToastContainer from './components/ToastContainer'
 import Navbar from './components/Navbar'
@@ -28,6 +24,7 @@ const ImprovementsPage = lazy(() => import('./components/ImprovementsPage'))
 const HallOfShamePage = lazy(() => import('./components/HallOfShamePage'))
 const TopAptPage = lazy(() => import('./components/TopAptPage'))
 const ApiDocsPage = lazy(() => import('./components/ApiDocsPage'))
+const ThreatFeedPage = lazy(() => import('./components/ThreatFeedPage'))
 import { AuthProvider } from './AuthContext'
 import { getBaseUrl, formatSyncTime } from './utils'
 import { scanIndicatorLogic } from './scanner'
@@ -78,8 +75,10 @@ export default function App() {
     }, 4000)
   }, [])
 
-  const handleScan = useCallback(async () => {
-    let raw = scanInput.trim()
+  // inputOverride lets example chips scan immediately: setState + call in the
+  // same tick would otherwise read the stale scanInput closure.
+  const handleScan = useCallback(async (inputOverride?: string) => {
+    const raw = (inputOverride ?? scanInput).trim()
     if (!raw) return
 
     const now = Date.now()
@@ -111,11 +110,11 @@ export default function App() {
     lastScanTime.current = now
 
     // Perform scan directly without Turnstile
-    performScan()
+    performScan(raw)
   }, [scanInput, addToast])
 
   const performScan = useCallback(async (inputOverride?: string) => {
-    let raw = (inputOverride ?? scanInput).trim().replace(/[<>"'&]/g, '')
+    const raw = (inputOverride ?? scanInput).trim().replace(/[<>"'&]/g, '')
     
     setIsScanning(true)
     setShowReport(true)
@@ -184,15 +183,23 @@ export default function App() {
     performScan(searchParam)
   }, [location, isHumanVerified, performScan])
 
-  // Scroll to hash on page load or navigation
+  // Scroll to hash on page load or navigation. Routes are lazy chunks behind
+  // AnimatePresence transitions, so the target element usually does NOT exist
+  // yet when location changes (e.g. /threatfeed#feeds from the hero). Retry
+  // until the section mounts instead of silently no-oping.
   useEffect(() => {
     if (location.hash) {
-      const element = document.getElementById(location.hash.substring(1))
-      if (element) {
-        setTimeout(() => {
+      const id = decodeURIComponent(location.hash.slice(1))
+      const deadline = Date.now() + 3000
+      const timer = setInterval(() => {
+        const element = document.getElementById(id)
+        if (Date.now() > deadline) return clearInterval(timer)
+        if (element) {
+          clearInterval(timer)
           element.scrollIntoView({ behavior: 'smooth' })
-        }, 100)
-      }
+        }
+      }, 100)
+      return () => clearInterval(timer)
     } else if (location.pathname !== prevPathRef.current) {
       // Route change (not initial load): reset scroll to the top. The custom
       // event lets Lenis (when active) fast-forward its internal scroll
@@ -232,17 +239,14 @@ export default function App() {
               addToast={addToast}
             />
 
-            {/* Section order: Hero → HowItWorks → Stats → Feeds → Analytics.
-                Source credits live on the dedicated /thanks Intel Sources page.
-                Each section animates itself on scroll, so no wrapper here. */}
-            <HowItWorks />
-            <Stats statsData={statsData} />
-            <Feeds statsData={statsData} />
-            <Analytics statsData={statsData} feedVersion={feedVersion} />
+            {/* Home is the scan entry point only (Hero → ReportScanner).
+                Stats/Feeds/Analytics moved to /threatfeed; source credits live
+                on the dedicated /thanks Intel Sources page. */}
           </main>
           </PageTransition>
         } />
 
+        <Route path="/threatfeed" element={<PageTransition><ThreatFeedPage statsData={statsData} feedVersion={feedVersion} /></PageTransition>} />
         <Route path="/about" element={<PageTransition><AboutPage /></PageTransition>} />
         <Route path="/terms" element={<PageTransition><TermsPage /></PageTransition>} />
         <Route path="/privacy" element={<PageTransition><PrivacyPage /></PageTransition>} />

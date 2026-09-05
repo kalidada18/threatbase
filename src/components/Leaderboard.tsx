@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { motion, type Variants } from 'framer-motion'
-import { Diamond, Star, Shield, Trophy, Medal } from 'lucide-react'
 import supabaseClient from '../supabaseClient'
 import { fmt, getAvatarForName } from '../utils'
 import { useCountUp } from '../lib/useCountUp'
@@ -12,79 +11,46 @@ const getRankInfo = (count: number) => {
     return {
       name: 'Legend',
       accent: 'gold',
-      badge: 'bg-amber-400/10 border-amber-300/30 text-amber-200 group-hover:bg-amber-400/[0.16] group-hover:border-amber-300/50',
-      icon: <Trophy size={11} strokeWidth={2.5} />,
+      badge: 'bg-amber-400/10 border-amber-300/30 text-amber-200',
     }
   }
   if (count >= 300) {
     return {
       name: 'Elite',
       accent: 'platinum',
-      badge: 'bg-platinum-300/10 border-platinum-300/30 text-platinum-200 group-hover:bg-platinum-300/[0.16] group-hover:border-platinum-200/50',
-      icon: <Diamond size={11} strokeWidth={2.5} />,
+      badge: 'bg-platinum-300/10 border-platinum-300/30 text-platinum-200',
     }
   }
   if (count >= 100) {
     return {
       name: 'Pro',
       accent: 'steel',
-      badge: 'bg-slate-400/10 border-slate-400/25 text-slate-200 group-hover:bg-slate-400/[0.16] group-hover:border-slate-300/45',
-      icon: <Star size={11} strokeWidth={2.5} />,
+      badge: 'bg-slate-400/10 border-slate-400/25 text-slate-200',
     }
   }
   if (count >= 50) {
     return {
       name: 'Defender',
       accent: 'slate',
-      badge: 'bg-slate-500/10 border-slate-500/25 text-slate-300 group-hover:bg-slate-500/[0.16] group-hover:border-slate-400/40',
-      icon: <Shield size={11} strokeWidth={2.5} />,
+      badge: 'bg-slate-500/10 border-slate-500/25 text-slate-300',
     }
   }
   return null
 }
 
-// Top-3 ambient treatment: a soft ring + colored radial glow bleeding in from
-// the left edge of the row. Anything past 3rd place is visually neutral.
-const podiumStyle = (index: number) => {
-  switch (index) {
-    case 0:
-      return {
-        row: 'ring-1 ring-inset ring-amber-400/20 hover:ring-amber-300/30',
-        glow: 'bg-[radial-gradient(120%_140%_at_0%_50%,rgba(245,158,11,0.10),transparent_60%)]',
-      }
-    case 1:
-      return {
-        row: 'ring-1 ring-inset ring-slate-300/15 hover:ring-slate-200/25',
-        glow: 'bg-[radial-gradient(120%_140%_at_0%_50%,rgba(203,213,225,0.08),transparent_60%)]',
-      }
-    case 2:
-      return {
-        row: 'ring-1 ring-inset ring-orange-500/15 hover:ring-orange-400/25',
-        glow: 'bg-[radial-gradient(120%_140%_at_0%_50%,rgba(234,88,12,0.08),transparent_60%)]',
-      }
-    default:
-      return {
-        row: 'ring-1 ring-inset ring-white/[0.04] hover:ring-white/10',
-        glow: 'bg-transparent',
-      }
-  }
-}
-
-const MEDALS = ['1streward.png', '2ndmedal.png', '3rdmedal.png']
-
 const container: Variants = {
   hidden: {},
   show: {
-    transition: { staggerChildren: 0.07, delayChildren: 0.05 },
+    transition: { staggerChildren: 0.05, delayChildren: 0.05 },
   },
 }
 
 const rowVariants: Variants = {
-  hidden: { opacity: 0, y: 14 },
+  hidden: { opacity: 0, y: 10 },
   show: {
     opacity: 1,
     y: 0,
-    transition: { type: 'spring', stiffness: 260, damping: 26 },
+    transition: { type: 'spring', stiffness: 260, damping: 28 },
   },
 }
 
@@ -92,9 +58,74 @@ const rowVariants: Variants = {
 function RowScore({ count, active }: { count: number; active: boolean }) {
   const value = useCountUp(active ? count : null, 1400)
   return (
-    <div className="font-elegant text-lg sm:text-xl font-bold leading-none tracking-tight text-white tabular-nums">
+    <div className="font-mono text-lg sm:text-xl font-semibold leading-none tracking-tight text-white tabular-nums">
       {fmt(value)}
     </div>
+  )
+}
+
+// Flat editorial rows: hairline rules double as relative-share bars, ranks are
+// mono digits, no medals/glow treatment. One accent (ruby) fills the leader's
+// share line; everyone else reads against it.
+function Row({ leader, index, max }: { leader: any; index: number; max: number }) {
+  const rank = getRankInfo(leader.reports_count)
+  // Use data-driven role check instead of hardcoded usernames.
+  // The top_contributors view should expose an is_admin/role column.
+  const isAdmin = leader.is_admin === true || leader.role === 'admin'
+  const share = max > 0 ? Math.max(2, Math.round((leader.reports_count / max) * 100)) : 0
+
+  return (
+    <motion.li
+      variants={rowVariants}
+      className="group relative"
+    >
+      <div className="grid grid-cols-[1.75rem_2.25rem_1fr_auto] sm:grid-cols-[2.25rem_2.5rem_1fr_auto] items-center gap-3 sm:gap-4 px-2 sm:px-4 py-4 transition-colors duration-200 hover:bg-white/[0.02]">
+        {/* Rank: quiet mono digits, leader promoted to white */}
+        <span className={`font-mono text-xs font-medium tabular-nums ${index === 0 ? 'text-white' : 'text-slate-600'}`}>
+          {String(index + 1).padStart(2, '0')}
+        </span>
+
+        <img
+          src={leader.avatar_url || getAvatarForName(leader.reporter_alias)}
+          alt=""
+          className="h-9 w-9 flex-shrink-0 rounded-full border border-white/[0.08] bg-black/20 object-cover"
+        />
+
+        <div className="flex min-w-0 flex-col gap-1.5">
+          <div className="flex items-center gap-2 min-w-0">
+            <h4 className="truncate text-[15px] font-semibold leading-none tracking-tight text-white/85 transition-colors duration-200 group-hover:text-white">
+              @{leader.reporter_alias}
+            </h4>
+            {isAdmin && (
+              <span className="flex flex-shrink-0 items-center gap-1">
+                <img src={`${import.meta.env.BASE_URL}img/admin.png`} title="Admin" alt="Admin" className="h-5 w-5 object-contain" />
+                <img src={`${import.meta.env.BASE_URL}img/hunter.png`} title="Hunter" alt="Hunter" className="h-5 w-5 object-contain" />
+              </span>
+            )}
+          </div>
+          {rank && (
+            <span className={`inline-flex w-fit rounded-md border px-2 py-0.5 text-[10px] font-bold uppercase leading-none tracking-wider ${rank.badge}`}>
+              {rank.name}
+            </span>
+          )}
+        </div>
+
+        <div className="flex flex-col items-end justify-center pl-1 text-right">
+          <RowScore count={leader.reports_count} active={true} />
+          <div className="mt-1 text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500 whitespace-nowrap">
+            Intel Reports
+          </div>
+        </div>
+      </div>
+
+      {/* Hairline rule that is also the relative-share bar vs. the leader */}
+      <div className="absolute inset-x-0 bottom-0 h-px bg-white/[0.05]">
+        <div
+          className={`h-full transition-[width] duration-700 ease-out ${index === 0 ? 'bg-red-500/50' : 'bg-slate-600/50'}`}
+          style={{ width: `${share}%` }}
+        />
+      </div>
+    </motion.li>
   )
 }
 
@@ -130,108 +161,44 @@ export default function Leaderboard() {
   }, [])
 
   if (loading && leaders.length === 0) {
+    // Skeletons matching the final row shape (rank, avatar, name, score).
     return (
-      <div className="flex justify-center py-16">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="w-full">
+        {Array.from({ length: 4 }, (_, i) => (
+          <div key={i} className="grid grid-cols-[1.75rem_2.25rem_1fr_auto] sm:grid-cols-[2.25rem_2.5rem_1fr_auto] items-center gap-3 sm:gap-4 border-b border-white/[0.04] px-2 sm:px-4 py-4">
+            <div className="h-3 w-5 animate-pulse rounded bg-white/[0.05]" />
+            <div className="h-9 w-9 animate-pulse rounded-full bg-white/[0.05]" />
+            <div className="space-y-2">
+              <div className="h-3 w-32 animate-pulse rounded bg-white/[0.05]" />
+              <div className="h-2.5 w-16 animate-pulse rounded bg-white/[0.04]" />
+            </div>
+            <div className="h-4 w-10 animate-pulse rounded bg-white/[0.05]" />
+          </div>
+        ))}
       </div>
     )
   }
 
   if (leaders.length === 0) {
     return (
-      <div className="text-center py-16 text-slate-500">
-        <Medal size={48} className="mx-auto mb-4 opacity-30" />
-        <p>No contributors yet. Be the first to earn a rank!</p>
+      <div className="px-4 py-14 text-center text-sm text-slate-500">
+        No contributors yet. Be the first to earn a rank.
       </div>
     )
   }
+
+  const max = leaders[0]?.reports_count || 1
 
   return (
     <motion.ol
       variants={container}
       initial="hidden"
       animate="show"
-      className="w-full flex flex-col gap-2"
+      className="w-full"
     >
-      {leaders.map((leader, index) => {
-        const rank = getRankInfo(leader.reports_count)
-        const podium = podiumStyle(index)
-        // Use data-driven role check instead of hardcoded usernames.
-        // The top_contributors view should expose an is_admin/role column.
-        const isAdmin = leader.is_admin === true || leader.role === 'admin'
-
-        return (
-          <motion.li
-            key={leader.reporter_alias}
-            variants={rowVariants}
-            className={`group relative overflow-hidden rounded-xl transition-all duration-300 ease-out
-              bg-white/[0.015] hover:bg-white/[0.04] hover:translate-x-1 ${podium.row}`}
-          >
-            {/* podium ambient glow */}
-            <div className={`pointer-events-none absolute inset-0 opacity-70 transition-opacity duration-500 group-hover:opacity-100 ${podium.glow}`} />
-
-            <div className="relative z-10 grid grid-cols-[2.75rem_1fr_auto] sm:grid-cols-[3rem_1fr_auto] items-center gap-3 sm:gap-4 px-3 sm:px-4 py-3.5">
-              {/* Rank / medal — top-3 get a shine sweep across the medal on hover */}
-              <div className="flex items-center justify-center">
-                {index < 3 ? (
-                  <span className="relative inline-block overflow-hidden rounded-full">
-                    <img
-                      src={`${import.meta.env.BASE_URL}img/${MEDALS[index]}`}
-                      alt={`Rank ${index + 1}`}
-                      className="w-8 h-8 sm:w-9 sm:h-9 object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)] transition-transform duration-300 group-hover:scale-110"
-                    />
-                    <span
-                      aria-hidden
-                      className="pointer-events-none absolute inset-0 -translate-x-[130%] skew-x-12 bg-gradient-to-r from-transparent via-white/50 to-transparent transition-transform duration-700 ease-out group-hover:translate-x-[130%] motion-reduce:hidden"
-                    />
-                  </span>
-                ) : (
-                  <span className="flex h-9 w-9 items-center justify-center rounded-full font-elegant text-sm font-bold text-slate-500 tabular-nums transition-colors duration-300 group-hover:text-slate-300">
-                    {index + 1}
-                  </span>
-                )}
-              </div>
-
-              {/* User info */}
-              <div className="flex items-center gap-3 min-w-0">
-                <img
-                  src={leader.avatar_url || getAvatarForName(leader.reporter_alias)}
-                  alt=""
-                  className="h-9 w-9 flex-shrink-0 rounded-full border border-white/10 bg-black/20 object-cover drop-shadow-sm transition-transform duration-300 group-hover:scale-105"
-                />
-                <div className="flex flex-col gap-1.5 min-w-0">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <h4 className="truncate font-elegant text-[15px] font-semibold leading-none tracking-tight text-white/85 transition-colors duration-300 group-hover:text-white">
-                      @{leader.reporter_alias}
-                    </h4>
-                    {isAdmin && (
-                      <span className="flex flex-shrink-0 items-center gap-1">
-                        <img src={`${import.meta.env.BASE_URL}img/admin.png`} title="Admin" alt="Admin" className="h-5 w-5 object-contain drop-shadow transition-transform duration-300 group-hover:scale-110" />
-                        <img src={`${import.meta.env.BASE_URL}img/hunter.png`} title="Hunter" alt="Hunter" className="h-5 w-5 object-contain drop-shadow transition-transform duration-300 group-hover:scale-110" />
-                      </span>
-                    )}
-                  </div>
-                  {/* Rank badge — premium SaaS tag */}
-                  {rank && (
-                    <span className={`inline-flex w-fit items-center gap-1.5 rounded-md border px-2 py-0.5 text-[10px] font-bold uppercase leading-none tracking-wider transition-all duration-300 ${rank.badge}`}>
-                      {rank.icon}
-                      {rank.name}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {/* Score — counts up when the row mounts */}
-              <div className="flex flex-col items-end justify-center pl-1 text-right">
-                <RowScore count={leader.reports_count} active={true} />
-                <div className="mt-1 text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500 whitespace-nowrap">
-                  Intel Reports
-                </div>
-              </div>
-            </div>
-          </motion.li>
-        )
-      })}
+      {leaders.map((leader, index) => (
+        <Row key={leader.reporter_alias} leader={leader} index={index} max={max} />
+      ))}
     </motion.ol>
   )
 }

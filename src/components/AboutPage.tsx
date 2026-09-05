@@ -1,8 +1,8 @@
-import React, { useRef } from 'react'
-import { motion, useReducedMotion, useScroll, useSpring } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import IsoPageShell from './layout/IsoPageShell'
-import { Search, ShieldCheck, Share2, ArrowRight, Github, Database, Radar, Zap } from 'lucide-react'
+import HowItWorks from './HowItWorks'
+import { ShieldCheck, ArrowRight, Github, Database, Radar, Zap } from 'lucide-react'
 import { useSEO } from '@/useSEO'
 import { TiltCard } from './motion/TiltCard'
 import { Typewriter } from './motion/Typewriter'
@@ -42,24 +42,6 @@ export default function AboutPage() {
     { value: "24/7", label: "Live Feed Sync" },
     { value: "Open", label: "Source & Free" },
     { value: "Global", label: "Community" },
-  ]
-
-  const steps = [
-    {
-      icon: Search,
-      title: "Scan & Investigate",
-      desc: "Look up any IP or domain against aggregated blocklists and community reports in real time.",
-    },
-    {
-      icon: ShieldCheck,
-      title: "Report Threats",
-      desc: "Submit malicious indicators with evidence. Whitelist protection prevents false positives automatically.",
-    },
-    {
-      icon: Share2,
-      title: "Defend Together",
-      desc: "Verified submissions feed high-performance blocklists that defenders deploy worldwide.",
-    },
   ]
 
   return (
@@ -126,7 +108,7 @@ export default function AboutPage() {
         </motion.div>
 
         {/* Feature Grid (Asymmetric Bento) */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto w-full mb-28">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto w-full">
           {features.map((f, i) => (
             <motion.div
               initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
@@ -155,24 +137,9 @@ export default function AboutPage() {
           ))}
         </div>
 
-        {/* How it works (Ruby-node flow) */}
-        <div className="max-w-4xl mx-auto w-full mb-28 relative z-10">
-          <motion.div
-            initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-white mb-3">
-              How It Works
-            </h2>
-            <p className="text-slate-400 max-w-xl mx-auto">
-              A simple loop that turns individual observations into collective defense.
-            </p>
-          </motion.div>
-
-          <AboutTimeline steps={steps} prefersReducedMotion={prefersReducedMotion} />
+        {/* How it works — full section with its own heading and rhythm */}
+        <div className="w-full max-w-5xl mx-auto">
+          <HowItWorks />
         </div>
 
         {/* CTA */}
@@ -215,50 +182,5 @@ export default function AboutPage() {
         </motion.div>
 
     </IsoPageShell>
-  )
-}
-
-/** About-page step timeline with a connecting line that draws as you scroll. */
-function AboutTimeline({ steps, prefersReducedMotion }: { steps: { icon: React.ComponentType<{ className?: string; strokeWidth?: number }>; title: string; desc: string }[]; prefersReducedMotion: boolean | null }) {
-  const timelineRef = useRef<HTMLDivElement>(null)
-  const { scrollYProgress } = useScroll({
-    target: timelineRef,
-    offset: ['start 0.85', 'end 0.45'],
-  })
-  const lineScale = useSpring(scrollYProgress, { stiffness: 90, damping: 24 })
-
-  return (
-    <div ref={timelineRef} className="relative space-y-12">
-      {/* Track + scroll-linked fill */}
-      <div className="absolute left-[27px] md:left-[35px] top-8 bottom-8 w-px bg-white/[0.07]" />
-      <motion.div
-        className="absolute left-[27px] md:left-[35px] top-8 bottom-8 w-px origin-top bg-gradient-to-b from-red-500/70 via-red-500/30 to-transparent"
-        style={{ scaleY: prefersReducedMotion ? 1 : lineScale }}
-      />
-
-      {steps.map((s, i) => {
-        const Icon = s.icon
-        return (
-          <motion.div
-            key={s.title}
-            initial={prefersReducedMotion ? false : { opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: '-40px' }}
-            transition={{ delay: i * 0.1, duration: 0.5 }}
-            className="group relative flex gap-6 md:gap-8 items-start"
-          >
-            <div className="relative z-10 shrink-0">
-              <div className="icon-chip h-14 w-14 md:h-16 md:w-16 shadow-glass-lux group-hover:border-red-500/30 group-hover:shadow-[0_0_24px_-4px_rgba(207,23,51,0.25)] group-hover:scale-105 transition-all duration-300">
-                <Icon className="h-6 w-6 text-red-400 group-hover:text-red-300 transition-colors" strokeWidth={1.8} />
-              </div>
-            </div>
-            <div className="pt-2">
-              <h3 className="text-xl md:text-2xl font-bold text-white mb-2 tracking-tight group-hover:text-red-50 transition-colors">{s.title}</h3>
-              <p className="text-slate-400 leading-relaxed max-w-lg group-hover:text-slate-300 transition-colors">{s.desc}</p>
-            </div>
-          </motion.div>
-        )
-      })}
-    </div>
   )
 }

@@ -60,7 +60,7 @@ export const onRequest = async (context: any) => {
       const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
       const rlKey = `rl_${hashHex}_${today}`;
       const currentVal = await kv.get(rlKey);
-      let count = currentVal ? parseInt(currentVal, 10) : 0;
+      const count = currentVal ? parseInt(currentVal, 10) : 0;
 
       if (count >= 1000) {
         return new Response(JSON.stringify({ error: 'Rate limit exceeded. Maximum 1000 requests per day.' }), { status: 429, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': getAllowedOrigin(request) } });

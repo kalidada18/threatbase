@@ -85,7 +85,7 @@ function CategoryChart({ categories }: any) {
             fontWeight: '600',
             padding: '12px 16px',
           }}
-          formatter={(value: number, name: string) => [fmt(value), name]}
+          formatter={(value, name) => [fmt(Number(value)), name]}
           labelStyle={{ display: 'none' }}
           cursor={false}
         />

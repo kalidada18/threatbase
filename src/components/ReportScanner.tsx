@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
-import { Bug, ShieldCheck, AlertTriangle, AlertOctagon, ChevronRight, Search, Check, ShieldAlert, Copy } from 'lucide-react'
+import { useState, useEffect, useMemo } from 'react'
+import { motion, AnimatePresence, useReducedMotion, useMotionValue, useTransform, animate } from 'framer-motion'
+import { Bug, ShieldCheck, AlertTriangle, AlertOctagon, ChevronRight, Search, Check, ShieldAlert, Copy, Globe } from 'lucide-react'
 import DOMPurify from 'dompurify'
 import supabaseClient from '../supabaseClient'
 import { timeAgo, normalizeTags, categoryTier, TIER_CHIP, TIER_ACCENT } from '../utils'
@@ -36,6 +36,9 @@ function computeConfidence(scanResult: any, reportCount: number): number {
   // Corroborating community reports nudge confidence up.
   score += Math.min(reportCount, 8) * 1.5
 
+  // More than 10 independent feeds is overwhelming corroboration: lock at 100.
+  if (feeds > 10) return 100
+
   return Math.max(0, Math.min(99, Math.round(score)))
 }
 
@@ -43,8 +46,44 @@ const getConfidenceTier = (score: number) => {
   if (score >= 75) return { label: 'Critical', text: 'text-rose-400', bar: 'bg-rose-500', track: 'shadow-rose-500/20' }
   if (score >= 50) return { label: 'High', text: 'text-orange-400', bar: 'bg-orange-500', track: 'shadow-orange-500/20' }
   if (score >= 25) return { label: 'Elevated', text: 'text-yellow-400', bar: 'bg-yellow-500', track: 'shadow-yellow-500/20' }
-  return { label: 'Minimal', text: 'text-primary', bar: 'bg-primary', track: 'shadow-primary/20' }
+  // Minimal reads as safe, so it must not borrow the ruby accent (primary IS red).
+  return { label: 'Minimal', text: 'text-emerald-400', bar: 'bg-emerald-500', track: 'shadow-emerald-500/20' }
 }
+
+// Semantic verdict lock: safe = emerald, danger = ruby, disputed = amber,
+// invalid = slate. Primary is ruby, so safe states never reference it.
+const VERDICT_META: Record<string, { text: string; chip: string; ring: string; rail: string; glow: string }> = {
+  danger: {
+    text: 'text-red-400',
+    chip: 'border-red-500/30 bg-red-500/10 text-red-400',
+    ring: 'bg-red-500/30',
+    rail: 'via-red-500/80',
+    glow: 'bg-red-600/30',
+  },
+  safe: {
+    text: 'text-emerald-400',
+    chip: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400',
+    ring: '',
+    rail: 'via-emerald-500/70',
+    glow: 'bg-emerald-600/25',
+  },
+  disputed: {
+    text: 'text-amber-400',
+    chip: 'border-amber-500/30 bg-amber-500/10 text-amber-400',
+    ring: '',
+    rail: 'via-amber-500/70',
+    glow: 'bg-amber-500/25',
+  },
+  warn: {
+    text: 'text-slate-300',
+    chip: 'border-white/15 bg-white/[0.05] text-slate-400',
+    ring: '',
+    rail: 'via-slate-500/60',
+    glow: 'bg-slate-500/20',
+  },
+}
+
+const METER_SEGMENTS = 20
 
 const getCategoryColor = (cat: string) => TIER_CHIP[categoryTier(cat)]
 
@@ -78,6 +117,276 @@ function labelSources(keys: string[]): string[] {
     if (!out.includes(label)) out.push(label)
   }
   return out
+}
+
+// RDAP answers from rdap.org are heterogeneous (registrar vs registry,
+// vcard vs plain name, string vs array eventAction). Parse everything with
+// optional chaining and render only the fields that came back.
+function WhoisSection({ scanResult, ip, abuseHref }: any) {
+  const isDomain = !!scanResult?.isDomain
+  const [fields, setFields] = useState<[string, string][] | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [failed, setFailed] = useState(false)
+
+  useEffect(() => {
+    if (!ip) return
+    let cancelled = false
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 8000)
+    setLoading(true)
+    setFailed(false)
+    setFields(null)
+
+    const url = isDomain
+      ? `https://rdap.org/domain/${encodeURIComponent(ip)}`
+      : `https://rdap.org/ip/${encodeURIComponent(ip)}`
+
+    fetch(url, { signal: controller.signal })
+      .then(r => {
+        if (!r.ok) throw new Error('rdap http')
+        return r.json()
+      })
+      .then(json => {
+        clearTimeout(timeoutId)
+        if (cancelled) return
+        const fmtDate = (s: any) => {
+          const d = new Date(String(s))
+          return isNaN(d.getTime()) ? '' : d.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })
+        }
+        const events: Record<string, string> = {}
+        for (const ev of Array.isArray(json?.events) ? json.events : []) {
+          const actions: string[] = Array.isArray(ev?.eventAction) ? ev.eventAction : [ev?.eventAction]
+          const action = actions.find(a => a === 'registration' || a === 'last changed' || a === 'expiration')
+          if (action && ev?.eventDate) events[action] = fmtDate(ev.eventDate)
+        }
+        const registrar = (Array.isArray(json?.entities) ? json.entities : []).find((e: any) => (e?.roles || []).includes('registrar'))
+        const vcards: any[] = Array.isArray(registrar?.vcardArray?.[1]) ? registrar.vcardArray[1] : []
+        const organization = vcards.find((v: any) => v?.[0] === 'fn')?.[3] || registrar?.name || ''
+        const adr = vcards.find((v: any) => v?.[0] === 'adr')
+        const country = (Array.isArray(json?.publicIds) ? json.publicIds : []).find((p: any) => p?.type === 'country')?.identifier || adr?.[3]?.[6] || ''
+        const rows: [string, string][] = []
+        // IPs: the card's intel grid already shows ISP/Country, and RDAP's
+        // network name/organization/country are the same entity in another
+        // casing. Keep registration data to what the grid does NOT have.
+        if (!isDomain) {
+          if (events['registration']) rows.push(['Registered', events['registration']])
+          if (events['last changed']) rows.push(['Last changed', events['last changed']])
+          if (events['expiration']) rows.push(['Expires', events['expiration']])
+          const cidr = Array.isArray(json?.cidr) ? json.cidr.join(', ') : (json?.cidr || '')
+          if (cidr) rows.push(['Network', String(cidr)])
+          if (json?.parentHandle) rows.push(['Parent handle', String(json.parentHandle)])
+        } else {
+          if (organization) rows.push(['Organization', String(organization)])
+          if (country) rows.push(['Country', String(country)])
+          if (events['registration']) rows.push(['Registered', events['registration']])
+          if (events['last changed']) rows.push(['Last changed', events['last changed']])
+          if (events['expiration']) rows.push(['Expires', events['expiration']])
+        }
+        setFields(rows)
+        setLoading(false)
+      })
+      .catch(() => {
+        clearTimeout(timeoutId)
+        if (!cancelled) {
+          setFailed(true)
+          setLoading(false)
+        }
+      })
+
+    return () => {
+      cancelled = true
+      clearTimeout(timeoutId)
+      controller.abort()
+    }
+  }, [ip, isDomain])
+
+  return (
+    <div className="w-full">
+      <h3 className="text-xl md:text-2xl font-black text-white tracking-tight mb-2">Registration data</h3>
+      {loading ? (
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(15rem,1fr))] gap-3">
+          {Array.from({ length: 6 }, (_, i) => (
+            <div key={i} className="rounded-xl border border-slate-800 bg-slate-900 px-4 py-4 animate-pulse">
+              <div className="mb-2 h-2 w-16 rounded bg-slate-800" />
+              <div className="h-3 w-2/3 rounded bg-slate-800" />
+            </div>
+          ))}
+        </div>
+      ) : failed ? (
+        <p className="text-sm text-slate-400">
+          Could not load registration data.{' '}
+          <a href={abuseHref} target="_blank" rel="noopener" className="font-semibold text-platinum-200 underline-offset-4 hover:underline">
+            Use an external whois lookup
+          </a>
+          .
+        </p>
+      ) : fields && fields.length > 0 ? (
+        <>
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(15rem,1fr))] gap-3">
+            {fields.map(([label, value]) => (
+              <div key={label} className="rounded-xl border border-slate-800 bg-slate-900 px-4 py-4">
+                <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-platinum-500">{label}</div>
+                <div className="break-all text-sm font-medium text-slate-100">{value}</div>
+              </div>
+            ))}
+          </div>
+          <a href={abuseHref} target="_blank" rel="noopener" className="mt-3 inline-flex items-center gap-1.5 text-xs text-slate-500 transition-colors hover:text-slate-300">
+            <Globe size={12} strokeWidth={2} />
+            Full whois record on whois.com
+          </a>
+        </>
+      ) : (
+        <p className="text-sm text-slate-400">No registration records returned for this {scanResult?.isDomain ? 'domain' : 'address'}.</p>
+      )}
+    </div>
+  )
+}
+
+function CommentsSection({ ip, addToast }: { ip: string; addToast: (msg: string, type: string) => void }) {
+  const { user, profile, signInWithGoogle } = useAuth()
+  const [comments, setComments] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [body, setBody] = useState('')
+  const [posting, setPosting] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    setComments([])
+    if (!ip || !supabaseClient) {
+      setLoading(false)
+      return
+    }
+    setLoading(true)
+    // Promise.resolve: the Supabase builder is only *thenable* (see reports fetch above).
+    void Promise.resolve(supabaseClient
+      .from('comments')
+      .select('id, body, username, user_id, created_at')
+      .eq('indicator', ip)
+      .order('created_at', { ascending: false })
+      .limit(50))
+      .then(({ data }) => {
+        if (cancelled) return
+        if (data) setComments(data)
+        setLoading(false)
+      })
+      .catch(() => { if (!cancelled) setLoading(false) })
+    return () => { cancelled = true }
+  }, [ip])
+
+  const handlePost = async () => {
+    if (!user) return
+    const text = body.trim()
+    if (!text) return addToast('Please write a comment first.', 'error')
+    if (text.length > 1000) return addToast('Comment must be under 1000 characters.', 'error')
+    if (!supabaseClient) return addToast('Database connection unavailable.', 'error')
+
+    setPosting(true)
+    try {
+      const { data, error } = await supabaseClient.from('comments').insert([{
+        indicator: ip,
+        body: text,
+        user_id: user.id,
+        username: profile?.username || user.email?.split('@')[0] || 'contributor'
+      }]).select('id, body, username, user_id, created_at').single()
+
+      if (error) throw error
+      setComments(prev => [data || { id: crypto.randomUUID(), body: text, username: profile?.username || 'contributor', user_id: user.id, created_at: new Date().toISOString() }, ...prev])
+      setBody('')
+      addToast('Comment posted.', 'success')
+    } catch (err: any) {
+      console.error(err)
+      addToast('Failed to post comment: ' + err.message, 'error')
+    } finally {
+      setPosting(false)
+    }
+  }
+
+  const handleDelete = async (id: string) => {
+    if (!user || !supabaseClient) return
+    setComments(prev => prev.filter(c => c.id !== id))
+    void Promise.resolve(supabaseClient
+      .from('comments')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', user.id))
+      .catch((err: any) => console.error(err))
+  }
+
+  return (
+    <div className="w-full">
+      <h3 className="text-xl md:text-2xl font-black text-white tracking-tight mb-2">
+        Comments{comments.length > 0 ? <span className="ml-2 text-base font-bold text-platinum-500">({comments.length})</span> : null}
+      </h3>
+
+      {user ? (
+        <div className="mb-6 rounded-2xl border border-slate-800 bg-slate-900 p-5">
+          <textarea
+            value={body}
+            onChange={e => setBody(e.target.value)}
+            maxLength={1000}
+            rows={3}
+            placeholder="Share context about this indicator (e.g. seen scanning SSH, false positive on our network)..."
+            className="w-full bg-slate-950/50 border border-slate-700 rounded-xl p-4 text-sm text-slate-300 focus:outline-none focus:border-slate-500 focus:ring-1 focus:ring-slate-500 resize-none transition-all shadow-inner"
+          ></textarea>
+          <div className="mt-3 flex items-center justify-between">
+            <span className="text-[11px] font-medium text-slate-500 tabular-nums">{body.length}/1000</span>
+            <button
+              onClick={handlePost}
+              disabled={posting}
+              className="px-5 py-2.5 rounded-lg text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-sm disabled:opacity-50 uppercase tracking-wider"
+            >
+              {posting ? 'Posting...' : 'Post comment'}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <p className="mb-6 text-sm text-slate-400">
+          <button
+            type="button"
+            onClick={() => signInWithGoogle()}
+            className="font-semibold text-platinum-200 underline-offset-4 hover:underline"
+          >
+            Sign in
+          </button>
+          {' '}to join the discussion.
+        </p>
+      )}
+
+      {loading ? (
+        <div className="space-y-3">
+          {Array.from({ length: 2 }, (_, i) => (
+            <div key={i} className="rounded-xl border border-slate-800 bg-slate-900 p-5 animate-pulse">
+              <div className="mb-2 h-3 w-28 rounded bg-slate-800" />
+              <div className="h-3 w-3/4 rounded bg-slate-800" />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {comments.map(c => (
+            <div key={c.id} className="rounded-xl border border-slate-800 bg-slate-900 px-5 py-4">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex min-w-0 items-baseline gap-2.5">
+                  <span className="truncate text-sm font-bold text-slate-200">@{c.username || 'contributor'}</span>
+                  <span className="shrink-0 text-[11px] font-medium text-slate-500">{timeAgo(c.created_at || new Date().toISOString())}</span>
+                </div>
+                {user && c.user_id === user.id && (
+                  <button
+                    onClick={() => handleDelete(c.id)}
+                    className="shrink-0 rounded-lg px-2 py-1 text-[11px] font-bold text-slate-500 transition-colors hover:bg-white/[0.04] hover:text-red-400"
+                  >
+                    Delete
+                  </button>
+                )}
+              </div>
+              {/* Plain text only; React escapes the body, never injects HTML. */}
+              <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-slate-300">{c.body}</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
 }
 
 function MalwareDescriptionBlock({ tag }: { tag: string }) {
@@ -250,6 +559,24 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
 
   const confidence = computeConfidence(scanResult, reports.length)
   const tier = getConfidenceTier(confidence)
+  const verdict = VERDICT_META[type || 'warn']
+
+  // Count-up runs once per scan (re-targets whenever scanResult identity or the
+  // derived confidence changes); reduced-motion snaps to the final value.
+  const confidenceMv = useMotionValue(0)
+  const confidenceDisplay = useTransform(confidenceMv, (v) => Math.round(v))
+  useEffect(() => {
+    if (reduce) {
+      confidenceMv.set(confidence)
+      return
+    }
+    const controls = animate(confidenceMv, confidence, { duration: 1, ease: [0.16, 1, 0.3, 1], delay: 0.15 })
+    return () => controls.stop()
+  }, [scanResult, confidence, reduce, confidenceMv])
+
+  const scannedAt = useMemo(() => new Date(), [scanResult])
+  const flaggedBy = type === 'danger' && scanResult?.sources?.length > 0 ? labelSources(scanResult.sources) : []
+  const filledSegments = Math.max(confidence > 0 ? 1 : 0, Math.round((confidence / 100) * METER_SEGMENTS))
 
   if (!showReport) return null;
 
@@ -278,43 +605,60 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
               className="w-full space-y-12"
             >
               {/* Scan Result Card */}
-              <div className="relative w-full max-w-4xl mx-auto overflow-hidden rounded-2xl border border-white/[0.08] bg-gradient-to-b from-slate-900/70 to-slate-950/80 backdrop-blur-2xl font-sans shadow-glass-lux">
+              <motion.div
+                className="relative w-full max-w-4xl mx-auto overflow-hidden rounded-2xl border border-white/[0.08] bg-gradient-to-b from-slate-900/70 to-slate-950/80 backdrop-blur-2xl font-sans shadow-glass-lux"
+                initial={reduce ? { opacity: 0 } : { opacity: 0, scale: 0.98, y: 12 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={reduce ? { duration: 0 } : { type: 'spring', stiffness: 260, damping: 24 }}
+              >
                 {/* Status accent rail */}
-                <div className={`absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent ${type === 'danger' ? 'via-red-500/80' : type === 'safe' ? 'via-primary/70' : 'via-orange-500/70'} to-transparent`}></div>
+                <div className={`absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent ${verdict.rail} to-transparent`}></div>
                 {/* Ambient verdict glow */}
-                <div className={`pointer-events-none absolute -top-24 left-1/2 h-48 w-2/3 -translate-x-1/2 rounded-full opacity-30 blur-3xl ${type === 'danger' ? 'bg-red-600/30' : type === 'safe' ? 'bg-primary/20' : 'bg-orange-500/20'}`}></div>
+                <div className={`pointer-events-none absolute -top-24 left-1/2 h-48 w-2/3 -translate-x-1/2 rounded-full opacity-30 blur-3xl ${verdict.glow}`}></div>
 
-                {/* Header Section */}
+                {/* Verdict band */}
                 <div className="relative p-6 md:p-8 border-b border-white/[0.06]">
-                  <div className="flex items-start gap-4 mb-5">
+                  <div className="flex flex-col md:flex-row md:items-start gap-4 md:gap-5">
                     <div className="relative shrink-0">
-                      <img src={`${import.meta.env.BASE_URL}img/logo.png`} className="w-11 h-11 rounded-full border border-platinum-400/20 shadow-glass" alt="Threatbase Logo" />
-                      <span className={`absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full ring-2 ring-slate-950 ${type === 'danger' ? 'bg-red-500' : type === 'safe' ? 'bg-primary' : 'bg-orange-500'}`}>
-                        <StatusIcon size={11} className="text-white" strokeWidth={2.5} />
-                      </span>
+                      {/* Pulse ring marks live danger only */}
+                      {type === 'danger' && !reduce && (
+                        <span className={`absolute inset-0 rounded-2xl animate-pulse-ring ${verdict.ring}`} aria-hidden="true" />
+                      )}
+                      <div className={`relative flex h-12 w-12 items-center justify-center rounded-2xl border ${verdict.chip}`}>
+                        <StatusIcon size={22} strokeWidth={2.2} />
+                      </div>
                     </div>
-                    <div className="min-w-0">
-                      <h3 className={`text-xl md:text-[1.65rem] font-bold tracking-tight leading-snug ${type === 'danger' ? 'text-red-400' : type === 'safe' ? 'text-primary' : 'text-orange-400'}`}>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-platinum-500">Scan verdict</p>
+                      <h3 className={`mt-1 text-xl md:text-[1.65rem] font-bold tracking-tight leading-snug ${verdict.text}`}>
                         {type === 'danger' ? 'Threat found in our database' : type === 'safe' ? 'No threat found in our database' : type === 'disputed' ? 'This indicator is currently disputed' : 'Invalid indicator format'}
                       </h3>
-                      <button
-                        type="button"
-                        onClick={handleCopy}
-                        title="Copy to clipboard"
-                        className="group mt-3 inline-flex items-center gap-2.5 rounded-xl border border-white/[0.08] bg-slate-950/60 px-4 py-2.5 font-mono text-sm md:text-[0.95rem] tracking-tight text-platinum-200 break-all shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition-colors hover:border-white/15 hover:bg-slate-950 text-left"
-                      >
-                        <span className="break-all">{ip}</span>
-                        {copied
-                          ? <Check size={15} className="text-primary shrink-0" strokeWidth={2.5} />
-                          : <Copy size={15} className="text-slate-500 group-hover:text-platinum-200 shrink-0 transition-colors" />}
-                      </button>
+                      <div className="mt-3 flex flex-wrap items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={handleCopy}
+                          title="Copy to clipboard"
+                          className="group inline-flex items-center gap-2.5 rounded-xl border border-white/[0.08] bg-slate-950/60 px-4 py-2.5 font-mono text-sm md:text-[0.95rem] tracking-tight text-platinum-200 break-all shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition-colors hover:border-white/15 hover:bg-slate-950 text-left"
+                        >
+                          <span className="break-all">{ip}</span>
+                          {copied
+                            ? <Check size={15} className="text-emerald-400 shrink-0" strokeWidth={2.5} />
+                            : <Copy size={15} className="text-slate-500 group-hover:text-platinum-200 shrink-0 transition-colors" />}
+                        </button>
+                        <span className="text-xs font-medium text-platinum-500">
+                          Scanned {scannedAt.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                          {' '}&#183;{' '}{type === 'danger'
+                            ? `${flaggedBy.length} flagging feed${flaggedBy.length === 1 ? '' : 's'}`
+                            : `${reports.length} community report${reports.length === 1 ? '' : 's'}`}
+                        </span>
+                      </div>
                       {/* Which intel sources actually list this indicator. Neutral
                           platinum pills: a vendor name is provenance, not severity,
                           so it must not borrow the threat color scale. */}
                       {type === 'danger' && scanResult?.sources?.length > 0 && (
                         <div className="mt-3 flex flex-wrap items-center gap-1.5">
                           <span className="mr-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-platinum-500">Flagged by</span>
-                          {labelSources(scanResult.sources).map((name) => (
+                          {flaggedBy.map((name) => (
                             <span
                               key={name}
                               className="inline-flex cursor-default items-center rounded-full border border-platinum-400/25 bg-platinum-400/[0.06] px-2.5 py-0.5 text-[11px] font-semibold tracking-wide text-platinum-200 transition-colors hover:border-white/25 hover:text-white"
@@ -329,34 +673,37 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
 
                   {scanResult && (scanResult.isIP || scanResult.isIPv6 || scanResult.isDomain) && (
                     <>
-                      <div className="mt-6 flex items-end justify-between gap-4">
+                      <div className="mt-7 flex items-end justify-between gap-4">
                         <div className="flex items-center gap-2 text-[13px] font-semibold uppercase tracking-[0.18em] text-platinum-400">
                           <span>Confidence of Abuse</span>
                           <span className="cursor-help font-bold text-platinum-500 hover:text-platinum-200 transition-colors bg-white/[0.04] border border-white/10 rounded-full w-5 h-5 flex items-center justify-center text-xs" title="Weighted score derived from severity, number of threat feeds, subnet matches, and community reports.">?</span>
                         </div>
                         <div className="flex items-baseline gap-2.5">
                           <span className={`text-[10px] font-bold uppercase tracking-[0.2em] ${tier.text}`}>{tier.label}</span>
-                          <span className={`font-display text-3xl md:text-4xl font-bold tabular-nums leading-none ${tier.text}`}>{confidence}<span className="ml-0.5 text-base font-semibold text-platinum-500">%</span></span>
+                          <motion.span className={`font-display text-3xl md:text-4xl font-bold tabular-nums leading-none ${tier.text}`}>{confidenceDisplay}</motion.span>
+                          <span className="text-base font-semibold text-platinum-500">%</span>
                         </div>
                       </div>
-                      <div className="relative mt-4 h-2 w-full overflow-hidden rounded-full bg-white/[0.06]">
-                        <motion.div
-                          className={`relative h-full rounded-full ${tier.bar} shadow-lg ${tier.track}`}
-                          initial={reduce ? false : { width: 0 }}
-                          animate={{ width: `${Math.max(confidence, 3)}%` }}
-                          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
-                        >
-                          <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/30 to-white/0 pointer-events-none"></div>
-                        </motion.div>
+                      {/* Segmented detection meter: 20 ticks, colored by tier */}
+                      <div className="mt-4 flex w-full gap-[3px]" role="img" aria-label={`Confidence of abuse ${confidence} percent, ${tier.label}`}>
+                        {Array.from({ length: METER_SEGMENTS }, (_, i) => (
+                          <motion.div
+                            key={i}
+                            initial={reduce ? false : { opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: reduce ? 0 : 0.15 + i * 0.025, duration: 0.25 }}
+                            className={`h-2.5 flex-1 rounded-full ${i < filledSegments ? `${tier.bar} ${tier.track}` : 'bg-white/[0.06]'}`}
+                          />
+                        ))}
                       </div>
                     </>
                   )}
 
                   {/* Clean indicator — reassuring summary */}
                   {type === 'safe' && scanResult && (scanResult.isIP || scanResult.isIPv6 || scanResult.isDomain) && (
-                    <div className="mt-4 flex items-start gap-3 p-4 rounded-xl bg-primary/5 border border-primary/20">
-                      <div className="bg-primary/10 p-1.5 rounded-lg border border-primary/20 shrink-0 mt-0.5">
-                        <ShieldCheck size={18} className="text-primary" />
+                    <div className="mt-4 flex items-start gap-3 p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
+                      <div className="bg-emerald-500/10 p-1.5 rounded-lg border border-emerald-500/20 shrink-0 mt-0.5">
+                        <ShieldCheck size={18} className="text-emerald-400" />
                       </div>
                       <div>
                         <h4 className="text-slate-200 font-bold text-sm tracking-tight">No malicious activity on record</h4>
@@ -369,8 +716,8 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
 
                   {/* Invalid indicator message */}
                   {type === 'warn' && (
-                    <div className="mt-4 flex items-start gap-3 p-4 rounded-xl bg-orange-500/5 border border-orange-500/20">
-                      <AlertTriangle size={18} className="text-orange-400 shrink-0 mt-0.5" />
+                    <div className="mt-4 flex items-start gap-3 p-4 rounded-xl bg-slate-500/5 border border-slate-500/20">
+                      <AlertTriangle size={18} className="text-slate-400 shrink-0 mt-0.5" />
                       <p className="text-sm text-slate-300 leading-relaxed">
                         The indicator you entered does not match a valid IPv4, IPv6, Domain, URL, or Hash format. Please check for typos and try again.
                       </p>
@@ -445,43 +792,42 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
                   )}
                 </div>
 
-                {/* Body / Metadata Section */}
+                {/* Body / Metadata Section: equal-height intel cells */}
                 {scanResult && (scanResult.isIP || scanResult.isIPv6 || scanResult.isDomain) && (
-                  <div className="grid grid-cols-1 gap-px bg-white/[0.06] sm:grid-cols-2">
+                  <div className="grid grid-cols-1 gap-px bg-white/[0.06] md:grid-cols-2 lg:grid-cols-3">
                     {scanResult.isDomain ? (
-                      <div className="bg-slate-950/30 px-6 py-5 md:px-8 sm:col-span-2">
+                      <div className="bg-slate-950/30 px-6 py-5 md:px-8 md:col-span-2 lg:col-span-3">
                         <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-platinum-500">Domain Name</div>
                         <div className="break-all text-sm font-medium text-slate-100">{ip}</div>
                       </div>
                     ) : (
                       <>
-                        {(loadingIpInfo || ipInfo?.isp) && (
-                          <div className="bg-slate-950/30 px-6 py-5 md:px-8">
-                            <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-platinum-500">ISP</div>
-                            <div className="text-sm font-medium text-slate-100">{loadingIpInfo ? 'Loading…' : ipInfo.isp}</div>
+                        <div className="bg-slate-950/30 px-6 py-5 md:px-8">
+                          <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-platinum-500">ISP</div>
+                          <div className="text-sm font-medium text-slate-100">{loadingIpInfo ? 'Loading…' : (ipInfo?.isp || 'N/A')}</div>
+                        </div>
+                        <div className="bg-slate-950/30 px-6 py-5 md:px-8">
+                          <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-platinum-500">ASN</div>
+                          <div className="font-mono text-sm text-slate-100">{loadingIpInfo ? 'Loading…' : (ipInfo?.asn || 'N/A')}</div>
+                        </div>
+                        <div className="bg-slate-950/30 px-6 py-5 md:px-8">
+                          <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-platinum-500">Country</div>
+                          <div className="flex items-center gap-2.5 text-sm font-medium text-slate-100">
+                            {ipInfo?.country_flag && <img src={ipInfo.country_flag} className="w-5 rounded-sm border border-white/10 object-cover shadow-sm" alt="Flag" />}
+                            {loadingIpInfo ? 'Loading…' : (ipInfo?.country || 'N/A')}
                           </div>
-                        )}
-                        {(loadingIpInfo || ipInfo?.asn) && (
-                          <div className="bg-slate-950/30 px-6 py-5 md:px-8">
-                            <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-platinum-500">ASN</div>
-                            <div className="font-mono text-xs text-platinum-200">{loadingIpInfo ? 'Loading…' : ipInfo.asn}</div>
-                          </div>
-                        )}
-                        {(loadingIpInfo || ipInfo?.country) && (
-                          <div className="bg-slate-950/30 px-6 py-5 md:px-8">
-                            <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-platinum-500">Country</div>
-                            <div className="flex items-center gap-2.5 text-sm font-medium text-slate-100">
-                              {ipInfo?.country_flag && <img src={ipInfo.country_flag} className="w-5 rounded-sm border border-white/10 object-cover shadow-sm" alt="Flag" />}
-                              {loadingIpInfo ? 'Loading…' : ipInfo.country}
-                            </div>
-                          </div>
-                        )}
-                        {(loadingIpInfo || ipInfo?.city) && (
-                          <div className="bg-slate-950/30 px-6 py-5 md:px-8">
-                            <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-platinum-500">City</div>
-                            <div className="text-sm font-medium text-slate-100">{loadingIpInfo ? 'Loading…' : ipInfo.city}</div>
-                          </div>
-                        )}
+                        </div>
+                        <div className="bg-slate-950/30 px-6 py-5 md:px-8">
+                          <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-platinum-500">City</div>
+                          <div className="text-sm font-medium text-slate-100">{loadingIpInfo ? 'Loading…' : (ipInfo?.city || 'N/A')}</div>
+                        </div>
+                        <div className="bg-slate-950/30 px-6 py-5 md:px-8">
+                          <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-platinum-500">Type</div>
+                          <div className="font-mono text-sm text-slate-100">{scanResult.isIPv6 ? 'IPv6' : scanResult.isIP ? 'IPv4' : 'N/A'}</div>
+                        </div>
+                        {/* Filler for the 6th slot of the 3-col hairline grid, so
+                            the container background never shows as a ghost cell. */}
+                        <div className="hidden bg-slate-950/30 md:block" aria-hidden="true" />
                       </>
                     )}
                   </div>
@@ -502,23 +848,17 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
                     )}
 
                     <div className="flex flex-col sm:flex-row gap-3">
+                      {/* External whois CTA removed: the inline Registration
+                          data section replaced it (its own failure state and
+                          footer carry the whois.com link). */}
                       {!scanResult?.isHash && (
                         <button
                           onClick={() => setShowDisputeForm(true)}
-                          className="flex-1 rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-3.5 text-[13px] font-semibold uppercase tracking-[0.14em] text-platinum-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition-all hover:border-white/15 hover:bg-white/[0.06] hover:text-white active:translate-y-px"
+                          className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl border border-white/[0.08] bg-transparent px-4 py-3.5 text-[13px] font-semibold tracking-[0.06em] text-platinum-300 transition-all hover:border-white/20 hover:text-white active:translate-y-px"
                         >
+                          <ShieldAlert size={15} strokeWidth={2.5} className="shrink-0" />
                           Report false positive
                         </button>
-                      )}
-                      {showAbuse && (
-                        <a
-                          href={abuseHref}
-                          target="_blank"
-                          rel="noopener"
-                          className="flex-1 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3.5 text-center text-[13px] font-semibold uppercase tracking-[0.14em] text-red-300 transition-all hover:border-red-500/40 hover:bg-red-500/15 hover:text-red-200 active:translate-y-px"
-                        >
-                          WHOIS {ip}
-                        </a>
                       )}
                     </div>
 
@@ -543,7 +883,15 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
                     )}
                   </div>
                 )}
-              </div>
+              </motion.div>
+
+              {scanResult && (scanResult.isIP || scanResult.isIPv6 || scanResult.isDomain) && (
+                <WhoisSection scanResult={scanResult} ip={ip} abuseHref={abuseHref} />
+              )}
+
+              {scanResult && type !== 'warn' && ip && (
+                <CommentsSection ip={ip} addToast={addToast} />
+              )}
 
               {loadingReports ? (
                 <div

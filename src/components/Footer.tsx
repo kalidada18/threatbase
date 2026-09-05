@@ -26,8 +26,8 @@ export default function Footer() {
           {
             title: "Product",
             links: [
-              { name: "Dashboard", href: "/#stats" },
-              { name: "Threat Feeds", href: "/#feeds" },
+              { name: "Dashboard", href: "/threatfeed" },
+              { name: "Threat Feeds", href: "/threatfeed#feeds" },
               { name: "Report IP", href: "/report" },
               { name: "Hall of Shame", href: "/hall-of-shame" },
               { name: "Reporting Policy", href: "/policy" },

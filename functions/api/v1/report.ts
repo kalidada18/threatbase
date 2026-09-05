@@ -1,4 +1,3 @@
-import supabaseClient from '../../../src/supabaseClient'
 import { createClient } from '@supabase/supabase-js'
 import { SUPABASE_URL } from '../../../src/lib/supabaseConfig'
 import { isValidPublicIp, isValidCategory, MAX_COMMENT_LENGTH } from '../../../src/lib/apiValidation'

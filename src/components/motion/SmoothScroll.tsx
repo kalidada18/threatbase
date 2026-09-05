@@ -4,7 +4,7 @@ import Lenis from 'lenis'
 /**
  * Inertial smooth scrolling (the "weighted" feel on Linear/Vercel-tier sites).
  * - Honors prefers-reduced-motion: Lenis is never installed.
- * - `anchors: true` keeps /#stats and /#feeds hash links gliding.
+ * - `anchors: true` keeps /threatfeed#stats and /threatfeed#feeds hash links gliding.
  * - Existing scrollIntoView({behavior:'smooth'}) calls route through Lenis
  *   automatically because it drives the native scroll position.
  */

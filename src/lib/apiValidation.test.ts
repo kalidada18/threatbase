@@ -26,6 +26,20 @@ describe('isValidPublicIp', () => {
     expect(isValidPublicIp('::1')).toBe(false)
     expect(isValidPublicIp('fd00::1')).toBe(false)
   })
+
+  it('rejects structurally invalid IPv6 (blocklist-poisoning guard)', () => {
+    expect(isValidPublicIp(':')).toBe(false)
+    expect(isValidPublicIp('1:2:3')).toBe(false)
+    expect(isValidPublicIp('dead:beef')).toBe(false)
+    expect(isValidPublicIp('12345::9')).toBe(false)
+    expect(isValidPublicIp('1::2::3')).toBe(false)
+  })
+
+  it('rejects IPv4-mapped / NAT64 IPv6 that would smuggle internal addrs', () => {
+    expect(isValidPublicIp('::ffff:7f00:1')).toBe(false) // 127.0.0.1 mapped
+    expect(isValidPublicIp('::ffff:0a00:1')).toBe(false) // 10.0.0.1 mapped
+    expect(isValidPublicIp('64:ff9b::808:808')).toBe(false) // NAT64
+  })
 })
 
 describe('isValidCategory', () => {

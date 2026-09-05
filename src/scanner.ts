@@ -7,6 +7,7 @@ import {
   CHUNKED_FEEDS,
 } from './utils'
 import supabaseClient from './supabaseClient'
+import { isStrictIpv6 } from './lib/ipValidation'
 
 type CompareFn = (query: string, line: string) => number
 
@@ -326,28 +327,6 @@ const BATCH_TYPE_TO_CLASS: Record<string, string> = {
 }
 
 const BATCH_HASH_LENGTH: Record<string, number> = { md5: 32, sha1: 40, sha256: 64 }
-
-/**
- * Strict IPv6: eight hextets, or exactly one '::' compression. The feeds only
- * contain pure-hex forms, so no dotted v4-suffix support. classifyIndicator's
- * auto-detect is deliberately loose (a colon-hex string just probes the ipv6
- * feed and comes back clean); the batch API promises per-type validation, so
- * 'dead:beef' and '::::' must be rejected there.
- */
-function isStrictIpv6(s: string): boolean {
-  const hextet = /^[0-9a-fA-F]{1,4}$/
-  const ok = (groups: string[]) => groups.every((g) => hextet.test(g))
-  if (!s.includes(':') || s.includes(':::')) return false
-  if (!s.includes('::')) {
-    const g = s.split(':')
-    return g.length === 8 && ok(g)
-  }
-  const parts = s.split('::')
-  if (parts.length !== 2) return false
-  const head = parts[0] === '' ? [] : parts[0].split(':')
-  const tail = parts[1] === '' ? [] : parts[1].split(':')
-  return head.length + tail.length <= 7 && ok(head) && ok(tail)
-}
 
 /**
  * Validate an indicator against its declared type for the batch scan API.

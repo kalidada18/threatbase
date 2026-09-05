@@ -139,10 +139,33 @@ export function inCidr(ip: string, cidr: string): boolean {
 export function isPrivateReservedIpv6(ip: string): boolean {
   const norm = ip.toLowerCase().trim();
   if (norm === '::1' || norm === '::' || norm.startsWith('::/')) return true;
+  if (norm.startsWith('::ffff:')) return true; // IPv4-mapped (e.g. ::ffff:7f00:1 = 127.0.0.1) — report the v4 form instead
+  if (norm.startsWith('64:ff9b:')) return true; // NAT64 well-known prefix
   if (/^(fc|fd)[0-9a-f]{2}:/i.test(norm)) return true;
   if (/^fe[89ab][0-9a-f]:/i.test(norm)) return true;
   if (/^ff[0-9a-f]{2}:/i.test(norm)) return true;
   if (norm.startsWith('2001:db8:') || norm.startsWith('2001:0db8:')) return true;
   if (norm.startsWith('100::') || norm.startsWith('0100::') || /^0100:0{0,3}:/i.test(norm)) return true;
   return false;
+}
+
+/**
+ * Strict IPv6: eight hextets, or exactly one '::' compression (pure-hex only,
+ * no dotted v4-suffix). Rejects junk like ':', '1:2:3', 'dead:beef', '12345::'
+ * that a loose colon-hex check would wave through. Shared by the batch scan
+ * validator and the report-endpoint public-IP guard.
+ */
+export function isStrictIpv6(s: string): boolean {
+  const hextet = /^[0-9a-fA-F]{1,4}$/
+  const ok = (groups: string[]) => groups.every((g) => hextet.test(g))
+  if (!s.includes(':') || s.includes(':::')) return false
+  if (!s.includes('::')) {
+    const g = s.split(':')
+    return g.length === 8 && ok(g)
+  }
+  const parts = s.split('::')
+  if (parts.length !== 2) return false
+  const head = parts[0] === '' ? [] : parts[0].split(':')
+  const tail = parts[1] === '' ? [] : parts[1].split(':')
+  return head.length + tail.length <= 7 && ok(head) && ok(tail)
 }

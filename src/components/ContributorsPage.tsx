@@ -1,9 +1,6 @@
-import { motion } from 'framer-motion'
-import { Users } from 'lucide-react'
+import { motion, useReducedMotion } from 'framer-motion'
 import Leaderboard from './Leaderboard'
 import { useSEO } from '../useSEO'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
-import AnoAI from '@/components/ui/animated-shader-background'
 
 export default function ContributorsPage() {
   useSEO({
@@ -12,64 +9,44 @@ export default function ContributorsPage() {
     path: '/contributors',
   })
 
+  const reduce = useReducedMotion()
+
   return (
     <main className="bg-app min-h-[100dvh]">
-      <div className="pt-28 pb-24 relative overflow-hidden font-sans">
+      <div className="pt-28 pb-24 relative font-sans">
         <div className="grain absolute inset-0 opacity-[0.02] mix-blend-overlay pointer-events-none z-10"></div>
-        {/* Cool aurora kept faint so it reads as ambient depth, not a blue wash */}
-        <div className="absolute inset-0 z-0 opacity-40">
-          <AnoAI />
-        </div>
-        {/* Ruby top-glow + platinum halo tie the backdrop to the house accent */}
-        <div className="absolute inset-0 z-0 pointer-events-none" style={{ background: 'radial-gradient(120% 60% at 50% -10%, rgba(207,23,51,0.16), transparent 58%), radial-gradient(80% 50% at 50% 0%, rgba(174,182,196,0.05), transparent 64%)' }}></div>
-        <div className="absolute inset-0 bg-gradient-to-b from-[#080b12]/50 via-[#080b12]/85 to-[#080b12] z-0 pointer-events-none"></div>
 
-        <div className="mx-auto max-w-4xl px-6 lg:px-12 relative z-10 space-y-10">
+        <div className="mx-auto max-w-3xl px-6 lg:px-12 relative z-10">
           <motion.div
-            initial={{ opacity: 0, y: -15 }}
+            initial={reduce ? false : { opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center relative"
+            transition={{ duration: 0.5 }}
+            className="mb-10"
           >
-            <h1 className="text-4xl md:text-5xl font-black flex items-center justify-center gap-2 text-white tracking-tighter pb-2">
-              <span className="text-liquid-red drop-shadow-md">Top Contributors</span>
+            <div className="eyebrow mb-4">Community Intel</div>
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tighter text-white">
+              Top contributors
             </h1>
-            <p className="mt-2 text-slate-400 text-sm md:text-base max-w-xl mx-auto leading-relaxed">
-              Recognizing the community leaders who help defend networks globally.
+            <p className="mt-3 text-slate-400 text-sm md:text-base max-w-lg leading-relaxed">
+              The reporters whose intel keeps the feeds honest. Ranked by verified submissions.
             </p>
           </motion.div>
 
+          {/* Single framed ledger: column labels instead of a decorative card
+              header, hairline rows instead of glow tiles. */}
           <motion.div
-            initial={{ opacity: 0, y: 24 }}
+            initial={reduce ? false : { opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-            className="relative"
+            transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+            className="rounded-2xl border border-white/[0.06] bg-[#0a0e17]/60"
           >
-            {/* Ambient card glow */}
-            <div className="pointer-events-none absolute -inset-px rounded-[1.4rem] bg-gradient-to-b from-red-500/20 via-transparent to-transparent opacity-60 blur-xl" />
-
-            <Card className="glass-card relative z-10 overflow-hidden">
-              {/* top sheen */}
-              <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-
-              <CardHeader className="relative border-b border-white/[0.06] bg-gradient-to-r from-white/[0.03] to-transparent px-6 pb-6 pt-6">
-                <div className="flex items-center gap-4">
-                  <div className="icon-chip p-3 drop-shadow-[0_0_12px_rgba(207,23,51,0.45)]">
-                    <Users className="h-10 w-10" strokeWidth={1.8} />
-                  </div>
-                  <div>
-                    <CardTitle className="text-[22px] font-bold tracking-wide text-white drop-shadow-sm">Leaderboard</CardTitle>
-                    <CardDescription className="mt-0.5 text-slate-400">Global threat intelligence leaders</CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-
-              <CardContent className="p-0">
-                <div className="px-3 py-4 sm:px-4">
-                  <Leaderboard />
-                </div>
-              </CardContent>
-            </Card>
+            <div className="grid grid-cols-[1.75rem_2.25rem_1fr_auto] sm:grid-cols-[2.25rem_2.5rem_1fr_auto] gap-3 sm:gap-4 border-b border-white/[0.06] px-2 sm:px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-600">
+              <span>#</span>
+              <span aria-hidden />
+              <span>Contributor</span>
+              <span className="text-right">Reports</span>
+            </div>
+            <Leaderboard />
           </motion.div>
         </div>
       </div>

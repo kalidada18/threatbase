@@ -8,9 +8,8 @@ import { useAuth } from '../AuthContext'
 import { EASE_EXPO } from './motion/primitives'
 
 const menuItems = [
-    { name: 'Dashboard', href: '/#stats' },
     { name: 'About Us', href: '/about' },
-    { name: 'Threat Feeds', href: '/#feeds' },
+    { name: 'Threat Feeds', href: '/threatfeed#feeds' },
     { name: 'Report IP', href: '/report' },
     { name: 'Hall of Shame', href: '/hall-of-shame' },
     { name: 'Top APT', href: '/top-apt' },
@@ -19,13 +18,15 @@ const menuItems = [
     { name: 'Top Contributors', href: '/contributors' }
 ]
 
-/** Real active state for every item: routes match by path, home anchors only
- *  count as active while the home page (and matching hash) is open. */
+/** Real active state for every item: routes match by path, hash links only
+ *  count as active while their exact path + hash is open (so /threatfeed and
+ *  /threatfeed#feeds never light up two pills at once). */
 function isItemActive(pathname: string, hash: string, href: string) {
-    if (href.startsWith('/#')) {
-        return pathname === '/' && pathname + hash === href
+    if (href.includes('#')) {
+        const [path, target] = href.split('#')
+        return pathname === path && hash === `#${target}`
     }
-    return pathname === href
+    return pathname === href && !hash
 }
 
 const mobileList: Variants = {

@@ -1,0 +1,240 @@
+/* How It Works — pure CSS+SVG 2D loop. No WebGL, no 3D, no JS timers.
+   One 9s master cycle (--hiw-cycle) shared by all elements: each card
+   "activates" for 3s via staggered negative animation delays.
+   Colors are literal — accent red matches the site; green marks the
+   defense step. prefers-reduced-motion renders the static final state. */
+
+@property --hiw-n {
+  syntax: '<integer>';
+  initial-value: 0;
+  inherits: false;
+}
+
+.hiw-flow {
+  --hiw-cycle: 9s;
+  --hiw-accent: #ef4444;
+  --hiw-accent-soft: rgba(239, 68, 68, 0.13);
+  --hiw-green: #4ade80;
+  --hiw-line: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  max-width: 980px;
+  margin-inline: auto;
+}
+
+/* ---------- cards: entrance + shared 9s activation slot ---------- */
+.hiw-card {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--hiw-line);
+  border-radius: 18px;
+  padding: 22px 20px;
+  opacity: 0;
+  transform: translateY(18px);
+  animation: hiw-fade-up 0.7s forwards, hiw-slot var(--hiw-cycle) infinite;
+}
+.hiw-card:nth-child(1) { animation-delay: 0.4s, 0s; }
+.hiw-card:nth-child(3) { animation-delay: 0.6s, calc(var(--hiw-cycle) / -3); }
+.hiw-card:nth-child(5) { animation-delay: 0.8s, calc(var(--hiw-cycle) / -3 * 2); }
+
+/* each card glows during the first 3s of ITS OWN timeline (offset by delay) */
+@keyframes hiw-slot {
+  0%, 30% {
+    border-color: var(--hiw-accent);
+    box-shadow: 0 0 0 1px var(--hiw-accent), 0 0 28px var(--hiw-accent-soft);
+  }
+  37%, 100% {
+    border-color: var(--hiw-line);
+    box-shadow: none;
+  }
+}
+
+@keyframes hiw-fade-up {
+  to { opacity: 1; transform: none; }
+}
+
+/* ---------- flowing dashed connectors ---------- */
+.hiw-link {
+  width: 64px;
+  height: 2px;
+  flex: none;
+  margin: 0 -6px;
+  opacity: 0;
+  background-image: linear-gradient(90deg, var(--hiw-accent) 55%, transparent 55%);
+  background-size: 16px 2px;
+  animation: hiw-dashx 0.5s linear infinite, hiw-fade-up 0.6s 0.9s forwards;
+}
+@keyframes hiw-dashx { to { background-position: 16px 0; } }
+@keyframes hiw-dashy { to { background-position: 0 16px; } }
+
+/* ---------- card typography ---------- */
+.hiw-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--hiw-accent);
+}
+.hiw-tag i {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: var(--hiw-accent-soft);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  display: grid;
+  place-items: center;
+  font-style: normal;
+  font-size: 11px;
+}
+.hiw-card h3 { margin: 0.7rem 0 0.3rem; font-size: 18px; font-weight: 700; color: #fff; }
+.hiw-card p { color: #94a3b8; font-size: 14px; line-height: 1.6; }
+.hiw-icon { display: block; width: 100%; height: 110px; margin: 14px 0 2px; }
+
+/* ---------- Step 1: sweeping lens ---------- */
+.hiw-lens { animation: hiw-swipe 2.2s ease-in-out infinite alternate; }
+@keyframes hiw-swipe {
+  from { transform: translateX(-6px); }
+  to { transform: translateX(112px); }
+}
+.hiw-ping { animation: hiw-ping 1.2s infinite; }
+@keyframes hiw-ping {
+  0%, 100% { opacity: 0.25; }
+  50% { opacity: 1; }
+}
+.hiw-caret { animation: hiw-blink 1s steps(2) infinite; }
+@keyframes hiw-blink { 50% { opacity: 0; } }
+
+/* ---------- Step 2: gauge + score + badge ---------- */
+.hiw-gauge-wrap { position: relative; }
+.hiw-arc {
+  stroke-dasharray: 182.2;
+  stroke-dashoffset: 182.2;
+  animation: hiw-fill-arc var(--hiw-cycle) ease-out infinite;
+}
+/* 87% of the 182.2 arc stays lit for the rest of the cycle */
+@keyframes hiw-fill-arc {
+  0%, 34% { stroke-dashoffset: 182.2; }
+  46%, 100% { stroke-dashoffset: 23.7; }
+}
+.hiw-needle {
+  transform-box: view-box;
+  transform-origin: 110px 84px;
+  animation: hiw-sweep var(--hiw-cycle) ease-out infinite;
+}
+@keyframes hiw-sweep {
+  0%, 34% { transform: rotate(-90deg); }
+  46%, 100% { transform: rotate(66deg); }
+}
+.hiw-num {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 52%;
+  text-align: center;
+  font-weight: 800;
+  font-size: 26px;
+  color: #fff;
+  animation: hiw-count var(--hiw-cycle) ease-out infinite;
+}
+.hiw-num::after {
+  counter-reset: hiw-n var(--hiw-n);
+  content: counter(hiw-n);
+}
+@keyframes hiw-count {
+  0%, 34% { --hiw-n: 0; }
+  46%, 100% { --hiw-n: 87; }
+}
+.hiw-crit {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 82%;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  color: var(--hiw-accent);
+  opacity: 0;
+  animation: hiw-show var(--hiw-cycle) infinite;
+}
+@keyframes hiw-show {
+  0%, 40% { opacity: 0; }
+  46% { opacity: 1; }
+  54% { opacity: 0.4; }
+  60%, 92% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* ---------- Step 3: packets → shield ---------- */
+.hiw-pkt {
+  opacity: 0;
+  animation: hiw-send 1.8s infinite;
+}
+.hiw-p2 { animation-delay: 0.3s; }
+.hiw-p3 { animation-delay: 0.6s; }
+@keyframes hiw-send {
+  0% { transform: translateX(0); opacity: 0; }
+  25% { opacity: 1; }
+  100% { transform: translateX(26px); opacity: 0; }
+}
+.hiw-shield {
+  fill: var(--hiw-green);
+  fill-opacity: 0;
+  stroke: var(--hiw-green);
+  stroke-width: 3;
+  animation: hiw-charge 3s ease-out infinite;
+}
+@keyframes hiw-charge {
+  0% { fill-opacity: 0; }
+  70%, 100% { fill-opacity: 0.18; }
+}
+.hiw-check {
+  /* white, not the demo's #0b1220: our page background is near-black, a dark
+     check on a 0.18-alpha green shield would be invisible */
+  stroke: #fff;
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  stroke-dasharray: 60;
+  stroke-dashoffset: 60;
+  animation: hiw-draw 3s 0.5s infinite;
+}
+@keyframes hiw-draw {
+  0% { stroke-dashoffset: 60; }
+  45%, 88% { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: 60; }
+}
+
+/* ---------- mobile: stack vertically ---------- */
+@media (max-width: 820px) {
+  .hiw-flow { flex-direction: column; }
+  .hiw-card { width: 100%; }
+  .hiw-link {
+    width: 2px;
+    height: 48px;
+    margin: 0 auto;
+    background-image: linear-gradient(180deg, var(--hiw-accent) 55%, transparent 55%);
+    background-size: 2px 16px;
+    animation-name: hiw-dashy, hiw-fade-up;
+  }
+}
+
+/* ---------- reduced motion: hold the final frame, run nothing ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .hiw-card, .hiw-link { animation: none; opacity: 1; transform: none; }
+  .hiw-card { border-color: var(--hiw-line); box-shadow: none; }
+  .hiw-lens, .hiw-ping, .hiw-caret, .hiw-pkt { animation: none; }
+  .hiw-ping { opacity: 1; }
+  .hiw-pkt { opacity: 1; transform: translateX(26px); }
+  .hiw-arc { animation: none; stroke-dashoffset: 23.7; }
+  .hiw-needle { animation: none; transform: rotate(66deg); }
+  .hiw-num { animation: none; }
+  .hiw-num::after { content: '87'; }
+  .hiw-crit { animation: none; opacity: 1; }
+  .hiw-shield { animation: none; fill-opacity: 0.18; }
+  .hiw-check { animation: none; stroke-dashoffset: 0; }
+}
