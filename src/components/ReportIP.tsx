@@ -17,28 +17,38 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 
 const REPORT_PAGE_SIZE = 10
 const SUBMIT_COOLDOWN = 15000
 const TURNSTILE_SITE_KEY = '0x4AAAAAADj2T6kY9_5dXRhs'
 
-const THREAT_CATEGORIES = [
-  { value: 'malware', label: 'Malware Distribution' },
-  { value: 'phishing', label: 'Phishing' },
-  { value: 'spam', label: 'Spam' },
-  { value: 'ddos', label: 'DDoS Attack' },
-  { value: 'brute-force', label: 'Brute Force' },
-  { value: 'scanning', label: 'Port Scanning' },
-  { value: 'botnet', label: 'Botnet' },
-  { value: 'other', label: 'Other' },
+const THREAT_TAGS = [
+  'DNS Compromise',
+  'DNS Poisoning',
+  'Fraud Orders',
+  'Open Proxy',
+  'Web Spam',
+  'Email Spam',
+  'DDoS Attack',
+  'FTP Brute-Force',
+  'Spoofing',
+  'Port Scan',
+  'Ping of Death',
+  'Phishing',
+  'Brute-Force',
+  'Bad Web Bot',
+  'Exploited Host',
+  'Fraud VoIP',
+  'VPN IP',
+  'SQL Injection',
+  'Web App Attack',
+  'SSH',
+  'IoT Targeted',
+  'Hacking',
+  'Blog Spam',
+  'Other',
 ];
+const MAX_TAGS = 10;
 
 const CommentCell = ({ comment }: { comment: string }) => {
   const [expanded, setExpanded] = useState(false);
@@ -75,7 +85,7 @@ export default function ReportIP({ addToast }: any) {
   })
   
   const [ipValue, setIpValue] = useState('')
-  const [category, setCategory] = useState('')
+  const [tags, setTags] = useState<string[]>([])
   const [comment, setComment] = useState('')
   const [alias, setAlias] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -207,7 +217,7 @@ export default function ReportIP({ addToast }: any) {
       return addToast(`Wait ${remaining}s before submitting again`, 'error')
     }
 
-    if (!ipValue.trim() || !category || !comment.trim()) {
+    if (!ipValue.trim() || !tags.length || !comment.trim()) {
       return addToast('Please fill all required fields', 'error')
     }
 
@@ -234,7 +244,6 @@ export default function ReportIP({ addToast }: any) {
     }
 
     setSubmitting(true)
-    const catLabel = THREAT_CATEGORIES.find(c => c.value === category)?.label || category
     const safeComment = DOMPurify.sanitize(rawComment)
 
     try {
@@ -253,7 +262,7 @@ export default function ReportIP({ addToast }: any) {
         },
         body: JSON.stringify({
           ip: raw,
-          category: catLabel,
+          category: tags.join(', '),
           comment: safeComment,
           turnstileToken,
         }),
@@ -268,7 +277,7 @@ export default function ReportIP({ addToast }: any) {
       lastSubmitRef.current = Date.now()
       setSubmitSuccess(true)
       setIpValue('')
-      setCategory('')
+      setTags([])
       setComment('')
       loadReportedIPs(0)
 
@@ -328,7 +337,7 @@ export default function ReportIP({ addToast }: any) {
   const getCategoryColor = (cat: string) => TIER_CHIP[categoryTier(cat)]
 
   const isFormValid = () => {
-    return ipValue.trim() !== "" && category !== "" && comment.trim() !== "" && (ipStatus.type === 'valid_v4' || ipStatus.type === 'valid_v6');
+    return ipValue.trim() !== "" && tags.length > 0 && comment.trim() !== "" && (ipStatus.type === 'valid_v4' || ipStatus.type === 'valid_v6');
   }
 
   return (
@@ -402,24 +411,32 @@ export default function ReportIP({ addToast }: any) {
                 </div>
 
                 <div className="space-y-3">
-                  <Label htmlFor="category" className="text-sm font-semibold text-slate-200 tracking-wide">
-                    Threat Category
-                  </Label>
-                  <Select value={category} onValueChange={setCategory}>
-                    <SelectTrigger id="category" className="h-14 rounded-xl border-white/10 bg-white/[0.02] px-4 text-white focus:ring-red-500/20 focus:border-red-500/50">
-                      <SelectValue placeholder="Select a category" />
-                    </SelectTrigger>
-                    <SelectContent className="border-white/10 bg-slate-900">
-                      {THREAT_CATEGORIES.map((cat) => (
-                        <SelectItem key={cat.value} value={cat.value} className="text-slate-200 focus:bg-white/10">
-                          <div className="flex items-center gap-2">
-                            <img src={`${import.meta.env.BASE_URL}img/${cat.value === 'scanning' ? 'other' : cat.value.replace('-', '')}.png`} alt={cat.label} className="h-4 w-4 object-contain opacity-80" onError={(e) => { e.currentTarget.src = `${import.meta.env.BASE_URL}img/other.png` }} />
-                            {cat.label}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm font-semibold text-slate-200 tracking-wide">
+                      Threat Tags
+                    </Label>
+                    <span className="font-mono text-[10px] text-slate-600">{tags.length}/{MAX_TAGS}</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {THREAT_TAGS.map((tag) => {
+                      const active = tags.includes(tag)
+                      return (
+                        <button
+                          key={tag}
+                          type="button"
+                          onClick={() => setTags(prev => active ? prev.filter(t => t !== tag) : prev.length < MAX_TAGS ? [...prev, tag] : prev)}
+                          aria-pressed={active}
+                          className={`rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wider transition-colors ${
+                            active
+                              ? getCategoryColor(tag)
+                              : 'border border-white/10 bg-white/[0.02] text-slate-400 hover:bg-white/[0.05] hover:text-slate-200'
+                          }`}
+                        >
+                          {tag}
+                        </button>
+                      )
+                    })}
+                  </div>
                 </div>
 
                 <div className="space-y-3">

@@ -6,7 +6,7 @@ const IPV4_RE =
 /** Longest indicator we accept on the scan endpoint (mirrors the web UI cap). */
 export const MAX_INDICATOR_LENGTH = 255
 export const MAX_COMMENT_LENGTH = 1000
-export const MAX_CATEGORY_LENGTH = 50
+export const MAX_CATEGORY_LENGTH = 200
 
 /**
  * True only for syntactically valid, publicly routable IPv4/IPv6 addresses.
