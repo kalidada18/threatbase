@@ -89,10 +89,11 @@
     text-rendering: optimizeLegibility;
   }
 
-  /* Display family for headings, with cold-luxury optical tightening. */
+  /* Display family for headings. Saira Condensed is already narrow by design,
+     so the tightening is gentler than it was for Manrope. */
   h1, h2, h3, h4, h5 {
     font-family: theme('fontFamily.display');
-    letter-spacing: -0.025em;
+    letter-spacing: -0.01em;
     font-feature-settings: 'ss01';
   }
 

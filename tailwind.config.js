@@ -12,7 +12,7 @@ export default {
       fontFamily: {
         // Cold-luxury grotesk: one refined family across display + body, mono for data.
         sans: ['"Manrope"', '"Inter Tight"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        display: ['"Manrope"', '"Inter Tight"', 'ui-sans-serif', 'sans-serif'],
+        display: ['"Saira Condensed"', '"Manrope"', 'ui-sans-serif', 'sans-serif'],
         mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'monospace'],
       },
       boxShadow: {
