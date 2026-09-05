@@ -131,8 +131,7 @@ function WhoisSection({ scanResult, ip, abuseHref }: any) {
   useEffect(() => {
     if (!ip) return
     let cancelled = false
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 8000)
+    let active: AbortController | null = null
     setLoading(true)
     setFailed(false)
     setFields(null)
@@ -145,6 +144,11 @@ function WhoisSection({ scanResult, ip, abuseHref }: any) {
 
     const tryRdap = async () => {
       for (const url of urls) {
+        // Each source gets its own window: a slow first host must never abort
+        // the fallback attempt with it.
+        const controller = new AbortController()
+        active = controller
+        const timeoutId = setTimeout(() => controller.abort(), 10000)
         try {
           const r = await fetch(url, { signal: controller.signal })
           // 404 is an answer ("not in the registry"), not a failure.
@@ -195,12 +199,11 @@ function WhoisSection({ scanResult, ip, abuseHref }: any) {
           setLoading(false)
           return
         } catch {
-          // network error / 5xx: fall through to the next source
+          // network error / timeout / 5xx: fall through to the next source
+        } finally {
+          clearTimeout(timeoutId)
         }
       }
-      clearTimeout(timeoutId)
-      // Only an 8s timeout can abort while still mounted (unmount/change sets
-      // cancelled first), so this is the "took too long" path.
       if (!cancelled) {
         setFailed(true)
         setLoading(false)
@@ -210,8 +213,7 @@ function WhoisSection({ scanResult, ip, abuseHref }: any) {
 
     return () => {
       cancelled = true
-      clearTimeout(timeoutId)
-      controller.abort()
+      active?.abort()
     }
   }, [ip, isDomain])
 
