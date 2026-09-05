@@ -343,8 +343,9 @@ curl -s https://threatbase.qzz.io/feed/$KEY/firewall/ip.jsonl.gz | gunzip
 <img src="https://img.shields.io/badge/status-launching%20soon-f59e0b" alt="Launching soon">
 
 Everything above stays **free and MIT, permanently**. Pro covers the parts that only
-start to matter once a feed is wired into production kit: freshness, per-category
-policy, and data accurate enough to hard-block on without hand-checking it first.
+start to matter once a feed is wired into production kit: freshness, per-category policy,
+Threatbase's own sensors and aggregation behind the data, and accuracy you can hard-block
+on without hand-checking it first.
 
 | | Free | Pro |
 |:--|:--:|:--:|
@@ -352,18 +353,26 @@ policy, and data accurate enough to hard-block on without hand-checking it first
 | Hunt console, verdict cards, community reports | ✅ | ✅ |
 | MIT-licensed · no auth · no rate limits | ✅ | ✅ |
 | **15-minute** refresh | — | ✅ |
+| First-party sensor telemetry (Threatbase-run honeypots) | — | ✅ |
 | Per-category IP lists (C2 · botnet · brute-force · spam · Tor · …) | — | ✅ |
 | [Deploy-ready formats](#-deploy-ready-formats--nbspnbsp-pro), per category (ipset · Suricata · NDJSON · EDL) | — | ✅ |
 | Stable token URL your firewall polls unattended | — | ✅ |
 | False-positive suppression guarantee | — | ✅ |
 | Email support | — | ✅ |
 
-<div align="center"><strong>$25 / month</strong> &nbsp;·&nbsp; <a href="https://threatbase.qzz.io/pricing">Pricing &amp; sign-up →</a></div>
+<div align="center"><strong>$25 / month</strong> at launch &nbsp;·&nbsp; <a href="https://threatbase.qzz.io/pricing">Pricing &amp; waitlist →</a></div>
 
 ### More accurate data — concretely
 
 Accuracy claims are cheap, so here is the actual mechanism behind each one:
 
+- **Our own sensors, landing at launch.** Pro is backed by first-party collection —
+  Threatbase honeypots and telemetry we run ourselves — on top of the 54 upstreams. A hit
+  our own sensors observed does not wait for a public list to catch up, which is exactly
+  where a feed that only re-publishes OSINT is always a step behind.
+- **Our own aggregation.** Correlation, de-duplication, scoring and classification run
+  in-house against the raw observations instead of inheriting each upstream's verdict, so
+  one noisy source cannot drag an indicator's confidence up on its own.
 - **Corroboration is exposed, not averaged away.** Every IP carries `FeedCount` — how
   many *independent* upstreams saw it. `ip-multisource.txt` (2+ sources),
   `ip-suricata.rules` (3+) and `ip-top50k.txt` (ranked, then cut to the appliance limit)
@@ -380,9 +389,9 @@ Accuracy claims are cheap, so here is the actual mechanism behind each one:
   file, so a feed truncated in transit fails loudly instead of quietly shrinking
   your blocklist.
 
-> **Launching soon.** Billing is handled manually for now — Stripe doesn't operate in
-> Nepal. Email **threatbasepro@gmail.com** to get on the list; keys are issued from your
-> [Profile](https://threatbase.qzz.io/profile) page once your account is flagged Pro.
+> **Launching soon.** Email **threatbasepro@gmail.com** to join the waitlist; keys are
+> issued from your [Profile](https://threatbase.qzz.io/profile) page once your account is
+> flagged Pro. Onboarding is handled by hand for now, so expect a reply, not a checkout.
 
 ---
 
