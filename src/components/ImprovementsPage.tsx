@@ -1,8 +1,108 @@
+import { useEffect, useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { ArrowRight, History } from 'lucide-react'
 import IsoPageShell from './layout/IsoPageShell'
 import { useSEO } from '@/useSEO'
+import { fmt, DATA_RAMP, timeAgo } from '../utils'
+
+const REPO = 'kalidada18/threatbase'
+
+/**
+ * Repo pulse: live public GitHub API data (stars/forks/issues + language mix),
+ * rendered in the flat ledger style. Two unauthenticated calls on mount, no
+ * polling; renders nothing on failure so the changelog never depends on it.
+ */
+function RepoPulse() {
+  const [repo, setRepo] = useState<any>(null)
+  const [langs, setLangs] = useState<{ name: string; bytes: number }[]>([])
+
+  useEffect(() => {
+    let cancelled = false
+    const GH = { headers: { Accept: 'application/vnd.github+json' } }
+    fetch(`https://api.github.com/repos/${REPO}`, GH)
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => { if (!cancelled && d) setRepo(d) })
+      .catch(() => {})
+    fetch(`https://api.github.com/repos/${REPO}/languages`, GH)
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => {
+        if (cancelled || !d) return
+        setLangs(
+          Object.entries(d)
+            .map(([name, bytes]) => ({ name, bytes: bytes as number }))
+            .sort((a, b) => b.bytes - a.bytes)
+            .slice(0, 6)
+        )
+      })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [])
+
+  if (!repo) return null
+
+  const stats = [
+    { label: 'Stars', value: fmt(repo.stargazers_count ?? 0) },
+    { label: 'Forks', value: fmt(repo.forks_count ?? 0) },
+    { label: 'Open issues', value: fmt(repo.open_issues_count ?? 0) },
+    { label: 'Last push', value: repo.pushed_at ? timeAgo(repo.pushed_at) : 'N/A' },
+  ]
+
+  const total = langs.reduce((s, l) => s + l.bytes, 0)
+  let acc = 0
+
+  return (
+    <div className="mx-auto mb-16 flex w-full max-w-3xl flex-col gap-8 rounded-2xl border border-white/[0.06] bg-[#0a0e17]/60 px-6 py-6 md:flex-row md:items-center md:justify-between">
+      <div>
+        <div className="eyebrow mb-4">Repo pulse</div>
+        <dl className="grid grid-cols-2 gap-x-10 gap-y-3">
+          {stats.map(s => (
+            <div key={s.label} className="flex items-baseline justify-between gap-4 border-b border-white/[0.04] pb-1.5">
+              <dt className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">{s.label}</dt>
+              <dd className="font-mono text-sm font-medium text-white tabular-nums">{s.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+
+      {total > 0 && (
+        <div className="flex items-center gap-6">
+          {/* Hand-rolled donut: r chosen so circumference = 100, dasharray = pct */}
+          <svg viewBox="0 0 42 42" className="h-24 w-24 -rotate-0 shrink-0" role="img" aria-label="Language share donut">
+            <circle cx="21" cy="21" r="15.9155" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="5.5" />
+            {langs.map((l, i) => {
+              const pct = (l.bytes / total) * 100
+              const el = (
+                <circle
+                  key={l.name}
+                  cx="21"
+                  cy="21"
+                  r="15.9155"
+                  fill="none"
+                  stroke={DATA_RAMP[Math.min(i, DATA_RAMP.length - 1)]}
+                  strokeWidth="5.5"
+                  strokeDasharray={`${pct} ${100 - pct}`}
+                  strokeDashoffset={25 - acc}
+                />
+              )
+              acc += pct
+              return el
+            })}
+          </svg>
+          <ul className="space-y-1.5">
+            {langs.map((l, i) => (
+              <li key={l.name} className="flex items-center gap-2 text-xs text-slate-400">
+                <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: DATA_RAMP[Math.min(i, DATA_RAMP.length - 1)] }} />
+                {l.name}
+                <span className="ml-auto pl-3 font-mono tabular-nums text-slate-500">{Math.round((l.bytes / total) * 100)}%</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  )
+}
 
 /**
  * Improvements changelog, curated from the git history (feed-update commits
@@ -10,6 +110,19 @@ import { useSEO } from '@/useSEO'
  * infrastructure noise belongs in commit messages, not here.
  */
 const IMPROVEMENTS: { date: string; title: string; items: string[] }[] = [
+  {
+    date: '2026-09-05',
+    title: 'Hunt Console, Threat Feed & Scan Report',
+    items: [
+      'The homepage is now a focused IOC console: one search bar, one verdict, example hunts for every indicator type.',
+      'New /threatfeed page unifies database totals, downloadable feeds, and landscape analytics, with a live threat-intel panel (the canvas world map retired in favour of data, not pixels).',
+      'Scan report rebuilt: verdict colours now mean what they show, a segmented confidence meter replaces the single bar, and 11+ corroborating feeds lock confidence at 100%.',
+      'Inline registration data (RDAP) for IPs and domains replaces the external whois link.',
+      'Community comments on any indicator: signed-in users file field reports and can delete their own.',
+      'How It Works is now a pure CSS & SVG animated explainer, embedded in About.',
+      'Contributors leaderboard rebuilt as a flat ledger with relative-share bars; medal artwork removed.',
+    ],
+  },
   {
     date: '2026-09-03',
     title: 'Batch Scanning API',
@@ -174,6 +287,8 @@ export default function ImprovementsPage() {
           Every improvement to Threatbase&apos;s feeds, API, and interface — in the open, with dates.
         </p>
       </motion.div>
+
+      <RepoPulse />
 
       <div className="relative max-w-3xl mx-auto w-full">
         {/* spine */}
