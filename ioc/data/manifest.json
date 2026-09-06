@@ -1,5 +1,5 @@
 {
-  "generated": "2026-09-06T02:19:37.821816+00:00",
+  "generated": "2026-09-06T04:40:09.081692+00:00",
   "note": "threatbase-domain.txt and threatbase-hash.txt exceed GitHub's file size limits and are committed as the chunks listed here. Chunks partition the sorted feed, so each covers a contiguous key range and can be binary searched on its own. Always read this list rather than assuming a chunk count: the count grows with the feed.",
   "unsplit_downloads": "https://github.com/kalidada18/threatbase/releases/download/latest/",
   "chunk_base": "https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/",
@@ -8,23 +8,23 @@
       {
         "file": "domain/threatbase-domain-01.txt",
         "first": "0--4.com,2026-09-05",
-        "last": "gametimer.online,2026-09-02",
-        "lines": 1183471,
-        "bytes": 36022050
+        "last": "gameterjoyfun.com,2026-09-02",
+        "lines": 1183482,
+        "bytes": 36022367
       },
       {
         "file": "domain/threatbase-domain-02.txt",
-        "first": "gametimeradio.net,2026-09-02",
-        "last": "setupnow.yourupgradeawesome-sitenewcontent.icu,2026-09-02",
-        "lines": 1194126,
-        "bytes": 36022070
+        "first": "gameterminals.com,2026-09-02",
+        "last": "setupnow.yourbestgameplace.date,2026-09-02",
+        "lines": 1194139,
+        "bytes": 36022395
       },
       {
         "file": "domain/threatbase-domain-03.txt",
-        "first": "setupnow.yourupgradeawesomesitenewcontent.icu,2026-09-02",
+        "first": "setupnow.yourbestgameplace.trade,2026-09-02",
         "last": "zzzzzzzzzzzzz.com,2026-09-02",
-        "lines": 1132247,
-        "bytes": 36021950
+        "lines": 1132258,
+        "bytes": 36022337
       }
     ],
     "threatbase-hash.txt": [
@@ -32,30 +32,30 @@
         "file": "hash/threatbase-hash-01.txt",
         "first": "00000077553a5b27a610ac98f29563bbd6e0decc020c2d49e4fa0d89197e7fd8,2026-09-02",
         "last": "7fbd0cc5432a5878f5e489087c0ab45844f2d7e7aaa4d8a925a8c08cc2f0a9e0,2026-09-02",
-        "lines": 566755,
-        "bytes": 43073380
+        "lines": 566757,
+        "bytes": 43073532
       },
       {
         "file": "hash/threatbase-hash-02.txt",
         "first": "7fbd290f28f3ac346e168c3994febcb70f81ddeeb366982226ca76559ad0fdb6,2026-09-02",
         "last": "ffffe8b36158ae710a9fbf0941f83625ae69f9f2070b3b04def6171b890a6dde,2026-09-02",
-        "lines": 566754,
-        "bytes": 43073304
+        "lines": 566757,
+        "bytes": 43073532
       }
     ]
   },
   "checksums": {
     "data/false_positives.txt": "51e52c7302c3f050eb258ac8deb962393a6f16bf2188c1480d874ff75418b5af",
-    "domain/threatbase-domain-01.txt": "f4a598b8aea1d4d68dcafd0feed88b4f2f7acde61567133f859638ee2269cbcb",
-    "domain/threatbase-domain-02.txt": "be4379062a9f862849f479eb4a36e97545c9603acb1127d7002ded502e6d003f",
-    "domain/threatbase-domain-03.txt": "9a15cf1ac2f20f000ecb2ceb30df4060f3db5b6ac54c3395fe3100b0fc02355e",
-    "domain/threatbase-domain.txt": "aa7d4319da9abb7a75df54cb7ed2dbb46047f55e5414b05e6f2356f84b85e887",
-    "hash/threatbase-hash-01.txt": "fcd2857a6f47ec231ff035d9083d6768ca15d26252c5be28aaf260b7d1ff8e65",
-    "hash/threatbase-hash-02.txt": "8a28720a109559c8276cf6a43169dfe2036a1ec12634a4cac4eec7b40172a29e",
-    "hash/threatbase-hash.txt": "3ece09b226e0b44fc7f098840f0f1d6e9687f192bb0ca9238f2ec30552b68297",
+    "domain/threatbase-domain-01.txt": "641892582716235f6cdae24e87862d53eff3df60fc21cbbcbc931d06401cf1ce",
+    "domain/threatbase-domain-02.txt": "e875f3ae9cbe382a87af3b99414a1d9ffaf1a08665b4b226d9ac83d080885e24",
+    "domain/threatbase-domain-03.txt": "12cebc83d92466b6873d7e7bcb7de513b873aabe9cab07fa3f7fb2db7b769dd0",
+    "domain/threatbase-domain.txt": "459d7bdd5bbb4750af9d7aab7837a70137706cfb383ff89c182784ea2d290149",
+    "hash/threatbase-hash-01.txt": "f76005c06b11fe908fd1d9f2d0726d34845013a95209d85bfd924ba0d63d3796",
+    "hash/threatbase-hash-02.txt": "dacca13411fea4e08b072cb61e145fb446b8f6207ec1a36f719631e207d0fb32",
+    "hash/threatbase-hash.txt": "4e216335488c931e02e078bf8e50ba698272277b1211023c8021123b7634aa29",
     "ip/threatbase-cidr.txt": "a1679c740c0f7ab8bcf3d38f04107e28f65908d51434fb728cff110ab7fd692c",
-    "ip/threatbase-ip.txt": "8d6b0d1cd8228f5e7ac55a7e7c6a5849d60250ba94484df0ab1b2bb1ab12cf7a",
-    "ip/threatbase-ipv6.txt": "4dfd6db8528777922d6efc895a2102334be16b9d617828eccaf5573ef68f5e7a",
-    "url/threatbase-url.txt": "d49c249b588d1010f81bfaf174cd92d2cf086555097a0603f1a49af9cb8fe0a7"
+    "ip/threatbase-ip.txt": "d5cf6e37d246f6cd282aba5305d75776094ef67deff940fd34b424ece85f737f",
+    "ip/threatbase-ipv6.txt": "ac67d1fdce4a7d70cea4165b8aee912af7d565cd329f8833928560d671266718",
+    "url/threatbase-url.txt": "5556e7d3db19677d7bdee31195926ceb169998fa6c2f8971183d633034d43b7d"
   }
 }
