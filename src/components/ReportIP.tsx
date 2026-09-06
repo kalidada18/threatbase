@@ -178,7 +178,9 @@ export default function ReportIP({ addToast }: any) {
 
     try {
       const { data, error, count } = await supabaseClient
-        .from('reported_ips')
+        // View = reported_ips + profiles.avatar_url (definer join; profiles
+        // is owner-only-RLS, so anon cannot embed it client-side).
+        .from('reported_ips_feed')
         .select('*', { count: 'exact' })
         .order('created_at', { ascending: false })
         .range(from, to)
@@ -608,7 +610,7 @@ export default function ReportIP({ addToast }: any) {
 
                         <div className="flex items-center justify-between border-t border-white/5 pt-3">
                           <div className="flex items-center gap-2">
-                            <img src={DEFAULT_AVATAR} alt="" className="h-5 w-5 rounded-full object-cover" />
+                            <img src={row.avatar_url || DEFAULT_AVATAR} alt="" className="h-5 w-5 rounded-full object-cover" />
                             <span className="text-[12px] font-medium text-slate-400">{row.reporter_alias || 'Anonymous'}</span>
                           </div>
                           <div className="flex gap-1.5">
