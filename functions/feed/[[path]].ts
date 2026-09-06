@@ -20,6 +20,7 @@
  */
 import { createClient } from '@supabase/supabase-js'
 import { SUPABASE_URL } from '../../src/lib/supabaseConfig'
+import { filterAllowlist } from '../../src/lib/allowlistFilter'
 
 const RAW_BASE = 'https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/'
 const PRO_TTL = 900 // 15 min — the freshness delta we charge for
@@ -133,15 +134,37 @@ export const onRequestGet = async (context: any) => {
   // Unknown length: stream through rather than buffer. Costs a KV miss per
   // request, which beats risking the Worker's 128 MB memory ceiling.
   const len = Number(upstream.headers.get('Content-Length') || 0)
-  if (!kv || upstream.status !== 200 || !len || len > KV_MAX) {
+
+  // Per-customer false-positive suppression: paid plain-text products are
+  // filtered by the key owner's feed_allowlist on cache-miss, then cached
+  // per-token (cacheKey already includes hashHex, so each customer caches
+  // their own filtered copy). Fail-open: if the RPC errors we serve the
+  // unfiltered file — a lingering FP until the next pull beats a dead feed.
+  // stix/ is JSON and passes through unfiltered (add it when someone asks).
+  const filterable = paid && upstream.status === 200 &&
+    (rel.startsWith('ip/') || rel.startsWith('firewall/'))
+
+  if (!filterable && (!kv || upstream.status !== 200 || !len || len > KV_MAX)) {
     return new Response(upstream.body, { status: upstream.status, headers: headers(upstream.headers.get('Content-Type')) })
   }
 
+  // Filterable files always buffer (worst case ~36 MB, well under the 128 MB
+  // Worker ceiling) so an allowlisted IP can never leak via the stream path.
   const buf = await upstream.arrayBuffer()
+  let body: ArrayBuffer | Uint8Array = buf
+  if (filterable) {
+    const { data: allowed } = await admin.rpc('feed_allowlist_ips', { client_hash: hashHex })
+    if (allowed && (allowed as string[]).length) {
+      body = new TextEncoder().encode(
+        filterAllowlist(new TextDecoder().decode(buf), allowed as string[]),
+      )
+    }
+  }
+
   let hd = headers(upstream.headers.get('Content-Type'))
-  if (buf.byteLength <= KV_MAX) {
-    context.waitUntil(kv.put(cacheKey, buf, { expirationTtl: PRO_TTL }).catch(() => {}))
+  if (kv && body.byteLength <= KV_MAX) {
+    context.waitUntil(kv.put(cacheKey, body, { expirationTtl: PRO_TTL }).catch(() => {}))
     hd = { ...hd, 'X-KV-Cache': 'MISS-STORED' }
   }
-  return new Response(buf, { headers: hd })
+  return new Response(body, { headers: hd })
 }
