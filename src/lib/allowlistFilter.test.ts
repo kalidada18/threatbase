@@ -1,6 +1,5 @@
-import test from 'node:test'
-import assert from 'node:assert/strict'
-import { filterAllowlist } from './allowlistFilter.ts'
+import { describe, expect, it } from 'vitest'
+import { filterAllowlist } from './allowlistFilter'
 
 const CSV = [
   '# Threatbase Threat Intelligence Feed - Botnet IPs',
@@ -10,23 +9,23 @@ const CSV = [
   '',
 ].join('\n')
 
-test('CSV feed: drops the allowlisted IP row, keeps headers and others', () => {
-  const out = filterAllowlist(CSV, ['1.2.189.89'])
-  assert.ok(!out.includes('1.2.189.89'))
-  assert.ok(out.includes('2.12.149.79'))
-  assert.ok(out.includes('# Format:'))
-})
+describe('filterAllowlist', () => {
+  it('CSV feed: drops the allowlisted IP row, keeps headers and others', () => {
+    const out = filterAllowlist(CSV, ['1.2.189.89'])
+    expect(out).not.toContain('1.2.189.89')
+    expect(out).toContain('2.12.149.79')
+    expect(out).toContain('# Format:')
+  })
 
-test('plain feed: exact token match, no substring false drops', () => {
-  const out = filterAllowlist('1.2.3.4\n11.2.3.44\n4.3.2.1', ['1.2.3.4'])
-  assert.equal(out, '11.2.3.44\n4.3.2.1')
-})
+  it('plain feed: exact token match, no substring false drops', () => {
+    expect(filterAllowlist('1.2.3.4\n11.2.3.44\n4.3.2.1', ['1.2.3.4'])).toBe('11.2.3.44\n4.3.2.1')
+  })
 
-test('ipset/EDL style: token after the set name is matched', () => {
-  const out = filterAllowlist('tb_bot add 1.2.3.4\ntb_bot add 9.9.9.9', ['1.2.3.4'])
-  assert.equal(out, 'tb_bot add 9.9.9.9')
-})
+  it('ipset/EDL style: token after the set name is matched', () => {
+    expect(filterAllowlist('tb_bot add 1.2.3.4\ntb_bot add 9.9.9.9', ['1.2.3.4'])).toBe('tb_bot add 9.9.9.9')
+  })
 
-test('empty allowlist is a no-op', () => {
-  assert.equal(filterAllowlist(CSV, []), CSV)
+  it('empty allowlist is a no-op', () => {
+    expect(filterAllowlist(CSV, [])).toBe(CSV)
+  })
 })
