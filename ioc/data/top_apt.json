@@ -1,26 +1,32 @@
 {
- "generated_at": "2026-09-05T18:20:26+00:00",
+ "generated_at": "2026-09-06T02:19:39+00:00",
  "source": "AlienVault OTX pulse search",
  "note": "Activity = threat-intel pulses (campaign reports) mentioning the group in the window. Vendor/community reporting \u2014 follow each link to its source.",
  "actors": [
   {
-   "name": "APT28",
+   "name": "MuddyWater",
    "aka": [
-    "Fancy Bear",
-    "Sofacy",
-    "STRONTIUM"
+    "Mercury",
+    "STATIC KITTEN",
+    "Seedur"
    ],
-   "sponsor": "Russia (GRU)",
+   "sponsor": "Iran (MOIS)",
    "pulses_24h": 1,
-   "pulses_7d": 1,
+   "pulses_7d": 2,
    "malware": [],
    "targets": [],
    "campaigns": [
     {
-     "title": "Investigating Midnight Blizzard's AI Powered Infrastructure.",
-     "url": "https://otx.alienvault.com/pulse/6a9b1b352e3dc6b4f370fa6e",
-     "modified": "2026-09-04T19:25:41.967000",
+     "title": "MuddyWater: ClickFix to Telegram & PatchAgent Backdoor.",
+     "url": "https://otx.alienvault.com/pulse/6a74ede416b1c9caa200b99e",
+     "modified": "2026-09-05T20:01:02.113000",
      "last_24h": true
+    },
+    {
+     "title": "MuddyWater: Snakes by the riverbank [WeLiveSecurity]",
+     "url": "https://otx.alienvault.com/pulse/6a6ce21f20b9164d05b9f9b2",
+     "modified": "2026-08-30T17:09:23.303000",
+     "last_24h": false
     }
    ]
   },
@@ -78,22 +84,22 @@
    ]
   },
   {
-   "name": "MuddyWater",
+   "name": "APT28",
    "aka": [
-    "Mercury",
-    "STATIC KITTEN",
-    "Seedur"
+    "Fancy Bear",
+    "Sofacy",
+    "STRONTIUM"
    ],
-   "sponsor": "Iran (MOIS)",
+   "sponsor": "Russia (GRU)",
    "pulses_24h": 0,
    "pulses_7d": 1,
    "malware": [],
    "targets": [],
    "campaigns": [
     {
-     "title": "MuddyWater: Snakes by the riverbank [WeLiveSecurity]",
-     "url": "https://otx.alienvault.com/pulse/6a6ce21f20b9164d05b9f9b2",
-     "modified": "2026-08-30T17:09:23.303000",
+     "title": "Investigating Midnight Blizzard's AI Powered Infrastructure.",
+     "url": "https://otx.alienvault.com/pulse/6a9b1b352e3dc6b4f370fa6e",
+     "modified": "2026-09-04T19:25:41.967000",
      "last_24h": false
     }
    ]
