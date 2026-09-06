@@ -27,7 +27,7 @@ const KV_MAX = 25_000_000 // Cloudflare KV hard limit per value
 const DAILY_FETCH_LIMIT = 500 // firewalls polling hourly use ~24/day
 
 // Serve only blocklist products; never let the mirror read arbitrary repo files.
-const ALLOWED_PREFIXES = ['ip/', 'firewall/']
+const ALLOWED_PREFIXES = ['ip/', 'firewall/', 'stix/']
 const ALLOWED_EXACT = ['data/false_positives.txt']
 
 /**
@@ -36,7 +36,7 @@ const ALLOWED_EXACT = ['data/false_positives.txt']
  * paywall is decorative — anyone could hotlink raw.githubusercontent.com and skip
  * this Worker entirely. Everything else still comes from the public mirror.
  */
-const PAID_PREFIXES = ['ip/categories/', 'firewall/']
+const PAID_PREFIXES = ['ip/categories/', 'firewall/', 'stix/']
 const isPaid = (rel: string) => PAID_PREFIXES.some((p) => rel.startsWith(p))
 
 /**

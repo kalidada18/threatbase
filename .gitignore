@@ -60,6 +60,7 @@ ioc/hash/threatbase-hash.txt
 # .com served the exact same bytes with no token.
 ioc/ip/categories/
 ioc/firewall/
+ioc/stix/
 
 # API caches
 .otx_cache.json
@@ -98,3 +99,4 @@ skills/
 
 # Local pipeline self-checks (not shipped)
 pipeline/test_firewall_formats.py
+pipeline/test_stix_feed.py

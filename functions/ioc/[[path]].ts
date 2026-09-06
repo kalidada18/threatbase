@@ -19,7 +19,7 @@ const KV_MAX = 25_000_000 // Cloudflare KV hard limit per value
 // 404 anyway — but this mirror caches for 6 h, and without the guard a key
 // cached before the cutover would keep serving a paid file for free.
 // The paywalled path is /feed/<token>/… (functions/feed/[[path]].ts).
-const PAID_PREFIXES = ['ip/categories/', 'firewall/']
+const PAID_PREFIXES = ['ip/categories/', 'firewall/', 'stix/']
 
 const baseHeaders = (contentType?: string | null) => ({
   'Content-Type': contentType || 'text/plain; charset=utf-8',

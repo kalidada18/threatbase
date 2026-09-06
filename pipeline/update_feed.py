@@ -38,6 +38,7 @@ import re
 import socket
 import sys
 import time
+import uuid
 import zipfile
 import bisect
 import gzip
@@ -155,7 +156,201 @@ FEED_CATEGORIES: Dict[str, str] = {
 # functions/feed/[[path]].ts unenforceable. Paths are relative to ioc/, matching
 # manifest.json checksum keys. Keep in sync with PAID_PREFIXES in
 # functions/feed/[[path]].ts and functions/ioc/[[path]].ts.
-PAID_DIRS = ("ip/categories/", "firewall/")
+PAID_DIRS = ("ip/categories/", "firewall/", "stix/")
+
+# STIX 2.1 feed settings. The feed ships as one bundle per collection page so
+# TAXII clients (Microsoft Sentinel, MISP, OpenCTI) can pull it by page; 50,000
+# objects keeps each bundle under GitHub's 100 MB push limit (the full IP set is
+# ~912k, so it splits into ~19 pages and each page is an ordinary git object).
+STIX_PAGE_SIZE = 50_000
+# Deterministic namespace for indicator IDs (UUIDv5) so the same IOC always maps
+# to the same STIX ID across runs — a re-publish heals, not churns.
+STIX_NAMESPACE = uuid.UUID("7b8f0f4e-3d2a-4a1b-8c6e-9f0d2a1b3c4d")
+
+# --- STIX 2.1 indicator builders -------------------------------------------
+def _stix_timestamp(date_str: str) -> str:
+    """YYYY-MM-DD -> ISO-8601 UTC. The pipeline stores dates only, so night is
+    midnight UTC — good enough for STIX valid_from, which tolerates it."""
+    return f"{date_str}T00:00:00Z"
+
+
+def _stix_pattern(itype: str, value: str) -> str:
+    """Build a STIX 2.1 pattern for one indicator type. Escapes single quotes so
+    an IOC containing one can never break out of the STIX string literal."""
+    v = value.replace("'", "\\'")
+    if itype == "ip":
+        return f"[ipv4-addr:value = '{v}']"
+    if itype == "ipv6":
+        return f"[ipv6-addr:value = '{v}']"
+    if itype == "cidr":
+        return f"[ipv4-addr:value = '{v}']"  # STIX allows prefixes in ipv4-addr
+    if itype == "domain":
+        return f"[domain-name:value = '{v}']"
+    if itype == "url":
+        return f"[url:value = '{v}']"
+    if itype == "hash":
+        return f"[file:hashes.'SHA-256' = '{v}']"
+    raise ValueError(f"unknown STIX indicator type: {itype}")
+
+
+def _stix_indicator(itype: str, value: str, label: str,
+                    created: str, modified: str, desc: str) -> dict:
+    """One STIX 2.1 indicator object. ID is a UUIDv5 over type:value so it is
+    stable across runs (a re-published IOC gets the same ID, so downstream
+    processors reconcile rather than duplicate)."""
+    return {
+        "type": "indicator",
+        "spec_version": "2.1",
+        "id": f"indicator--{uuid.uuid5(STIX_NAMESPACE, f'{itype}:{value}')}",
+        "created": _stix_timestamp(created),
+        "modified": _stix_timestamp(modified),
+        "name": f"Threatbase {label} indicator",
+        "description": desc,
+        "pattern": _stix_pattern(itype, value),
+        "pattern_type": "stix",
+        "valid_from": _stix_timestamp(created),
+        "labels": [label],
+    }
+
+
+# Collection specs, each yielding (value, created, modified, desc) rows. The
+# IP collections annotate with the owning category label; the plain collections
+# carry the IOC type label. Only last_seen is guaranteed for the non-IP types,
+# so created falls back to last_seen.
+def _ip_rows(filtered_ip_info, ips, label):
+    return (
+        (
+            filtered_ip_info[i]["ip"], label,
+            filtered_ip_info[i]["first_seen"], filtered_ip_info[i]["last_seen"],
+            f"Threatbase {label} IP observed by {filtered_ip_info[i]['count']} source(s), "
+            f"risk {filtered_ip_info[i]['score']}, tags {filtered_ip_info[i]['tags']}",
+        )
+        for i in ips
+    )
+
+
+def _plain_rows(values, meta, label, default_seen):
+    # Items absent from meta were first seen this run, so they get today, not
+    # epoch — a freshly-discovered IOC showing created=1970 in a SIEM looks dead.
+    return (
+        (v, label, meta.get(v, default_seen), meta.get(v, default_seen),
+         f"Threatbase {label} indicator ({v})")
+        for v in values
+    )
+
+
+def _write_stix_collection(outdir: str, slug: str, title: str, itype: str,
+                           rows, timestamp: str) -> int:
+    """Write one collection: index.json descriptor + bundle-NN.json pages.
+
+    `rows` is an iterable of (value, label, created, modified, desc) tuples
+    from _ip_rows / _plain_rows; `itype` is the STIX pattern type.
+    """
+    col_dir = os.path.join(outdir, slug)
+    os.makedirs(col_dir, exist_ok=True)
+    pages = 0
+    bundle_ids = []
+    batch: List[dict] = []
+    pending = 0
+    for value, label, created, modified, desc in rows:
+        pending += 1
+        batch.append(_stix_indicator(itype, value, label, created, modified, desc))
+        if len(batch) >= STIX_PAGE_SIZE:
+            pages += 1
+            pages_id = f"bundle--{uuid.uuid5(STIX_NAMESPACE, f'{slug}:{pages}')}"
+            with open(os.path.join(col_dir, f"bundle-{pages:02d}.json"), "w",
+                      encoding="utf-8") as f:
+                json.dump({
+                    "type": "bundle", "id": pages_id, "spec_version": "2.1",
+                    "objects": batch,
+                }, f, separators=(",", ":"))
+            bundle_ids.append(f"bundle-{pages:02d}.json")
+            batch = []
+    if batch:
+        pages += 1
+        pages_id = f"bundle--{uuid.uuid5(STIX_NAMESPACE, f'{slug}:{pages}')}"
+        with open(os.path.join(col_dir, f"bundle-{pages:02d}.json"), "w",
+                  encoding="utf-8") as f:
+            json.dump({
+                "type": "bundle", "id": pages_id, "spec_version": "2.1",
+                "objects": batch,
+            }, f, separators=(",", ":"))
+        bundle_ids.append(f"bundle-{pages:02d}.json")
+
+    # Remove pages left over from a larger prior run so a shrunk feed never
+    # serves stale bundles past the index.
+    stale = pages + 1
+    while os.path.exists(os.path.join(col_dir, f"bundle-{stale:02d}.json")):
+        os.remove(os.path.join(col_dir, f"bundle-{stale:02d}.json"))
+        stale += 1
+
+    with open(os.path.join(col_dir, "index.json"), "w", encoding="utf-8") as f:
+        json.dump({
+            "collection": title,
+            "spec_version": "2.1",
+            "generated": timestamp,
+            "object_count": pending,
+            "page_size": STIX_PAGE_SIZE,
+            "pages": bundle_ids,  # ordered; a TAXII server pages through these
+        }, f, indent=2)
+    return pending
+
+
+def write_stix_feed(all_domains, all_hashes, all_urls, all_ipv6, all_cidrs,
+                    domain_meta, hash_meta, url_meta, ipv6_meta, cidr_meta,
+                    filtered_ip_info, category_ips, timestamp,
+                    default_seen: str = "1970-01-01",
+                    outdir: str = "ioc/stix") -> Dict[str, int]:
+    """Emit STIX 2.1 indicator bundles for every IOC type: one collection per
+    category (matching ioc/ip/categories/) plus one each for domains / hashes /
+    urls / ipv6 / cidrs. Returns {collection: object_count} for stats.json.
+
+    `default_seen` is the date a brand-new non-IP IOC gets when it is absent
+    from the carried-over meta (freshly seen this run) — pass today, not epoch,
+    so a new indicator does not show created=1970 in a SIEM.
+
+    Called only under PRO_ENABLED, same as write_firewall_formats — the STIX
+    delivery format is itself a paid product (it is what TAXII/SIEM consumers
+    pay for). Each collection is a directory with an index.json descriptor and
+    bundle-01.json, bundle-02.json, … pages of STIX_PAGE_SIZE objects each.
+    """
+    log.info(f"Writing STIX 2.1 bundles to {outdir}/...")
+    os.makedirs(outdir, exist_ok=True)
+    counts: Dict[str, int] = {}
+
+    # Per-category IP collections (the tier structure that already exists).
+    for cat, ips in sorted(category_ips.items()):
+        slug = CATEGORY_SLUGS.get(cat, re.sub(r"[^a-z0-9]+", "", cat.lower()))
+        title = f"{cat} IPs"
+        col_key = f"ip-{slug}"
+        counts[col_key] = _write_stix_collection(
+            outdir, col_key, title, "ip",
+            _ip_rows(filtered_ip_info, ips, title), timestamp)
+
+    # Full-feed set + non-IP IOC types. Descriptions/metadata come from the
+    # chunked feeds written earlier in the run.
+    counts["ip"] = _write_stix_collection(
+        outdir, "ip", "All IPs", "ip",
+        _ip_rows(filtered_ip_info, sorted(filtered_ip_info), "IP"), timestamp)
+    counts["domains"] = _write_stix_collection(
+        outdir, "domains", "Domains", "domain",
+        _plain_rows(all_domains, domain_meta, "Domain", default_seen), timestamp)
+    counts["hashes"] = _write_stix_collection(
+        outdir, "hashes", "Hashes", "hash",
+        _plain_rows(all_hashes, hash_meta, "Hash", default_seen), timestamp)
+    counts["urls"] = _write_stix_collection(
+        outdir, "urls", "URLs", "url",
+        _plain_rows(all_urls, url_meta, "URL", default_seen), timestamp)
+    counts["ipv6"] = _write_stix_collection(
+        outdir, "ipv6", "IPv6", "ipv6",
+        _plain_rows(all_ipv6, ipv6_meta, "IPv6", default_seen), timestamp)
+    counts["cidrs"] = _write_stix_collection(
+        outdir, "cidrs", "CIDRs", "cidr",
+        _plain_rows(all_cidrs, cidr_meta, "CIDR", default_seen), timestamp)
+
+    log.info("  " + ", ".join(f"{k}: {v:,}" for k, v in counts.items()))
+    return counts
+
 
 # ...and only generated when there is somewhere to publish them. Workflow step 6
 # sets PRO_ENABLED from `secrets.PRO_REPO_TOKEN != ''`, the same secret that gates
@@ -1425,7 +1620,7 @@ async def run_async_collector():
     log.info("  Threatbase v5 — Async Threat Aggregator")
     log.info("═" * 55)
     
-    for d in ["ioc/ip", "ioc/domain", "ioc/hash", "ioc/url", "ioc/firewall", "ioc/data"]:
+    for d in ["ioc/ip", "ioc/domain", "ioc/hash", "ioc/url", "ioc/firewall", "ioc/data", "ioc/stix"]:
         os.makedirs(d, exist_ok=True)
     false_positives = load_false_positives()
     
@@ -1649,6 +1844,7 @@ async def run_async_collector():
     # sharing either one silently loses coverage.
     ip_format_files: Dict[str, int] = {}
     ip_category_format_files: Dict[str, Dict[str, int]] = {}
+    stix_collection_counts: Dict[str, int] = {}
     if not PRO_ENABLED:
         log.info(f"Pro tier not configured (PRO_ENABLED unset) — computed "
                  f"{len(ip_category_files)} category counts for stats.json, skipped "
@@ -1666,6 +1862,17 @@ async def run_async_collector():
                 label=f"{cat} IPs",
             )
         log.info(f"  Wrote deploy-ready formats for {len(ip_category_format_files)} categories")
+
+        # ── STIX 2.1 bundles (paid) ─────────────────────────────────────────
+        # The TAXII/SIEM delivery format. Every IOC type becomes a collection
+        # one IP category at a time (so a SIEM can subscribe to C2 alone), plus
+        # a collection for each non-IP type. Shipped to the private repo as
+        # ioc/stix/ — see PAID_DIRS and the workflow's cp -r below.
+        stix_collection_counts = write_stix_feed(
+            all_domains, all_hashes, all_urls, all_ipv6, all_cidrs,
+            domain_meta, hash_meta, url_meta, ipv6_meta, cidr_meta,
+            filtered_ip_info, category_ips, timestamp,
+            default_seen=today_str)
 
     # ── Geolocate IPs → ioc/data/geo.json (powers the live threat map) ──────────
     log.info("Computing IP geolocation for threat map...")
@@ -1844,6 +2051,8 @@ async def run_async_collector():
         "ip_format_files": ip_format_files,
         # {slug: {filename: count}} for ioc/firewall/categories/<slug>/.
         "ip_category_format_files": ip_category_format_files,
+        # {collection: object_count} for ioc/stix/ (only when PRO_ENABLED).
+        "stix_collection_counts": stix_collection_counts,
         "top_sources": top_sources,
         "last_updated": now_utc.isoformat(),
         # Decay / freshness health metrics

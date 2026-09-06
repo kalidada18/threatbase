@@ -173,6 +173,7 @@ jobs:
           rm -rf /tmp/pro && mkdir -p /tmp/pro/ip
           cp -r ioc/ip/categories /tmp/pro/ip/categories
           cp -r ioc/firewall      /tmp/pro/firewall
+          cp -r ioc/stix          /tmp/pro/stix
           cd /tmp/pro
           # Nothing here may cross GitHub's 100 MB per-file push limit, or the whole
           # paid tier stops publishing. ip-suricata.rules is the one that grows with
@@ -215,7 +216,7 @@ jobs:
           git reset HEAD ioc/domain/threatbase-domain.txt ioc/hash/threatbase-hash.txt 2>/dev/null || true
           # Pro products (step 6b). .gitignore covers these, but .gitignore is silent
           # once a path is tracked, so keep the pathspec reset as the real guarantee.
-          git rm -r --cached --quiet --ignore-unmatch ioc/ip/categories ioc/firewall
+          git rm -r --cached --quiet --ignore-unmatch ioc/ip/categories ioc/firewall ioc/stix
           git add -f pipeline/custom_iocs.txt 2>/dev/null || true
 
           # Check whether any staged file actually changed
