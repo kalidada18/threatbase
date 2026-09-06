@@ -1863,17 +1863,6 @@ async def run_async_collector():
             )
         log.info(f"  Wrote deploy-ready formats for {len(ip_category_format_files)} categories")
 
-        # ── STIX 2.1 bundles (paid) ─────────────────────────────────────────
-        # The TAXII/SIEM delivery format. Every IOC type becomes a collection
-        # one IP category at a time (so a SIEM can subscribe to C2 alone), plus
-        # a collection for each non-IP type. Shipped to the private repo as
-        # ioc/stix/ — see PAID_DIRS and the workflow's cp -r below.
-        stix_collection_counts = write_stix_feed(
-            all_domains, all_hashes, all_urls, all_ipv6, all_cidrs,
-            domain_meta, hash_meta, url_meta, ipv6_meta, cidr_meta,
-            filtered_ip_info, category_ips, timestamp,
-            default_seen=today_str)
-
     # ── Geolocate IPs → ioc/data/geo.json (powers the live threat map) ──────────
     log.info("Computing IP geolocation for threat map...")
     geo_index = load_geo_index()
@@ -2015,7 +2004,24 @@ async def run_async_collector():
             if cidr in false_positives: continue
             when = cidr_meta.get(cidr) or today_str
             f.write(f"{cidr},{when}\n")
-    
+
+    # ── STIX 2.1 bundles (paid) ────────────────────────────────────────────
+    # The TAXII/SIEM delivery format. Every IOC type becomes a collection, one
+    # per IP category (so a SIEM can subscribe to C2 alone) plus one per non-IP
+    # type. Shipped to the private repo as ioc/stix/ — see PAID_DIRS and the
+    # workflow's cp -r.
+    #
+    # Lives HERE, not up with the firewall formats, because it consumes every
+    # all_* aggregate and each one is only built in the block above. Running it
+    # earlier is an UnboundLocalError that only shows up in a full pipeline run.
+    if PRO_ENABLED:
+        stix_collection_counts = write_stix_feed(
+            all_domains, all_hashes, all_urls, all_ipv6, all_cidrs,
+            domain_meta, hash_meta, url_meta, ipv6_meta, cidr_meta,
+            filtered_ip_info, category_ips, timestamp,
+            default_seen=today_str)
+        log.info(f"  Wrote {len(stix_collection_counts)} STIX collections to ioc/stix/")
+
     # ── Build category counts ──────────────────────────────────────────────
     category_counts = defaultdict(int)
     for info in filtered_ip_info.values():
