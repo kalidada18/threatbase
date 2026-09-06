@@ -1,33 +1,43 @@
 "use client";
 
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/area-chart";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
-import React, { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { getBaseUrl, fmt, INDICATOR_ACCENT, feedPath } from "../../utils";
 
 type SeriesKey = "ipv4" | "ipv6" | "cidrs" | "domains" | "hashes" | "urls";
 
-const chartConfig = {
+const chartConfig: Record<SeriesKey, { label: string; color: string }> = {
   ipv4: { label: "IPv4", color: INDICATOR_ACCENT.ip },
   domains: { label: "Domains", color: INDICATOR_ACCENT.domain },
   hashes: { label: "Hashes", color: INDICATOR_ACCENT.hash },
   urls: { label: "URLs", color: INDICATOR_ACCENT.url },
   cidrs: { label: "CIDRs", color: INDICATOR_ACCENT.cidr },
   ipv6: { label: "IPv6", color: INDICATOR_ACCENT.ipv6 },
-} satisfies ChartConfig;
+};
 
 const SERIES_ORDER: SeriesKey[] = ["ipv4", "domains", "hashes", "urls", "cidrs", "ipv6"];
+
+/**
+ * Tooltip body. Series colour comes straight off chartConfig, same as the
+ * strokes and the legend chips, so there is nothing to keep in sync.
+ */
+function ChartTooltipBody({ active, payload, label }: any) {
+  if (!active || !payload?.length) return null
+  return (
+    <div className="rounded-xl border border-white/10 bg-slate-950/90 px-3 py-2 text-xs shadow-xl backdrop-blur-md">
+      <div className="mb-1.5 font-bold text-slate-300">{label}</div>
+      {payload.map((p: any) => (
+        <div key={p.dataKey} className="flex items-center gap-2 leading-6">
+          <span className="h-2 w-2 shrink-0 rounded-[2px]" style={{ backgroundColor: p.color }} />
+          <span className="text-slate-400">{chartConfig[p.dataKey as SeriesKey]?.label ?? p.dataKey}</span>
+          <span className="ml-auto pl-3 font-mono font-semibold tabular-nums text-white">{fmt(p.value)}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
 
 // How often to poll for fresh history while the dashboard is open.
 const HISTORY_REFRESH_MS = 5 * 60 * 1000
@@ -138,7 +148,7 @@ export default function AnimatedHighlightedAreaChart({ feedVersion }: { feedVers
   const loading = chartData.length === 0
 
   return (
-    <Card className="rounded-3xl border border-white/10 bg-slate-900/60 backdrop-blur-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] relative overflow-hidden group h-full flex flex-col">
+    <div className="group relative flex h-full flex-col gap-6 overflow-hidden rounded-3xl border border-white/10 bg-slate-900/60 py-6 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] backdrop-blur-3xl">
       <div className="absolute top-0 inset-x-0 h-[2px] w-full bg-gradient-to-r from-transparent via-red-500/50 to-transparent" />
 
       <div className="relative z-10 flex flex-col h-full">
@@ -196,7 +206,7 @@ export default function AnimatedHighlightedAreaChart({ feedVersion }: { feedVers
         </div>
 
         {/* Chart */}
-        <CardContent className="flex-1 pt-4">
+        <div className="flex-1 px-6 pt-4">
           {loading ? (
             /* Skeleton in the shape of the chart, not a spinner (tasteskill §4.5) */
             <div className="w-full h-72 relative" role="status" aria-label="Loading trend data">
@@ -211,7 +221,8 @@ export default function AnimatedHighlightedAreaChart({ feedVersion }: { feedVers
               />
             </div>
           ) : (
-            <ChartContainer config={chartConfig} className="w-full h-72">
+            <div className="w-full h-72 text-xs [&_.recharts-surface]:outline-none">
+              <ResponsiveContainer width="100%" height="100%">
               <AreaChart accessibilityLayer data={chartData} margin={{ left: 4, right: 8, top: 8 }}>
                 <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
                 <XAxis
@@ -234,7 +245,7 @@ export default function AnimatedHighlightedAreaChart({ feedVersion }: { feedVers
                     return value
                   }}
                 />
-                <ChartTooltip cursor={{ stroke: 'rgba(255,255,255,0.15)', strokeWidth: 1 }} content={<ChartTooltipContent />} />
+                <Tooltip cursor={{ stroke: 'rgba(255,255,255,0.15)', strokeWidth: 1 }} content={<ChartTooltipBody />} />
                 <defs>
                   {SERIES_ORDER.map((k) => (
                     <linearGradient key={k} id={`grad-${k}`} x1="0" y1="0" x2="0" y2="1">
@@ -258,10 +269,11 @@ export default function AnimatedHighlightedAreaChart({ feedVersion }: { feedVers
                   )
                 )}
               </AreaChart>
-            </ChartContainer>
+              </ResponsiveContainer>
+            </div>
           )}
-        </CardContent>
+        </div>
       </div>
-    </Card>
+    </div>
   );
 }

@@ -1,16 +1,10 @@
 import { scanIndicatorLogic, validateTypedIndicator } from '../../../src/scanner'
 import { MAX_INDICATOR_LENGTH } from '../../../src/lib/apiValidation'
+import { json } from '../_common'
 
 /** Batch size cap for POST /scan. The middleware rate-limits per request, so
  *  without a cap one "request" could hide an arbitrarily large scan fan-out. */
 const MAX_BATCH_SIZE = 100
-
-function json(body: any, status = 200) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { 'Content-Type': 'application/json' },
-  })
-}
 
 /**
  * POST /api/v1/scan — scan multiple typed indicators in one request.

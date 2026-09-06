@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { categoryTier, TIER_CHIP, TIER_TEXT, TIER_ACCENT, type SeverityTier } from './utils'
+import { categoryTier, getCategoryIconPath, TIER_CHIP, TIER_TEXT, TIER_ACCENT, type SeverityTier } from './utils'
 
 /**
  * Category chips used to pick colour per category, which is how purple, blue,
@@ -35,6 +35,38 @@ describe('categoryTier', () => {
     expect(categoryTier(null)).toBe('unknown')
     expect(categoryTier(undefined)).toBe('unknown')
     expect(categoryTier('')).toBe('unknown')
+  })
+})
+
+/**
+ * Severity and icon now come from one CATEGORY_RULES table. Same labels as
+ * above: if a rule row is reordered or its keywords edited, exactly one of
+ * these two suites goes red, which is the whole point of merging them.
+ */
+describe('getCategoryIconPath', () => {
+  const icons: Array<[string, string]> = [
+    ['Malware', 'malware.png'],
+    ['Exploit', 'malware.png'],
+    ['Zero-Day', 'malware.png'],
+    ['Command & Control', 'botnet.png'],
+    ['Botnet', 'botnet.png'],
+    ['Mirai Botnet', 'botnet.png'],
+    ['Brute-Force', 'bruteforce.png'],
+    ['DDoS', 'DDoS.png'],
+    ['Phishing', 'phishing.png'],
+    ['Credential Harvesting', 'phishing.png'],
+    ['Spam', 'spam.png'],
+    ['Port Scan', 'other.png'],
+    ['SSH', 'other.png'],
+  ]
+
+  it.each(icons)('draws %s with %s', (label, icon) => {
+    expect(getCategoryIconPath(label)).toContain(`img/${icon}`)
+  })
+
+  it('falls back to other.png for missing input', () => {
+    expect(getCategoryIconPath(null)).toContain('img/other.png')
+    expect(getCategoryIconPath('')).toContain('img/other.png')
   })
 })
 

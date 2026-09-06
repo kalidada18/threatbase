@@ -35,7 +35,6 @@
     --app-bg: #080b12;
 
     --gradient-color: #cf1733;
-    --sparkles-color: #cf1733;
   }
 
   /* The html element already carries `class="dark"`; mirror the dark surface. */
@@ -66,7 +65,6 @@
     --chart-5: 215 20% 65%;
 
     --gradient-color: #cf1733;
-    --sparkles-color: #ffffff;
   }
 }
 

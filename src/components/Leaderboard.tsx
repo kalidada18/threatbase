@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion, type Variants } from 'framer-motion'
 import supabaseClient from '../supabaseClient'
-import { fmt, getAvatarForName } from '../utils'
+import { fmt, DEFAULT_AVATAR } from '../utils'
 import { useCountUp } from '../lib/useCountUp'
 
 // Ranks based on number of reports. Each rank exposes a single `accent` token
@@ -86,7 +86,7 @@ function Row({ leader, index, max }: { leader: any; index: number; max: number }
         </span>
 
         <img
-          src={leader.avatar_url || getAvatarForName(leader.reporter_alias)}
+          src={leader.avatar_url || DEFAULT_AVATAR}
           alt=""
           className="h-9 w-9 flex-shrink-0 rounded-full border border-white/[0.08] bg-black/20 object-cover"
         />

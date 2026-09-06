@@ -44,16 +44,28 @@ export type IndicatorKey = keyof typeof INDICATOR_ACCENT
  */
 export type SeverityTier = 'critical' | 'high' | 'medium' | 'low' | 'unknown'
 
+/**
+ * The single category vocabulary: keyword -> severity + icon, first match wins.
+ *
+ * Severity and icon used to be two independent keyword cascades over the same
+ * words, which is how 'command' ended up rated critical by one and drawn with
+ * the generic icon by the other. One table, two lookups, no drift.
+ */
+const CATEGORY_RULES: ReadonlyArray<readonly [RegExp, SeverityTier, string]> = [
+  [/malware|exploit|zero-day|malicious/, 'critical', 'malware'],
+  [/botnet|mirai|c2|command/, 'critical', 'botnet'],
+  [/brute|force/, 'high', 'bruteforce'],
+  [/ddos/, 'high', 'DDoS'],
+  [/phish|harvest/, 'medium', 'phishing'],
+  [/spam/, 'medium', 'spam'],
+  [/scan|recon/, 'low', 'other'],
+]
+
+const matchCategory = (cat?: string | null) =>
+  cat ? CATEGORY_RULES.find(([re]) => re.test(cat.toLowerCase())) : undefined
+
 export function categoryTier(cat?: string | null): SeverityTier {
-  if (!cat) return 'unknown'
-  const c = cat.toLowerCase()
-  if (c.includes('malware') || c.includes('exploit') || c.includes('zero-day') ||
-      c.includes('c2') || c.includes('command') || c.includes('botnet') ||
-      c.includes('mirai') || c.includes('malicious')) return 'critical'
-  if (c.includes('brute') || c.includes('force') || c.includes('ddos')) return 'high'
-  if (c.includes('phish') || c.includes('harvest') || c.includes('spam')) return 'medium'
-  if (c.includes('scan') || c.includes('recon')) return 'low'
-  return 'unknown'
+  return matchCategory(cat)?.[1] ?? 'unknown'
 }
 
 /** Chip classes (background + text + hairline) for a category, by severity. */
@@ -223,37 +235,12 @@ const safeBaseUrl = () => {
   }
 }
 
-/** Predict male/female avatar based on name heuristically */
-export function getAvatarForName(name: string | null | undefined): string {
-  if (!name || name === 'Anonymous') return `${safeBaseUrl()}img/maledefender.png`
-  
-  const n = name.toLowerCase()
-  const femaleIndicators = ['sarah', 'jessica', 'emily', 'mary', 'linda', 'anna', 'emma', 'olivia', 'sophia', 'isabella', 'mia', 'charlotte', 'amelia', 'harper', 'evelyn', 'abigail', 'maria', 'jane', 'jennifer', 'susan', 'lisa', 'karen', 'betty', 'helen', 'sandra', 'ashley', 'kimberly', 'donna', 'carol', 'michelle', 'amanda', 'melissa', 'deborah', 'stephanie', 'rebecca', 'sharon', 'laura', 'cynthia', 'kathleen', 'amy', 'shirley', 'angela', 'heather', 'nicole', 'girl', 'woman', 'lady', 'queen']
-  
-  for (const f of femaleIndicators) {
-      if (n.includes(f)) return `${safeBaseUrl()}img/femaledefender.png`
-  }
-  
-  // Rough heuristic for typical feminine suffixes in English and Latin names
-  if (/a[0-9_]*$/.test(n) || /ie[0-9_]*$/.test(n) || /ynn[0-9_]*$/.test(n) || /ella[0-9_]*$/.test(n) || /ia[0-9_]*$/.test(n)) {
-      return `${safeBaseUrl()}img/femaledefender.png`
-  }
-  
-  return `${safeBaseUrl()}img/maledefender.png`
-}
+/** Neutral avatar for reporters with no uploaded picture. */
+export const DEFAULT_AVATAR = `${safeBaseUrl()}img/security_robot.png`
 
-/** Get the PNG icon path for a threat category label */
+/** Get the PNG icon path for a threat category label, via CATEGORY_RULES. */
 export function getCategoryIconPath(label: string | null | undefined): string {
-  if (!label) return `${safeBaseUrl()}img/other.png`
-  const l = label.toLowerCase()
-  if (l.includes('malware') || l.includes('exploit') || l.includes('zero-day') || l.includes('malicious')) return `${safeBaseUrl()}img/malware.png`
-  if (l.includes('phish') || l.includes('harvest')) return `${safeBaseUrl()}img/phishing.png`
-  if (l.includes('spam')) return `${safeBaseUrl()}img/spam.png`
-  if (l.includes('ddos')) return `${safeBaseUrl()}img/DDoS.png`
-  if (l.includes('brute')) return `${safeBaseUrl()}img/bruteforce.png`
-  if (l.includes('botnet') || l.includes('c2')) return `${safeBaseUrl()}img/botnet.png`
-  if (l.includes('scan') || l.includes('recon')) return `${safeBaseUrl()}img/other.png`
-  return `${safeBaseUrl()}img/other.png`
+  return `${safeBaseUrl()}img/${matchCategory(label)?.[2] ?? 'other'}.png`
 }
 
 /** Normalize, clean, and deduplicate tags from external intelligence sources */

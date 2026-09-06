@@ -3,12 +3,7 @@ import { motion, useReducedMotion } from 'framer-motion'
 import { ExternalLink, Trophy, ArrowRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useSEO } from '@/useSEO'
-import { useIsDesktop } from '@/lib/useMediaQuery'
 import supabaseClient from '@/supabaseClient'
-import AnimatedShaderBackground from '@/components/ui/animated-shader-background'
-import { Sparkles } from '@/components/ui/sparkles'
-import { InfiniteSlider } from '@/components/ui/infinite-slider'
-import { ProgressiveBlur } from '@/components/ui/progressive-blur'
 
 type Source = { name: string; desc: string; url: string }
 
@@ -34,10 +29,6 @@ const SOURCES: Source[] = [
 export default function ThanksPage() {
   const [topReporter, setTopReporter] = useState<string | null>(null)
   const prefersReducedMotion = useReducedMotion()
-  const isDesktop = useIsDesktop()
-  // Heavy GPU work (WebGL aurora + particle field) is desktop-only. On phones
-  // it pegged the main thread and froze the page; a static ambient wash stands in.
-  const showHeavyFx = isDesktop && !prefersReducedMotion
 
   useEffect(() => {
     async function fetchTopReporter() {
@@ -65,21 +56,18 @@ export default function ThanksPage() {
 
   return (
     <main className="min-h-[100dvh] pt-28 md:pt-32 pb-32 relative bg-app overflow-hidden font-sans selection:bg-red-500/30">
-      {/* Animated aurora shader — desktop only (Three.js is too heavy for phones). */}
-      {showHeavyFx ? (
-        <AnimatedShaderBackground className="opacity-40" />
-      ) : (
-        /* Static ruby ambient wash that mirrors the shader's mood at zero cost. */
-        <div
-          aria-hidden
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              'radial-gradient(120% 60% at 50% -10%, rgba(207,23,51,0.18), transparent 60%), radial-gradient(80% 50% at 50% 0%, rgba(174,182,196,0.06), transparent 65%)',
-          }}
-        />
-      )}
-      {/* Readability overlay + texture on top of the shader (matches --app-bg #080b12) */}
+      {/* Ruby ambient wash. Used to be a Three.js aurora shader on desktop and
+          this gradient everywhere else; the gradient was already carrying the
+          mood at zero cost, so the shader went. */}
+      <div
+        aria-hidden
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            'radial-gradient(120% 60% at 50% -10%, rgba(207,23,51,0.18), transparent 60%), radial-gradient(80% 50% at 50% 0%, rgba(174,182,196,0.06), transparent 65%)',
+        }}
+      />
+      {/* Readability overlay + texture on top of the wash (matches --app-bg #080b12) */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#080b12]/60 via-[#080b12]/90 to-[#080b12] pointer-events-none" />
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-5xl h-px bg-gradient-to-r from-transparent via-red-500/25 to-transparent" />
 
@@ -108,40 +96,26 @@ export default function ThanksPage() {
           transition={{ duration: 1, delay: 0.3 }}
           className="relative mt-20"
         >
-          <div className="relative h-[80px] w-full">
-            <InfiniteSlider className="flex h-full w-full items-center" duration={60} gap={64}>
-              {SOURCES.map((s) => (
+          {/* Track is duplicated because marqueeScroll translates -50%; the mask
+              replaces the old layered-blur edge fade, and .animate-marquee already
+              carries hover-pause + prefers-reduced-motion (see index.css). */}
+          <div className="relative flex h-[80px] w-full items-center overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]">
+            <div className="animate-marquee flex w-max shrink-0 items-center gap-16">
+              {[...SOURCES, ...SOURCES].map((s, i) => (
                 <span
-                  key={s.name}
+                  key={`${s.name}-${i}`}
+                  aria-hidden={i >= SOURCES.length}
                   className="whitespace-nowrap font-mono text-sm md:text-base font-medium tracking-[0.1em] text-slate-400 uppercase transition-colors hover:text-white"
                 >
                   {s.name}
                 </span>
               ))}
-            </InfiniteSlider>
-            <ProgressiveBlur
-              className="pointer-events-none absolute top-0 left-0 h-full w-[120px] md:w-[200px]"
-              direction="left"
-              blurIntensity={1}
-            />
-            <ProgressiveBlur
-              className="pointer-events-none absolute top-0 right-0 h-full w-[120px] md:w-[200px]"
-              direction="right"
-              blurIntensity={1}
-            />
+            </div>
           </div>
 
           <div className="relative -mt-4 h-24 w-full overflow-hidden [mask-image:radial-gradient(ellipse_at_center,white,transparent)]">
             <div className="absolute inset-0 before:absolute before:inset-0 before:bg-[radial-gradient(circle_at_bottom_center,var(--gradient-color),transparent_60%)] before:opacity-20" />
             <div className="absolute -left-1/2 top-1/2 z-10 aspect-[1/0.5] w-[200%] rounded-[100%] border-t border-red-500/10 bg-[#080b12]" />
-            {showHeavyFx && (
-              <Sparkles
-                density={120}
-                size={1.5}
-                className="absolute inset-x-0 bottom-0 h-full w-full [mask-image:radial-gradient(ellipse_at_center,white,transparent_80%)]"
-                color="#cf1733"
-              />
-            )}
           </div>
         </motion.div>
 

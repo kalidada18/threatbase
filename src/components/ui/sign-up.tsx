@@ -12,6 +12,7 @@ import type { GlobalOptions as ConfettiGlobalOptions, CreateTypes as ConfettiIns
 import confetti from "canvas-confetti"
 
 import { useAuth } from "../../AuthContext";
+import { Button } from "./button";
 
 type Api = { fire: (options?: ConfettiOptions) => void }
 export type ConfettiRef = Api | null
@@ -91,28 +92,6 @@ function BlurFade({ children, className, variant, duration = 0.4, delay = 0, yOf
     </motion.div>
   );
 }
-
-// --- BUILT-IN GLASS BUTTON COMPONENT (WITH CLICK FIX) ---
-const glassButtonVariants = cva("relative isolate all-unset cursor-pointer rounded-full transition-all", { variants: { size: { default: "text-base font-medium", sm: "text-sm font-medium", lg: "text-lg font-medium", icon: "h-10 w-10" } }, defaultVariants: { size: "default" } });
-const glassButtonTextVariants = cva("glass-button-text relative block select-none tracking-tighter", { variants: { size: { default: "px-6 py-3.5", sm: "px-4 py-2", lg: "px-8 py-4", icon: "flex h-10 w-10 items-center justify-center" } }, defaultVariants: { size: "default" } });
-export interface GlassButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof glassButtonVariants> { contentClassName?: string; }
-const GlassButton = React.forwardRef<HTMLButtonElement, GlassButtonProps>(
-  ({ className, children, size, contentClassName, onClick, ...props }, ref) => {
-    const handleWrapperClick = (e: React.MouseEvent<HTMLDivElement>) => {
-      const button = e.currentTarget.querySelector('button');
-      if (button && e.target !== button) button.click();
-    };
-    return (
-      <div className={cn("glass-button-wrap cursor-pointer rounded-full relative w-full", className)} onClick={handleWrapperClick}>
-        <button className={cn("glass-button relative z-10 w-full", glassButtonVariants({ size }))} ref={ref} onClick={onClick} {...props}>
-          <span className={cn(glassButtonTextVariants({ size }), contentClassName)}>{children}</span>
-        </button>
-        <div className="glass-button-shadow rounded-full pointer-events-none"></div>
-      </div>
-    );
-  }
-);
-GlassButton.displayName = "GlassButton";
 
 // --- THEME-AWARE SVG GRADIENT BACKGROUND WITH SUBTLE ANIMATION ---
 const GradientBackground = () => (
@@ -215,7 +194,7 @@ export const AuthComponent = ({ logo = <DefaultLogo />, brandName = "ThreatBase 
                     {modalStatus === 'error' && <>
                         <AlertCircle className="w-12 h-12 text-destructive" />
                         <p className="text-lg font-medium text-white text-center">{modalErrorMessage}</p>
-                        <GlassButton onClick={closeModal} size="sm" className="mt-4 w-full justify-center">Try Again</GlassButton>
+                        <Button variant="outline" size="sm" onClick={closeModal} className="mt-4 w-full rounded-full border-white/10 bg-white/[0.06] text-white hover:bg-white/10 hover:text-white">Try Again</Button>
                     </>}
                     {modalStatus === 'loading' && 
                         <TextLoop interval={TEXT_LOOP_INTERVAL} stopOnEnd={true}>
@@ -264,18 +243,22 @@ export const AuthComponent = ({ logo = <DefaultLogo />, brandName = "ThreatBase 
                 
                 <BlurFade delay={0.25 * 2} className="w-full mt-4">
                     <div className="flex flex-col gap-4 w-full">
-                        <GlassButton 
+                        <Button
+                            variant="outline"
+                            size="lg"
                             onClick={() => handleSignIn('google')}
-                            contentClassName="flex items-center justify-center gap-3" 
+                            className="w-full gap-3 rounded-full border-white/10 bg-white/[0.06] text-white hover:bg-white/10 hover:text-white"
                         >
-                            <GoogleIcon /><span className="font-bold text-white tracking-wide">Continue with Google</span>
-                        </GlassButton>
-                        <GlassButton 
+                            <GoogleIcon /><span className="font-bold tracking-wide">Continue with Google</span>
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="lg"
                             onClick={() => handleSignIn('github')}
-                            contentClassName="flex items-center justify-center gap-3" 
+                            className="w-full gap-3 rounded-full border-white/10 bg-white/[0.06] text-white hover:bg-white/10 hover:text-white"
                         >
-                            <GitHubIcon /><span className="font-bold text-white tracking-wide">Continue with GitHub</span>
-                        </GlassButton>
+                            <GitHubIcon /><span className="font-bold tracking-wide">Continue with GitHub</span>
+                        </Button>
                     </div>
                 </BlurFade>
                 

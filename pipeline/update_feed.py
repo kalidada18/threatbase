@@ -486,7 +486,6 @@ if URLHAUS_AUTH_KEY:
 # ─────────────────────────────────────────────────────────────────────────────
 _DOMAIN_PATTERN = re.compile(r"^(?:[a-zA-Z0-9](?:[a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$")
 _SHA256_PATTERN = re.compile(r'^[a-fA-F0-9]{64}$')
-_MD5_PATTERN = re.compile(r'^[a-fA-F0-9]{32}$')
 _HASH_PATTERN = re.compile(r'^(?:[a-fA-F0-9]{32}|[a-fA-F0-9]{40}|[a-fA-F0-9]{64})$')
 _URL_PATTERN = re.compile(r'^https?://.+')
 
@@ -674,20 +673,8 @@ def load_custom_iocs() -> dict:
     return custom
 
 
-def load_previous_ips(path: str) -> Set[int]:
-    ips = set()
-    if os.path.exists(path):
-        with open(path, "r", encoding="utf-8") as f:
-            for line in f:
-                if line.startswith("#"): continue
-                parts = line.strip().split(',')
-                if parts:
-                    ip_int = is_valid_ipv4_fast(parts[0])
-                    if ip_int: ips.add(ip_int)
-    return ips
-
 def load_previous_ips_with_meta(path: str) -> tuple:
-    """Like load_previous_ips, but also returns {ip_int: {"fs": first_seen, "ls": last_seen}}.
+    """Returns (ips, {ip_int: {"fs": first_seen, "ls": last_seen}}).
 
     The IP feed format is `IP,FeedCount,RiskScore,Tags,FirstSeen,LastSeen[,Sources]`,
     so the dates are columns 5-6 when present (feeds written before the decay
@@ -806,9 +793,9 @@ def chunk_name(path: str, index: int) -> str:
     return f"{base}-{index:02d}{ext}"
 
 
-def load_previous_list_chunked(path: str) -> Set[str]:
+def load_previous_list_chunked_with_meta(path: str) -> tuple:
     """
-    Seed the accumulative database for a chunked feed.
+    Seed the accumulative database for a chunked feed, with last-seen metadata.
 
     Prefers the unsplit file when present (local runs, or a release restore),
     and otherwise reassembles from the committed chunks — which is what a fresh
@@ -816,20 +803,6 @@ def load_previous_list_chunked(path: str) -> Set[str]:
     fallback the aggregator would silently start from an empty historical set
     and republish a feed truncated to only today's source hits.
     """
-    if os.path.exists(path):
-        return load_previous_list(path)
-
-    items: Set[str] = set()
-    base, ext = os.path.splitext(path)
-    for chunk in sorted(glob.glob(f"{base}-[0-9][0-9]{ext}")):
-        items |= load_previous_list(chunk)
-    if items:
-        log.info(f"  Reassembled {len(items):,} items from chunks of {os.path.basename(path)}")
-    return items
-
-
-def load_previous_list_chunked_with_meta(path: str) -> tuple:
-    """Metadata-aware variant of load_previous_list_chunked."""
     if os.path.exists(path):
         return load_previous_list_with_meta(path)
 

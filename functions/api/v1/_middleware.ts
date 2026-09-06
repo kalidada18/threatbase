@@ -1,30 +1,12 @@
 import { createClient } from '@supabase/supabase-js'
 import { SUPABASE_URL } from '../../../src/lib/supabaseConfig'
-
-const ALLOWED_ORIGIN = 'https://threatbase.qzz.io'
-
-/**
- * Strict dev-origin check: exact host + optional port only. A prefix match
- * (the old `startsWith('http://localhost')`) also accepted suffix tricks like
- * `http://localhost.attacker.com`, which this regex rejects.
- */
-function isDevOrigin(origin: string): boolean {
-  return /^http:\/\/(localhost|127\.0\.0\.1)(:\d{1,5})?$/.test(origin)
-}
-
-function getAllowedOrigin(request: Request): string {
-  const origin = request.headers.get('Origin') || ''
-  if (origin === ALLOWED_ORIGIN || isDevOrigin(origin)) {
-    return origin
-  }
-  return ALLOWED_ORIGIN
-}
+import { json, resolveAllowedOrigin } from '../_common'
 
 export const onRequestOptions = async (context: any) => {
   return new Response(null, {
     status: 204,
     headers: {
-      'Access-Control-Allow-Origin': getAllowedOrigin(context.request),
+      'Access-Control-Allow-Origin': resolveAllowedOrigin(context.request),
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, x-api-key',
     },
@@ -42,7 +24,7 @@ export const onRequest = async (context: any) => {
   // Extract API key
   const apiKey = request.headers.get('x-api-key');
   if (!apiKey) {
-    return new Response(JSON.stringify({ error: 'Missing x-api-key header' }), { status: 401, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': getAllowedOrigin(request) } });
+    return json({ error: 'Missing x-api-key header' }, 401, request);
   }
 
   try {
@@ -63,7 +45,7 @@ export const onRequest = async (context: any) => {
       const count = currentVal ? parseInt(currentVal, 10) : 0;
 
       if (count >= 1000) {
-        return new Response(JSON.stringify({ error: 'Rate limit exceeded. Maximum 1000 requests per day.' }), { status: 429, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': getAllowedOrigin(request) } });
+        return json({ error: 'Rate limit exceeded. Maximum 1000 requests per day.' }, 429, request);
       }
 
       await kv.put(rlKey, (count + 1).toString(), { expirationTtl: 86400 }); // Expire after 1 day
@@ -77,14 +59,14 @@ export const onRequest = async (context: any) => {
     const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY;
     if (!serviceKey) {
       console.error('SUPABASE_SERVICE_ROLE_KEY is not configured — cannot validate API keys.');
-      return new Response(JSON.stringify({ error: 'API authentication is temporarily unavailable.' }), { status: 503, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': getAllowedOrigin(request) } });
+      return json({ error: 'API authentication is temporarily unavailable.' }, 503, request);
     }
     const adminClient = createClient(env.SUPABASE_URL || SUPABASE_URL, serviceKey);
 
     const { data: userId, error } = await adminClient.rpc('validate_api_key_hash', { client_hash: hashHex });
 
     if (error || !userId) {
-      return new Response(JSON.stringify({ error: 'Invalid or revoked API key' }), { status: 401, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': getAllowedOrigin(request) } });
+      return json({ error: 'Invalid or revoked API key' }, 401, request);
     }
 
     // Attach user context for downstream functions
@@ -94,7 +76,7 @@ export const onRequest = async (context: any) => {
     
     // Ensure CORS headers are present on actual responses
     const newHeaders = new Headers(response.headers);
-    newHeaders.set('Access-Control-Allow-Origin', getAllowedOrigin(request));
+    newHeaders.set('Access-Control-Allow-Origin', resolveAllowedOrigin(request));
     
     return new Response(response.body, {
       status: response.status,
@@ -103,6 +85,6 @@ export const onRequest = async (context: any) => {
     });
 
   } catch (err: any) {
-    return new Response(JSON.stringify({ error: 'Internal Server Error' }), { status: 500, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': getAllowedOrigin(request) } });
+    return json({ error: 'Internal Server Error' }, 500, request);
   }
 };
