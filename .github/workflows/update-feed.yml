@@ -17,7 +17,11 @@ jobs:
   update-feed:
     name: Fetch, Aggregate & Publish
     runs-on: ubuntu-latest
-    timeout-minutes: 15  # aggregator ~90s + APT sync (OTX search can be slow)
+    # aggregator ~90s + APT sync (OTX search can be slow) + ~180 MB of release
+    # assets in step 9. Was 15, which the release uploads outgrew: the job was
+    # cancelled mid-upload and every consumer URL under releases/download/latest/
+    # kept serving the previous run's assets while the run itself looked merely red.
+    timeout-minutes: 30
 
     # Required so the built-in GITHUB_TOKEN can push commits back to the repo.
     # No PAT or extra secrets are needed.
@@ -307,8 +311,12 @@ jobs:
         with:
           tag: archive-${{ env.ARCHIVE_DATE }}
           name: Daily Feed Archive - ${{ env.ARCHIVE_DATE }}
+          # The zip already holds all six feeds, so the loose copies are not listed
+          # here — uploading both sent the same ~180 MB twice per run, which is what
+          # pushed the job past its timeout. stats/manifest stay loose: they are small
+          # and useful to read without downloading the archive.
           artifacts: >-
-            ioc/ip/threatbase-ip.txt,ioc/ip/threatbase-ipv6.txt,ioc/ip/threatbase-cidr.txt,ioc/domain/threatbase-domain.txt,ioc/hash/threatbase-hash.txt,ioc/url/threatbase-url.txt,ioc/data/stats.json,ioc/data/manifest.json,threatbase-archive-*.zip
+            threatbase-archive-*.zip,ioc/data/stats.json,ioc/data/manifest.json
           allowUpdates: true
           replacesArtifacts: true
           body: "Automated daily archive of the Threatbase threat intelligence database."
