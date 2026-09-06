@@ -31,10 +31,14 @@ const ALLOWED_PREFIXES = ['ip/', 'firewall/', 'stix/']
 const ALLOWED_EXACT = ['data/false_positives.txt']
 
 /**
- * The Pro-only products live in a PRIVATE repo (default kalidada18/threatbase-pro,
+ * The Pro-only products live in a PRIVATE repo (default kalidada18/threatbasepro,
  * pushed by .github/workflows/update-feed.yml), because a public origin means the
  * paywall is decorative — anyone could hotlink raw.githubusercontent.com and skip
  * this Worker entirely. Everything else still comes from the public mirror.
+ *
+ * The default must stay byte-identical to the PRO_REPO default in that workflow.
+ * They are the two ends of one pipe: a mismatch pushes to a repo the Worker never
+ * reads, and every paid feed 404s while CI reports success.
  */
 const PAID_PREFIXES = ['ip/categories/', 'firewall/', 'stix/']
 const isPaid = (rel: string) => PAID_PREFIXES.some((p) => rel.startsWith(p))
@@ -46,7 +50,7 @@ const isPaid = (rel: string) => PAID_PREFIXES.some((p) => rel.startsWith(p))
  * to the default branch each run, so HEAD is always the fresh snapshot.
  */
 const fetchPaid = (rel: string, env: any) =>
-  fetch(`https://api.github.com/repos/${env.PRO_REPO || 'kalidada18/threatbase-pro'}/contents/${rel}`, {
+  fetch(`https://api.github.com/repos/${env.PRO_REPO || 'kalidada18/threatbasepro'}/contents/${rel}`, {
     headers: {
       Authorization: `Bearer ${env.PRO_REPO_TOKEN}`,
       Accept: 'application/vnd.github.raw',

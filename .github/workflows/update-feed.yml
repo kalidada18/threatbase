@@ -157,7 +157,7 @@ jobs:
       - name: Publish Pro feeds to private repo
         env:
           PRO_REPO_TOKEN: ${{ secrets.PRO_REPO_TOKEN }}
-          PRO_REPO: ${{ vars.PRO_REPO || 'kalidada18/threatbase-pro' }}
+          PRO_REPO: ${{ vars.PRO_REPO || 'kalidada18/threatbasepro' }}
         run: |
           set -euo pipefail
           # The skip lives here, not in `if:` — the secrets context is not available

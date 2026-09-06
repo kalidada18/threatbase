@@ -152,7 +152,7 @@ FEED_CATEGORIES: Dict[str, str] = {
 }
 
 # Threatbase Pro products: gitignored here and pushed to the private
-# threatbase-pro repo by the workflow — a public copy makes the paywall in
+# threatbasepro repo by the workflow — a public copy makes the paywall in
 # functions/feed/[[path]].ts unenforceable. Paths are relative to ioc/, matching
 # manifest.json checksum keys. Keep in sync with PAID_PREFIXES in
 # functions/feed/[[path]].ts and functions/ioc/[[path]].ts.
