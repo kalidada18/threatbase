@@ -1,5 +1,5 @@
 import React from 'react'
-import { Menu, X, Github, LogIn, LogOut, User as UserIcon, ChevronDown, Heart } from 'lucide-react'
+import { Menu, X, Github, LogOut, User as UserIcon, ChevronDown, Heart } from 'lucide-react'
 import { useScroll, motion, AnimatePresence, useMotionValueEvent, type Variants } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -38,6 +38,10 @@ const mobileItem: Variants = {
     hidden: { opacity: 0, x: -14 },
     show: { opacity: 1, x: 0, transition: { duration: 0.35, ease: EASE_EXPO } },
 }
+
+/** Warms the heaviest route chunk on hover/focus. Same module as the
+ *  App.tsx lazy() import, so Vite dedupes it into one chunk. */
+const preloadThreatFeed = () => { import('./ThreatFeedPage') }
 
 export default function Navbar() {
     const navigate = useNavigate()
@@ -80,7 +84,7 @@ export default function Navbar() {
                 transition={{ duration: 0.4, ease: "easeInOut" }}
                 data-state={menuState && 'active'}
                 className={cn(
-                    "group fixed z-50 transition-all duration-300 w-full",
+                    "group fixed z-50 transition-colors duration-300 w-full",
                     scrolled
                         ? "bg-[#080b12]/80 backdrop-blur-xl border-b border-white/[0.06] shadow-lg shadow-black/40 py-2"
                         : "bg-transparent border-b border-transparent py-3.5"
@@ -125,10 +129,13 @@ export default function Navbar() {
                                 <ul className="flex items-center gap-1 text-sm font-medium">
                                     {menuItems.map((item, index) => {
                                         const isActive = isItemActive(pathname, hash, item.href)
+                                        const isFeed = item.href.startsWith('/threatfeed')
                                         return (
                                             <li key={index} className="flex items-center">
                                                 <Link
                                                     to={item.href}
+                                                    onMouseEnter={isFeed ? preloadThreatFeed : undefined}
+                                                    onFocus={isFeed ? preloadThreatFeed : undefined}
                                                     className={cn(
                                                         "relative transition-colors duration-200 tracking-tight font-semibold text-[0.85rem] px-2 py-2 rounded-full whitespace-nowrap",
                                                         isActive
@@ -164,10 +171,13 @@ export default function Navbar() {
                                 >
                                     {menuItems.map((item, index) => {
                                         const isActive = isItemActive(pathname, hash, item.href)
+                                        const isFeed = item.href.startsWith('/threatfeed')
                                         return (
                                             <motion.li key={index} variants={mobileItem}>
                                                 <Link
                                                     to={item.href}
+                                                    onMouseEnter={isFeed ? preloadThreatFeed : undefined}
+                                                    onFocus={isFeed ? preloadThreatFeed : undefined}
                                                     onClick={() => setMenuState(false)}
                                                     className={cn(
                                                         "flex min-h-[44px] items-center justify-center transition-all duration-200 px-4 py-2.5 rounded-xl text-center",
@@ -209,9 +219,14 @@ export default function Navbar() {
                                  {loading ? (
                                      <div className="h-9 w-9 rounded-full border border-white/5 bg-white/5 animate-pulse" />
                                  ) : user ? (
-                                    <div className="relative">
+                                    <div
+                                        className="relative"
+                                        onKeyDown={(e) => { if (e.key === 'Escape') setDropdownOpen(false) }}
+                                    >
                                         <button
                                             onClick={() => setDropdownOpen(!dropdownOpen)}
+                                            aria-haspopup="menu"
+                                            aria-expanded={dropdownOpen}
                                             className="flex items-center gap-2.5 p-1 pr-3 rounded-full border border-white/10 bg-white/5 backdrop-blur-md hover:bg-white/10 hover:border-white/20 transition-all duration-300 focus:outline-none select-none active:scale-[0.98] cursor-pointer"
                                         >
                                             {(profile?.avatar_url || user.user_metadata?.avatar_url) ? (
