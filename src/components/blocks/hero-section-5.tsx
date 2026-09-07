@@ -87,7 +87,7 @@ export function HeroSection({ scanInput, setScanInput, handleScan }: any) {
                 type="text"
                 aria-label="Hunt an IP, domain, URL, or hash"
                 placeholder="Enter IP, domain, URL, or hash…"
-                className="hero-scan-input relative h-14 md:h-16 w-full rounded-full border border-white/10 bg-slate-950/70 backdrop-blur-xl pl-12 md:pl-14 pr-28 md:pr-32 text-base text-white placeholder:text-slate-500 focus-visible:outline-none focus-visible:border-red-500/50 focus-visible:ring-2 focus-visible:ring-red-500/30 transition-all shadow-[0_8px_30px_-12px_rgba(0,0,0,0.8)]"
+                className="hero-scan-input relative h-14 md:h-16 w-full rounded-full border border-white/10 bg-slate-950/70 backdrop-blur-xl pl-12 md:pl-14 pr-28 md:pr-32 text-base text-white placeholder:text-slate-400 focus-visible:outline-none focus-visible:border-red-500/50 focus-visible:ring-2 focus-visible:ring-red-500/30 transition-all shadow-[0_8px_30px_-12px_rgba(0,0,0,0.8)]"
                 value={scanInput}
                 onChange={(e) => setScanInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleScan()}
@@ -112,7 +112,7 @@ export function HeroSection({ scanInput, setScanInput, handleScan }: any) {
               transition={{ duration: 0.6, delay: 0.9, ease: EASE_EXPO }}
               className="mt-6 flex flex-wrap items-center justify-center gap-2"
             >
-              <span className="text-xs font-medium tracking-wide text-slate-500 mr-1">Try:</span>
+              <span className="text-xs font-medium tracking-wide text-slate-400 mr-1">Try:</span>
               {EXAMPLES.map((ex) => (
                 <button
                   key={ex.value}
