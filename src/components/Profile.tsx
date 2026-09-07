@@ -255,6 +255,7 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
   const [editWebsite, setEditWebsite] = useState('')
   const [saving, setSaving] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
+  const [profileErrors, setProfileErrors] = useState<{ username?: string; website?: string }>({})
 
   // Submissions state
   const [reports, setReports] = useState<any[]>([])
@@ -360,6 +361,18 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
 
     loadReports()
   }, [authProfile, user, loadingProfile, isForbidden])
+
+  // Escape closes the Delete Account confirmation.
+  useEffect(() => {
+    if (!showDeleteConfirm) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return
+      setShowDeleteConfirm(false)
+      setDeleteInput('')
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [showDeleteConfirm])
 
   // Fetch join order to identify First/Second/Third Blood.
   // Only fetch the first 3 accounts ever created — avoids leaking every user ID.
@@ -491,7 +504,7 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
     if (!supabaseClient || !user) return
 
     if (editUsername.trim().length < 3) {
-      addToast('Username alias must be at least 3 characters long', 'error')
+      setProfileErrors({ username: 'Username alias must be at least 3 characters long' })
       return
     }
 
@@ -500,10 +513,11 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
     // Validate website URL protocol before saving
     const trimmedWebsite = editWebsite.trim()
     if (trimmedWebsite && safeHref(trimmedWebsite) === '#') {
-      addToast('Website URL must use http:// or https://', 'error')
+      setProfileErrors({ website: 'Website URL must use http:// or https://' })
       setSaving(false)
       return
     }
+    setProfileErrors({})
 
     try {
       // Rely on the DB UNIQUE constraint on username to prevent duplicates.
@@ -523,7 +537,7 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
       if (error) {
         // Handle unique constraint violation (username already taken)
         if (error.code === '23505') {
-          addToast('This username alias is already taken by another user', 'error')
+          setProfileErrors({ username: 'This username alias is already taken by another user' })
           setSaving(false)
           return
         }
@@ -716,7 +730,7 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
                     </a>
                   )}
                   {activeProfile?.created_at && (
-                    <span className="flex items-center gap-1.5 text-slate-600">
+                    <span className="flex items-center gap-1.5 text-slate-400">
                       Joined {new Date(activeProfile.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long' })}
                     </span>
                   )}
@@ -770,10 +784,15 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
                         type="text"
                         id="prof-username"
                         value={editUsername}
-                        onChange={(e) => setEditUsername(e.target.value.replace(/[^a-zA-Z0-9_-]/g, ''))}
-                        className="w-full h-10 rounded-md border border-white/10 bg-transparent px-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-red-500/60 focus:ring-2 focus:ring-red-500/15 transition-all"
+                        onChange={(e) => { setEditUsername(e.target.value.replace(/[^a-zA-Z0-9_-]/g, '')); setProfileErrors(p => ({ ...p, username: undefined })) }}
+                        aria-invalid={!!profileErrors.username}
+                        aria-describedby={profileErrors.username ? 'prof-username-error' : undefined}
+                        className="w-full h-10 rounded-md border border-white/10 bg-transparent px-3 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-red-500/60 focus:ring-2 focus:ring-red-500/15 transition-all"
                         required
                       />
+                      {profileErrors.username && (
+                        <p id="prof-username-error" className="text-[10px] font-medium text-red-400">{profileErrors.username}</p>
+                      )}
                     </div>
 
                     <div className="space-y-2">
@@ -784,10 +803,15 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
                         type="url"
                         id="prof-website"
                         value={editWebsite}
-                        onChange={(e) => setEditWebsite(e.target.value)}
+                        onChange={(e) => { setEditWebsite(e.target.value); setProfileErrors(p => ({ ...p, website: undefined })) }}
                         placeholder="https://"
-                        className="w-full h-10 rounded-md border border-white/10 bg-transparent px-3 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-red-500/60 focus:ring-2 focus:ring-red-500/15 transition-all"
+                        aria-invalid={!!profileErrors.website}
+                        aria-describedby={profileErrors.website ? 'prof-website-error' : undefined}
+                        className="w-full h-10 rounded-md border border-white/10 bg-transparent px-3 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-red-500/60 focus:ring-2 focus:ring-red-500/15 transition-all"
                       />
+                      {profileErrors.website && (
+                        <p id="prof-website-error" className="text-[10px] font-medium text-red-400">{profileErrors.website}</p>
+                      )}
                     </div>
                   </div>
 
@@ -796,13 +820,13 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
                       <label className="text-[11px] font-semibold text-slate-400" htmlFor="prof-bio">
                         Bio
                       </label>
-                      <span className="text-[10px] text-slate-600">{editBio.length}/160</span>
+                      <span className="text-[10px] text-slate-400">{editBio.length}/160</span>
                     </div>
                     <textarea
                       id="prof-bio"
                       value={editBio}
                       onChange={(e) => setEditBio(e.target.value.substring(0, 160))}
-                      className="w-full h-20 rounded-md border border-white/10 bg-transparent px-3 py-2 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-red-500/60 focus:ring-2 focus:ring-red-500/15 transition-all resize-none"
+                      className="w-full h-20 rounded-md border border-white/10 bg-transparent px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-red-500/60 focus:ring-2 focus:ring-red-500/15 transition-all resize-none"
                     />
                   </div>
 
@@ -814,9 +838,9 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
                     >
                       {saving ? 'Saving...' : 'Save Changes'}
                     </Button>
-                    <Button 
+                    <Button
                       type="button"
-                      onClick={() => setIsEditing(false)}
+                      onClick={() => { setIsEditing(false); setProfileErrors({}) }}
                       className="h-9 px-6 rounded-md bg-transparent hover:bg-white/5 text-slate-300 text-xs font-semibold border border-white/10"
                     >
                       Cancel
@@ -940,7 +964,7 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
               </div>
 
               {!hasMfaEnrolled && (
-                <div className="mb-6 p-4 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-500/90 text-xs font-medium flex items-center gap-2">
+                <div className="mb-6 p-4 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-medium flex items-center gap-2">
                   <AlertTriangle size={14} />
                   You must enable Two-Factor Authentication above before you can generate API keys.
                 </div>
@@ -964,7 +988,7 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
                   </div>
                   {newKeyIsPro && (
                     <div className="mt-3">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-amber-400 mb-1">Pro feed URL — point your firewall at this</p>
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-amber-400 mb-1">Pro feed URL. Point your firewall at this</p>
                       <div className="flex items-center gap-2 bg-black/50 border border-amber-500/20 p-2 rounded">
                         <code className="text-xs text-amber-200 font-mono flex-1 select-all break-all">{`${window.location.origin}/feed/${newlyGeneratedKey}/ip/categories/threatbase-ip-bruteforce.txt`}</code>
                         <button
@@ -1065,7 +1089,10 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
               className="absolute inset-0 bg-black/80 backdrop-blur-sm"
             />
             
-            <motion.div 
+            <motion.div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="delete-account-title"
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
@@ -1074,7 +1101,7 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
               <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-destructive/40 to-transparent" />
               <div className="space-y-6">
                 <div>
-                  <h4 className="text-lg font-semibold text-white">Delete Account</h4>
+                  <h4 id="delete-account-title" className="text-lg font-semibold text-white">Delete Account</h4>
                   <p className="text-sm text-slate-400 mt-2 leading-relaxed">
                     This action is permanent. Any reports associated with <span className="text-white font-mono">@{usernameDisplay}</span> will be detached.
                   </p>
