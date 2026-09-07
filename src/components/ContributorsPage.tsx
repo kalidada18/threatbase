@@ -14,7 +14,7 @@ export default function ContributorsPage() {
   return (
     <main className="bg-app min-h-[100dvh]">
       <div className="pt-28 pb-24 relative font-sans">
-        <div className="grain absolute inset-0 opacity-[0.02] mix-blend-overlay pointer-events-none z-10"></div>
+        <div className="grain fixed inset-0 opacity-[0.02] mix-blend-overlay pointer-events-none z-10"></div>
 
         <div className="mx-auto max-w-3xl px-6 lg:px-12 relative z-10">
           <motion.div
