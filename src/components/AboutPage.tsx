@@ -4,7 +4,6 @@ import IsoPageShell from './layout/IsoPageShell'
 import HowItWorks from './HowItWorks'
 import { ShieldCheck, ArrowRight, Github, Database, Radar, Zap } from 'lucide-react'
 import { useSEO } from '@/useSEO'
-import { TiltCard } from './motion/TiltCard'
 import { Typewriter } from './motion/Typewriter'
 
 export default function AboutPage() {
@@ -39,7 +38,7 @@ export default function AboutPage() {
 
   const stats = [
     { value: "6+", label: "IOC Categories" },
-    { value: "24/7", label: "Live Feed Sync" },
+    { value: "Scheduled", label: "Feed Updates" },
     { value: "Open", label: "Source & Free" },
     { value: "Global", label: "Community" },
   ]
@@ -66,14 +65,14 @@ export default function AboutPage() {
           </h1>
 
           <p className="text-lg md:text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed mb-8">
-            Threatbase is a community-driven threat intelligence platform designed for researchers, analysts, and cybersecurity enthusiasts. Discover IOCs, track emerging threats, explore vulnerabilities, and transform raw security data into actionable intelligence.
+            IOCs, threat actors, and vulnerabilities, verified by the community and free to consume.
           </p>
 
           <div className="inline-block p-[1px] rounded-2xl bg-gradient-to-r from-red-500/40 to-red-800/40 mb-16 shadow-glow-ruby">
             <div className="px-8 py-4 rounded-2xl bg-slate-950/80 backdrop-blur-xl">
               <span className="font-mono text-lg text-metal tracking-wide">
-                <span className="text-destructive">&gt;</span>{' '}
-                <Typewriter text="Curiosity fuels discovery." speed={42} startDelay={700} />
+                <span className="text-red-500">&gt;</span>{' '}
+                <Typewriter text="Open data, community verified." speed={42} startDelay={700} />
               </span>
             </div>
           </div>
@@ -85,25 +84,17 @@ export default function AboutPage() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.15, duration: 0.5 }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto w-full mb-24"
+          className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-4 max-w-4xl mx-auto w-full mb-24"
         >
-          {stats.map((s, i) => (
-            <TiltCard key={s.label} max={7} className="rounded-2xl">
-              <motion.div
-                initial={prefersReducedMotion ? false : { opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.15 + i * 0.07, duration: 0.5 }}
-                className="glass-card px-4 py-6 text-center h-full"
-              >
-                <div className="text-3xl md:text-4xl font-extrabold text-white tracking-tight">
-                  {s.value}
-                </div>
-                <div className="mt-1 text-xs uppercase tracking-widest text-slate-400 font-semibold">
-                  {s.label}
-                </div>
-              </motion.div>
-            </TiltCard>
+          {stats.map((s) => (
+            <div key={s.label} className="text-center">
+              <div className="text-3xl md:text-4xl font-extrabold text-white tracking-tight">
+                {s.value}
+              </div>
+              <div className="mt-1 text-xs uppercase tracking-widest text-slate-400 font-semibold">
+                {s.label}
+              </div>
+            </div>
           ))}
         </motion.div>
 
