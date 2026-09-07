@@ -3,14 +3,14 @@ import type { ReactNode } from 'react'
 
 /**
  * Shared entrance variants — one vocabulary across the site so every section
- * reveals with the same motion feel (fade + rise + de-blur, expo ease-out).
+ * reveals with the same motion feel (fade + rise, expo ease-out).
  */
 export const EASE_EXPO: [number, number, number, number] = [0.16, 1, 0.3, 1]
 export const EASE_OUT: [number, number, number, number] = [0.22, 1, 0.36, 1]
 
 export const fadeUp: Variants = {
-  hidden: { opacity: 0, y: 28, filter: 'blur(6px)' },
-  show: { opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 0.7, ease: EASE_EXPO } },
+  hidden: { opacity: 0, y: 28 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: EASE_EXPO } },
 }
 
 export const stagger: Variants = {
@@ -43,8 +43,8 @@ export function Reveal({ children, className, delay = 0, y = 24, once = true, am
   return (
     <MotionTag
       className={className}
-      initial={{ opacity: 0, y, filter: 'blur(6px)' }}
-      whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+      initial={{ opacity: 0, y }}
+      whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once, amount }}
       transition={{ duration: 0.6, delay, ease: EASE_EXPO }}
     >
