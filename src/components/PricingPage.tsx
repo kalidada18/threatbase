@@ -117,8 +117,8 @@ export default function PricingPage() {
             </a>
             <p className="mt-4 text-center text-[11px] leading-relaxed text-slate-500">
               One seat is one token URL for all your devices. Onboarding is by hand at first:
-              generate a key in <a href="/profile" className="text-slate-300 hover:underline">Profile</a>,
-              send us its prefix, your token URL comes back with it.
+              generate a key in <a href="/profile" className="text-slate-300 hover:underline">Profile</a>
+              and send us its prefix. We reply with your token URL.
             </p>
           </div>
         </section>
