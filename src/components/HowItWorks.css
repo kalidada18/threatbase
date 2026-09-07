@@ -22,31 +22,46 @@
   margin-inline: auto;
 }
 
-/* ---------- cards: entrance + shared 9s activation slot ---------- */
+/* ---------- cards: entrance + shared 9s activation glow ---------- */
 .hiw-card {
   flex: 1;
+  position: relative;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--hiw-line);
   border-radius: 18px;
   padding: 22px 20px;
   opacity: 0;
   transform: translateY(18px);
-  animation: hiw-fade-up 0.7s forwards, hiw-slot var(--hiw-cycle) infinite;
+  animation: hiw-fade-up 0.7s forwards;
 }
-.hiw-card:nth-child(1) { animation-delay: 0.4s, 0s; }
-.hiw-card:nth-child(3) { animation-delay: 0.6s, calc(var(--hiw-cycle) / -3); }
-.hiw-card:nth-child(5) { animation-delay: 0.8s, calc(var(--hiw-cycle) / -3 * 2); }
+/* Asymmetric trio (tasteskill §9.C): the middle step carries the weight. */
+.hiw-flow .hiw-card:nth-child(3) { flex: 1.35; }
+.hiw-card:nth-child(1) { animation-delay: 0.4s; }
+.hiw-card:nth-child(3) { animation-delay: 0.6s; }
+.hiw-card:nth-child(5) { animation-delay: 0.8s; }
 
-/* each card glows during the first 3s of ITS OWN timeline (offset by delay) */
-@keyframes hiw-slot {
-  0%, 30% {
-    border-color: var(--hiw-accent);
-    box-shadow: 0 0 0 1px var(--hiw-accent), 0 0 28px var(--hiw-accent-soft);
-  }
-  37%, 100% {
-    border-color: var(--hiw-line);
-    box-shadow: none;
-  }
+/* Glow is baked into an opacity-only layer: animating box-shadow/border-color
+   repaints three blurred shadows per frame (tasteskill §6.A allows only
+   transform/opacity). The 9s stagger lives here, offset per card so each
+   glows for a third of the master cycle. */
+.hiw-card::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  border: 1px solid var(--hiw-accent);
+  box-shadow: 0 0 0 1px var(--hiw-accent), 0 0 28px var(--hiw-accent-soft);
+  opacity: 0;
+  pointer-events: none;
+  animation: hiw-glow var(--hiw-cycle) infinite;
+}
+.hiw-card:nth-child(1)::after { animation-delay: 0s; }
+.hiw-card:nth-child(3)::after { animation-delay: calc(var(--hiw-cycle) / -3); }
+.hiw-card:nth-child(5)::after { animation-delay: calc(var(--hiw-cycle) / -3 * 2); }
+
+@keyframes hiw-glow {
+  0%, 30% { opacity: 1; }
+  37%, 100% { opacity: 0; }
 }
 
 @keyframes hiw-fade-up {
@@ -226,7 +241,7 @@
 /* ---------- reduced motion: hold the final frame, run nothing ---------- */
 @media (prefers-reduced-motion: reduce) {
   .hiw-card, .hiw-link { animation: none; opacity: 1; transform: none; }
-  .hiw-card { border-color: var(--hiw-line); box-shadow: none; }
+  .hiw-card::after { animation: none; opacity: 0; }
   .hiw-lens, .hiw-ping, .hiw-caret, .hiw-pkt { animation: none; }
   .hiw-ping { opacity: 1; }
   .hiw-pkt { opacity: 1; transform: translateX(26px); }
