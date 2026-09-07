@@ -1,4 +1,13 @@
 import React from "react";
+import { Link } from "react-router-dom";
+
+/** Router <Link> for internal hrefs, plain <a> for external — avoids full
+ *  document reloads on footer navigation. */
+const SmartLink = ({
+  href,
+  ...props
+}: React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string }) =>
+  href.startsWith("/") ? <Link to={href} {...props} /> : <a href={href} {...props} />;
 
 interface Footer7Props {
   logo: {
@@ -41,14 +50,14 @@ export const Footer7 = ({
           <div className="flex w-full flex-col justify-between gap-6 lg:items-start">
             {/* Logo */}
             <div className="flex items-center gap-2 lg:justify-start">
-              <a href={logo.url}>
+              <SmartLink href={logo.url}>
                 <img
                   src={logo.src}
                   alt={logo.alt}
                   title={logo.title}
                   className="h-8"
                 />
-              </a>
+              </SmartLink>
               <h2 className="font-display text-xl font-bold tracking-tight text-metal">{logo.title}</h2>
             </div>
             <p className="max-w-full md:max-w-[70%] text-sm text-slate-400 leading-relaxed">
@@ -75,13 +84,13 @@ export const Footer7 = ({
                       className="font-medium hover:text-white transition-colors"
                     >
                       {/* Underline slides in from the left on hover */}
-                      <a href={link.href} className="group/flink relative inline-block">
+                      <SmartLink href={link.href} className="group/flink relative inline-block">
                         {link.name}
                         <span
                           aria-hidden
                           className="absolute -bottom-0.5 left-0 h-px w-full origin-left scale-x-0 bg-red-500/70 transition-transform duration-300 ease-out group-hover/flink:scale-x-100 motion-reduce:transition-none"
                         />
-                      </a>
+                      </SmartLink>
                     </li>
                   ))}
                 </ul>
@@ -94,7 +103,7 @@ export const Footer7 = ({
           <ul className="order-1 flex flex-col gap-2 md:order-2 md:flex-row md:gap-5">
             {legalLinks.map((link, idx) => (
               <li key={idx} className="hover:text-white transition-colors">
-                <a href={link.href}>{link.name}</a>
+                <SmartLink href={link.href}>{link.name}</SmartLink>
               </li>
             ))}
           </ul>
