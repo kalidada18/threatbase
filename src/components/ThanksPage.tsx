@@ -151,14 +151,14 @@ export default function ThanksPage() {
           className="mt-20 max-w-4xl mx-auto"
         >
           <div className="divider-metal mx-auto mb-14 w-40" />
-          <div className="flex flex-col divide-y divide-white/5 border-y border-white/5">
-            {SOURCES.map((s, idx) => (
+          <div className="grid border-t border-white/5 lg:grid-cols-2 lg:gap-x-16">
+            {SOURCES.map((s) => (
               <a
                 key={s.name}
                 href={s.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex flex-col md:flex-row md:items-center justify-between py-8 px-4 transition-colors hover:bg-white/[0.015]"
+                className="group flex flex-col md:flex-row md:items-center justify-between border-b border-white/5 py-8 px-4 transition-colors hover:bg-white/[0.015]"
               >
                 <div className="flex flex-col md:flex-row md:items-baseline gap-2 md:gap-8 lg:gap-16">
                   <h3 className="text-xl md:text-2xl font-bold tracking-tight text-white transition-colors group-hover:text-red-400 md:w-56 shrink-0">
@@ -188,7 +188,7 @@ export default function ThanksPage() {
             to="/report"
             className="group inline-flex items-center gap-3 border-b border-red-500/30 pb-1 text-sm font-bold uppercase tracking-[0.15em] text-red-400 transition-colors hover:border-red-400 hover:text-red-300"
           >
-            Contribute an Indicator
+            Report a Threat
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Link>
         </motion.div>
