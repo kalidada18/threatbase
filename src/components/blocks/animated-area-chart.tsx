@@ -58,6 +58,7 @@ function historyChanged(prev: any[], next: any[]): boolean {
 
 export default function AnimatedHighlightedAreaChart({ feedVersion }: { feedVersion?: any }) {
   const [history, setHistory] = useState<any[]>([]);
+  const [failed, setFailed] = useState(false);
   const [hidden, setHidden] = useState<Set<SeriesKey>>(new Set());
 
   useEffect(() => {
@@ -65,7 +66,9 @@ export default function AnimatedHighlightedAreaChart({ feedVersion }: { feedVers
     let cancelled = false
 
     const apply = (data: any) => {
-      if (cancelled || !Array.isArray(data) || data.length === 0) return
+      if (cancelled) return
+      if (!Array.isArray(data) || data.length === 0) { setFailed(true); return }
+      setFailed(false)
       // Only swap state when the data actually moved, so the chart animation
       // doesn't restart on every poll.
       setHistory((prev) => (historyChanged(prev, data) ? data : prev))
@@ -79,6 +82,7 @@ export default function AnimatedHighlightedAreaChart({ feedVersion }: { feedVers
         apply(await r.json())
       } catch (err: any) {
         console.error('history.json unavailable on GitHub Raw:', err?.message)
+        if (!cancelled) setFailed(true)
       }
     }
 
@@ -95,7 +99,11 @@ export default function AnimatedHighlightedAreaChart({ feedVersion }: { feedVers
     }
   }, [feedVersion])
 
-  const chartData = useMemo(() => history.length > 0 ? history.map((h) => {
+  // Cap at the last 180 days: history.json grows with every daily feed
+  // commit, and 500+ points across 6 area series re-rendering every 5
+  // minutes is pointless SVG weight. (ponytail: full range lives in
+  // stats.json if anyone ever needs it.)
+  const chartData = useMemo(() => history.length > 0 ? history.slice(-180).map((h) => {
     const d = new Date(h.date)
     return {
       dateLabel: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' }),
@@ -146,6 +154,7 @@ export default function AnimatedHighlightedAreaChart({ feedVersion }: { feedVers
   const trendColor = flat ? 'text-slate-400' : up ? 'text-destructive' : 'text-primary'
 
   const loading = chartData.length === 0
+  const failedEmpty = failed && loading
 
   return (
     <div className="group relative flex h-full flex-col gap-6 overflow-hidden rounded-3xl border border-white/10 bg-slate-900/60 py-6 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] backdrop-blur-3xl">
@@ -165,14 +174,18 @@ export default function AnimatedHighlightedAreaChart({ feedVersion }: { feedVers
           <div className="shrink-0 text-left sm:text-right">
             <div className="text-2xl md:text-3xl font-black text-white tabular-nums tracking-tight leading-none">
               {loading
-                ? <span className="inline-block h-[0.75em] w-[7ch] rounded-md bg-white/[0.07] animate-pulse align-middle" role="status" aria-label="Loading total" />
+                ? (failedEmpty
+                  ? <span className="text-slate-500">—</span>
+                  : <span className="inline-block h-[0.75em] w-[7ch] rounded-md bg-white/[0.07] animate-pulse align-middle" role="status" aria-label="Loading total" />)
                 : fmt(latestTotal)}
             </div>
-            <div className={`mt-1.5 inline-flex items-center gap-1 text-xs font-bold tabular-nums ${trendColor}`}>
-              <TrendIcon size={14} strokeWidth={2.5} />
-              {loading ? '' : `${up ? '+' : ''}${fmt(periodDelta)} (${periodPct > 0 ? '+' : ''}${periodPct.toFixed(1)}%)`}
-              <span className="text-slate-500 font-medium ml-0.5">this period</span>
-            </div>
+            {!failedEmpty && (
+              <div className={`mt-1.5 inline-flex items-center gap-1 text-xs font-bold tabular-nums ${trendColor}`}>
+                <TrendIcon size={14} strokeWidth={2.5} />
+                {loading ? '' : `${up ? '+' : ''}${fmt(periodDelta)} (${periodPct > 0 ? '+' : ''}${periodPct.toFixed(1)}%)`}
+                <span className="text-slate-500 font-medium ml-0.5">this period</span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -188,7 +201,7 @@ export default function AnimatedHighlightedAreaChart({ feedVersion }: { feedVers
                 aria-pressed={!off}
                 className={`group/chip inline-flex items-center gap-2 pl-2 pr-2.5 py-2.5 md:py-1.5 rounded-xl border text-xs font-bold transition-all ${
                   off
-                    ? 'border-white/5 bg-white/[0.02] text-slate-600'
+                    ? 'border-white/5 bg-white/[0.02] text-slate-400'
                     : 'border-white/10 bg-white/[0.04] text-slate-200 hover:bg-white/[0.07]'
                 }`}
               >
@@ -197,7 +210,7 @@ export default function AnimatedHighlightedAreaChart({ feedVersion }: { feedVers
                   style={{ backgroundColor: off ? '#475569' : cfg.color, boxShadow: off ? 'none' : `0 0 8px ${cfg.color}80` }}
                 />
                 {cfg.label}
-                <span className={`tabular-nums font-semibold ${off ? 'text-slate-700' : 'text-slate-400'}`}>
+                <span className={`tabular-nums font-semibold ${off ? 'text-slate-500' : 'text-slate-400'}`}>
                   {loading ? '' : fmt(latestByKey[k] || 0)}
                 </span>
               </button>
@@ -207,7 +220,13 @@ export default function AnimatedHighlightedAreaChart({ feedVersion }: { feedVers
 
         {/* Chart */}
         <div className="flex-1 px-6 pt-4">
-          {loading ? (
+          {failedEmpty ? (
+            <div className="w-full h-72 flex items-center justify-center">
+              <p className="max-w-xs text-center text-sm font-medium text-slate-400">
+                Trend data unavailable until the next pipeline run.
+              </p>
+            </div>
+          ) : loading ? (
             /* Skeleton in the shape of the chart, not a spinner (tasteskill §4.5) */
             <div className="w-full h-72 relative" role="status" aria-label="Loading trend data">
               <div className="absolute inset-x-0 top-0 bottom-6 flex flex-col justify-between">
@@ -221,7 +240,7 @@ export default function AnimatedHighlightedAreaChart({ feedVersion }: { feedVers
               />
             </div>
           ) : (
-            <div className="w-full h-72 text-xs [&_.recharts-surface]:outline-none">
+            <div className="w-full h-72 text-xs [&_.recharts-surface]:outline-none" role="img" aria-label={`Stacked area chart of daily indicator totals by category, ${rangeLabel || 'recent history'}`}>
               <ResponsiveContainer width="100%" height="100%">
               <AreaChart accessibilityLayer data={chartData} margin={{ left: 4, right: 8, top: 8 }}>
                 <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
