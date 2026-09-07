@@ -1,9 +1,6 @@
 import { cn } from "@/lib/utils";
-import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle, useMemo, useCallback, createContext, Children } from "react";
-// Importing class-variance-authority for the built-in button component
-import { cva, type VariantProps } from "class-variance-authority";
-// Importing icons from lucide-react
-import { Gem, X, AlertCircle, PartyPopper, Loader } from "lucide-react";
+import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle, useMemo, useCallback, Children } from "react";
+import { X, AlertCircle, PartyPopper, Loader } from "lucide-react";
 // Importing animation components from framer-motion
 import { AnimatePresence, motion, useInView, Variants, Transition } from "framer-motion";
 
@@ -189,12 +186,12 @@ export const AuthComponent = ({ logo = <DefaultLogo />, brandName = "ThreatBase 
     <AnimatePresence>
         {modalStatus !== 'closed' && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm rounded-3xl">
-                <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative bg-black/80 border border-white/10 rounded-2xl p-8 w-full max-w-[280px] flex flex-col items-center gap-4 mx-2 shadow-2xl">
+                <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} role="status" aria-live="polite" className="relative bg-black/80 border border-white/10 rounded-2xl p-8 w-full max-w-[280px] flex flex-col items-center gap-4 mx-2 shadow-2xl">
                     {(modalStatus === 'error' || modalStatus === 'success') && <button onClick={closeModal} className="absolute top-2 right-2 p-1 text-slate-400 hover:text-white transition-colors"><X className="w-5 h-5" /></button>}
                     {modalStatus === 'error' && <>
                         <AlertCircle className="w-12 h-12 text-destructive" />
                         <p className="text-lg font-medium text-white text-center">{modalErrorMessage}</p>
-                        <Button variant="outline" size="sm" onClick={closeModal} className="mt-4 w-full rounded-full border-white/10 bg-white/[0.06] text-white hover:bg-white/10 hover:text-white">Try Again</Button>
+                        <Button size="sm" onClick={closeModal} className="mt-4 w-full rounded-full bg-white text-slate-800 hover:bg-slate-100 hover:text-black">Try Again</Button>
                     </>}
                     {modalStatus === 'loading' && 
                         <TextLoop interval={TEXT_LOOP_INTERVAL} stopOnEnd={true}>
@@ -236,7 +233,7 @@ export const AuthComponent = ({ logo = <DefaultLogo />, brandName = "ThreatBase 
                 <BlurFade delay={0.25 * 1} className="w-full">
                     <div className="flex flex-col items-center text-center gap-3">
                         {logo}
-                        <h2 className="font-serif font-bold text-2xl sm:text-3xl tracking-tight text-white whitespace-nowrap mt-2">{brandName}</h2>
+                        <h2 className="font-display font-bold text-2xl sm:text-3xl tracking-tight text-white whitespace-nowrap mt-2">{brandName}</h2>
                         <p className="text-sm text-slate-300">Sign in to join the intel network</p>
                     </div>
                 </BlurFade>
@@ -244,18 +241,16 @@ export const AuthComponent = ({ logo = <DefaultLogo />, brandName = "ThreatBase 
                 <BlurFade delay={0.25 * 2} className="w-full mt-4">
                     <div className="flex flex-col gap-4 w-full">
                         <Button
-                            variant="outline"
                             size="lg"
                             onClick={() => handleSignIn('google')}
-                            className="w-full gap-3 rounded-full border-white/10 bg-white/[0.06] text-white hover:bg-white/10 hover:text-white"
+                            className="w-full gap-3 rounded-full bg-white text-slate-800 hover:bg-slate-100 hover:text-black"
                         >
                             <GoogleIcon /><span className="font-bold tracking-wide">Continue with Google</span>
                         </Button>
                         <Button
-                            variant="outline"
                             size="lg"
                             onClick={() => handleSignIn('github')}
-                            className="w-full gap-3 rounded-full border-white/10 bg-white/[0.06] text-white hover:bg-white/10 hover:text-white"
+                            className="w-full gap-3 rounded-full bg-white text-slate-800 hover:bg-slate-100 hover:text-black"
                         >
                             <GitHubIcon /><span className="font-bold tracking-wide">Continue with GitHub</span>
                         </Button>
