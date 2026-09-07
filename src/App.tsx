@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react'
+import { useState, useEffect, useCallback, useRef, lazy, Suspense, type ReactNode } from 'react'
 import { Routes, Route, useLocation } from 'react-router-dom'
 import { MotionConfig, AnimatePresence } from 'framer-motion'
 import { HeroSection } from './components/blocks/hero-section-5'
@@ -43,10 +43,32 @@ function HomeSeo() {
   return null
 }
 
+/**
+ * Per-route loading boundary, INSIDE PageTransition: the exiting page animates
+ * out while the lazy chunk downloads, instead of a blank full-screen gap
+ * replacing AnimatePresence (which killed the exit transition). Skeleton is
+ * page-shaped (tasteskill §4.5), not an empty min-h box.
+ */
+const pageSkeleton = (
+  <div className="min-h-[100dvh] pt-28 pb-20" aria-hidden>
+    <div className="mx-auto max-w-7xl px-6 space-y-6">
+      <div className="h-10 w-64 rounded-lg bg-white/[0.05] animate-pulse" />
+      <div className="h-4 w-full max-w-xl rounded bg-white/[0.04] animate-pulse" />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-8">
+        {[0, 1, 2].map((i) => <div key={i} className="h-44 rounded-2xl bg-white/[0.04] animate-pulse" />)}
+      </div>
+    </div>
+  </div>
+)
+const page = (el: ReactNode) => (
+  <PageTransition><Suspense fallback={pageSkeleton}>{el}</Suspense></PageTransition>
+)
+
 export default function App() {
   const [statsData, setStatsData] = useState(null)
+  const [statsFailed, setStatsFailed] = useState(false)
   const [feedVersion, setFeedVersion] = useState(Date.now())
-  const [syncTime, setSyncTime] = useState('Live Mode')
+  const [, setSyncTime] = useState('Live Mode')
 
   const location = useLocation()
 
@@ -134,39 +156,36 @@ export default function App() {
   }, [scanInput, feedVersion, statsData])
 
 
-  // Boot & Poll: fetch stats.json
-  useEffect(() => {
+  // Boot & Poll: fetch stats.json. Hoisted (not just inside the effect) so the
+  // /threatfeed retry button can re-trigger the same load after a failure.
+  const loadStats = useCallback(async () => {
     const GITHUB_RAW = getBaseUrl()
-    let cancelled = false
-
-    const loadStats = async () => {
-      try {
-        const r = await fetch(GITHUB_RAW + feedPath('stats.json') + '?_=' + Date.now())
-        if (!r.ok) throw new Error('HTTP ' + r.status)
-        const d = await r.json()
-        if (cancelled) return
-        setStatsData(d)
-        setFeedVersion(d.last_updated || Date.now())
-        setSyncTime(formatSyncTime(d.last_updated))
-      } catch (err: any) {
-        if (!cancelled) {
-          console.error('stats.json unavailable on GitHub Raw:', err.message)
-          setSyncTime('Live Mode')
-        }
-      }
+    try {
+      const r = await fetch(GITHUB_RAW + feedPath('stats.json') + '?_=' + Date.now())
+      if (!r.ok) throw new Error('HTTP ' + r.status)
+      const d = await r.json()
+      setStatsData(d)
+      setFeedVersion(d.last_updated || Date.now())
+      setSyncTime(formatSyncTime(d.last_updated))
+      setStatsFailed(false)
+    } catch (err: any) {
+      console.error('stats.json unavailable on GitHub Raw:', err.message)
+      setSyncTime('Live Mode')
+      setStatsFailed(true)
     }
+  }, [])
 
+  useEffect(() => {
     loadStats()
     const intervalId = setInterval(loadStats, 5 * 60 * 1000)
     const onVisible = () => { if (document.visibilityState === 'visible') loadStats() }
     document.addEventListener('visibilitychange', onVisible)
 
     return () => {
-      cancelled = true
       clearInterval(intervalId)
       document.removeEventListener('visibilitychange', onVisible)
     }
-  }, [])
+  }, [loadStats])
 
   // Auto-scan from ?search= / ?q=. Runs whenever the query, the route, or the
   // verification gate changes — not just on first mount — so Hall-of-Shame and
@@ -212,7 +231,7 @@ export default function App() {
   }, [location])
 
   if (!isHumanVerified) {
-    return <InitialVerification onSuccess={(token) => {
+    return <InitialVerification onSuccess={() => {
       sessionStorage.setItem('human_verified', 'true')
       setIsHumanVerified(true)
     }} />
@@ -223,7 +242,6 @@ export default function App() {
     <AuthProvider>
       <Navbar />
 
-      <Suspense fallback={<div className="min-h-[100dvh]" aria-hidden />}>
       <AnimatePresence mode="wait" initial={false}>
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={
@@ -247,28 +265,27 @@ export default function App() {
           </PageTransition>
         } />
 
-        <Route path="/threatfeed" element={<PageTransition><ThreatFeedPage statsData={statsData} feedVersion={feedVersion} /></PageTransition>} />
-        <Route path="/about" element={<PageTransition><AboutPage /></PageTransition>} />
-        <Route path="/terms" element={<PageTransition><TermsPage /></PageTransition>} />
-        <Route path="/privacy" element={<PageTransition><PrivacyPage /></PageTransition>} />
-        <Route path="/policy" element={<PageTransition><PolicyPage /></PageTransition>} />
-        <Route path="/report" element={<PageTransition><ReportIP addToast={addToast} /></PageTransition>} />
-        <Route path="/contributors" element={<PageTransition><ContributorsPage /></PageTransition>} />
-        <Route path="/improvements" element={<PageTransition><ImprovementsPage /></PageTransition>} />
-        <Route path="/hall-of-shame" element={<PageTransition><HallOfShamePage /></PageTransition>} />
-        <Route path="/top-apt" element={<PageTransition><TopAptPage /></PageTransition>} />
-        <Route path="/api" element={<PageTransition><ApiDocsPage /></PageTransition>} />
-        <Route path="/pricing" element={<PageTransition><PricingPage /></PageTransition>} />
+        <Route path="/threatfeed" element={page(<ThreatFeedPage statsData={statsData} feedVersion={feedVersion} statsFailed={statsFailed} onRetryStats={loadStats} />)} />
+        <Route path="/about" element={page(<AboutPage />)} />
+        <Route path="/terms" element={page(<TermsPage />)} />
+        <Route path="/privacy" element={page(<PrivacyPage />)} />
+        <Route path="/policy" element={page(<PolicyPage />)} />
+        <Route path="/report" element={page(<ReportIP addToast={addToast} />)} />
+        <Route path="/contributors" element={page(<ContributorsPage />)} />
+        <Route path="/improvements" element={page(<ImprovementsPage />)} />
+        <Route path="/hall-of-shame" element={page(<HallOfShamePage />)} />
+        <Route path="/top-apt" element={page(<TopAptPage />)} />
+        <Route path="/api" element={page(<ApiDocsPage />)} />
+        <Route path="/pricing" element={page(<PricingPage />)} />
         {/* Profiles are private to their owner — there is no public/by-username
             view. Only the owner's own profile is reachable, at /profile. Any
             username-bearing URL (/u/:username, /profile/:username) is gone so the
             GUI never advertises a browsable profile path. */}
-        <Route path="/profile" element={<PageTransition><Profile addToast={addToast} /></PageTransition>} />
-        <Route path="/thanks" element={<PageTransition><ThanksPage /></PageTransition>} />
-        <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
+        <Route path="/profile" element={page(<Profile addToast={addToast} />)} />
+        <Route path="/thanks" element={page(<ThanksPage />)} />
+        <Route path="*" element={page(<NotFound />)} />
       </Routes>
       </AnimatePresence>
-      </Suspense>
 
       <ToastContainer toasts={toasts} />
       <Footer />
