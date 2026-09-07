@@ -75,8 +75,11 @@ function Flag({ cc }: { cc: string }) {
  * data story stayed. Fetches on mount, renders nothing until stats arrives.
  */
 export default function LiveThreatIntel() {
+  const reduce = useReducedMotion()
   const [topAttackers, setTopAttackers] = useState<{cc: string, name: string, count: number, pct: number}[]>([])
   const [stats, setStats] = useState<{ total: number; cats: Record<string, number>; feeds: number; updated: string } | null>(null)
+  const [statsFailed, setStatsFailed] = useState(false)
+  const [geoFailed, setGeoFailed] = useState(false)
   const [trend, setTrend] = useState<{ delta: number; pct: number; dates: string[]; spark: number[] } | null>(null)
   const [hoverIdx, setHoverIdx] = useState<number | null>(null)
 
@@ -104,7 +107,7 @@ export default function LiveThreatIntel() {
           })))
         }
       })
-      .catch(() => { /* top-attackers list stays empty */ })
+      .catch(() => { if (!cancelled) setGeoFailed(true) })
 
     fetch(getBaseUrl() + feedPath('stats.json') + '?_=' + Date.now())
       .then(r => r.json())
@@ -118,7 +121,7 @@ export default function LiveThreatIntel() {
           updated: data.last_updated ?? '',
         })
       })
-      .catch(() => { /* panel stays hidden */ })
+      .catch(() => { if (!cancelled) setStatsFailed(true) })
 
     // Daily history → real "last 24h" delta + 14-day trend with dates.
     fetch(getBaseUrl() + feedPath('history.json') + '?_=' + Date.now())
@@ -151,6 +154,14 @@ export default function LiveThreatIntel() {
   const geom = trend && trend.spark.length > 1 ? sparkGeom(trend.spark) : null
   const hp = geom && hoverIdx !== null && hoverIdx < geom.pts.length ? geom.pts[hoverIdx] : null
 
+  // stats still loading → render nothing (no flash); fetch failed → say so,
+  // instead of silently removing the panel forever.
+  if (statsFailed)
+    return (
+      <div className="relative w-full max-w-md mx-auto rounded-2xl border border-white/[0.07] bg-[#0a0e17]/75 backdrop-blur-2xl px-4 py-3 text-[11px] font-medium text-slate-400">
+        Intel feed unavailable. Data reappears on the next successful refresh.
+      </div>
+    )
   if (!stats) return null
 
   return (
@@ -194,7 +205,7 @@ export default function LiveThreatIntel() {
                     <path d="M5 8V2.2M2.2 5 5 2.2 7.8 5" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                   {fmt(trend.delta)}
-                  <span className="ml-0.5 text-slate-600">·24h</span>
+                  <span className="ml-0.5 text-slate-500">·24h</span>
                 </span>
               )}
             </div>
@@ -218,7 +229,10 @@ export default function LiveThreatIntel() {
                 onMouseMove={(e) => {
                   const box = e.currentTarget.getBoundingClientRect()
                   const ratio = (e.clientX - box.left) / box.width
-                  setHoverIdx(Math.round(ratio * (trend!.spark.length - 1)))
+                  const idx = Math.round(ratio * (trend!.spark.length - 1))
+                  // Skip the state write when the rounded index is unchanged:
+                  // sub-pixel moves used to re-render the whole panel per frame.
+                  if (idx !== hoverIdx) setHoverIdx(idx)
                 }}
                 onMouseLeave={() => setHoverIdx(null)}
               >
@@ -248,17 +262,22 @@ export default function LiveThreatIntel() {
                 {/* Crosshair while hovering */}
                 {hp && <line x1={hp[0]} y1={hp[1]} x2={hp[0]} y2={SH} stroke="rgba(205,211,222,0.25)" strokeWidth="1" strokeDasharray="2 2" />}
                 {hp && <circle cx={hp[0]} cy={hp[1]} r="2.4" fill="#f0768c" />}
-                {/* Live end point with a breathing halo */}
-                <motion.circle
-                  cx={geom.pts[geom.pts.length - 1][0]} cy={geom.pts[geom.pts.length - 1][1]}
-                  fill="#cf1733"
-                  initial={{ r: 2 }}
-                  animate={{ r: [2, 6, 2], opacity: [0.7, 0, 0.7] }}
-                  transition={{ repeat: Infinity, duration: 2.4, ease: 'easeInOut' }}
-                />
+                {/* Live end point with a breathing halo. r/opacity run on a rAF
+                    loop MotionConfig cannot suppress (it only gates transform),
+                    so the infinite pulse is gated on useReducedMotion here; the
+                    static circle below covers the reduced case. */}
+                {!reduce && (
+                  <motion.circle
+                    cx={geom.pts[geom.pts.length - 1][0]} cy={geom.pts[geom.pts.length - 1][1]}
+                    fill="#cf1733"
+                    initial={{ r: 2 }}
+                    animate={{ r: [2, 6, 2], opacity: [0.7, 0, 0.7] }}
+                    transition={{ repeat: Infinity, duration: 2.4, ease: 'easeInOut' }}
+                  />
+                )}
                 <circle cx={geom.pts[geom.pts.length - 1][0]} cy={geom.pts[geom.pts.length - 1][1]} r="2" fill="#f0768c" />
               </svg>
-              <span className="mt-1 block text-right text-[8px] font-medium uppercase tracking-[0.18em] text-slate-600">
+              <span className="mt-1 block text-right text-[8px] font-medium uppercase tracking-[0.18em] text-slate-500">
                 {trend!.dates[0] ? `${shortDate(trend!.dates[0])} · ${shortDate(trend!.dates[trend!.dates.length - 1])}` : '14-day trend'}
               </span>
             </div>
@@ -290,7 +309,7 @@ export default function LiveThreatIntel() {
                 </span>
               ))}
               {breakdown.entries.length > 3 && (
-                <span className="text-[9px] font-medium text-slate-600">+{breakdown.entries.length - 3} more</span>
+                <span className="text-[9px] font-medium text-slate-500">+{breakdown.entries.length - 3} more</span>
               )}
             </div>
           </>
@@ -301,14 +320,14 @@ export default function LiveThreatIntel() {
       <div className="flex items-center justify-between px-4 pb-1.5 pt-3">
         <span className="text-[8.5px] font-semibold uppercase tracking-[0.22em] text-platinum-400">Top Attackers</span>
         {stats.updated && (
-          <span className="font-mono text-[9px] tabular-nums text-slate-600">{timeAgo(stats.updated)}</span>
+          <span className="font-mono text-[9px] tabular-nums text-slate-500">{timeAgo(stats.updated)}</span>
         )}
       </div>
 
       {/* Top Attackers List */}
       <div className="relative overflow-hidden px-4 pb-6 pt-2">
         {topAttackers.length === 0 && (
-          <div className="py-2 text-[11px] text-slate-600">Loading top attackers…</div>
+          <div className="py-2 text-[11px] text-slate-400">{geoFailed ? 'Attacker data unavailable.' : 'Loading top attackers…'}</div>
         )}
         <div className="flex flex-col space-y-1.5">
           {topAttackers.map((a, i) => (
@@ -321,12 +340,12 @@ export default function LiveThreatIntel() {
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <span className="w-3.5 font-mono text-[9px] tabular-nums text-platinum-600">{String(i + 1).padStart(2, '0')}</span>
+                  <span className="w-3.5 font-mono text-[9px] tabular-nums text-platinum-500">{String(i + 1).padStart(2, '0')}</span>
                   <Flag cc={a.cc} />
                   <span className="text-[11px] font-medium text-slate-200 transition-colors group-hover:text-white">{a.name}</span>
                 </div>
                 <div className="flex items-baseline gap-1.5">
-                  <span className="font-mono text-[9px] tabular-nums text-slate-600">{fmt(a.count)}</span>
+                  <span className="font-mono text-[9px] tabular-nums text-slate-500">{fmt(a.count)}</span>
                   <span className={`font-mono text-[11px] font-semibold tabular-nums ${i === 0 ? 'text-slate-100' : 'text-slate-400'}`}>{Math.round(a.pct)} %</span>
                 </div>
               </div>
