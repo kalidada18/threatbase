@@ -15,6 +15,8 @@ export default function MfaSetup({ addToast }: { addToast: (msg: string, type: '
   const [challengeId, setChallengeId] = useState<string | null>(null)
   const [verifying, setVerifying] = useState(false)
   const [unenrolling, setUnenrolling] = useState(false)
+  const [verifyError, setVerifyError] = useState<string | null>(null)
+  const [confirmDisable, setConfirmDisable] = useState(false)
 
   useEffect(() => {
     checkStatus()
@@ -95,27 +97,28 @@ export default function MfaSetup({ addToast }: { addToast: (msg: string, type: '
     if (!supabaseClient || !factorId || !challengeId) return
     
     if (otp.length < 6) {
-      addToast('Please enter a 6-digit code', 'error')
+      setVerifyError('Please enter a 6-digit code')
       return
     }
 
     setVerifying(true)
+    setVerifyError(null)
     try {
       const { error } = await supabaseClient.auth.mfa.verify({
         factorId,
         challengeId,
         code: otp
       })
-      
+
       if (error) throw error
-      
+
       addToast('Two-Factor Authentication successfully enabled!', 'success')
       setIsEnrolled(true)
       setIsSettingUp(false)
       setOtp('')
     } catch (err: any) {
       console.error('MFA Verification error:', err)
-      addToast(err.message || 'Invalid code.', 'error')
+      setVerifyError(err.message || 'Invalid code.')
     } finally {
       setVerifying(false)
     }
@@ -123,20 +126,18 @@ export default function MfaSetup({ addToast }: { addToast: (msg: string, type: '
 
   const handleUnenroll = async () => {
     if (!supabaseClient || !factorId) return
-    if (!window.confirm('Are you sure you want to disable Two-Factor Authentication? This will make your account less secure.')) {
-      return
-    }
-    
+
     setUnenrolling(true)
     try {
       const { error } = await supabaseClient.auth.mfa.unenroll({
         factorId
       })
       if (error) throw error
-      
+
       addToast('Two-Factor Authentication disabled.', 'success')
       setIsEnrolled(false)
       setFactorId(null)
+      setConfirmDisable(false)
     } catch (err: any) {
       console.error('MFA Unenroll error:', err)
       addToast(err.message || 'Failed to disable MFA.', 'error')
@@ -169,19 +170,42 @@ export default function MfaSetup({ addToast }: { addToast: (msg: string, type: '
         {!isSettingUp && (
           <div>
             {isEnrolled ? (
-              <div className="flex items-center gap-4">
-                <span className="flex items-center gap-1.5 text-xs font-bold text-primary bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
-                  <Shield size={14} /> Enabled
-                </span>
-                <Button
-                  onClick={handleUnenroll}
-                  variant="outline"
-                  className="border-destructive/20 text-destructive hover:bg-destructive/10 hover:text-red-300 rounded text-xs px-4"
-                  disabled={unenrolling}
-                >
-                  {unenrolling ? 'Disabling...' : 'Disable'}
-                </Button>
-              </div>
+              confirmDisable ? (
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-slate-300">Disable 2FA? Your account will be less secure.</span>
+                  <Button
+                    size="sm"
+                    onClick={handleUnenroll}
+                    disabled={unenrolling}
+                    className="bg-red-600 hover:bg-red-500 text-white text-xs rounded"
+                  >
+                    {unenrolling ? 'Disabling...' : 'Confirm'}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setConfirmDisable(false)}
+                    disabled={unenrolling}
+                    className="text-xs text-slate-400 hover:text-white"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-4">
+                  <span className="flex items-center gap-1.5 text-xs font-bold text-primary bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
+                    <Shield size={14} /> Enabled
+                  </span>
+                  <Button
+                    onClick={() => setConfirmDisable(true)}
+                    variant="outline"
+                    className="border-destructive/20 text-destructive hover:bg-destructive/10 hover:text-red-300 rounded text-xs px-4"
+                    disabled={unenrolling}
+                  >
+                    Disable
+                  </Button>
+                </div>
+              )
             ) : (
               <div className="flex items-center gap-4">
                 <span className="flex items-center gap-1.5 text-xs font-bold text-slate-400 bg-slate-500/10 px-3 py-1 rounded-full border border-slate-500/20">
@@ -228,11 +252,18 @@ export default function MfaSetup({ addToast }: { addToast: (msg: string, type: '
                 type="text"
                 maxLength={6}
                 value={otp}
-                onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ''))}
+                onChange={(e) => { setOtp(e.target.value.replace(/[^0-9]/g, '')); setVerifyError(null) }}
                 placeholder="000000"
-                className="w-full h-12 rounded-xl border border-white/10 bg-black/50 px-4 text-center text-xl tracking-[0.5em] text-white placeholder:text-slate-700 focus:outline-none focus:border-red-500/50 transition-colors font-mono"
+                autoComplete="one-time-code"
+                inputMode="numeric"
+                aria-invalid={!!verifyError}
+                aria-describedby={verifyError ? 'mfa-setup-otp-error' : undefined}
+                className="w-full h-12 rounded-xl border border-white/10 bg-black/50 px-4 text-center text-xl tracking-[0.5em] text-white placeholder:text-slate-500 focus:outline-none focus:border-red-500/50 transition-colors font-mono"
                 disabled={verifying}
               />
+              {verifyError && (
+                <p id="mfa-setup-otp-error" className="text-[11px] font-medium text-red-400 text-center">{verifyError}</p>
+              )}
             </div>
             
             <div className="flex gap-3">
@@ -249,6 +280,7 @@ export default function MfaSetup({ addToast }: { addToast: (msg: string, type: '
                   setIsSettingUp(false)
                   setQrCodeSvg(null)
                   setOtp('')
+                  setVerifyError(null)
                 }}
                 disabled={verifying}
                 className="flex-1 h-10 rounded-xl bg-transparent border border-white/10 hover:bg-white/5 text-white text-xs font-semibold transition-colors"
