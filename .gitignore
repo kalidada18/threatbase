@@ -100,3 +100,6 @@ skills/
 # Local pipeline self-checks (not shipped)
 pipeline/test_firewall_formats.py
 pipeline/test_stix_feed.py
+
+# TypeScript incremental build artifacts
+*.tsbuildinfo
