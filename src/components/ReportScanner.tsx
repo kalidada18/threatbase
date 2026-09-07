@@ -1,9 +1,8 @@
 import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence, useReducedMotion, useMotionValue, useTransform, animate } from 'framer-motion'
-import { Bug, ShieldCheck, AlertTriangle, AlertOctagon, ChevronRight, Search, Check, ShieldAlert, Copy, Globe } from 'lucide-react'
-import DOMPurify from 'dompurify'
+import { Bug, ShieldCheck, AlertTriangle, Check, ShieldAlert, Copy, Globe } from 'lucide-react'
 import supabaseClient from '../supabaseClient'
-import { timeAgo, normalizeTags, categoryTier, TIER_CHIP, TIER_ACCENT } from '../utils'
+import { timeAgo, categoryTier, TIER_CHIP, TIER_ACCENT } from '../utils'
 import { useAuth } from '../AuthContext'
 import ScanPulse from './ui/scan-pulse'
 import { getMalwareDescription } from '../malwareDictionary'
@@ -248,6 +247,7 @@ function CommentsSection({ ip, addToast }: { ip: string; addToast: (msg: string,
   const { user, profile, signInWithGoogle } = useAuth()
   const [comments, setComments] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadFailed, setLoadFailed] = useState(false)
   const [body, setBody] = useState('')
   const [posting, setPosting] = useState(false)
   // Composer stays collapsed behind a quiet trigger; only opens on click.
@@ -256,7 +256,9 @@ function CommentsSection({ ip, addToast }: { ip: string; addToast: (msg: string,
   useEffect(() => {
     let cancelled = false
     setComments([])
+    setLoadFailed(false)
     if (!ip || !supabaseClient) {
+      setLoadFailed(true)
       setLoading(false)
       return
     }
@@ -268,12 +270,13 @@ function CommentsSection({ ip, addToast }: { ip: string; addToast: (msg: string,
       .eq('indicator', ip)
       .order('created_at', { ascending: false })
       .limit(50))
-      .then(({ data }) => {
+      .then(({ data, error }) => {
         if (cancelled) return
+        if (error) setLoadFailed(true)
         if (data) setComments(data)
         setLoading(false)
       })
-      .catch(() => { if (!cancelled) setLoading(false) })
+      .catch(() => { if (!cancelled) { setLoadFailed(true); setLoading(false) } })
     return () => { cancelled = true }
   }, [ip])
 
@@ -308,13 +311,21 @@ function CommentsSection({ ip, addToast }: { ip: string; addToast: (msg: string,
 
   const handleDelete = async (id: string) => {
     if (!user || !supabaseClient) return
-    setComments(prev => prev.filter(c => c.id !== id))
+    const prev = comments
+    setComments(prev.filter(c => c.id !== id))
     void Promise.resolve(supabaseClient
       .from('comments')
       .delete()
       .eq('id', id)
       .eq('user_id', user.id))
-      .catch((err: any) => console.error(err))
+      // A failed Supabase delete resolves with { error } (it does not reject),
+      // so surface it before the catch to make the optimistic delete revertible.
+      .then(({ error }: any) => { if (error) throw error })
+      .catch((err: any) => {
+        console.error(err)
+        setComments(prev)
+        addToast('Could not delete comment.', 'error')
+      })
   }
 
   return (
@@ -332,6 +343,7 @@ function CommentsSection({ ip, addToast }: { ip: string; addToast: (msg: string,
             maxLength={1000}
             rows={3}
             autoFocus
+            aria-label="Write a comment"
             placeholder="Share context about this indicator (e.g. seen scanning SSH, false positive on our network)..."
             className="w-full bg-slate-950/50 border border-slate-700 rounded-xl p-4 text-sm text-slate-300 focus:outline-none focus:border-slate-500 focus:ring-1 focus:ring-slate-500 resize-none transition-all shadow-inner"
           ></textarea>
@@ -387,6 +399,9 @@ function CommentsSection({ ip, addToast }: { ip: string; addToast: (msg: string,
         </div>
       ) : (
         <div className="space-y-3">
+          {comments.length === 0 && (
+            <p className="text-sm text-slate-400">{loadFailed ? 'Comments unavailable.' : 'No comments yet.'}</p>
+          )}
           {comments.map(c => (
             <div key={c.id} className="rounded-xl border border-slate-800 bg-slate-900 px-5 py-4">
               <div className="flex items-center justify-between gap-3">
@@ -541,6 +556,9 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
     setIsDisputing(true)
     try {
       const alias = user.user_metadata?.username || user.user_metadata?.full_name || user.email?.split('@')[0]
+      // Lazy chunk: DOMPurify (~11kB gzip) only serves disputes, which are
+      // rare — it must not sit in the main bundle every visitor downloads.
+      const { default: DOMPurify } = await import('dompurify')
       const safeReason = DOMPurify.sanitize(disputeReason.trim())
       const { error } = await supabaseClient.from('disputes').insert([{
         ip,
@@ -605,8 +623,20 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
   if (!showReport) return null;
 
   return (
-    <section className="py-12" id="report-section" aria-live="polite">
+    <section className="py-12" id="report-section">
       <div className="mx-auto max-w-5xl px-6 lg:px-12 relative">
+        {/* Announce only the verdict, not the 400-node result tree: an
+            aria-live on the whole section gets truncated/dropped by most
+            screen readers on a diff this size. */}
+        <p className="sr-only" role="status">
+          {isScanning
+            ? 'Scanning…'
+            : scanResult
+              ? type === 'warn'
+                ? 'Scan complete: invalid indicator format.'
+                : `Scan complete: ${type === 'danger' ? 'threat found' : type === 'disputed' ? 'indicator disputed' : 'no threat found'}, confidence of abuse ${confidence} percent.`
+              : ''}
+        </p>
         <AnimatePresence mode="wait">
           {isScanning ? (
             <motion.div
@@ -700,7 +730,7 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
                       <div className="mt-7 flex items-end justify-between gap-4">
                         <div className="flex items-center gap-2 text-[13px] font-semibold uppercase tracking-[0.18em] text-platinum-400">
                           <span>Confidence of Abuse</span>
-                          <span className="cursor-help font-bold text-platinum-500 hover:text-platinum-200 transition-colors bg-white/[0.04] border border-white/10 rounded-full w-5 h-5 flex items-center justify-center text-xs" title="Weighted score derived from severity, number of threat feeds, subnet matches, and community reports.">?</span>
+                          <span tabIndex={0} className="cursor-help font-bold text-platinum-500 hover:text-platinum-200 transition-colors bg-white/[0.04] border border-white/10 rounded-full w-5 h-5 flex items-center justify-center text-xs" title="Weighted score derived from severity, number of threat feeds, subnet matches, and community reports." aria-label="Weighted score derived from severity, number of threat feeds, subnet matches, and community reports.">?</span>
                         </div>
                         <div className="flex items-baseline gap-2.5">
                           <span className={`text-[10px] font-bold uppercase tracking-[0.2em] ${tier.text}`}>{tier.label}</span>
@@ -863,7 +893,7 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
                   <div className="relative p-6 md:p-8 bg-slate-950/30 border-t border-white/[0.06]">
                     {scanResult && (scanResult.isIP || scanResult.isIPv6) && (
                       <p className="mb-5 text-xs font-medium tracking-wide text-platinum-500">
-                        IP info including ISP, Usage Type, and Location provided by Threatbase. Updated weekly.
+                        IP info including ISP, ASN, and location provided by GeoJS, fetched live with each scan.
                       </p>
                     )}
                     {scanResult && scanResult.isDomain && (
@@ -890,8 +920,9 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
                     {/* Dispute Form */}
                     {showDisputeForm && (
                       <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mt-5 pt-5 border-t border-slate-800 overflow-hidden">
-                        <h5 className="text-sm font-bold text-slate-300 mb-3">Why is this a false positive? <span className="text-rose-400">*</span></h5>
+                        <label htmlFor="dispute-reason" className="block text-sm font-bold text-slate-300 mb-3">Why is this a false positive? <span className="text-rose-400">*</span></label>
                         <textarea
+                          id="dispute-reason"
                           value={disputeReason}
                           onChange={e => setDisputeReason(e.target.value)}
                           className="w-full bg-slate-950/50 border border-slate-700 rounded-xl p-4 text-sm text-slate-300 focus:outline-none focus:border-slate-500 focus:ring-1 focus:ring-slate-500 resize-none transition-all shadow-inner"
@@ -915,14 +946,13 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
               )}
 
               {loadingReports ? (
-                <div
-                  className="w-full flex flex-col items-center justify-center py-20 bg-slate-900 rounded-2xl border border-slate-800"
-                >
-                  <div className="relative h-8 w-8 mb-4">
-                    <div className="absolute inset-0 rounded-full border border-slate-800"></div>
-                    <div className="absolute inset-0 rounded-full border border-slate-500 border-t-transparent animate-spin"></div>
-                  </div>
-                  <p className="font-semibold tracking-wider text-[10px] text-slate-500 uppercase">Fetching community reports...</p>
+                <div className="w-full space-y-3" role="status" aria-label="Loading community reports">
+                  {[0, 1, 2].map((i) => (
+                    <div key={i} className="rounded-xl border border-slate-800 bg-slate-950 p-4 md:p-5 animate-pulse">
+                      <div className="mb-2 h-3 w-28 rounded bg-slate-800" />
+                      <div className="h-3 w-3/4 rounded bg-slate-800" />
+                    </div>
+                  ))}
                 </div>
               ) : reports.length > 0 ? (
                 <div className="w-full space-y-6">
@@ -931,29 +961,34 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
                       Community Reports for <span className="bg-gradient-to-r from-primary/80 to-primary bg-clip-text text-transparent font-mono break-all inline-block">{ip}</span>
                     </h3>
                     <p className="text-xs md:text-sm text-slate-400 leading-relaxed font-medium">
-                      This IP address has been reported <span className="text-white font-bold">{reports.length.toLocaleString()}</span> times. First reported on <span className="text-slate-300 font-medium">{new Date(reports[reports.length - 1].created_at || Date.now()).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}</span>, with the most recent report from <span className="text-slate-300 font-medium">{timeAgo(reports[0].created_at || new Date().toISOString())}</span>.
+                      This indicator has been reported <span className="text-white font-bold">{reports.length.toLocaleString()}</span> times. First reported on <span className="text-slate-300 font-medium">{new Date(reports[reports.length - 1].created_at || Date.now()).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}</span>, with the most recent report from <span className="text-slate-300 font-medium">{timeAgo(reports[0].created_at || new Date().toISOString())}</span>.
                     </p>
                   </div>
 
-                  <div className="relative overflow-hidden bg-slate-900 border border-slate-800 border-l-2 border-l-orange-500 px-6 py-5 rounded-xl shadow-sm font-elegant">
-                    <div className="space-y-1.5 relative z-10">
-                      <strong className="text-orange-500 block text-[11px] uppercase tracking-widest font-bold">Active Threat Warning</strong>
-                      <p className="text-slate-300 leading-relaxed text-xs">
-                        Abusive activity was reported from this address within the past week. It may still be actively engaged in hostile operations.
-                      </p>
+                  {/* Only an "active" claim we can back up: reports are sorted
+                      newest-first, so the warning is honest for a week after the
+                      latest report, then drops off. */}
+                  {Date.now() - new Date(reports[0].created_at || 0).getTime() < 7 * 24 * 3600 * 1000 && (
+                    <div className="relative overflow-hidden bg-slate-900 border border-slate-800 border-l-2 border-l-orange-500 px-6 py-5 rounded-xl shadow-sm font-elegant">
+                      <div className="space-y-1.5 relative z-10">
+                        <strong className="text-orange-500 block text-[11px] uppercase tracking-widest font-bold">Active Threat Warning</strong>
+                        <p className="text-slate-300 leading-relaxed text-xs">
+                          Abusive activity was reported from this address within the past week. It may still be actively engaged in hostile operations.
+                        </p>
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   <div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900 shadow-sm">
                     <div className="overflow-x-auto">
                       <table className="w-full text-xs text-left block md:table">
-                        <thead className="hidden md:table-header-group text-[10px] uppercase bg-slate-950 text-slate-400 font-bold border-b border-slate-800 tracking-widest">
+                        <thead className="sr-only md:table-header-group text-[10px] uppercase bg-slate-950 text-slate-400 font-bold border-b border-slate-800 tracking-widest">
                           <tr>
                             <th className="px-6 py-5 w-[20%]">Reporter</th>
                             <th className="px-6 py-5 w-[25%]">
                               <div className="flex items-center gap-1.5">
                                 IoA Timestamp (UTC)
-                                <span className="text-primary text-[9px] font-bold bg-primary/10 rounded-full w-3.5 h-3.5 inline-flex items-center justify-center cursor-help" title="Indicator of Attack timestamp">?</span>
+                                <span tabIndex={0} className="text-primary text-[9px] font-bold bg-primary/10 rounded-full w-3.5 h-3.5 inline-flex items-center justify-center cursor-help" title="Indicator of Attack timestamp" aria-label="Indicator of Attack timestamp">?</span>
                               </div>
                             </th>
                             <th className="px-6 py-5 w-[35%]">Comment</th>
