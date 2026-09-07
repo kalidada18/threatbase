@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import {
-  AlertTriangle, Copy, Check, ChevronLeft, ChevronRight, HelpCircle, Users, ShieldCheck, ListFilter
+  AlertTriangle, Copy, Check, ChevronLeft, ChevronRight, Users, ShieldCheck
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile'
@@ -76,7 +76,7 @@ const CommentCell = ({ comment }: { comment: string }) => {
 };
 
 export default function ReportIP({ addToast }: any) {
-  const { user, profile, signInWithGoogle } = useAuth()
+  const { user, profile } = useAuth()
   const prefersReducedMotion = useReducedMotion()
   useSEO({
     title: 'Report a Malicious IP | Threatbase Community Intel',
@@ -112,6 +112,16 @@ export default function ReportIP({ addToast }: any) {
 
   // Real-time IP validation
   const [ipStatus, setIpStatus] = useState<{ type: 'empty' | 'valid_v4' | 'valid_v6' | 'private' | 'whitelisted' | 'invalid', msg: string }>({ type: 'empty', msg: '' })
+
+  // Inline per-field validation errors (toasts stay for transient infra/cooldown messages)
+  const [fieldErrors, setFieldErrors] = useState<{ ip?: string; tags?: string; comment?: string; turnstile?: string }>({})
+
+  useEffect(() => {
+    if (!showPolicyModal) return
+    const onKeyDown = (e: KeyboardEvent) => { if (e.key === 'Escape') setShowPolicyModal(false) }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [showPolicyModal])
 
   useEffect(() => {
     if (profile?.username) {
@@ -219,31 +229,27 @@ export default function ReportIP({ addToast }: any) {
       return addToast(`Wait ${remaining}s before submitting again`, 'error')
     }
 
-    if (!ipValue.trim() || !tags.length || !comment.trim()) {
-      return addToast('Please fill all required fields', 'error')
-    }
-
     const raw = ipValue.trim()
     const rawComment = comment.trim()
     const rawAlias = alias.trim()
 
-    if (rawComment.length > 1000) {
-      return addToast('Comment is too long (max 1000 characters)', 'error')
-    }
-    
     if (rawAlias.length > 50) {
       return addToast('Alias is too long (max 50 characters)', 'error')
     }
 
     const canSubmit = ipStatus.type === 'valid_v4' || ipStatus.type === 'valid_v6'
 
-    if (!canSubmit) {
-      return addToast('Submission blocked due to invalid or private IP', 'error')
+    const errors: typeof fieldErrors = {}
+    if (!raw) errors.ip = 'IP address is required.'
+    else if (!canSubmit) errors.ip = ipStatus.msg || 'Valid IPv4 or IPv6 required.'
+    if (!tags.length) errors.tags = 'Select at least one threat tag.'
+    if (!rawComment) errors.comment = 'A description is required.'
+    if (!turnstileToken) errors.turnstile = 'Complete the human verification first.'
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors)
+      return
     }
-
-    if (!turnstileToken) {
-      return addToast('Please complete the human verification first', 'error')
-    }
+    setFieldErrors({})
 
     setSubmitting(true)
     const safeComment = DOMPurify.sanitize(rawComment)
@@ -394,8 +400,10 @@ export default function ReportIP({ addToast }: any) {
                       id="ipAddress"
                       placeholder="e.g., 203.0.113.45"
                       value={ipValue}
-                      onChange={(e) => setIpValue(e.target.value)}
-                      className="h-14 rounded-xl border-white/10 bg-white/[0.02] px-4 font-mono text-base text-white placeholder:font-sans placeholder:text-slate-600 focus-visible:border-red-500/50 focus-visible:ring-red-500/20"
+                      onChange={(e) => { setIpValue(e.target.value); setFieldErrors(p => ({ ...p, ip: undefined })) }}
+                      aria-invalid={!!fieldErrors.ip}
+                      aria-describedby={fieldErrors.ip ? 'ipAddress-error' : undefined}
+                      className="h-14 rounded-xl border-white/10 bg-white/[0.02] px-4 font-mono text-base text-white placeholder:font-sans placeholder:text-slate-500 focus-visible:border-red-500/50 focus-visible:ring-red-500/20"
                     />
                     {ipStatus.type !== 'empty' && (
                       <span className="absolute right-4 top-1/2 -translate-y-1/2">
@@ -405,8 +413,11 @@ export default function ReportIP({ addToast }: any) {
                       </span>
                     )}
                   </div>
+                  {fieldErrors.ip && (
+                    <p id="ipAddress-error" className="text-[11px] font-medium tracking-wider text-red-400">{fieldErrors.ip}</p>
+                  )}
                   {ipStatus.msg && ipStatus.type !== 'empty' && (
-                    <p className={`text-[11px] font-medium uppercase tracking-wider ${ipStatus.type === 'valid_v4' || ipStatus.type === 'valid_v6' ? 'text-emerald-400' : 'text-destructive'}`}>
+                    <p className={`text-[11px] font-medium uppercase tracking-wider ${ipStatus.type === 'valid_v4' || ipStatus.type === 'valid_v6' ? 'text-emerald-400' : 'text-red-400'}`}>
                       {ipStatus.msg}
                     </p>
                   )}
@@ -417,7 +428,7 @@ export default function ReportIP({ addToast }: any) {
                     <Label className="text-sm font-semibold text-slate-200 tracking-wide">
                       Threat Tags
                     </Label>
-                    <span className="font-mono text-[10px] text-slate-600">{tags.length}/{MAX_TAGS}</span>
+                    <span className="font-mono text-[10px] text-slate-400">{tags.length}/{MAX_TAGS}</span>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {THREAT_TAGS.map((tag) => {
@@ -426,7 +437,7 @@ export default function ReportIP({ addToast }: any) {
                         <button
                           key={tag}
                           type="button"
-                          onClick={() => setTags(prev => active ? prev.filter(t => t !== tag) : prev.length < MAX_TAGS ? [...prev, tag] : prev)}
+                          onClick={() => { setTags(prev => active ? prev.filter(t => t !== tag) : prev.length < MAX_TAGS ? [...prev, tag] : prev); setFieldErrors(p => ({ ...p, tags: undefined })) }}
                           aria-pressed={active}
                           className={`rounded-lg px-3 py-2 text-xs font-bold uppercase tracking-wider transition-colors ${
                             active
@@ -439,6 +450,9 @@ export default function ReportIP({ addToast }: any) {
                       )
                     })}
                   </div>
+                  {fieldErrors.tags && (
+                    <p id="tags-error" className="text-[11px] font-medium tracking-wider text-red-400">{fieldErrors.tags}</p>
+                  )}
                 </div>
 
                 <div className="space-y-3">
@@ -446,16 +460,21 @@ export default function ReportIP({ addToast }: any) {
                     <Label htmlFor="comment" className="text-sm font-semibold text-slate-200 tracking-wide">
                       Description / Evidence
                     </Label>
-                    <span className="font-mono text-[10px] text-slate-600">{comment.length}/1000</span>
+                    <span className="font-mono text-[10px] text-slate-400">{comment.length}/1000</span>
                   </div>
                   <Textarea
                     id="comment"
                     placeholder="Describe the malicious activity: observed behaviour, timestamps, ports, or log excerpts."
                     value={comment}
-                    onChange={(e) => setComment(e.target.value)}
+                    onChange={(e) => { setComment(e.target.value); setFieldErrors(p => ({ ...p, comment: undefined })) }}
                     maxLength={1000}
-                    className="min-h-[140px] resize-none rounded-xl border-white/10 bg-white/[0.02] p-4 text-base leading-relaxed text-white placeholder:text-slate-600 focus-visible:border-red-500/50 focus-visible:ring-red-500/20"
+                    aria-invalid={!!fieldErrors.comment}
+                    aria-describedby={fieldErrors.comment ? 'comment-error' : undefined}
+                    className="min-h-[140px] resize-none rounded-xl border-white/10 bg-white/[0.02] p-4 text-base leading-relaxed text-white placeholder:text-slate-500 focus-visible:border-red-500/50 focus-visible:ring-red-500/20"
                   />
+                  {fieldErrors.comment && (
+                    <p id="comment-error" className="text-[11px] font-medium tracking-wider text-red-400">{fieldErrors.comment}</p>
+                  )}
                 </div>
 
                 <div className="space-y-3">
@@ -467,7 +486,7 @@ export default function ReportIP({ addToast }: any) {
                     placeholder="Anonymous"
                     value={alias}
                     readOnly
-                    className="h-14 cursor-not-allowed rounded-xl border-transparent bg-white/[0.01] font-mono text-slate-500 focus-visible:ring-0"
+                    className="h-14 cursor-not-allowed rounded-xl border-transparent bg-white/[0.01] font-mono text-slate-400 focus-visible:ring-0"
                   />
                   <p className="text-[11px] text-slate-500">
                     Locked to your profile. Change it in <Link to="/profile" className="text-red-400 hover:text-red-300 hover:underline">Settings</Link>.
@@ -478,11 +497,14 @@ export default function ReportIP({ addToast }: any) {
                   <Turnstile
                     ref={turnstileRef}
                     siteKey={TURNSTILE_SITE_KEY}
-                    onSuccess={setTurnstileToken}
+                    onSuccess={(t) => { setTurnstileToken(t); setFieldErrors(p => ({ ...p, turnstile: undefined })) }}
                     onExpire={() => setTurnstileToken('')}
                     onError={() => setTurnstileToken('')}
                     options={{ theme: 'dark', size: 'flexible' }}
                   />
+                  {fieldErrors.turnstile && (
+                    <p id="turnstile-error" className="mt-2 text-[11px] font-medium tracking-wider text-red-400">{fieldErrors.turnstile}</p>
+                  )}
                 </div>
 
                 <div className="pt-6">
@@ -566,9 +588,11 @@ export default function ReportIP({ addToast }: any) {
                           <div className="flex items-center gap-3">
                             <span className="font-mono text-base font-bold text-slate-200">{row.ip}</span>
                             <button
+                              type="button"
                               onClick={() => handleCopyIp(row.ip)}
-                              className="text-slate-500 opacity-0 transition-all hover:text-white group-hover:opacity-100"
+                              className="-m-2 p-2 text-slate-500 opacity-100 transition-all hover:text-white md:opacity-0 md:group-hover:opacity-100"
                               title="Copy IP"
+                              aria-label="Copy IP"
                             >
                               {copiedIp === row.ip ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
                             </button>
@@ -598,8 +622,10 @@ export default function ReportIP({ addToast }: any) {
                               <CommentCell comment={row.comment} />
                               {alias && row.reporter_alias === alias && (
                                 <button
+                                  type="button"
                                   onClick={() => { setEditingRowId(row.id); setEditComment(row.comment); }}
-                                  className="absolute -right-2 -top-2 rounded-md bg-white/5 p-1.5 text-slate-400 opacity-0 transition-opacity hover:text-white group-hover:opacity-100"
+                                  className="absolute -right-2 -top-2 rounded-md bg-white/5 p-2 text-slate-400 opacity-100 transition-opacity hover:text-white md:opacity-0 md:group-hover:opacity-100"
+                                  aria-label="Edit comment"
                                 >
                                   <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                                 </button>
@@ -664,12 +690,12 @@ export default function ReportIP({ addToast }: any) {
         {showPolicyModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowPolicyModal(false)} className="absolute inset-0 bg-[#050505]/80 backdrop-blur-sm" />
-            <motion.div initial={{ opacity: 0, scale: 0.98, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.98, y: 10 }} className="relative flex max-h-[85vh] w-full max-w-2xl flex-col rounded-2xl border border-white/10 bg-[#0A0A0A] p-8 shadow-2xl z-10">
+            <motion.div initial={{ opacity: 0, scale: 0.98, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.98, y: 10 }} role="dialog" aria-modal="true" aria-labelledby="policy-title" className="relative flex max-h-[85vh] w-full max-w-2xl flex-col rounded-2xl border border-white/10 bg-[#0A0A0A] p-8 shadow-2xl z-10">
               <div className="mb-6 flex items-center gap-4 border-b border-white/5 pb-4">
                 <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-2.5 text-red-400">
                   <ShieldCheck className="h-6 w-6" />
                 </div>
-                <h3 className="text-xl font-bold text-white tracking-tight">Community Reporting Policy</h3>
+                <h3 id="policy-title" className="text-xl font-bold text-white tracking-tight">Community Reporting Policy</h3>
               </div>
               <div className="space-y-6 overflow-y-auto pr-2 text-sm leading-relaxed text-slate-400 custom-scrollbar">
                 <div>
