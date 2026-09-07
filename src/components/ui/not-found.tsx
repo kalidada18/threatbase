@@ -21,7 +21,7 @@ interface NotFoundProps {
  */
 export default function NotFound({
   title = "No trace on record.",
-  description = "This page isn't in our index. The trail may have moved, expired, or never existed.",
+  description = "This page isn't in our index. It may have moved or been removed.",
   cta = "Return home",
   href = "/",
   code = "404",
@@ -91,7 +91,7 @@ export default function NotFound({
             className="inline-flex items-center gap-2 rounded-2xl border border-platinum-400/20 bg-white/[0.03] px-7 py-3 text-sm font-semibold text-platinum-300 backdrop-blur-md transition-all hover:border-platinum-400/40 hover:bg-white/[0.06] hover:text-white"
           >
             <ShieldAlert className="h-4 w-4" />
-            Report an Indicator
+            Report a Threat
           </Link>
         </div>
       </motion.div>
