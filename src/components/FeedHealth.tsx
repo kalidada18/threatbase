@@ -1,5 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { Suspense, lazy, useEffect, useMemo, useState } from 'react'
 import Section from './layout/Section'
 import { SectionHeading } from './motion/SectionHeading'
 import { getBaseUrl, fmt, timeAgo, feedPath } from '../utils'
@@ -20,6 +19,10 @@ const STATUS = {
 } as const
 
 const statusOf = (e: Entry) => (e.consecutive_empty === 0 ? STATUS.fresh : e.consecutive_empty < 3 ? STATUS.quiet : STATUS.stale)
+
+// Chart lives in its own lazy chunk so recharts stays out of the eager route
+// bundle (Suspense boundary at the usage site, height-matched fallback).
+const FeedHealthChart = lazy(() => import('./blocks/feed-health-chart'))
 
 export default function FeedHealth() {
   const [entries, setEntries] = useState<Entry[] | null>(null)
@@ -94,49 +97,18 @@ export default function FeedHealth() {
             </div>
             {loading ? (
               <div className="h-72 animate-pulse rounded-xl bg-white/[0.04]" role="status" aria-label="Loading feed health data" />
-            ) : failed || chartData.length === 0 ? (
-              <p className="h-72 flex items-center justify-center text-sm font-medium text-slate-500 max-w-md mx-auto text-center">
+            ) : failed ? (
+              <p className="h-72 flex items-center justify-center text-sm font-medium text-slate-300 max-w-md mx-auto text-center">
                 Feed health data is unavailable right now. It appears after the next pipeline run.
               </p>
+            ) : chartData.length === 0 ? (
+              <p className="h-72 flex items-center justify-center text-sm font-medium text-slate-400 max-w-md mx-auto text-center">
+                No feeds produced novel IOCs in the latest run.
+              </p>
             ) : (
-              <ResponsiveContainer width="100%" height={288}>
-                <BarChart layout="vertical" data={chartData} margin={{ left: 8, right: 16, top: 4, bottom: 4 }}>
-                  <XAxis
-                    type="number"
-                    tickLine={false}
-                    axisLine={false}
-                    tick={{ fill: '#64748b', fontSize: 11 }}
-                    tickFormatter={(v: number) => (v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v))}
-                  />
-                  <YAxis
-                    type="category"
-                    dataKey="name"
-                    width={150}
-                    tickLine={false}
-                    axisLine={false}
-                    tick={{ fill: '#94a3b8', fontSize: 11 }}
-                  />
-                  <Tooltip
-                    cursor={{ fill: 'rgba(255,255,255,0.04)' }}
-                    contentStyle={{
-                      backgroundColor: 'rgba(15, 23, 42, 0.95)',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
-                      borderRadius: 12,
-                      fontSize: 12,
-                    }}
-                    labelStyle={{ color: '#e2e8f0', fontWeight: 700 }}
-                    itemStyle={{ color: '#94a3b8' }}
-                    formatter={(value: any) => [fmt(Number(value)), 'New IOCs']}
-                  />
-                  <Bar dataKey="value" radius={[0, 4, 4, 0]} isAnimationActive={
-                    !(typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches)
-                  }>
-                    {chartData.map((d, i) => (
-                      <Cell key={i} fill={d.color} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+              <Suspense fallback={<div className="h-72 animate-pulse rounded-xl bg-white/[0.04]" aria-hidden="true" />}>
+                <FeedHealthChart data={chartData} />
+              </Suspense>
             )}
           </div>
         </div>
@@ -151,7 +123,7 @@ export default function FeedHealth() {
               ))}
             </div>
           ) : failed || !entries ? (
-            <p className="text-sm font-medium text-slate-500">Unavailable right now.</p>
+            <p className="text-sm font-medium text-slate-300">Unavailable right now.</p>
           ) : (
             <div className="-mx-2 max-h-[288px] overflow-y-auto px-2">
               <ul className="divide-y divide-white/[0.05]">
@@ -165,7 +137,7 @@ export default function FeedHealth() {
                       </span>
                       <span className="shrink-0 text-right">
                         <span className={`block text-[10px] font-bold uppercase tracking-wider ${s.cls}`}>{s.label}</span>
-                        <span className="block text-[10px] font-medium text-slate-500 tabular-nums">
+                        <span className="block text-[10px] font-medium text-slate-400 tabular-nums">
                           {e.last_data ? `+${fmt(e.last_new_count)} · ${timeAgo(e.last_data + 'T00:00:00Z')}` : 'no novel data'}
                         </span>
                       </span>
