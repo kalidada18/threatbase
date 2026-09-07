@@ -10,8 +10,8 @@ const getRankInfo = (count: number) => {
   if (count >= 500) {
     return {
       name: 'Legend',
-      accent: 'gold',
-      badge: 'bg-amber-400/10 border-amber-300/30 text-amber-200',
+      accent: 'white',
+      badge: 'bg-white/[0.08] border-white/25 text-white',
     }
   }
   if (count >= 300) {
@@ -132,23 +132,31 @@ function Row({ leader, index, max }: { leader: any; index: number; max: number }
 export default function Leaderboard() {
   const [leaders, setLeaders] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
 
   useEffect(() => {
     async function loadLeaders() {
-      if (!supabaseClient) return
+      if (!supabaseClient) {
+        setLoading(false)
+        return
+      }
       setLoading(true)
       try {
         // We assume a view 'top_contributors' exists in Supabase
-        const { data, error } = await supabaseClient
+        const { data, error: queryError } = await supabaseClient
           .from('top_contributors')
           .select('*')
           .order('reports_count', { ascending: false })
           .limit(10)
 
-        if (error) throw error
-        if (data) setLeaders(data)
+        if (queryError) throw queryError
+        if (data) {
+          setLeaders(data)
+          setError(false)
+        }
       } catch (err) {
         console.error('Failed to load leaderboard:', err)
+        setError(true)
       } finally {
         setLoading(false)
       }
@@ -175,6 +183,16 @@ export default function Leaderboard() {
             <div className="h-4 w-10 animate-pulse rounded bg-white/[0.05]" />
           </div>
         ))}
+      </div>
+    )
+  }
+
+  if (error && leaders.length === 0) {
+    return (
+      <div className="mx-4 my-8 rounded-2xl border border-red-500/20 bg-red-950/20 px-8 py-10 text-center">
+        <p className="mb-3 font-mono text-xs uppercase tracking-[0.25em] text-red-400">Feed unavailable</p>
+        <p className="mb-1 text-slate-300">Couldn&apos;t load the leaderboard.</p>
+        <p className="text-sm text-slate-500">The database may be mid-update. Reload in a minute.</p>
       </div>
     )
   }
