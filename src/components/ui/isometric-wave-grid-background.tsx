@@ -37,51 +37,33 @@ const IsoLevelWarp = ({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    let width = container.offsetWidth;
-    let height = container.offsetHeight;
-    let animationFrameId: number;
-
-    // Grid Configuration
-    const gridGap = density;
-    const rows = Math.ceil(height / gridGap) + 5; // Extra buffer
-    const cols = Math.ceil(width / gridGap) + 5;
-
-    // Mouse Interaction
-    const mouse = { x: -1000, y: -1000, targetX: -1000, targetY: -1000 };
+    let width = 0;
+    let height = 0;
+    let gridGap = density;
+    let rows = 0;
+    let cols = 0;
+    let animationFrameId = 0;
 
     // Wave Physics
     let time = 0;
 
+    // The page container stretches to the full document height; size the canvas to
+    // the viewport so we never stroke thousands of off-screen points per frame.
     const resize = () => {
+      gridGap = density;
       width = container.offsetWidth;
-      height = container.offsetHeight;
+      height = Math.min(container.offsetHeight, window.innerHeight);
+      rows = Math.ceil(height / gridGap) + 5; // Extra buffer
+      cols = Math.ceil(width / gridGap) + 5;
       canvas.width = width;
       canvas.height = height;
-    };
-
-    const handleMouseMove = (e: MouseEvent) => {
-      const rect = canvas.getBoundingClientRect();
-      mouse.targetX = e.clientX - rect.left;
-      mouse.targetY = e.clientY - rect.top;
-    };
-
-    const handleMouseLeave = () => {
-      mouse.targetX = -1000;
-      mouse.targetY = -1000;
-    };
-
-    // Math Helper: Smoothstep
-    const smoothMix = (a: number, b: number, t: number) => {
-      return a + (b - a) * t;
+      canvas.style.height = `${height}px`;
+      // Re-stroke the static frame while the loop is paused (off-screen or reduced-motion).
+      if (!animationFrameId) draw();
     };
 
     const draw = () => {
-      // Clear Screen with trail effect (optional, simplified here for clarity)
       ctx.clearRect(0, 0, width, height);
-
-      // Smooth mouse movement
-      mouse.x = smoothMix(mouse.x, mouse.targetX, 0.1);
-      mouse.y = smoothMix(mouse.y, mouse.targetY, 0.1);
 
       time += 0.01 * speed;
 
@@ -99,23 +81,12 @@ const IsoLevelWarp = ({
           const baseY = (y * gridGap) - (gridGap * 2);
 
           // DISTORTION LOGIC
-          // 1. Ambient Wave (The "Breathing")
+          // Ambient Wave (The "Breathing")
           const wave = Math.sin(x * 0.2 + time) * Math.cos(y * 0.2 + time) * 15;
-
-          // 2. Mouse Repulsion (The "Interaction")
-          const dx = baseX - mouse.x;
-          const dy = baseY - mouse.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          const maxDist = 300;
-
-          // Calculate force: 0 at edge, 1 at center
-          const force = Math.max(0, (maxDist - dist) / maxDist);
-          // Apply a "Z-push" effect by moving points UP (negative Y) based on proximity
-          const interactionY = -(force * force) * 80; // Non-linear falloff
 
           // Final Coordinates
           const finalX = baseX;
-          const finalY = baseY + wave + interactionY;
+          const finalY = baseY + wave;
 
           // Draw the line
           if (isFirst) {
@@ -140,22 +111,43 @@ const IsoLevelWarp = ({
       ctx.strokeStyle = gradient;
       ctx.lineWidth = 1;
       ctx.stroke();
+    };
 
-      animationFrameId = requestAnimationFrame(draw);
+    const play = () => {
+      if (animationFrameId) return;
+      const loop = () => {
+        draw();
+        animationFrameId = requestAnimationFrame(loop);
+      };
+      animationFrameId = requestAnimationFrame(loop);
+    };
+
+    const stop = () => {
+      cancelAnimationFrame(animationFrameId);
+      animationFrameId = 0;
     };
 
     window.addEventListener("resize", resize);
-    container.addEventListener("mousemove", handleMouseMove);
-    container.addEventListener("mouseleave", handleMouseLeave);
 
     resize();
-    draw();
+
+    // prefers-reduced-motion: one static frame, no loop (MotionConfig can't
+    // reach a raw canvas rAF); otherwise pause while scrolled out of view.
+    let observer: IntersectionObserver | undefined;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      draw();
+    } else {
+      play();
+      observer = new IntersectionObserver(
+        ([entry]) => (entry.isIntersecting ? play() : stop()),
+      );
+      observer.observe(canvas);
+    }
 
     return () => {
       window.removeEventListener("resize", resize);
-      container.removeEventListener("mousemove", handleMouseMove);
-      container.removeEventListener("mouseleave", handleMouseLeave);
-      cancelAnimationFrame(animationFrameId);
+      observer?.disconnect();
+      stop();
     };
   }, [color, speed, density]);
 
