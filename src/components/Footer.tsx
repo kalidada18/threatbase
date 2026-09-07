@@ -13,7 +13,7 @@ export default function Footer() {
     <footer className="relative border-t border-white/[0.06] overflow-hidden">
       {/* Premium gradient separator */}
       <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-red-500/30 to-transparent" />
-      <div className="relative z-10 bg-white/[0.02] backdrop-blur-md">
+      <div className="relative z-10 bg-white/[0.02]">
         <Footer7 
         logo={{
           url: "/",
@@ -45,7 +45,7 @@ export default function Footer() {
         socialLinks={[
           { icon: <GithubIcon />, href: "https://github.com/kalidada18/threatbase", label: "GitHub" },
         ]}
-        copyright={`© ${new Date().getFullYear()} Threatbase. Built By Curiosity.`}
+        copyright={`© ${new Date().getFullYear()} Threatbase. Built by Curiosity.`}
         legalLinks={[
           { name: "Terms and Conditions", href: "/terms" },
           { name: "Privacy Policy", href: "/privacy" },
