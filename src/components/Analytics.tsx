@@ -1,10 +1,13 @@
-import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts'
-import { fmt, DATA_RAMP } from '../utils'
+import { lazy, Suspense } from 'react'
 import AnimatedHighlightedAreaChart from './blocks/animated-area-chart'
 import Section from './layout/Section'
 import { SectionHeading } from './motion/SectionHeading'
 
-export default function Analytics({ statsData, feedVersion }: any) {
+// Lazy so recharts moves out of the eager /threatfeed route chunk (the donut
+// renders below the fold; the route's tables must not wait on it).
+const CategoryChart = lazy(() => import('./blocks/category-chart'))
+
+export default function Analytics({ statsData, feedVersion, statsFailed, onRetryStats }: any) {
   return (
     <Section id="analytics" className="overflow-hidden" containerClassName="relative z-10">
         <SectionHeading
@@ -26,9 +29,25 @@ export default function Analytics({ statsData, feedVersion }: any) {
               <h3 className="text-xl font-bold mb-8 text-white tracking-tight">Threat classes by volume</h3>
               <div className="flex-1 w-full relative flex items-center justify-center min-h-[300px]">
                 {statsData?.category_counts ? (
-                  <CategoryChart categories={statsData.category_counts} />
+                  <Suspense fallback={null}>
+                    <CategoryChart categories={statsData.category_counts} />
+                  </Suspense>
+                ) : statsFailed ? (
+                  <div className="text-center max-w-[16rem]">
+                    <p className="text-sm font-medium text-slate-300">
+                      Feed data unavailable. The last refresh could not reach the live feed.
+                    </p>
+                    {onRetryStats && (
+                      <button
+                        onClick={onRetryStats}
+                        className="mt-4 inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-200 transition-colors hover:bg-white/[0.08] hover:text-white"
+                      >
+                        Retry
+                      </button>
+                    )}
+                  </div>
                 ) : (
-                  <p className="max-w-[16rem] text-center text-sm font-medium text-slate-500">
+                  <p className="max-w-[16rem] text-center text-sm font-medium text-slate-400">
                     Category breakdown appears once the live feed has loaded.
                   </p>
                 )}
@@ -37,68 +56,5 @@ export default function Analytics({ statsData, feedVersion }: any) {
           </div>
         </div>
     </Section>
-  )
-}
-
-
-function CategoryChart({ categories }: any) {
-  const sorted = Object.entries(categories)
-    .filter(([k]) => k !== 'Mixed' && k !== 'Unknown')
-    .sort((a: any, b: any) => b[1] - a[1])
-
-  const chartData = sorted.map(([name, value], i) => ({
-    name,
-    value: value as number,
-    color: DATA_RAMP[i % DATA_RAMP.length],
-  }))
-
-  const reducedMotion =
-    typeof window !== 'undefined' &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches
-
-  return (
-    <ResponsiveContainer width="100%" height={320}>
-      <PieChart>
-        <Pie
-          data={chartData}
-          cx="50%"
-          cy="50%"
-          innerRadius="60%"
-          outerRadius="80%"
-          paddingAngle={3}
-          dataKey="value"
-          isAnimationActive={!reducedMotion}
-          animationDuration={800}
-        >
-          {chartData.map((entry, index) => (
-            <Cell key={`cell-${index}`} fill={entry.color} stroke="transparent" />
-          ))}
-        </Pie>
-        <Tooltip
-          contentStyle={{
-            backgroundColor: 'rgba(15, 23, 42, 0.95)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            borderRadius: '8px',
-            color: '#e2e8f0',
-            fontSize: '14px',
-            fontFamily: "'Manrope', sans-serif",
-            fontWeight: '600',
-            padding: '12px 16px',
-          }}
-          formatter={(value, name) => [fmt(Number(value)), name]}
-          labelStyle={{ display: 'none' }}
-          cursor={false}
-        />
-        <Legend
-          iconType="circle"
-          iconSize={8}
-          formatter={(value: string) => (
-            <span style={{ color: '#cbd5e1', fontSize: '12px', fontFamily: "'Manrope', sans-serif", fontWeight: '500' }}>
-              {value}
-            </span>
-          )}
-        />
-      </PieChart>
-    </ResponsiveContainer>
   )
 }
