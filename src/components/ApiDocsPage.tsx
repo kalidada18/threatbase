@@ -138,14 +138,9 @@ function CodeBlock({ code, language = 'text', filename }: CodeBlockProps) {
     <div className="group/code relative overflow-hidden glass-card shadow-glass-lux">
       {/* Title bar */}
       <div className="flex items-center justify-between border-b border-white/[0.06] bg-white/[0.02] px-4 py-2.5">
-        <div className="flex items-center gap-2">
-          <span className="h-2.5 w-2.5 rounded-full bg-white/15" />
-          <span className="h-2.5 w-2.5 rounded-full bg-white/15" />
-          <span className="h-2.5 w-2.5 rounded-full bg-white/15" />
-          <span className="ml-3 font-mono text-[11px] font-semibold uppercase tracking-widest text-slate-500">
-            {filename || language}
-          </span>
-        </div>
+        <span className="font-mono text-[11px] font-semibold uppercase tracking-widest text-slate-500">
+          {filename || language}
+        </span>
         <button
           onClick={handleCopy}
           className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-2.5 py-2 md:py-1 text-[11px] font-bold text-slate-400 transition-all hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-400 active:scale-95"
@@ -473,9 +468,9 @@ export default function ApiDocsPage() {
           Developer API
         </div>
 
-        <h1 className="mb-6 text-5xl font-extrabold tracking-tighter text-white drop-shadow-2xl md:text-7xl">
+        <h1 className="mb-6 text-5xl font-extrabold tracking-tighter text-white md:text-7xl">
           The Threatbase <br />
-          <span className="text-liquid-red text-metal">
+          <span className="text-liquid-red">
             Threat Intelligence API.
           </span>
         </h1>
@@ -489,7 +484,7 @@ export default function ApiDocsPage() {
         <div className="mb-16 inline-block rounded-2xl bg-gradient-to-r from-red-500/40 to-red-800/40 p-[1px] shadow-glow-ruby">
           <div className="rounded-2xl bg-slate-950/80 px-6 py-4 backdrop-blur-xl">
             <span className="font-mono text-xs sm:text-sm text-metal tracking-wide md:text-base">
-              <span className="text-destructive">$</span> base url{' '}
+              <span className="text-red-500">$</span> base url{' '}
               <span className="text-slate-200 break-all">{BASE_URL}/api/v1</span>
             </span>
           </div>
@@ -539,7 +534,7 @@ export default function ApiDocsPage() {
             { step: 'Sign in', desc: 'Log into Threatbase with Google or GitHub.' },
             { step: 'Generate a key', desc: 'Open your Profile and create a new API key.' },
             { step: 'Send the header', desc: 'Attach x-api-key to every request.' },
-          ].map((s, i) => (
+          ].map((s) => (
             <div
               key={s.step}
               className="flex-1 relative"
