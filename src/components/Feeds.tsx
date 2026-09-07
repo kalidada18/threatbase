@@ -179,7 +179,9 @@ function FeedCard({ f, isSplit, chunks, wide = false }: { f: Feed; isSplit: bool
               {isSplit && (
                 <span
                   title={`Also mirrored in this repo as ${chunks.length} chunks (${chunks.join(', ')}). Concatenating them in order reproduces this file exactly. See ioc/data/manifest.json for the chunk list and key ranges.`}
-                  className="shrink-0 rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 font-mono text-[10px] font-medium text-slate-400 cursor-help"
+                  aria-label={`Split feed: mirrored as ${chunks.length} chunks. Hover or focus for details.`}
+                  tabIndex={0}
+                  className="shrink-0 rounded-full border border-white/10 bg-white/[0.04] px-2 py-0.5 font-mono text-[10px] font-medium text-slate-400 cursor-help focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
                 >
                   {chunks.length} parts
                 </span>
