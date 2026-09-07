@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Shield, Loader2, AlertCircle, LogOut } from 'lucide-react'
+import { Loader2, AlertCircle, LogOut } from 'lucide-react'
 import { useAuth } from '../AuthContext'
 import supabaseClient from '../supabaseClient'
 
@@ -11,9 +11,33 @@ export default function MfaChallengeModal() {
   const [otp, setOtp] = useState('')
   const [factorId, setFactorId] = useState<string | null>(null)
   const [challengeId, setChallengeId] = useState<string | null>(null)
-  
+  const [signingOut, setSigningOut] = useState(false)
+
   // Reference to auto-focus the input
   const inputRef = useRef<HTMLInputElement>(null)
+  const panelRef = useRef<HTMLDivElement>(null)
+
+  // This dialog is a required gate: it cannot be dismissed, so keep Tab
+  // cycling through its focusable nodes instead of leaking into the app.
+  useEffect(() => {
+    if (!requiresMfa) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab' || !panelRef.current) return
+      const nodes = panelRef.current.querySelectorAll<HTMLElement>('input, button:not([disabled])')
+      if (nodes.length === 0) return
+      const first = nodes[0]
+      const last = nodes[nodes.length - 1]
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault()
+        last.focus()
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault()
+        first.focus()
+      }
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [requiresMfa])
 
   useEffect(() => {
     if (requiresMfa) {
@@ -68,7 +92,7 @@ export default function MfaChallengeModal() {
     setError(null)
     
     try {
-      const { data, error } = await supabaseClient.auth.mfa.verify({
+      const { error } = await supabaseClient.auth.mfa.verify({
         factorId,
         challengeId,
         code: otp
@@ -98,7 +122,11 @@ export default function MfaChallengeModal() {
           className="absolute inset-0 bg-black/90 backdrop-blur-md"
         />
         
-        <motion.div 
+        <motion.div
+          ref={panelRef}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="mfa-title"
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
@@ -117,14 +145,14 @@ export default function MfaChallengeModal() {
             </div>
             
             <div className="space-y-2">
-              <h3 className="text-2xl font-bold text-white tracking-tight">Two-Factor Authentication</h3>
+              <h3 id="mfa-title" className="text-2xl font-bold text-white tracking-tight">Two-Factor Authentication</h3>
               <p className="text-sm text-slate-400 leading-relaxed">
                 Your account is protected with 2FA. Please enter the 6-digit code from your authenticator app to continue.
               </p>
             </div>
             
             {error && (
-              <div className="w-full flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm text-left">
+              <div className="w-full flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-red-400 text-sm text-left">
                 <AlertCircle size={16} className="shrink-0" />
                 <span>{error}</span>
               </div>
@@ -138,25 +166,37 @@ export default function MfaChallengeModal() {
                 value={otp}
                 onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ''))}
                 placeholder="000000"
-                className="w-full h-14 rounded-xl border border-white/10 bg-black/50 px-4 text-center text-2xl tracking-[0.5em] text-white placeholder:text-slate-700 focus:outline-none focus:border-red-500/50 focus:bg-white/5 transition-all font-mono"
+                aria-label="6-digit authenticator code"
+                autoComplete="one-time-code"
+                inputMode="numeric"
+                className="w-full h-14 rounded-xl border border-white/10 bg-black/50 px-4 text-center text-2xl tracking-[0.5em] text-white placeholder:text-slate-500 focus:outline-none focus:border-red-500/50 focus:bg-white/5 transition-all font-mono"
                 disabled={loading || !challengeId}
               />
               
               <button
                 type="submit"
                 disabled={loading || !challengeId || otp.length < 6}
-                className="w-full h-12 rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold text-sm tracking-wide transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full h-12 rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold text-sm tracking-wide transition-colors active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {loading ? <Loader2 size={16} className="animate-spin" /> : 'Verify Code'}
               </button>
             </form>
             
             <button
-              onClick={() => signOut()}
-              className="flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-rose-400 transition-colors pt-2"
+              onClick={async () => {
+                if (signingOut) return
+                setSigningOut(true)
+                try {
+                  await signOut()
+                } catch {
+                  setSigningOut(false)
+                }
+              }}
+              disabled={signingOut}
+              className="flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-rose-400 transition-colors pt-2 disabled:opacity-50"
             >
               <LogOut size={14} />
-              Sign Out Instead
+              {signingOut ? 'Signing out...' : 'Sign Out Instead'}
             </button>
           </div>
         </motion.div>
