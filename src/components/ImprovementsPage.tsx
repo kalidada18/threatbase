@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { ArrowRight, History } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import IsoPageShell from './layout/IsoPageShell'
 import { useSEO } from '@/useSEO'
 import { fmt, DATA_RAMP, timeAgo } from '../utils'
@@ -54,7 +54,6 @@ function RepoPulse() {
   return (
     <div className="mx-auto mb-16 flex w-full max-w-3xl flex-col gap-8 rounded-2xl border border-white/[0.06] bg-[#0a0e17]/60 px-6 py-6 md:flex-row md:items-center md:justify-between">
       <div>
-        <div className="eyebrow mb-4">Repo pulse</div>
         <dl className="grid grid-cols-2 gap-x-10 gap-y-3">
           {stats.map(s => (
             <div key={s.label} className="flex items-baseline justify-between gap-4 border-b border-white/[0.04] pb-1.5">
@@ -178,7 +177,7 @@ const IMPROVEMENTS: { date: string; title: string; items: string[] }[] = [
     date: '2026-08-29',
     title: 'Security & Feed Scale',
     items: [
-      'Reporting endpoints now require a verified user identity — insecure insert fallbacks removed.',
+      'Reporting endpoints now require a verified user identity. Insecure insert fallbacks removed.',
       'API keys validated with elevated privileges only on server-side routes.',
       'Giant domain & hash feeds committed as plain Git objects; accumulated Git LFS pointer lines purged from the data.',
       'Scanner loading state replaced with an animated radar sweep.',
@@ -265,7 +264,7 @@ const IMPROVEMENTS: { date: string; title: string; items: string[] }[] = [
 export default function ImprovementsPage() {
   useSEO({
     title: 'Improvements | Threatbase Changelog',
-    description: 'The Threatbase improvement log: feed decay, security hardening, new APIs, and UI milestones — dated.',
+    description: 'The Threatbase improvement log: feed decay, security hardening, new APIs, and UI milestones. Dated entries.',
     path: '/improvements',
   })
 
@@ -284,7 +283,7 @@ export default function ImprovementsPage() {
           What we&apos;ve <span className="text-liquid-red">shipped.</span>
         </h1>
         <p className="text-lg text-slate-300 max-w-xl mx-auto leading-relaxed">
-          Every improvement to Threatbase&apos;s feeds, API, and interface — in the open, with dates.
+          Every improvement to Threatbase&apos;s feeds, API, and interface. Dated, in the open.
         </p>
       </motion.div>
 
@@ -312,9 +311,8 @@ export default function ImprovementsPage() {
             </div>
             <ul className="space-y-2">
               {entry.items.map((item) => (
-                <li key={item} className="text-slate-400 leading-relaxed flex gap-3">
-                  <History className="h-4 w-4 shrink-0 mt-1 text-red-500/50" strokeWidth={1.8} />
-                  <span>{item}</span>
+                <li key={item} className="text-slate-400 leading-relaxed">
+                  {item}
                 </li>
               ))}
             </ul>
