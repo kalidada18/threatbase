@@ -84,7 +84,7 @@ export const onRequest = async (context: any) => {
       headers: newHeaders
     });
 
-  } catch (err: any) {
+  } catch {
     return json({ error: 'Internal Server Error' }, 500, request);
   }
 };

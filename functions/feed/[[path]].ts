@@ -73,7 +73,7 @@ export const onRequestOptions = async () => {
 }
 
 export const onRequestGet = async (context: any) => {
-  const { request, env } = context
+  const { env } = context
   const segments: string[] = context.params.path || []
   const [token, ...rest] = segments
   const rel = decodeURIComponent(rest.join('/'))

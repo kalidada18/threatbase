@@ -230,7 +230,7 @@ export function timeAgo(dateStr: string | number | Date): string {
 const safeBaseUrl = () => {
   try {
     return import.meta.env.BASE_URL || '/'
-  } catch (e) {
+  } catch {
     return '/'
   }
 }

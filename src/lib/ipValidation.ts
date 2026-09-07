@@ -131,7 +131,7 @@ export function inCidr(ip: string, cidr: string): boolean {
     if (mask === 0) return true;
     const bitmask = mask === 0 ? 0 : (~0 << (32 - mask)) >>> 0;
     return (ipLong & bitmask) === (baseLong & bitmask);
-  } catch (e) {
+  } catch {
     return false;
   }
 }
