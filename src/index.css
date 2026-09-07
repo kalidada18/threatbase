@@ -200,9 +200,6 @@
   .font-elegant {
     font-family: theme('fontFamily.sans') !important;
   }
-  .font-righteous {
-    font-family: 'Righteous', theme('fontFamily.display') !important;
-  }
   .font-space {
     font-family: theme('fontFamily.display') !important;
   }
@@ -287,15 +284,20 @@
   animation: tickerIn 0.35s ease-out;
 }
 
-/* Hero search input scan-line effect */
+/* Hero search input scan-line effect — transform (not `top`) so the sweep
+   doesn't force layout every frame. --scan-h tracks the input height. */
 @keyframes scanLine {
-  0% { top: 0; opacity: 0; }
+  0% { transform: translateY(0); opacity: 0; }
   10% { opacity: 1; }
   90% { opacity: 1; }
-  100% { top: 100%; opacity: 0; }
+  100% { transform: translateY(var(--scan-h, 56px)); opacity: 0; }
 }
 .scan-line {
+  --scan-h: 56px; /* h-14 */
   animation: scanLine 2s ease-in-out infinite;
+}
+@media (min-width: 768px) {
+  .scan-line { --scan-h: 64px; } /* md:h-16 */
 }
 
 /* Marquee scroll animation for trusted-sources */
