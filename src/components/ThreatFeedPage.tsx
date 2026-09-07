@@ -1,18 +1,33 @@
+import { lazy, Suspense } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import IsoPageShell from './layout/IsoPageShell'
 import Container from './layout/Container'
 import Section from './layout/Section'
 import LiveThreatIntel from './LiveThreatIntel'
-import FeedHealth from './FeedHealth'
 import Stats from './Stats'
 import Feeds from './Feeds'
-import Analytics from './Analytics'
 import { useSEO } from '@/useSEO'
 
-export default function ThreatFeedPage({ statsData, feedVersion }: { statsData: any; feedVersion: number }) {
+// FeedHealth and Analytics are the only users of recharts on this route
+// (~437kB chunk). Lazy-loading them keeps the tables + feeds (which paint
+// first) independent of the chart libraries.
+const FeedHealth = lazy(() => import('./FeedHealth'))
+const Analytics = lazy(() => import('./Analytics'))
+
+const chartSectionSkeleton = (
+  <div className="h-[520px] w-full animate-pulse" aria-hidden="true">
+    <div className="mx-auto max-w-7xl px-6 pt-16">
+      <div className="h-10 w-72 rounded-lg bg-white/[0.05]" />
+      <div className="mt-4 h-4 w-full max-w-xl rounded bg-white/[0.04]" />
+      <div className="mt-10 h-[360px] rounded-2xl bg-white/[0.04]" />
+    </div>
+  </div>
+)
+
+export default function ThreatFeedPage({ statsData, feedVersion, statsFailed, onRetryStats }: { statsData: any; feedVersion: number; statsFailed?: boolean; onRetryStats?: () => void }) {
   useSEO({
     title: 'Threat Feed | Threatbase',
-    description: 'Live threat database stats, downloadable IOC blocklists for IPs, domains, hashes, URLs, IPv6 and CIDRs, and growth analytics — refreshed continuously.',
+    description: 'Live threat database stats, downloadable IOC blocklists for IPs, domains, hashes, URLs, IPv6 and CIDRs, and growth analytics, refreshed continuously.',
     path: '/threatfeed',
   })
 
@@ -42,8 +57,12 @@ export default function ThreatFeedPage({ statsData, feedVersion }: { statsData: 
 
         <Stats statsData={statsData} />
         <Feeds statsData={statsData} />
-        <FeedHealth />
-        <Analytics statsData={statsData} feedVersion={feedVersion} />
+        <Suspense fallback={chartSectionSkeleton}>
+          <FeedHealth />
+        </Suspense>
+        <Suspense fallback={chartSectionSkeleton}>
+          <Analytics statsData={statsData} feedVersion={feedVersion} statsFailed={statsFailed} onRetryStats={onRetryStats} />
+        </Suspense>
 
         {/* Live intel panel — the old hero threat-map HUD, now a closing
             garnish after the chart. The map canvas was removed; this is lean. */}
