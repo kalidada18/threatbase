@@ -72,7 +72,7 @@ export default function Stats({ statsData }: any) {
           title="Threat database at a glance"
           subtitle="Aggregated, de-duplicated indicators of compromise, refreshed continuously and ready for ingestion."
           aside={lastUpdated && (
-            <div className="shrink-0 flex items-center gap-2 text-[11px] font-semibold text-slate-500 bg-white/[0.03] border border-white/[0.06] rounded-xl px-3.5 py-2">
+            <div className="shrink-0 flex items-center gap-2 text-[11px] font-semibold text-slate-400 bg-white/[0.03] border border-white/[0.06] rounded-xl px-3.5 py-2">
               <Activity size={13} className="text-red-400" />
               <span className="uppercase tracking-wider">Synced</span>
               <span className="text-slate-300 font-bold">{lastUpdated}</span>
