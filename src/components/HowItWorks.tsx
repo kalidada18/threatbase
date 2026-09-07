@@ -20,7 +20,7 @@ export default function HowItWorks() {
       <div className="hiw-flow">
         {/* Step 1 — sweeping lens over an indicator list */}
         <div className="hiw-card">
-          <span className="hiw-tag"><i>01</i> Scan</span>
+          <span className="hiw-tag">Scan</span>
           <h3>Scan &amp; Investigate</h3>
           <p>Query any IP, domain, URL or hash against aggregated threat feeds in real time.</p>
           <svg className="hiw-icon" viewBox="0 0 220 110" fill="none" aria-hidden>
@@ -44,7 +44,7 @@ export default function HowItWorks() {
 
         {/* Step 2 — severity gauge fills to 87 (CRITICAL) */}
         <div className="hiw-card">
-          <span className="hiw-tag"><i>02</i> Analyze</span>
+          <span className="hiw-tag">Analyze</span>
           <h3>Analyze Threats</h3>
           <p>Severity scoring, geolocation, ISP attribution and corroborating evidence.</p>
           <div className="hiw-gauge-wrap">
@@ -65,7 +65,7 @@ export default function HowItWorks() {
 
         {/* Step 3 — observation packets charge a defended shield */}
         <div className="hiw-card">
-          <span className="hiw-tag"><i>03</i> Defend</span>
+          <span className="hiw-tag">Defend</span>
           <h3>Defend Together</h3>
           <p>Report threats, download blocklists, deploy feeds to your firewall and SIEM.</p>
           <svg className="hiw-icon" viewBox="0 0 220 110" fill="none" aria-hidden>
