@@ -5,6 +5,7 @@ import { useSEO } from '@/useSEO'
 import { getBaseUrl, feedPath } from '@/utils'
 
 type Campaign = { title: string; url: string; modified: string; last_24h: boolean }
+type Iocs = { ips: string[]; domains: string[]; hashes: string[] }
 type Actor = {
   name: string
   aka: string[]
@@ -14,6 +15,8 @@ type Actor = {
   malware?: string[]
   targets?: string[]
   summary?: string
+  ttps?: string[]
+  iocs?: Iocs
   campaigns: Campaign[]
 }
 
@@ -62,6 +65,38 @@ function GroupSummary({ text, className = '' }: { text: string; className?: stri
     <div className={`text-sm text-slate-300 leading-relaxed ${className}`}>
       <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500 mr-2 align-baseline">AI summary</span>
       {text}
+    </div>
+  )
+}
+
+function SectionLabel({ children }: { children: ReactNode }) {
+  return <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-2">{children}</div>
+}
+
+/** Click-to-copy list of IOC values (IPs/domains/hashes). Native clipboard, no deps. */
+function IocList({ label, values }: { label: string; values: string[] }) {
+  const [copied, setCopied] = useState<string | null>(null)
+  if (!values.length) return null
+  return (
+    <div>
+      <SectionLabel>{label}</SectionLabel>
+      <ul className="space-y-1 list-none">
+        {values.map((v) => (
+          <li key={v}>
+            <button
+              onClick={() => {
+                navigator.clipboard?.writeText(v)
+                setCopied(v)
+                setTimeout(() => setCopied((c) => (c === v ? null : c)), 1200)
+              }}
+              title="Click to copy"
+              className="w-full min-w-0 text-left font-mono text-[11px] text-slate-400 hover:text-red-200 transition-colors truncate"
+            >
+              {copied === v ? 'copied ✓' : v}
+            </button>
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }
@@ -227,10 +262,29 @@ export default function TopAptPage() {
                     </li>
                   ))}
                 </ul>
-                {(first.malware?.length || first.targets?.length) ? (
-                  <div className="mt-7 pt-5 border-t border-white/[0.06] flex flex-wrap gap-1.5">
-                    {(first.malware ?? []).map((m) => <Chip key={m}>{m}</Chip>)}
-                    {(first.targets ?? []).map((t) => <Chip key={t}>{t}</Chip>)}
+                {(first.malware?.length || first.targets?.length || first.ttps?.length || first.iocs) ? (
+                  <div className="mt-7 pt-5 border-t border-white/[0.06] space-y-3">
+                    <div className="flex flex-wrap gap-1.5">
+                      {(first.malware ?? []).map((m) => <Chip key={m}>{m}</Chip>)}
+                      {(first.targets ?? []).map((t) => <Chip key={t}>{t}</Chip>)}
+                    </div>
+                    {(first.ttps ?? []).length > 0 && (
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500 mr-1">TTPs</span>
+                        {first.ttps!.slice(0, 6).map((t) => <Chip key={t}>{t}</Chip>)}
+                        {first.ttps!.length > 6 && <span className="font-mono text-[10px] text-slate-500">+{first.ttps!.length - 6}</span>}
+                      </div>
+                    )}
+                    {first.iocs && (first.iocs.ips.length + first.iocs.domains.length + first.iocs.hashes.length) > 0 && (
+                      <div className="font-mono text-[11px] text-slate-500 tabular-nums">
+                        {[
+                          first.iocs.ips.length && `${first.iocs.ips.length} IPs`,
+                          first.iocs.domains.length && `${first.iocs.domains.length} domains`,
+                          first.iocs.hashes.length && `${first.iocs.hashes.length} hashes`,
+                        ].filter(Boolean).join(' · ')}
+                        <span className="text-slate-600"> from recent pulses</span>
+                      </div>
+                    )}
                   </div>
                 ) : null}
               </div>
@@ -247,6 +301,9 @@ export default function TopAptPage() {
                   <div>
                     <div className="font-mono text-xl text-white font-semibold tracking-tight mb-1">{a.name}</div>
                     <div className="font-mono text-[11px] uppercase text-slate-500 mb-3">{a.sponsor}</div>
+                    {a.summary && (
+                      <p className="text-xs text-slate-400 leading-snug line-clamp-2 mb-3" title={a.summary}>{a.summary}</p>
+                    )}
                     <ActivityBar pct={(count(a) / max) * 100} />
                   </div>
                 </div>
@@ -317,20 +374,37 @@ export default function TopAptPage() {
                             <div className="space-y-4 text-sm">
                               {a.aka.length > 0 && (
                                 <div>
-                                  <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-2">Also known as</div>
+                                  <SectionLabel>Also known as</SectionLabel>
                                   <div className="flex flex-wrap gap-1.5">{a.aka.map((x) => <Chip key={x}>{x}</Chip>)}</div>
                                 </div>
                               )}
                               {(a.malware ?? []).length > 0 && (
                                 <div>
-                                  <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-2">Tooling</div>
+                                  <SectionLabel>Tooling</SectionLabel>
                                   <div className="flex flex-wrap gap-1.5">{a.malware!.map((x) => <Chip key={x}>{x}</Chip>)}</div>
                                 </div>
                               )}
                               {(a.targets ?? []).length > 0 && (
                                 <div>
-                                  <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-2">Targets</div>
+                                  <SectionLabel>Targets</SectionLabel>
                                   <div className="flex flex-wrap gap-1.5">{a.targets!.map((x) => <Chip key={x}>{x}</Chip>)}</div>
+                                </div>
+                              )}
+                              {(a.ttps ?? []).length > 0 && (
+                                <div>
+                                  <SectionLabel>Techniques (ATT&amp;CK)</SectionLabel>
+                                  <div className="flex flex-wrap gap-1.5">
+                                    {a.ttps!.slice(0, 8).map((x) => <Chip key={x}>{x}</Chip>)}
+                                    {a.ttps!.length > 8 && <span className="font-mono text-[10px] text-slate-500 self-center">+{a.ttps!.length - 8} more</span>}
+                                  </div>
+                                </div>
+                              )}
+                              {a.iocs && (
+                                <div className="space-y-4 border-t border-white/[0.06] pt-4">
+                                  <SectionLabel>Recent IOCs (from campaign pulses)</SectionLabel>
+                                  <IocList label={`IPs (${a.iocs.ips.length})`} values={a.iocs.ips} />
+                                  <IocList label={`Domains (${a.iocs.domains.length})`} values={a.iocs.domains} />
+                                  <IocList label={`Hashes (${a.iocs.hashes.length})`} values={a.iocs.hashes} />
                                 </div>
                               )}
                             </div>

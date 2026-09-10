@@ -10,7 +10,6 @@ import { EASE_EXPO } from './motion/primitives'
 const menuItems = [
     { name: 'About Us', href: '/about' },
     { name: 'Threat Feeds', href: '/threatfeed#feeds' },
-    { name: 'Report IP', href: '/report' },
     { name: 'Hall of Shame', href: '/hall-of-shame' },
     { name: 'Top APT', href: '/top-apt' },
     { name: 'Improvements', href: '/improvements' },
