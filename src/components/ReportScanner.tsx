@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence, useReducedMotion, useMotionValue, useTransform, animate } from 'framer-motion'
-import { Bug, ShieldCheck, AlertTriangle, Check, ShieldAlert, Copy, Globe, Link2 } from 'lucide-react'
+import { Bug, ShieldCheck, AlertTriangle, Check, ShieldAlert, Copy, Globe, Link2, Ban, Flag } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import supabaseClient from '../supabaseClient'
-import { timeAgo, categoryTier, TIER_CHIP, TIER_ACCENT } from '../utils'
+import { timeAgo, categoryTier, TIER_CHIP, TIER_ACCENT, countryFlag } from '../utils'
 import { useAuth } from '../AuthContext'
 import ScanPulse from './ui/scan-pulse'
 import { getMalwareDescription } from '../malwareDictionary'
@@ -519,7 +520,7 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
                 city: data.city,
                 isp: data.isp,
                 asn: data.asn,
-                country_flag: data.country_code ? `https://flagcdn.com/w20/${data.country_code.toLowerCase()}.png` : null
+                country_flag: data.country_code ? countryFlag(data.country_code) : null
               })
             } else {
               setIpInfo(null)
@@ -901,7 +902,7 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
                         <div className="bg-slate-950/30 px-6 py-5 md:px-8">
                           <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-platinum-500">Country</div>
                           <div className="flex items-center gap-2.5 text-sm font-medium text-slate-100">
-                            {ipInfo?.country_flag && <img src={ipInfo.country_flag} className="w-5 rounded-sm border border-white/10 object-cover shadow-sm" alt="Flag" />}
+                            {ipInfo?.country_flag && <span aria-hidden="true" className="text-base leading-none">{ipInfo.country_flag}</span>}
                             {loadingIpInfo ? 'Loading…' : (ipInfo?.country || 'N/A')}
                           </div>
                         </div>
@@ -937,10 +938,10 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
                     )}
 
                     <div className="flex flex-col sm:flex-row gap-3">
-                      {/* External whois CTA removed: the inline Registration
-                          data section replaced it (its own failure state and
-                          footer carry the whois.com link). */}
-                      {!scanResult?.isHash && (
+                      {/* Verdict-tinted next action: dirty → close the loop to the
+                          feeds; clean → the report flow (a clean scan is a
+                          potential new submission). Dispute is danger-only. */}
+                      {type === 'danger' && !scanResult?.isHash && (
                         <button
                           onClick={() => setShowDisputeForm(true)}
                           className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl border border-white/[0.08] bg-transparent px-4 py-3.5 text-[13px] font-semibold tracking-[0.06em] text-platinum-300 transition-all hover:border-white/20 hover:text-white active:translate-y-px"
@@ -948,6 +949,24 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
                           <ShieldAlert size={15} strokeWidth={2.5} className="shrink-0" />
                           Report false positive
                         </button>
+                      )}
+                      {type === 'danger' && (
+                        <Link
+                          to="/threatfeed#feeds"
+                          className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-3.5 text-[13px] font-semibold tracking-[0.06em] text-white transition-all hover:bg-red-500 active:translate-y-px"
+                        >
+                          <Ban size={15} strokeWidth={2.5} className="shrink-0" />
+                          Get feeds to block this
+                        </Link>
+                      )}
+                      {type === 'safe' && !scanResult?.isHash && !showReport && (
+                        <Link
+                          to="/report"
+                          className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl border border-white/[0.08] bg-transparent px-4 py-3.5 text-[13px] font-semibold tracking-[0.06em] text-platinum-300 transition-all hover:border-white/20 hover:text-white active:translate-y-px"
+                        >
+                          <Flag size={15} strokeWidth={2.5} className="shrink-0" />
+                          See something malicious? Report it
+                        </Link>
                       )}
                     </div>
 

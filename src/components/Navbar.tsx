@@ -56,17 +56,26 @@ export default function Navbar() {
     useMotionValueEvent(scrollY, "change", (latest) => {
         const previous = scrollY.getPrevious() || 0
         setScrolled(latest > 50)
-        if (latest > previous && latest > 150) {
+        // Never auto-hide the bar while the mobile menu is open: the panel is a
+        // child of the nav, so scrolling away would slide it off-screen too.
+        if (latest > previous && latest > 150 && !menuState) {
             setHidden(true)
         } else {
             setHidden(false)
         }
     })
 
+    React.useEffect(() => {
+        const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setMenuState(false) }
+        window.addEventListener('keydown', onKey)
+        return () => window.removeEventListener('keydown', onKey)
+    }, [])
+
     const handleSignOut = async () => {
         try {
             await signOut()
             setDropdownOpen(false)
+            setMenuState(false)
             navigate('/')
         } catch (e) {
             console.error('Sign out failed:', e)
@@ -161,7 +170,7 @@ export default function Navbar() {
                             </div>
                         </div>
 
-                        <div className="bg-[#080b12]/95 backdrop-blur-xl border border-white/10 group-data-[state=active]:flex xl:group-data-[state=active]:flex mb-4 hidden w-full flex-col xl:flex-row flex-wrap items-center justify-center xl:justify-end space-y-8 xl:space-y-0 rounded-2xl p-6 shadow-2xl max-h-[calc(100dvh-6rem)] overflow-y-auto xl:max-h-none xl:overflow-visible md:flex-nowrap xl:m-0 xl:flex xl:w-fit xl:gap-6 xl:border-transparent xl:bg-transparent xl:p-0 xl:shadow-none mt-4 xl:mt-0 transition-all duration-300">
+                        <div role={menuState ? 'dialog' : undefined} aria-modal={menuState || undefined} aria-label={menuState ? 'Site menu' : undefined} className="bg-[#080b12]/95 backdrop-blur-xl border border-white/10 group-data-[state=active]:flex xl:group-data-[state=active]:flex mb-4 hidden w-full flex-col xl:flex-row flex-wrap items-center justify-center xl:justify-end space-y-8 xl:space-y-0 rounded-2xl p-6 shadow-2xl max-h-[calc(100dvh-6rem)] overflow-y-auto xl:max-h-none xl:overflow-visible md:flex-nowrap xl:m-0 xl:flex xl:w-fit xl:gap-6 xl:border-transparent xl:bg-transparent xl:p-0 xl:shadow-none mt-4 xl:mt-0 transition-all duration-300">
                             <div className="xl:hidden w-full">
                                 <motion.ul
                                     className="space-y-2 text-base font-medium"
@@ -193,6 +202,17 @@ export default function Navbar() {
                             </div>
 
                             <div className="flex w-full flex-col space-y-4 sm:flex-row sm:items-center sm:justify-center xl:justify-end sm:gap-4 sm:space-y-0 md:w-fit relative mt-6 xl:mt-0">
+                                {/* Persistent primary CTA — the site's one action that
+                                    converts a visitor: report a threat. */}
+                                <Button
+                                    asChild
+                                    className="rounded-full bg-red-600 text-white font-bold hover:bg-red-500 px-5 xl:px-4 h-10 transition-all duration-300 active:scale-[0.98]"
+                                    size="sm">
+                                    <Link to="/report" onClick={() => setMenuState(false)}>
+                                        <span className="xl:hidden">Report a Threat</span>
+                                        <span className="hidden xl:inline">Report</span>
+                                    </Link>
+                                </Button>
                                 {/* Secondary utilities: labelled in the mobile panel, icon-only
                                     from xl so the desktop bar stays on one line. */}
                                 <Button
@@ -227,7 +247,7 @@ export default function Navbar() {
                                             onClick={() => setDropdownOpen(!dropdownOpen)}
                                             aria-haspopup="menu"
                                             aria-expanded={dropdownOpen}
-                                            className="flex items-center gap-2.5 p-1 pr-3 rounded-full border border-white/10 bg-white/5 backdrop-blur-md hover:bg-white/10 hover:border-white/20 transition-all duration-300 focus:outline-none select-none active:scale-[0.98] cursor-pointer"
+                                            className="min-h-11 xl:min-h-0 flex items-center gap-2.5 p-1 pr-3 rounded-full border border-white/10 bg-white/5 backdrop-blur-md hover:bg-white/10 hover:border-white/20 transition-all duration-300 focus:outline-none select-none active:scale-[0.98] cursor-pointer"
                                         >
                                             {(profile?.avatar_url || user.user_metadata?.avatar_url) ? (
                                                 <img
@@ -267,8 +287,8 @@ export default function Navbar() {
 
                                                         <Link
                                                             to="/profile"
-                                                            onClick={() => setDropdownOpen(false)}
-                                                            className="flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all"
+                                            onClick={() => { setDropdownOpen(false); setMenuState(false) }}
+                                            className="flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all"
                                                         >
                                                             <UserIcon size={14} className="text-slate-500" />
                                                             My Account
@@ -290,7 +310,7 @@ export default function Navbar() {
                                     <div className="flex items-center gap-2.5">
                                         <Button
                                             onClick={() => { signInWithGoogle(); setMenuState(false) }}
-                                            className="rounded-full px-4 h-9 gap-2 text-xs font-bold bg-white text-slate-800 hover:bg-slate-100 hover:text-black transition-all duration-300 shadow-[0_0_15px_rgba(255,255,255,0.1)] hover:shadow-[0_0_20px_rgba(255,255,255,0.2)] active:scale-[0.96] border border-transparent"
+                                            className="rounded-full px-4 h-11 xl:h-9 gap-2 text-xs font-bold bg-white text-slate-800 hover:bg-slate-100 hover:text-black transition-all duration-300 shadow-[0_0_15px_rgba(255,255,255,0.1)] hover:shadow-[0_0_20px_rgba(255,255,255,0.2)] active:scale-[0.96] border border-transparent"
                                             size="sm" title="Sign In with Google">
                                             <svg className="w-3.5 h-3.5" viewBox="0 0 24 24">
                                               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -302,7 +322,7 @@ export default function Navbar() {
                                         </Button>
                                         <Button
                                             onClick={() => { signInWithGithub(); setMenuState(false) }}
-                                            className="rounded-full px-4 h-9 gap-2 text-xs font-bold bg-[#181a1f]/80 backdrop-blur-md text-white hover:bg-[#24292e] transition-all duration-300 shadow-[0_0_15px_rgba(0,0,0,0.5)] hover:shadow-[0_0_20px_rgba(255,255,255,0.05)] active:scale-[0.96] border border-white/5 hover:border-white/10"
+                                            className="rounded-full px-4 h-11 xl:h-9 gap-2 text-xs font-bold bg-[#181a1f]/80 backdrop-blur-md text-white hover:bg-[#24292e] transition-all duration-300 shadow-[0_0_15px_rgba(0,0,0,0.5)] hover:shadow-[0_0_20px_rgba(255,255,255,0.05)] active:scale-[0.96] border border-white/5 hover:border-white/10"
                                             size="sm" title="Sign In with GitHub">
                                             <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
                                               <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>

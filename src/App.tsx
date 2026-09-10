@@ -15,6 +15,7 @@ const AboutPage = lazy(() => import('./components/AboutPage'))
 const ReportIP = lazy(() => import('./components/ReportIP'))
 const ThanksPage = lazy(() => import('./components/ThanksPage'))
 const NotFound = lazy(() => import('./components/ui/not-found'))
+const FaqPage = lazy(() => import('./components/FaqPage'))
 const Profile = lazy(() => import('./components/Profile'))
 const TermsPage = lazy(() => import('./components/TermsPage'))
 const PrivacyPage = lazy(() => import('./components/PrivacyPage'))
@@ -55,9 +56,24 @@ function smoothScrollTo(el: Element, offset = -96) {
 function HomeSeo() {
   useSEO({
     title: 'Threatbase: Real-Time Threat Intelligence & Free IOC Blocklists',
-    description: 'Free, community-driven threat intelligence. Scan any IP, domain, URL, or file hash for malicious activity and download real-time IOC blocklists for your firewall, IDS/IPS, and SIEM.',
+    description: 'Free, community-driven threat intelligence. Scan any IP, domain, URL, or file hash for malicious activity and download real-time IOC blocklists.',
     path: '/',
     keywords: 'threat intelligence, free IOC feed, IP blocklist, check malicious IP, domain reputation, malware hash lookup, open source threat intelligence, abuse IP database, IOC blocklist, SIEM threat feed',
+  })
+  return null
+}
+
+/**
+ * 404-route SEO. Lives at the route, NOT inside NotFound: that component is
+ * reused as Profile's 403 view (Profile.tsx ~640) which carries its own
+ * useSEO — a hook inside the shared component would double-fire and clobber it.
+ */
+function NotFoundSeo() {
+  useSEO({
+    title: '404 — Page Not Found | Threatbase',
+    description: 'This page isn’t in our index. Scan IPs, domains, URLs and hashes against live threat intelligence, or grab free IOC blocklists instead.',
+    path: '/404',
+    noindex: true,
   })
   return null
 }
@@ -303,7 +319,8 @@ export default function App() {
             GUI never advertises a browsable profile path. */}
         <Route path="/profile" element={page(<Profile addToast={addToast} />)} />
         <Route path="/thanks" element={page(<ThanksPage />)} />
-        <Route path="*" element={page(<NotFound />)} />
+        <Route path="/faq" element={page(<FaqPage />)} />
+        <Route path="*" element={page(<><NotFoundSeo /><NotFound /></>)} />
       </Routes>
       </AnimatePresence>
 

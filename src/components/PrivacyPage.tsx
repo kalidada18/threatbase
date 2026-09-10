@@ -7,7 +7,7 @@ export default function PrivacyPage() {
 
   useSEO({
     title: 'Privacy Policy | Threatbase',
-    description: 'Privacy Policy for Threatbase.',
+    description: 'How Threatbase handles your data: optional accounts for reporting, what the browser stores, security cookies, and why the IP feeds contain only public threat intelligence.',
     path: '/privacy',
   })
 
@@ -50,14 +50,14 @@ export default function PrivacyPage() {
                 </li>
                 <li className="flex gap-4">
                   <span className="mt-2.5 h-px w-3 shrink-0 bg-red-500" aria-hidden="true" />
-                  <span><strong className="text-white font-semibold">No User Accounts</strong>: The Service does not require registration or login to view data. Authenticaton may be used via trusted third-party providers (like Google) for submitting data, but we do not store sensitive personal passwords.</span>
+                  <span><strong className="text-white font-semibold">Optional Accounts</strong>: Browsing the feeds and the scanner requires no account. An optional account (email, or Google/GitHub sign-in, with multi-factor support) exists only for submitting reports and appearing on the leaderboard. Your auth session token is stored in this browser's local storage; account details are processed by our backend provider, Supabase.</span>
                 </li>
                 <li className="flex gap-4">
                   <span className="mt-2.5 h-px w-3 shrink-0 bg-red-500" aria-hidden="true" />
                   <span><strong className="text-white font-semibold">Threat Data</strong>: Feeds and IOCs are publicly available security indicators and generally do not contain personal information.</span>
                 </li>
               </ul>
-              <p className="mt-6 text-slate-500">We do not intentionally collect personal data such as names or private email addresses.</p>
+              <p className="mt-6 text-slate-500">Apart from the optional account email above, we do not collect personal data such as names or private contact details.</p>
             </section>
 
             <section>
@@ -71,7 +71,7 @@ export default function PrivacyPage() {
                 </li>
                 <li className="flex items-center gap-4">
                   <div className="h-1 w-1 bg-red-500 rounded-full shrink-0" />
-                  <span>For security monitoring and analytics.</span>
+                  <span>To protect the Service against abuse (bot verification and rate limiting).</span>
                 </li>
                 <li className="flex items-center gap-4">
                   <div className="h-1 w-1 bg-red-500 rounded-full shrink-0" />
@@ -82,9 +82,17 @@ export default function PrivacyPage() {
 
             <section>
               <h3 className="text-2xl font-bold text-white mb-4 tracking-tight">
-                4. Cookies and Tracking
+                4. Storage and Cookies
               </h3>
-              <p>The Site may use minimal cookies or local storage for basic functionality. We do not use extensive tracking or advertising cookies.</p>
+              <p className="mb-4">The following is what this site actually stores in your browser and device. All of it is first-party and strictly necessary for the features described:</p>
+              <ul className="space-y-3 list-disc pl-6 text-base md:text-lg">
+                <li><strong className="text-white font-semibold">Recent hunts</strong> (localStorage key <code className="font-mono text-sm">tb:recent</code>) — your last 5 lookups, so the console can show them back to you. Cleared anytime.</li>
+                <li><strong className="text-white font-semibold">Human-verification flag</strong> (sessionStorage key <code className="font-mono text-sm">human_verified</code>) — remembers the bot check for the current tab only.</li>
+                <li><strong className="text-white font-semibold">IP prefill</strong> (sessionStorage key <code className="font-mono text-sm">tb:ip_prefill</code>) — a one-shot hint used to suggest your own IP in the scanner; never sent anywhere but this page.</li>
+                <li><strong className="text-white font-semibold">Login session</strong> (localStorage, <code className="font-mono text-sm">sb-*-auth-token</code>) — written only when you sign in, by our backend provider Supabase.</li>
+                <li><strong className="text-white font-semibold">Security cookies</strong> — Cloudflare sets <code className="font-mono text-sm">cf_clearance</code>/<code className="font-mono text-sm">__cf_bm</code> when the Turnstile check runs, to distinguish humans from bots.</li>
+              </ul>
+              <p className="mt-6">We do not use tracking, analytics, or advertising cookies, so no consent banner is required.</p>
             </section>
 
             <section>
@@ -107,7 +115,14 @@ export default function PrivacyPage() {
               <h3 className="text-2xl font-bold text-white mb-4 tracking-tight">
                 6. Third-Party Services
               </h3>
-              <p>The Site may link to or rely on third-party services (e.g., GitHub, Supabase). Their privacy practices are governed by their own policies.</p>
+              <p>The Site relies on a small number of processors: Cloudflare (website hosting, edge logs, and Turnstile bot verification), Supabase (authentication and community report storage for the optional account), and GitHub (source code and the public feed mirrors). Their privacy practices are governed by their own policies.</p>
+            </section>
+
+            <section>
+              <h3 className="text-2xl font-bold text-white mb-4 tracking-tight">
+                7. Your Rights &amp; Contact
+              </h3>
+              <p>Threatbase is operated by the Threatbase project team. You may request access to, correction of, or deletion of any personal data we hold about you — in practice, that means the email tied to an optional account — by contacting <a href="mailto:threatbasepro@gmail.com" className="text-red-400 hover:text-red-300 underline underline-offset-4">threatbasepro@gmail.com</a>. We retain account data only as long as your account exists; Cloudflare edge logs follow its standard short retention. As stated above, we do not sell or share personal data for advertising, so no “Do Not Sell” mechanism applies.</p>
             </section>
 
           </div>

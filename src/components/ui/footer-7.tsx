@@ -55,7 +55,11 @@ export const Footer7 = ({
                   src={logo.src}
                   alt={logo.alt}
                   title={logo.title}
-                  className="h-8"
+                  loading="lazy"
+                  decoding="async"
+                  width={128}
+                  height={128}
+                  className="h-8 w-auto"
                 />
               </SmartLink>
               <h2 className="font-display text-xl font-bold tracking-tight text-metal">{logo.title}</h2>
@@ -66,7 +70,7 @@ export const Footer7 = ({
             <ul className="flex items-center space-x-6 text-slate-400">
               {socialLinks.map((social, idx) => (
                 <li key={idx} className="font-medium hover:text-white transition-colors">
-                  <a href={social.href} aria-label={social.label}>
+                  <a href={social.href} aria-label={social.label} className="inline-flex h-11 w-11 items-center justify-center">
                     {social.icon}
                   </a>
                 </li>
@@ -84,7 +88,7 @@ export const Footer7 = ({
                       className="font-medium hover:text-white transition-colors"
                     >
                       {/* Underline slides in from the left on hover */}
-                      <SmartLink href={link.href} className="group/flink relative inline-block">
+                      <SmartLink href={link.href} className="group/flink relative inline-flex min-h-11 items-center">
                         {link.name}
                         <span
                           aria-hidden

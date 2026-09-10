@@ -44,7 +44,7 @@ function RepoPulse() {
   const stats = [
     { label: 'Stars', value: fmt(repo.stargazers_count ?? 0) },
     { label: 'Forks', value: fmt(repo.forks_count ?? 0) },
-    { label: 'Open issues', value: fmt(repo.open_issues_count ?? 0) },
+    { label: 'Open issues', value: fmt(repo.open_issues_count ?? 0), href: `https://github.com/${REPO}/issues` },
     { label: 'Last push', value: repo.pushed_at ? timeAgo(repo.pushed_at) : 'N/A' },
   ]
 
@@ -58,7 +58,11 @@ function RepoPulse() {
           {stats.map(s => (
             <div key={s.label} className="flex items-baseline justify-between gap-4 border-b border-white/[0.04] pb-1.5">
               <dt className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">{s.label}</dt>
-              <dd className="font-mono text-sm font-medium text-white tabular-nums">{s.value}</dd>
+              <dd className="font-mono text-sm font-medium text-white tabular-nums">
+                {'href' in s && s.href ? (
+                  <a href={s.href} target="_blank" rel="noopener noreferrer" className="hover:text-red-400 hover:underline transition-colors">{s.value}</a>
+                ) : s.value}
+              </dd>
             </div>
           ))}
         </dl>

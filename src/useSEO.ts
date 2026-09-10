@@ -15,8 +15,8 @@ interface SEOProps {
 
 const BASE_URL = 'https://threatbase.qzz.io'
 const SITE_NAME = 'Threatbase'
-const DEFAULT_TITLE = `${SITE_NAME}: Real-Time Threat Intelligence & IOC Blocklists`
-const DEFAULT_IMAGE = `${BASE_URL}/img/logo.png`
+const DEFAULT_TITLE = `${SITE_NAME}: Real-Time Threat Intelligence & Free IOC Blocklists`
+const DEFAULT_IMAGE = `${BASE_URL}/img/og.png`
 
 /**
  * Hook to dynamically update document title and meta tags per route.

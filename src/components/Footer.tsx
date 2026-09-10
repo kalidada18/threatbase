@@ -37,6 +37,7 @@ export default function Footer() {
             title: "Resources",
             links: [
               { name: "GitHub", href: "https://github.com/kalidada18/threatbase" },
+              { name: "FAQ", href: "/faq" },
               { name: "Improvements", href: "/improvements" },
               { name: "stats.json", href: "https://github.com/kalidada18/threatbase/blob/main/ioc/data/stats.json" },
             ],

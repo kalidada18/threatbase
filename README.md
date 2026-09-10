@@ -32,7 +32,7 @@
   </p>
 
   <p>
-    <a href="https://github.com/kalidada18/threatbase/stargazers"><img src="https://img.shields.io/github/stars/kalidada18/threatbase?style=social" alt="Stars"></a>
+    <a href="https://github.com/kalidada18/threatbase"><img src="https://img.shields.io/github/stars/kalidada18/threatbase?style=social" alt="Stars"></a>
     <a href="https://github.com/kalidada18/threatbase/network/members"><img src="https://img.shields.io/github/forks/kalidada18/threatbase?style=social" alt="Forks"></a>
     <img src="https://img.shields.io/github/issues/kalidada18/threatbase" alt="Open issues">
     <img src="https://img.shields.io/github/languages/top/kalidada18/threatbase" alt="Top language">
@@ -196,7 +196,7 @@ One stable URL your firewall can poll unattended, refreshed every 15 minutes.
 
 <sub>Per-file counts are published in <a href="ioc/data/stats.json"><code>stats.json</code></a> under <code>ip_category_files</code> — free to inspect, even though the files themselves are Pro. The full IPv4 feed above carries the same <code>Tags</code> column, so you can split it yourself.</sub>
 
-<sub>Prefer not to parse CSV? Every category also ships pre-shaped as ipset / Suricata / NDJSON — see <a href="#-deploy-ready-formats--nbspnbsp-pro">Deploy-Ready Formats</a>.</sub>
+<sub>Prefer not to parse CSV? Every category also ships pre-shaped as ipset / Suricata / NDJSON — see <a href="#-deploy-ready-formats---pro">Deploy-Ready Formats</a>.</sub>
 
 ### 🕸️ DNS & Web Blocklists
 
@@ -287,7 +287,7 @@ https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/hash/threatbase
 
 ### Per-category, same six shapes
 
-The [category split](#-category-split-ip-feeds--nbspnbsp-pro) is also published pre-shaped, so
+The [category split](#-category-split-ip-feeds---pro) is also published pre-shaped, so
 "hard-block C2, alert-only on Tor" is two files rather than a CSV filter you maintain:
 
 ```text
@@ -355,7 +355,7 @@ on without hand-checking it first.
 | **15-minute** refresh | — | ✅ |
 | First-party sensor telemetry (Threatbase-run honeypots) | — | ✅ |
 | Per-category IP lists (C2 · botnet · brute-force · spam · Tor · …) | — | ✅ |
-| [Deploy-ready formats](#-deploy-ready-formats--nbspnbsp-pro), per category (ipset · Suricata · NDJSON · EDL) | — | ✅ |
+| [Deploy-ready formats](#-deploy-ready-formats---pro), per category (ipset · Suricata · NDJSON · EDL) | — | ✅ |
 | Stable token URL your firewall polls unattended | — | ✅ |
 | False-positive suppression guarantee | — | ✅ |
 | Email support | — | ✅ |

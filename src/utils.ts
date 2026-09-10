@@ -1,6 +1,14 @@
 /** Number formatter */
 export const fmt = (n: number) => new Intl.NumberFormat('en-US').format(n)
 
+/** ISO 3166 country code → flag emoji (regional-indicator pair). Windows and
+ *  Chrome render these natively; replaces the flagcdn.com image requests so the
+ *  site makes zero third-party calls for decoration. */
+export const countryFlag = (cc: string) =>
+  /^[A-Za-z]{2}$/.test(cc)
+    ? String.fromCodePoint(...[...cc.toUpperCase()].map((c) => 0x1f1e6 - 65 + c.charCodeAt(0)))
+    : ''
+
 /**
  * The one ordered accent ramp for every data surface on the site: hot ruby,
  * through warm amber, into cool platinum. Charts, stat glows, and feed stripes
@@ -101,8 +109,9 @@ export const TIER_ACCENT: Record<SeverityTier, { bg: string; border: string; car
 export function getBaseUrl() {
   // Same-origin feed mirror served by functions/ioc/[[path]].ts:
   // browser → Pages Function → KV cache (small files, 6 h TTL) → GitHub raw.
-  // Old direct-raw consumers keep working; that URL is still the origin.
-  return 'https://threatbase.qzz.io/ioc/'
+  // Relative on purpose: it works on the custom domain, the pages.dev
+  // preview, and localhost alike, and never hardcodes a host that can go stale.
+  return '/ioc/'
 }
 
 /**

@@ -27,10 +27,11 @@ export default function FeedHealthChart({ data }: { data: Datum[] }) {
         <YAxis
           type="category"
           dataKey="name"
-          width={150}
+          width={typeof window !== 'undefined' && window.innerWidth < 640 ? 96 : 150}
           tickLine={false}
           axisLine={false}
           tick={{ fill: '#94a3b8', fontSize: 11 }}
+          tickFormatter={(v: string) => (v.length > 13 ? v.slice(0, 12) + '…' : v)}
         />
         <Tooltip
           cursor={{ fill: 'rgba(255,255,255,0.04)' }}

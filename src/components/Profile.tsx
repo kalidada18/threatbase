@@ -977,7 +977,7 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
                     <AlertTriangle size={14} /> Please copy this key now. You will not be able to see it again!
                   </p>
                   <div className="flex items-center gap-2 bg-black/50 border border-primary/20 p-2 rounded">
-                    <code className="text-sm text-slate-200 font-mono flex-1 select-all tracking-wide">{newlyGeneratedKey}</code>
+                    <code className="text-sm text-slate-200 font-mono flex-1 select-all tracking-wide break-all">{newlyGeneratedKey}</code>
                     <button
                       onClick={() => handleCopySecret(newlyGeneratedKey)}
                       className="p-2 text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 rounded transition-colors"

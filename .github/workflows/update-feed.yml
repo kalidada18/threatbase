@@ -134,10 +134,13 @@ jobs:
       # Exits 0 without OTX_API_KEY. Fails loudly (red step + annotation) when
       # OTX is unreachable so a stale leaderboard is never overwritten — but
       # continue-on-error keeps that from blocking the feed push below.
+      # GEMINI_API_KEY (optional, free tier) adds per-group AI summaries;
+      # absent key or failed calls publish the plain leaderboard as before.
       - name: Sync APT leaderboard
         continue-on-error: true
         env:
           OTX_API_KEY: ${{ secrets.OTX_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           PYTHONUNBUFFERED: '1'
         run: python pipeline/sync_apt.py
 

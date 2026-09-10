@@ -402,7 +402,7 @@ export default function ApiDocsPage() {
   useSEO({
     title: 'API Documentation | Threatbase Threat Intelligence API',
     description:
-      'Integrate real-time threat intelligence into your applications with the Threatbase API. Scan IPs, domains, URLs, and file hashes, and report malicious indicators programmatically.',
+      'Integrate real-time threat intelligence into your stack: scan IPs, domains, URLs, and hashes, and report malicious indicators programmatically via the Threatbase API.',
     path: '/api',
     keywords:
       'threat intelligence API, IP reputation API, scan IP API, report malicious IP, threatbase api, security api, IOC lookup api',

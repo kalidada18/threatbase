@@ -1,11 +1,13 @@
 import { motion, useReducedMotion } from 'framer-motion'
+import { Link } from 'react-router-dom'
+import { ArrowRight } from 'lucide-react'
 import Leaderboard from './Leaderboard'
 import { useSEO } from '../useSEO'
 
 export default function ContributorsPage() {
   useSEO({
     title: 'Top Contributors | Threatbase Community Intel',
-    description: 'View the top contributors who are defending networks globally by reporting threats.',
+    description: 'The community reporters whose sightings power the Threatbase feeds, ranked by verified submissions. See who is defending networks globally — and join them.',
     path: '/contributors',
   })
 
@@ -47,6 +49,21 @@ export default function ContributorsPage() {
               <span className="text-right">Reports</span>
             </div>
             <Leaderboard />
+          </motion.div>
+
+          <motion.div
+            initial={reduce ? false : { opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="mt-12 text-center"
+          >
+            <Link
+              to="/report"
+              className="group inline-flex items-center gap-3 border-b border-red-500/30 pb-1 text-sm font-bold uppercase tracking-[0.15em] text-red-400 transition-colors hover:border-red-400 hover:text-red-300"
+            >
+              Report a threat — join the board
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </Link>
           </motion.div>
         </div>
       </div>

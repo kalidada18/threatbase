@@ -13,6 +13,7 @@ type Actor = {
   pulses_7d: number
   malware?: string[]
   targets?: string[]
+  summary?: string
   campaigns: Campaign[]
 }
 
@@ -52,6 +53,16 @@ function StatBlock({ value, label, hero = false }: { value: number; label: strin
 function ActivityBar({ pct }: { pct: number }) {
   return (
     <span className="block h-[3px] rounded-full bg-gradient-to-r from-red-600/80 to-red-400/50 transition-all duration-700" style={{ width: `${Math.max(6, pct)}%` }} />
+  )
+}
+
+/** AI-generated digest of the group's recent campaigns (pipeline/sync_apt.py). */
+function GroupSummary({ text, className = '' }: { text: string; className?: string }) {
+  return (
+    <div className={`text-sm text-slate-300 leading-relaxed ${className}`}>
+      <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500 mr-2 align-baseline">AI summary</span>
+      {text}
+    </div>
   )
 }
 
@@ -204,6 +215,7 @@ export default function TopAptPage() {
                   <StatBlock value={first.pulses_24h} label="24h reports" hero />
                   <StatBlock value={first.pulses_7d} label="7d reports" />
                 </div>
+                {first.summary && <GroupSummary text={first.summary} className="mb-7" />}
                 <ul className="space-y-2.5">
                   {first.campaigns.slice(0, 4).map((c) => (
                     <li key={c.url}>
@@ -288,7 +300,9 @@ export default function TopAptPage() {
                           className="overflow-hidden"
                         >
                           <div className="pb-6 pl-11 grid grid-cols-1 lg:grid-cols-[1fr_260px] gap-6">
-                            <ul className="space-y-2.5 lg:border-r lg:border-white/[0.06] lg:pr-6 list-none">
+                            <div className="lg:border-r lg:border-white/[0.06] lg:pr-6">
+                            {a.summary && <GroupSummary text={a.summary} className="mb-4" />}
+                            <ul className="space-y-2.5 list-none">
                               {a.campaigns.map((c) => (
                                 <li key={c.url} className="flex items-baseline gap-3 text-sm">
                                   <span className={`mt-1 shrink-0 w-1 h-1 rounded-full ${c.last_24h ? 'bg-red-400' : 'bg-slate-600'}`} aria-hidden />
@@ -299,6 +313,7 @@ export default function TopAptPage() {
                                 </li>
                               ))}
                             </ul>
+                            </div>
                             <div className="space-y-4 text-sm">
                               {a.aka.length > 0 && (
                                 <div>

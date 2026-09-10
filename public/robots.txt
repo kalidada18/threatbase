@@ -3,9 +3,10 @@
 
 User-agent: *
 Allow: /
-Disallow: /api/
-Disallow: /profile/
-Disallow: /u/
+# /api is the public docs page (indexed); the API itself lives on *.workers.dev.
+# /feed/<token>/ is per-subscriber Pro content — never expose those URLs.
+Disallow: /feed/
+Disallow: /profile
 Disallow: /*?search=
 Disallow: /*?q=
 

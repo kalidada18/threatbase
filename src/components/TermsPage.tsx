@@ -7,7 +7,7 @@ export default function TermsPage() {
 
   useSEO({
     title: 'Terms and Conditions | Threatbase',
-    description: 'Terms and Conditions for Threatbase.',
+    description: 'Terms and Conditions governing use of Threatbase: acceptable use of the free IOC feeds and scanner, community reporting rules, liability, and termination.',
     path: '/terms',
   })
 

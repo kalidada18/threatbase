@@ -6,6 +6,7 @@ import Section from './layout/Section'
 import LiveThreatIntel from './LiveThreatIntel'
 import Stats from './Stats'
 import Feeds from './Feeds'
+import { ProBand } from './blocks/LandingSections'
 import { useSEO } from '@/useSEO'
 
 // FeedHealth and Analytics are the only users of recharts on this route
@@ -69,6 +70,10 @@ export default function ThreatFeedPage({ statsData, feedVersion, statsFailed, on
         <Section id="live" spacing="md">
           <LiveThreatIntel />
         </Section>
+
+        {/* The one CTA this page lacked: visitors who just browsed the free
+            feeds are exactly the audience for the Pro band. */}
+        <ProBand />
       </main>
     </IsoPageShell>
   )

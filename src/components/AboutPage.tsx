@@ -9,7 +9,7 @@ import { Typewriter } from './motion/Typewriter'
 export default function AboutPage() {
   useSEO({
     title: 'About Threatbase | Community-Driven Threat Intelligence',
-    description: 'Learn about Threatbase, a community-driven threat intelligence platform for researchers, analysts, and cybersecurity enthusiasts. Discover IOCs, track threats, and transform security data into actionable intelligence.',
+    description: 'Learn how Threatbase works: an automated pipeline turning 54 OSINT feeds and community reports into free IOC blocklists and a real-time hunting console.',
     path: '/about',
   })
 
@@ -68,13 +68,23 @@ export default function AboutPage() {
             IOCs, threat actors, and vulnerabilities, verified by the community and free to consume.
           </p>
 
-          <div className="inline-block p-[1px] rounded-2xl bg-gradient-to-r from-red-500/40 to-red-800/40 mb-16 shadow-glow-ruby">
+          <div className="inline-block p-[1px] rounded-2xl bg-gradient-to-r from-red-500/40 to-red-800/40 mb-10 shadow-glow-ruby">
             <div className="px-8 py-4 rounded-2xl bg-slate-950/80 backdrop-blur-xl">
               <span className="font-mono text-lg text-metal tracking-wide">
                 <span className="text-red-500">&gt;</span>{' '}
                 <Typewriter text="Open data, community verified." speed={42} startDelay={700} />
               </span>
             </div>
+          </div>
+
+          <div>
+            <Link
+              to="/threatfeed"
+              className="group inline-flex items-center gap-2 border-b border-red-500/30 pb-1 text-sm font-bold uppercase tracking-[0.15em] text-red-400 transition-colors hover:border-red-400 hover:text-red-300"
+            >
+              Browse the free feeds
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </Link>
           </div>
         </motion.div>
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { animate, motion, useReducedMotion } from 'framer-motion'
-import { getBaseUrl, fmt, timeAgo, DATA_RAMP, feedPath } from '../utils'
+import { getBaseUrl, fmt, timeAgo, DATA_RAMP, feedPath, countryFlag } from '../utils'
 import { COUNTRY_COORDS } from '../lib/countryCoords'
 import { EASE_EXPO } from './motion/primitives'
 
@@ -49,23 +49,12 @@ function CountUp({ value }: { value: number }) {
   return <>{display}</>
 }
 
-// Real country flag (flagcdn.com); hides itself if the code has no flag.
+// Native flag emoji (regional-indicator pair) — zero network requests, unlike
+// the old flagcdn.com images. Hides itself on codes without a flag.
 function Flag({ cc }: { cc: string }) {
-  const code = cc.toLowerCase()
-  return (
-    <img
-      src={`https://flagcdn.com/24x18/${code}.png`}
-      srcSet={`https://flagcdn.com/48x36/${code}.png 2x`}
-      width={16}
-      height={12}
-      loading="lazy"
-      decoding="async"
-      alt=""
-      aria-hidden="true"
-      className="h-3 w-4 shrink-0 rounded-[2px] object-cover ring-1 ring-white/15"
-      onError={(e) => { e.currentTarget.style.visibility = 'hidden' }}
-    />
-  )
+  const flag = countryFlag(cc)
+  if (!flag) return null
+  return <span aria-hidden="true" className="w-4 shrink-0 text-center text-[13px] leading-none">{flag}</span>
 }
 
 /**

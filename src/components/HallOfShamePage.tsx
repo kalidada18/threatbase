@@ -72,6 +72,13 @@ export default function HallOfShamePage() {
           <p className="font-mono text-xs uppercase tracking-[0.25em] text-red-400 mb-3">Feed unavailable</p>
           <p className="text-slate-300 mb-1">Couldn&apos;t load the ranking.</p>
           <p className="text-sm text-slate-500">The feed may be mid-update. Reload in a minute.</p>
+          <button
+            type="button"
+            onClick={() => location.reload()}
+            className="mt-5 inline-flex min-h-11 items-center justify-center rounded-xl border border-white/15 bg-white/[0.03] px-6 py-2.5 text-sm font-bold text-slate-200 transition-colors hover:border-white/30 active:scale-[0.98]"
+          >
+            Retry
+          </button>
         </div>
       ) : ips === null ? (
         /* Skeleton matching the final shape */

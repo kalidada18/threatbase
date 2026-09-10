@@ -1,4 +1,5 @@
 import { ArrowRight, Check, Crown, Zap } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { motion, useReducedMotion } from 'framer-motion'
 import { useSEO } from '@/useSEO'
 import { PRO_FEATURES, PRO_PRICE } from '@/proFeatures'
@@ -50,7 +51,7 @@ export default function PricingPage() {
   useSEO({
     title: 'Pricing | Threatbase Pro Feeds',
     description:
-      'Free open-source blocklists for everyone, permanently. Threatbase Pro is launching soon: per-category IP lists, firewall and STIX 2.1 formats, and a 15-minute refresh backed by our own sensors. $25/month at launch. Join the waitlist.',
+      'Threatbase Pro: $25/month per-category blocklists, firewall and STIX 2.1 formats, and 15-minute refresh backed by our own sensors. Free feeds stay free, forever. Join the waitlist.',
     path: '/pricing',
   })
 
@@ -111,13 +112,13 @@ export default function PricingPage() {
                 ))}
               </ul>
               <Magnetic strength={0.1} className="mt-auto pt-8 [transform-style:preserve-3d]">
-                <a
-                  href="/threatfeed"
+                <Link
+                  to="/threatfeed"
                   className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/[0.03] py-4 text-sm font-bold text-slate-200 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-colors hover:border-white/30 active:scale-[0.98]"
                   style={{ transform: 'translateZ(26px)' }}
                 >
                   Browse free feeds
-                </a>
+                </Link>
               </Magnetic>
             </div>
           </TiltCard>
@@ -156,7 +157,7 @@ export default function PricingPage() {
               </Magnetic>
               <p className="mt-4 text-center text-[11px] leading-relaxed text-slate-500" style={{ transform: 'translateZ(8px)' }}>
                 One seat is one token URL for all your devices. Onboarding is by hand at first:
-                generate a key in <a href="/profile" className="text-slate-300 hover:underline">Profile</a>
+                generate a key in <Link to="/profile" className="text-slate-300 hover:underline">Profile</Link>
                 {' '}and send us its prefix. We reply with your token URL.
               </p>
             </div>

@@ -189,7 +189,7 @@ export function HeroSection({ scanInput, setScanInput, handleScan, isScanning, s
                 type="text"
                 aria-label="Hunt an IP, domain, URL, or hash"
                 placeholder={hintIp ? `Your IP: ${hintIp}` : 'Enter IP, domain, URL, or hash…'}
-                className={`hero-scan-input relative h-14 md:h-16 w-full rounded-full border bg-slate-950/70 backdrop-blur-xl pl-12 md:pl-14 pr-[14.5rem] md:pr-[15.5rem] text-base text-white placeholder:text-slate-500 focus-visible:outline-none transition-all shadow-[0_8px_30px_-12px_rgba(0,0,0,0.8)] ${
+                className={`hero-scan-input relative h-14 md:h-16 w-full rounded-full border bg-slate-950/70 backdrop-blur-xl pl-12 md:pl-14 pr-[11rem] sm:pr-[14.5rem] md:pr-[15.5rem] text-base text-white placeholder:text-slate-500 focus-visible:outline-none transition-all shadow-[0_8px_30px_-12px_rgba(0,0,0,0.8)] ${
                   invalid
                     ? 'border-red-500/60 focus-visible:border-red-500/60 focus-visible:ring-2 focus-visible:ring-red-500/30'
                     : 'border-white/10 focus-visible:border-red-500/50 focus-visible:ring-2 focus-visible:ring-red-500/30'
@@ -207,7 +207,7 @@ export function HeroSection({ scanInput, setScanInput, handleScan, isScanning, s
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -6, scale: 0.96 }}
                     transition={{ duration: 0.2, ease: EASE_EXPO }}
-                    className={`absolute right-[8.75rem] md:right-[9.75rem] z-10 font-mono text-[10px] font-bold tracking-[0.18em] uppercase px-2 py-0.5 rounded-md border pointer-events-none whitespace-nowrap ${
+                    className={`absolute right-[5.5rem] sm:right-[8.75rem] md:right-[9.75rem] z-10 font-mono text-[10px] font-bold tracking-[0.18em] uppercase px-2 py-0.5 rounded-md border pointer-events-none whitespace-nowrap ${
                       invalid ? 'text-red-400 border-red-500/30 bg-red-500/10'
                         : defanged ? 'text-amber-400 border-amber-500/30 bg-amber-500/10'
                         : 'text-slate-300 border-white/10 bg-white/[0.05]'
@@ -244,7 +244,7 @@ export function HeroSection({ scanInput, setScanInput, handleScan, isScanning, s
                 type="button"
                 disabled={isScanning}
                 aria-busy={!!isScanning}
-                className={`absolute z-10 right-2 top-2 bottom-2 inline-flex items-center justify-center overflow-hidden rounded-full px-7 sm:px-9 bg-red-500 hover:bg-red-400 text-white text-base font-semibold shadow-glow-red transition-all duration-200 active:scale-[0.97] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/50 hover:shadow-[0_0_28px_rgba(207,23,51,0.55)] disabled:cursor-default disabled:hover:bg-red-500 ${
+                className={`absolute z-10 right-2 top-2 bottom-2 inline-flex items-center justify-center overflow-hidden rounded-full px-4 sm:px-9 bg-red-500 hover:bg-red-400 text-white text-base font-semibold shadow-glow-red transition-all duration-200 active:scale-[0.97] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/50 hover:shadow-[0_0_28px_rgba(207,23,51,0.55)] disabled:cursor-default disabled:hover:bg-red-500 ${
                   pulse && reducedMotion ? (pulse.kind === 'dirty' ? 'ring-2 ring-red-500/70' : 'ring-2 ring-white/30') : ''
                 }`}
                 onClick={() => handleScan(scanInput.trim() ? undefined : hintIp || undefined)}
