@@ -2,7 +2,7 @@
 // minimal hand-recorded snippets matching the documented OTX/VirusTotal/Shodan
 // response shapes — no network calls anywhere in this file.
 import { describe, expect, it } from 'vitest'
-import { otxPulseIndicatorsToRelations, vtStatsToPart, vtResolutionsToRelations, shodanToBehavior, otxTypePath, typeToIndicator } from './_sources'
+import { otxPulseIndicatorsToRelations, vtStatsToPart, vtResolutionsToRelations, shodanToBehavior, otxTypePath, typeToIndicator, parseFeodoList, ipInCidr, normalizeGreynoise } from './_sources'
 
 // GET /pulses/<id>/indicators — real keys, two pulses' worth in one fixture call
 const OTX_PULSE_INDICATORS = {
@@ -128,5 +128,58 @@ describe('OTX path + type maps', () => {
     expect(typeToIndicator('IPv4')).toBe('ipv4')
     expect(typeToIndicator('hostname')).toBe('domain')
     expect(typeToIndicator('CVE')).toBeNull()
+  })
+})
+
+// --- SentinelDossier B: fixture tests for the pure adapters helpers ---------
+
+describe('parseFeodoList', () => {
+  const fixture = [
+    { ip_address: '45.155.205.23', port: 443, status: 'online', malware: 'Emotet', first_seen: '2026-01-01T00:00:00Z', last_online: '2026-09-09T00:00:00Z' },
+  ]
+  it('identifies a known C2 IP', () => {
+    const r = parseFeodoList(fixture, '45.155.205.23')
+    expect(r.hit?.malware).toBe('Emotet')
+    expect(r.malicious).toBe(true)
+  })
+  it('misses a clean IP and survives garbage payloads', () => {
+    expect(parseFeodoList(fixture, '1.0.0.1').malicious).toBe(false)
+    expect(parseFeodoList({}, '1.0.0.1')).toEqual({ hit: null, malicious: false })
+    expect(parseFeodoList(null, '1.0.0.1').malicious).toBe(false)
+  })
+})
+
+describe('ipInCidr', () => {
+  it('correctly classifies addresses', () => {
+    expect(ipInCidr('1.2.3.100', '1.2.3.0/24')).toBe(true)
+    expect(ipInCidr('1.2.4.1', '1.2.3.0/24')).toBe(false)
+    expect(ipInCidr('100.64.0.1', '100.64.0.0/10')).toBe(true)
+  })
+  it('never matches a malformed prefix (amendment #5: /0 and junk skipped)', () => {
+    expect(ipInCidr('1.2.3.4', '1.2.3.0/0')).toBe(false)
+    expect(ipInCidr('1.2.3.4', '1.2.3.0/33')).toBe(false)
+    expect(ipInCidr('1.2.3.4', '1.2.3.0/abc')).toBe(false)
+    expect(ipInCidr('1.2.3.4', 'not-an-ip/24')).toBe(false)
+    expect(ipInCidr('1.2.3', '1.2.0.0/16')).toBe(false)
+    expect(ipInCidr('1.2.3.4', 'garbage')).toBe(false)
+    expect(ipInCidr('5.6.7.8', '255.255.255.256/24')).toBe(false)
+  })
+})
+
+describe('normalizeGreynoise', () => {
+  it('riot=true overrides a malicious classification', () => {
+    const r = normalizeGreynoise({ riot: true, classification: 'malicious', noise: false, last_seen: '2026-09-01' })
+    expect(r.malicious).toBe(false)
+    expect(r.tags).toContain('known_safe_service')
+    expect(r.last_seen).toBe('2026-09-01')
+  })
+  it('classification drives the verdict; noise tags a scanner', () => {
+    expect(normalizeGreynoise({ classification: 'malicious', noise: true }).malicious).toBe(true)
+    const scanner = normalizeGreynoise({ classification: 'unknown', noise: true, name: 'Mirai Scanner' })
+    expect(scanner.malicious).toBeNull()
+    expect(scanner.tags).toEqual(['mass_scanner', 'greynoise:mirai_scanner'])
+    expect(normalizeGreynoise({ classification: 'benign' }).malicious).toBe(false)
+    expect(normalizeGreynoise({}).malicious).toBeNull()
+    expect(normalizeGreynoise(null)).toEqual({ malicious: null, tags: [], last_seen: null })
   })
 })

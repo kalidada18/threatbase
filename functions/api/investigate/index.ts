@@ -1,6 +1,6 @@
 import { cacheKey, isPublicIp, sniffType, mergeVerdict, rankRelations, buildTimeline, hostingType, type Dossier, type Relation, type Sighting, type VerdictPart, type SourceResult } from './_lib'
 import { geoLookup, rdapLookup } from '../_net'
-import { onsite, otxInvestigate, shodanHost, vtReport, bazaar } from './_sources'
+import { onsite, otxInvestigate, shodanHost, vtReport, bazaar, feodoCheck, urlhausCheck, greynoiseCheck, spamhausCheck, ripestatlookup } from './_sources'
 import { json } from '../_common'
 
 export const onRequestGet = async (context: any) => {
@@ -29,6 +29,8 @@ export const onRequestGet = async (context: any) => {
     if (hit) { const d = JSON.parse(hit); d.cached = true; return json(d, 200, request) }
   }
 
+  const skip = (name: string) => Promise.resolve({ source: name, ok: false, skipped: true } as SourceResult<any>)
+  const isIp = type === 'ipv4' || type === 'ipv6'
   const P: SourceResult<any>[] = []
   const settled = await Promise.allSettled([
     onsite(value, fetch),
@@ -38,6 +40,11 @@ export const onRequestGet = async (context: any) => {
     type === 'ipv4' || type === 'ipv6' ? shodanHost(value, env, fetch) : Promise.resolve({ source: 'shodan', ok: false, skipped: true } as SourceResult<any>),
     vtReport(type, value, env, fetch),
     type === 'sha256' ? bazaar(value, env, fetch) : Promise.resolve({ source: 'malwarebazaar', ok: false, skipped: true } as SourceResult<any>),
+    isIp ? feodoCheck(value, kv, fetch) : skip('feodo'),
+    type === 'url' || type === 'domain' || isIp ? urlhausCheck(type, value, fetch) : skip('urlhaus'),
+    isIp ? greynoiseCheck(value, env, fetch) : skip('greynoise'),
+    type === 'ipv4' ? spamhausCheck(value, kv, fetch) : skip('spamhaus'),
+    isIp ? ripestatlookup(value, fetch) : skip('ripestat'),
   ])
   for (const s of settled) P.push(s.status === 'fulfilled' ? s.value : { source: 'unknown', ok: false, error: String(s.reason) })
 
@@ -56,6 +63,9 @@ export const onRequestGet = async (context: any) => {
     if (p.data.identity) Object.assign(identity, { ...p.data.identity, isp: p.data.identity.isp ?? identity.isp })
     // The geo adapter returns a flat Geo object (no identity key) — lift it here.
     else if (p.source === 'geo') Object.assign(identity, { country: p.data.country, country_code: p.data.country_code, city: p.data.city, region: p.data.region, isp: p.data.isp, asn: p.data.asn })
+    // RIPEstat fills ASN/holder where the identity fields are still unset — geo's
+    // placeholder nulls don't count (??= would skip them; null is a "no data yet").
+    else if (p.source === 'ripestat') { if (identity.asn == null) identity.asn = p.data.asn ?? null; if (identity.isp == null) identity.isp = p.data.holder ?? null }
     if (p.data.ports) ports = p.data.ports
     if (p.data.tags) onTags = [...new Set([...onTags, ...p.data.tags])]
     if (p.data.pulses) pulses = p.data.pulses

@@ -80,6 +80,52 @@ export function shodanToBehavior(json: any): { ports: { port: number; service: s
   return { ports, tags: arr(json?.tags).map(String), relations }
 }
 
+// --- SentinelDossier B pure helpers (offline-tested). Controller amendment
+// #2: no @cloudflare/workers-types in the tsc gate -> adapter kv params are any.
+
+/** Feodo blocklist search — pure so it can be fixture-tested without fetch. */
+export function parseFeodoList(list: unknown, ip: string): { hit: any | null; malicious: boolean } {
+  const hit = arr(list).find((e: any) => e?.ip_address === ip) ?? null
+  return { hit, malicious: !!hit }
+}
+
+function ipv4ToInt(ip: string): number | null {
+  const octs = ip.split('.')
+  if (octs.length !== 4) return null
+  let n = 0
+  for (const o of octs) {
+    const v = Number(o)
+    if (!Number.isInteger(v) || v < 0 || v > 255) return null
+    n = (n << 8) | v
+  }
+  return n >>> 0
+}
+
+/** Total CIDR membership: malformed base/bits/non-octet -> false, never throws
+ * (controller amendment #5: /0 and junk bits are skipped, not mis-masked). */
+export function ipInCidr(ip: string, cidr: string): boolean {
+  const [base, bitsStr] = String(cidr).split('/')
+  const bits = Number(bitsStr)
+  if (!base || !Number.isInteger(bits) || bits < 1 || bits > 32) return false
+  const mask = (0xffffffff << (32 - bits)) >>> 0
+  const a = ipv4ToInt(ip)
+  const b = ipv4ToInt(base)
+  return a !== null && b !== null && (a & mask) === (b & mask)
+}
+
+/** GreyNoise riot-over-classification rule, pure. */
+export function normalizeGreynoise(json: any): { malicious: boolean | null; tags: string[]; last_seen: string | null } {
+  const malicious =
+    json?.riot === true ? false :
+    json?.classification === 'malicious' ? true :
+    json?.classification === 'benign' ? false : null
+  const tags: string[] = []
+  if (json?.noise && malicious !== true) tags.push('mass_scanner')
+  if (json?.riot) tags.push('known_safe_service')
+  if (json?.name) tags.push(`greynoise:${String(json.name).toLowerCase().replace(/\s+/g, '_')}`)
+  return { malicious, tags, last_seen: json?.last_seen ?? null }
+}
+
 // --- adapters ---------------------------------------------------------------
 
 export async function onsite(value: string, _fetchImpl: typeof fetch): Promise<SourceResult<any>> {
@@ -118,7 +164,8 @@ export async function otxInvestigate(
       id: String(p.id ?? ''), title: String(p.title ?? 'untitled'),
       modified: String(p.modified ?? ''), url: String(p.url ?? ''), tags: arr(p.tags).map(String),
     })).filter((p: any) => p.id)
-    const parts: VerdictPart[] = [{ source: 'otx', malicious: pulses.length > 0 }]
+    // Amendment #12: freshest pulse date drives recency decay.
+    const parts: VerdictPart[] = [{ source: 'otx', malicious: pulses.length > 0, ...(pulses.length ? { last_seen: pulses.map((p: any) => p.modified).sort().at(-1) } : {}) }]
     const sightings: Sighting[] = pulses.map((p: any) => ({ date: p.modified, source: 'otx', event: p.title }))
     const tagSet = new Set<string>()
     for (const p of pulses.slice(0, 10)) p.tags.forEach((t: string) => tagSet.add(t))
@@ -187,9 +234,11 @@ export async function vtReport(type: IndicatorType, value: string, env: { VT_API
     if (!r.ok) return { source: 'virustotal', ok: false, error: `HTTP ${r.status}` }
     const j = await r.json()
     const mod = Number(j?.data?.attributes?.last_modification_date)
+    const modIso = Number.isFinite(mod) ? new Date(mod * 1000).toISOString() : null
     return {
       source: 'virustotal', ok: true,
-      data: { parts: [vtStatsToPart(j)], relations: vtResolutionsToRelations(j), sightings: Number.isFinite(mod) ? [{ date: new Date(mod * 1000).toISOString(), source: 'virustotal', event: 'last analysed' }] : [] },
+      // Amendment #12: thread VT's analysis date into the part so recency decay bites.
+      data: { parts: [{ ...vtStatsToPart(j), ...(modIso ? { last_seen: modIso } : {}) }], relations: vtResolutionsToRelations(j), sightings: modIso ? [{ date: modIso, source: 'virustotal', event: 'last analysed' }] : [] },
     }
   } catch (e) {
     return { source: 'virustotal', ok: false, error: String(e) }
@@ -216,9 +265,160 @@ export async function bazaar(sha256: string, env: { MB_API_KEY?: string }, fetch
     }
     return {
       source: 'malwarebazaar', ok: true,
-      data: { parts: [{ source: 'abusech-bazaar', malicious: true } as VerdictPart], tags: [d.signature, ...tags].filter(Boolean).slice(0, 10), sightings, relations: [] },
+      data: { parts: [{ source: 'abusech-bazaar', malicious: true, ...(d?.last_seen ? { last_seen: String(d.last_seen).replace(' ', 'T') + 'Z' } : {}) } as VerdictPart], tags: [d.signature, ...tags].filter(Boolean).slice(0, 10), sightings, relations: [] },
     }
   } catch (e) {
     return { source: 'malwarebazaar', ok: false, error: String(e) }
+  }
+}
+
+// SentinelDossier B: high-signal free adapters (amendment #12 polish — the
+// existing vtReport/otx/bazaar parts below now thread their own last_seen).
+
+/** Feodo Tracker C2 blocklist; kv-cached raw list (TTL 300s, feed refresh cadence). */
+export async function feodoCheck(ip: string, kv: any, fetchImpl: typeof fetch): Promise<SourceResult<{ parts: VerdictPart[]; sightings: Sighting[] }>> {
+  const CACHE_KEY = 'feodo:blocklist'
+  try {
+    let list: any = null
+    if (kv) {
+      const cached = await kv.get(CACHE_KEY)
+      if (cached) { try { list = JSON.parse(cached) } catch { list = null } }
+    }
+    if (!Array.isArray(list)) {
+      const r = await fetchImpl('https://feodotracker.abuse.ch/downloads/ipblocklist.json', { headers: HEADERS, signal: timeout() })
+      if (!r.ok) return { source: 'feodo', ok: false, error: `HTTP ${r.status}` }
+      list = await r.json()
+      if (kv && Array.isArray(list)) await kv.put(CACHE_KEY, JSON.stringify(list), { expirationTtl: 300 })
+    }
+    if (!Array.isArray(list)) return { source: 'feodo', ok: false, error: 'unexpected shape' }
+    const { hit, malicious } = parseFeodoList(list, ip)
+    // Live feed datetimes are "YYYY-MM-DD HH:MM:SS" (space, no zone) — ISO-normalise like bazaar.
+    const fs = hit?.first_seen ? String(hit.first_seen).replace(' ', 'T') + 'Z' : ''
+    return {
+      source: 'feodo', ok: true,
+      data: {
+        parts: [{ source: 'feodo', malicious, last_seen: hit?.last_online ?? null }],
+        sightings: hit ? [{ date: fs, source: 'feodo', event: `C2 ${hit.malware ?? 'unknown'} on port ${hit.port ?? '?'}` }] : [],
+      },
+    }
+  } catch (e) {
+    return { source: 'feodo', ok: false, error: String(e) }
+  }
+}
+
+/** URLhaus — /url/ for URLs, /host/ for domains & IPs. no_results is an answer, not an error. */
+export async function urlhausCheck(type: IndicatorType, value: string, fetchImpl: typeof fetch): Promise<SourceResult<{ parts: VerdictPart[]; sightings: Sighting[]; tags: string[] }>> {
+  const isUrl = type === 'url'
+  const endpoint = isUrl ? 'https://urlhaus-api.abuse.ch/v1/url/' : 'https://urlhaus-api.abuse.ch/v1/host/'
+  const body = isUrl ? `url=${encodeURIComponent(value)}` : `host=${encodeURIComponent(value)}`
+  try {
+    const r = await fetchImpl(endpoint, {
+      method: 'POST',
+      headers: { ...HEADERS, 'Content-Type': 'application/x-www-form-urlencoded' },
+      body,
+      signal: timeout(),
+    })
+    // LIVE-VERIFIED 2026-09-10: abuse.ch query endpoints now 401 without an
+    // account Auth-Key — brief assumed keyless. skipped (not failed) until a key exists.
+    if (r.status === 401 || r.status === 403) return { source: 'urlhaus', ok: false, skipped: true }
+    if (!r.ok) return { source: 'urlhaus', ok: false, error: `HTTP ${r.status}` }
+    const json: any = await r.json()
+    if (json?.query_status === 'no_results')
+      return { source: 'urlhaus', ok: true, data: { parts: [{ source: 'urlhaus', malicious: false, last_seen: null }], sightings: [], tags: [] } }
+    const urls = arr(json?.urls)
+    // Amendment #4: offline URLs aren't a current threat — verdict + recency ride on 'online' only.
+    const active = urls.filter((u: any) => u?.url_status === 'online')
+    const tags = [...new Set(urls.flatMap((u: any) => arr(u?.tags)).map(String))].slice(0, 20)
+    const last_seen = active.map((u: any) => u?.date_added).filter(Boolean).sort().at(-1) ?? null
+    return {
+      source: 'urlhaus', ok: true,
+      data: {
+        parts: [{ source: 'urlhaus', malicious: active.length > 0, last_seen }],
+        sightings: active.slice(0, 5).map((u: any) => ({
+          date: u.date_added ?? '', source: 'urlhaus',
+          event: `online malicious URL${arr(u?.tags).length ? ' [' + arr(u.tags).join(',') + ']' : ''}`,
+        })),
+        tags,
+      },
+    }
+  } catch (e) {
+    return { source: 'urlhaus', ok: false, error: String(e) }
+  }
+}
+
+/** GreyNoise Community (v3) — scanner/riot classification. Skipped without key. */
+export async function greynoiseCheck(ip: string, env: { GREYNOISE_API_KEY?: string }, fetchImpl: typeof fetch): Promise<SourceResult<{ parts: VerdictPart[]; tags: string[] }>> {
+  if (!env.GREYNOISE_API_KEY) return { source: 'greynoise', ok: false, skipped: true }
+  if (!/^[\d.]+$/.test(ip) && !ip.includes(':')) return { source: 'greynoise', ok: false, skipped: true }
+  try {
+    const r = await fetchImpl(`https://api.greynoise.io/v3/community/${encodeURIComponent(ip)}`, {
+      headers: { ...HEADERS, key: env.GREYNOISE_API_KEY },
+      signal: timeout(),
+    })
+    // 404 = "not seen by GreyNoise" — an opinion-free answer, not a failure.
+    if (r.status === 404) return { source: 'greynoise', ok: true, data: { parts: [{ source: 'greynoise', malicious: null, last_seen: null }], tags: [] } }
+    if (!r.ok) return { source: 'greynoise', ok: false, error: `HTTP ${r.status}` }
+    const { malicious, tags, last_seen } = normalizeGreynoise(await r.json())
+    return { source: 'greynoise', ok: true, data: { parts: [{ source: 'greynoise', malicious, last_seen }], tags } }
+  } catch (e) {
+    return { source: 'greynoise', ok: false, error: String(e) }
+  }
+}
+
+/** Spamhaus DROP/EDROP — dedicated-fraud netblocks. kv-cached text feeds, TTL 1h. */
+export async function spamhausCheck(ip: string, kv: any, fetchImpl: typeof fetch): Promise<SourceResult<{ parts: VerdictPart[]; tags: string[] }>> {
+  if (!/^[\d.]+$/.test(ip)) return { source: 'spamhaus', ok: false, skipped: true }
+  const feeds = [
+    { url: 'https://www.spamhaus.org/drop/drop.txt', key: 'spamhaus:drop' },
+    { url: 'https://www.spamhaus.org/drop/edrop.txt', key: 'spamhaus:edrop' },
+  ]
+  try {
+    let hit = false
+    let sawData = false
+    for (const feed of feeds) {
+      let text: string | null = kv ? await kv.get(feed.key) : null
+      if (!text) {
+        const r = await fetchImpl(feed.url, { headers: HEADERS, signal: timeout() })
+        if (!r.ok) continue
+        text = await r.text()
+        if (kv) await kv.put(feed.key, text, { expirationTtl: 3600 })
+      }
+      sawData = true
+      const cidrs = text.split('\n').map((l) => l.split(';')[0].trim()).filter((l) => l && !l.startsWith(';'))
+      if (cidrs.some((cidr) => ipInCidr(ip, cidr))) { hit = true; break }
+    }
+    if (!sawData) return { source: 'spamhaus', ok: false, error: 'no feed data' }
+    return {
+      source: 'spamhaus', ok: true,
+      data: {
+        parts: [{ source: 'spamhaus', malicious: hit, last_seen: null }],
+        tags: hit ? ['dedicated_fraud_network', 'bgp_listed'] : [],
+      },
+    }
+  } catch (e) {
+    return { source: 'spamhaus', ok: false, error: String(e) }
+  }
+}
+
+/** RIPEstat prefix-overview — ASN/holder for identity + BGP anomaly tags. */
+export async function ripestatlookup(ip: string, fetchImpl: typeof fetch): Promise<SourceResult<{ asn: string | null; holder: string | null; tags: string[] }>> {
+  if (!/^[\d.]+$/.test(ip) && !ip.includes(':')) return { source: 'ripestat', ok: false, skipped: true }
+  try {
+    const r = await fetchImpl(`https://stat.ripe.net/data/prefix-overview/data.json?resource=${encodeURIComponent(ip)}`,
+      { headers: HEADERS, signal: timeout() })
+    if (!r.ok) return { source: 'ripestat', ok: false, error: `HTTP ${r.status}` }
+    const json: any = await r.json()
+    const d = json?.data
+    const asns = arr(d?.asns)
+    const tags: string[] = []
+    if (d?.announced === false) tags.push('bgp_unannounced')
+    if (asns.length > 1) tags.push('bgp_multi_origin')
+    const first: any = asns[0]
+    return {
+      source: 'ripestat', ok: true,
+      data: { asn: first?.asn != null ? `AS${first.asn}` : null, holder: first?.holder ?? null, tags },
+    }
+  } catch (e) {
+    return { source: 'ripestat', ok: false, error: String(e) }
   }
 }

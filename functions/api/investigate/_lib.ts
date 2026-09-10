@@ -129,7 +129,8 @@ export function mergeVerdict(parts: VerdictPart[]): Verdict {
     if (w > dominantWeight) { dominantWeight = w; dominantSource = p.source }
   }
 
-  const multiBonus = Math.min(20, (malicious_by - 1) * 5)
+  // B-smoke catch: malicious_by 0 made the raw formula -5; score is declared 0–100.
+  const multiBonus = Math.max(0, Math.min(20, (malicious_by - 1) * 5))
   const score = Math.min(100, Math.round((rawSum / MAX_SINGLE) * 80 + multiBonus))
 
   const status: Verdict['status'] =
