@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-09-10T05:54:48+00:00",
+ "generated_at": "2026-09-10T08:15:38+00:00",
  "source": "AlienVault OTX pulse search",
  "note": "Activity = threat-intel pulses (campaign reports) mentioning the group in the window. Vendor/community reporting \u2014 follow each link to its source. Per-group summaries are AI-generated from those titles.",
  "actors": [
@@ -59,7 +59,7 @@
      "last_24h": false
     }
    ],
-   "summary": "Recent"
+   "summary": "Recent reports indicate Kimsuky is increasingly integrating artificial intelligence into its workflow, leveraging local LLMs and AI agents like 'opencode' to generate decoy documents and lures. The group's tactics appear to be evolving to include GitHub-based command-and-control infrastructure utilizing Personal Access Tokens (PATs) and LNK files. These developments coincide with the deployment of AsyncRAT payloads in observed campaigns."
   },
   {
    "name": "Lazarus Group",
@@ -88,7 +88,7 @@
      "last_24h": false
     }
    ],
-   "summary": "Recent reports"
+   "summary": "Recent reports indicate Lazarus Group operators continue to run fake employment schemes, specifically posing as a DeFi startup to hire IT workers. Additionally, the group is observed deploying the Ted backdoor and curlRAT malware against media and automotive organizations in South Korea. These activities suggest a dual focus on social engineering for financial gain or access and traditional espionage targeting specific regional sectors."
   },
   {
    "name": "Sandworm",
@@ -110,34 +110,7 @@
      "last_24h": true
     }
    ],
-   "summary": ", dates"
-  },
-  {
-   "name": "Gamaredon",
-   "aka": [
-    "Primitive Bear",
-    "ShallowBurrow"
-   ],
-   "sponsor": "Russia (GRU)",
-   "pulses_24h": 0,
-   "pulses_7d": 2,
-   "malware": [],
-   "targets": [],
-   "campaigns": [
-    {
-     "title": "Gamaredon WinRAR exploitation wave, Dec 2025 - Jun 2026 (Ukraine)",
-     "url": "https://otx.alienvault.com/pulse/6a9d2b755df4bc6aee56e0bc",
-     "modified": "2026-09-06T09:02:39.160000",
-     "last_24h": false
-    },
-    {
-     "title": "Gamaredon",
-     "url": "https://otx.alienvault.com/pulse/6a994fe048ebef77e51310af",
-     "modified": "2026-09-03T10:45:52.024000",
-     "last_24h": false
-    }
-   ],
-   "summary": "Recent reports indicate that the threat group"
+   "summary": "Recent reporting indicates Sandworm is actively exploiting vulnerabilities in Cisco Secure Firewall Management Center. This activity suggests the group is targeting network infrastructure appliances to gain initial access or maintain persistence within victim environments. Observed behavior aligns with the group's historical focus on leveraging edge-device flaws for strategic intrusion."
   },
   {
    "name": "MuddyWater",
@@ -165,51 +138,34 @@
      "last_24h": false
     }
    ],
-   "summary": "Recent threat intelligence indicates that"
+   "summary": "Recent reporting indicates MuddyWater remains active, with one campaign leveraging ClickFix social engineering tactics to deliver the PatchAgent backdoor via Telegram infrastructure. The group appears to be continuing its pattern of using deception and custom tooling for persistent access."
   },
   {
-   "name": "Turla",
+   "name": "Gamaredon",
    "aka": [
-    "Dragonfly",
-    "CRONY",
-    "Uroburos"
-   ],
-   "sponsor": "Russia",
-   "pulses_24h": 0,
-   "pulses_7d": 1,
-   "malware": [],
-   "targets": [],
-   "campaigns": [
-    {
-     "title": "Turla",
-     "url": "https://otx.alienvault.com/pulse/6a9dd822e0b521d84f4536d1",
-     "modified": "2026-09-06T21:16:18.532000",
-     "last_24h": false
-    }
-   ],
-   "summary": "Recent reporting mentions the threat group Tur"
-  },
-  {
-   "name": "APT28",
-   "aka": [
-    "Fancy Bear",
-    "Sofacy",
-    "STRONTIUM"
+    "Primitive Bear",
+    "ShallowBurrow"
    ],
    "sponsor": "Russia (GRU)",
    "pulses_24h": 0,
-   "pulses_7d": 1,
+   "pulses_7d": 2,
    "malware": [],
    "targets": [],
    "campaigns": [
     {
-     "title": "Investigating Midnight Blizzard's AI Powered Infrastructure.",
-     "url": "https://otx.alienvault.com/pulse/6a9b1b352e3dc6b4f370fa6e",
-     "modified": "2026-09-04T19:25:41.967000",
+     "title": "Gamaredon WinRAR exploitation wave, Dec 2025 - Jun 2026 (Ukraine)",
+     "url": "https://otx.alienvault.com/pulse/6a9d2b755df4bc6aee56e0bc",
+     "modified": "2026-09-06T09:02:39.160000",
+     "last_24h": false
+    },
+    {
+     "title": "Gamaredon",
+     "url": "https://otx.alienvault.com/pulse/6a994fe048ebef77e51310af",
+     "modified": "2026-09-03T10:45:52.024000",
      "last_24h": false
     }
    ],
-   "summary": "Recent"
+   "summary": "Recent reports indicate Gamaredon has been conducting a wave of attacks exploiting WinRAR vulnerabilities against targets in Ukraine. This campaign activity appears to have persisted over an extended period from December 2025 through June 2026."
   },
   {
    "name": "APT37",
@@ -231,7 +187,51 @@
      "last_24h": false
     }
    ],
-   "summary": "/instruction injection)."
+   "summary": "Recent reporting indicates that North Korean threat actors, including APT37, have been observed deploying the Ted backdoor and curlRAT malware against organizations in South Korea. The campaign appears to focus specifically on the media and automotive sectors. These observations suggest a continued interest in intelligence gathering or disruption within these specific industries."
+  },
+  {
+   "name": "APT28",
+   "aka": [
+    "Fancy Bear",
+    "Sofacy",
+    "STRONTIUM"
+   ],
+   "sponsor": "Russia (GRU)",
+   "pulses_24h": 0,
+   "pulses_7d": 1,
+   "malware": [],
+   "targets": [],
+   "campaigns": [
+    {
+     "title": "Investigating Midnight Blizzard's AI Powered Infrastructure.",
+     "url": "https://otx.alienvault.com/pulse/6a9b1b352e3dc6b4f370fa6e",
+     "modified": "2026-09-04T19:25:41.967000",
+     "last_24h": false
+    }
+   ],
+   "summary": "Recent reporting indicates that APT28, also known as Midnight Blizzard, is being investigated for leveraging artificial intelligence to support or enhance its operational infrastructure. Observations suggest the group may be adopting AI-powered tools or techniques to potentially improve the scale, speed, or stealth of its activities."
+  },
+  {
+   "name": "Turla",
+   "aka": [
+    "Dragonfly",
+    "CRONY",
+    "Uroburos"
+   ],
+   "sponsor": "Russia",
+   "pulses_24h": 0,
+   "pulses_7d": 1,
+   "malware": [],
+   "targets": [],
+   "campaigns": [
+    {
+     "title": "Turla",
+     "url": "https://otx.alienvault.com/pulse/6a9dd822e0b521d84f4536d1",
+     "modified": "2026-09-06T21:16:18.532000",
+     "last_24h": false
+    }
+   ],
+   "summary": "The provided titles only list the threat group name \"Turla\" without describing any specific recent campaign activity, techniques, or targets. No observable actions or operations are detailed in the source text."
   }
  ]
 }
