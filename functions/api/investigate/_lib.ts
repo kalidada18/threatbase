@@ -2,8 +2,15 @@
 
 export type IndicatorType = 'ipv4' | 'ipv6' | 'domain' | 'url' | 'md5' | 'sha1' | 'sha256'
 
-export type VerdictPart = { source: string; malicious: boolean | null } // null = no opinion
-export type Verdict = { malicious_by: number; total_engines: number; status: 'malicious' | 'suspicious' | 'clean' | 'unknown' }
+export type VerdictPart = { source: string; malicious: boolean | null; last_seen?: string | null } // null = no opinion; last_seen drives recency decay
+export type Verdict = {
+  score: number // 0–100 weighted
+  malicious_by: number
+  total_engines: number
+  status: 'malicious' | 'high_risk' | 'suspicious' | 'clean' | 'unknown'
+  confidence: 'high' | 'medium' | 'low'
+  dominant_source: string | null
+}
 export type Relation = { type: IndicatorType; value: string; edge: string; via?: string; weight: number; malicious?: boolean | null; first_seen?: string; last_seen?: string }
 export type Sighting = { date: string; source: string; event: string }
 export type TimelinePoint = { date: string; count: number; sources: string[] }
@@ -73,12 +80,69 @@ export function isPublicIp(v: string): boolean {
 
 export const cacheKey = (type: IndicatorType, value: string) => `inv:${type}:${value}`
 
+const SOURCE_WEIGHT: Record<string, number> = {
+  feodo:          10,   // C2 botnet confirmed — highest signal
+  urlhaus:         9,   // malicious URL confirmed
+  threatbase:      8,   // curated internal feeds
+  greynoise:       7,   // targeted attacker vs. scanner classification
+  malwarebazaar:   6,   // malware sample confirmed
+  otx:             5,   // community-driven, moderate signal
+  spamhaus:        5,   // BGP-level block — dedicated fraud infra
+  ripestat:        4,   // routing anomaly — possible hijack indicator
+  virustotal:      3,   // noisy community engines
+  shodan:          1,   // open port presence ≠ malicious
+}
+
+const DEFAULT_WEIGHT = 2
+
+// ponytail: no last_seen (pre-B adapters) decays to a flat 0.5 — neutral half-weight, upgrade when adapters thread dates.
+function recencyDecay(last_seen: string | null | undefined): number {
+  if (!last_seen) return 0.5
+  const days = (Date.now() - new Date(last_seen).getTime()) / 86400000
+  if (days < 7)   return 1.00
+  if (days < 30)  return 0.80
+  if (days < 90)  return 0.60
+  if (days < 365) return 0.40
+  return 0.20
+}
+
 export function mergeVerdict(parts: VerdictPart[]): Verdict {
   const opinions = parts.filter((p) => p.malicious !== null)
-  const malicious_by = opinions.filter((p) => p.malicious).length
-  const status = malicious_by >= 8 ? 'malicious' : malicious_by >= 3 ? 'suspicious'
-    : opinions.length === 0 ? 'unknown' : malicious_by > 0 ? 'suspicious' : 'clean'
-  return { malicious_by, total_engines: opinions.length, status }
+  if (opinions.length === 0) {
+    return { score: 0, malicious_by: 0, total_engines: 0, status: 'unknown', confidence: 'low', dominant_source: null }
+  }
+
+  const maliciousParts = opinions.filter((p) => p.malicious)
+  const malicious_by = maliciousParts.length
+  const total_engines = opinions.length
+
+  // Weighted score: sum of (weight × decay) for malicious sources, normalized
+  // at feodo-fresh = 10.0, scaled to 80 pts + multi-source bonus (soft cap 20) = 100.
+  const MAX_SINGLE = SOURCE_WEIGHT['feodo'] * 1.0
+  let rawSum = 0
+  let dominantSource: string | null = null
+  let dominantWeight = -1
+
+  for (const p of maliciousParts) {
+    const w = SOURCE_WEIGHT[p.source] ?? DEFAULT_WEIGHT
+    rawSum += w * recencyDecay(p.last_seen)
+    if (w > dominantWeight) { dominantWeight = w; dominantSource = p.source }
+  }
+
+  const multiBonus = Math.min(20, (malicious_by - 1) * 5)
+  const score = Math.min(100, Math.round((rawSum / MAX_SINGLE) * 80 + multiBonus))
+
+  const status: Verdict['status'] =
+    score >= 80 ? 'malicious' :
+    score >= 55 ? 'high_risk' :
+    score >= 25 ? 'suspicious' :
+    malicious_by > 0 ? 'suspicious' : 'clean'
+
+  const confidence: Verdict['confidence'] =
+    dominantWeight >= 8 ? 'high' :
+    dominantWeight >= 4 ? 'medium' : 'low'
+
+  return { score, malicious_by, total_engines, status, confidence, dominant_source: dominantSource }
 }
 
 // ponytail: recency uses string-compare on ISO dates (fine until 10000 CE); weights are source-defined co-occurrence counts.

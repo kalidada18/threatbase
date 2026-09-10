@@ -11,7 +11,7 @@ export const onRequestGet = async (context: any) => {
   if (!type) return json({ error: 'unrecognized indicator' }, 400, request)
   const value = q.toLowerCase()
   if ((type === 'ipv4' || type === 'ipv6') && !isPublicIp(value))
-    return json({ query: { type, value }, verdict: { malicious_by: 0, total_engines: 0, status: 'clean' }, identity: null, relations: [], narrative: null, note: 'non-routable address — not investigated', cached: false } as unknown as Dossier, 200, request)
+    return json({ query: { type, value }, verdict: { score: 0, malicious_by: 0, total_engines: 0, status: 'clean', confidence: 'low', dominant_source: null }, identity: null, relations: [], narrative: null, note: 'non-routable address — not investigated', cached: false } as unknown as Dossier, 200, request)
 
   const kv = env.IOC_CACHE
   // Public rate limit: 8/min per client IP.

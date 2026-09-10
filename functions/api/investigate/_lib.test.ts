@@ -35,15 +35,55 @@ describe('mergeVerdict', () => {
     { source: 'vt', malicious: true }, { source: 'shodan', malicious: false },
     { source: 'geo', malicious: null }, // null = no opinion, must not count in total
   ]
-  it('scores status by malicious-source count with text always present', () => {
+  it('counts opinions vs no-opinions; weighted model flips 3 mid-weight hits to high_risk', () => {
     const v = mergeVerdict(parts)
-    expect(v).toMatchObject({ malicious_by: 3, total_engines: 4, status: 'suspicious' })
+    // threatbase(8)+otx(5)+vt-default(2), decay 0.5 (no last_seen) → score 70
+    expect(v).toMatchObject({ malicious_by: 3, total_engines: 4, status: 'high_risk', score: 70 })
     expect(v.status).not.toBe('')
   })
-  it('8+ malicious flips to "malicious", zero opinions to "unknown"', () => {
+  it('8 hits still reach "malicious", zero opinions still "unknown"', () => {
     const many = Array.from({ length: 8 }, (_, i) => ({ source: `s${i}`, malicious: true }))
     expect(mergeVerdict(many).status).toBe('malicious')
     expect(mergeVerdict([{ source: 'x', malicious: null }]).status).toBe('unknown')
+  })
+})
+
+describe('mergeVerdict — weighted scorer', () => {
+  it('Feodo C2 confirmation alone scores >= 80 (malicious)', () => {
+    const v = mergeVerdict([{ source: 'feodo', malicious: true, last_seen: new Date().toISOString() }])
+    expect(v.score).toBeGreaterThanOrEqual(80)
+    expect(v.status).toBe('malicious')
+    expect(v.dominant_source).toBe('feodo')
+  })
+
+  it('single VT flag (1 engine) scores < 30 (suspicious, not malicious)', () => {
+    const v = mergeVerdict([{ source: 'virustotal', malicious: true, last_seen: new Date().toISOString() }])
+    expect(v.score).toBeLessThan(30)
+    expect(['suspicious', 'clean']).toContain(v.status)
+  })
+
+  it('365-day-old feodo hit decays below fresh hit', () => {
+    const old = new Date(Date.now() - 366 * 86400000).toISOString()
+    const fresh = new Date().toISOString()
+    const vOld = mergeVerdict([{ source: 'feodo', malicious: true, last_seen: old }])
+    const vFresh = mergeVerdict([{ source: 'feodo', malicious: true, last_seen: fresh }])
+    expect(vFresh.score).toBeGreaterThan(vOld.score)
+  })
+
+  it('all-null opinions returns unknown with score 0', () => {
+    const v = mergeVerdict([{ source: 'geo', malicious: null }])
+    expect(v.status).toBe('unknown')
+    expect(v.score).toBe(0)
+  })
+
+  it('confidence is high when dominant source weight >= 8', () => {
+    const v = mergeVerdict([{ source: 'feodo', malicious: true, last_seen: new Date().toISOString() }])
+    expect(v.confidence).toBe('high')
+  })
+
+  it('confidence is low when only low-weight sources fire', () => {
+    const v = mergeVerdict([{ source: 'shodan', malicious: true, last_seen: new Date().toISOString() }])
+    expect(v.confidence).toBe('low')
   })
 })
 

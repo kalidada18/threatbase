@@ -39,6 +39,7 @@ const Chip = ({ children, tone = 'neutral' }: { children: ReactNode; tone?: 'neu
 
 const STATUS: Record<Dossier['verdict']['status'], { label: string; icon: string; cls: string }> = {
   malicious: { label: 'MALICIOUS', icon: '!', cls: 'text-red-400 border-red-500/40 bg-red-500/10' },
+  high_risk: { label: 'HIGH RISK', icon: '!', cls: 'text-red-300/90 border-red-500/35 bg-red-500/10' },
   suspicious: { label: 'SUSPICIOUS', icon: '!', cls: 'text-red-300/80 border-red-500/25 bg-red-500/5' },
   clean: { label: 'CLEAN', icon: '✓', cls: 'text-slate-200 border-white/15 bg-white/[0.04]' },
   unknown: { label: 'UNKNOWN', icon: '?', cls: 'text-slate-400 border-white/10 bg-white/[0.02]' },
@@ -119,9 +120,14 @@ function ReportView({ d, onPivot }: { d: Dossier; onPivot: (type: string, value:
           </div>
           <div className="font-mono text-[11px] text-slate-500 mt-3 tabular-nums">
             {d.verdict.malicious_by} of {d.verdict.total_engines} sources flag it
+            {typeof d.verdict.score === 'number' && d.verdict.confidence && (
+              <span className="ml-2 text-slate-400">· confidence {d.verdict.confidence.toUpperCase()}</span>
+            )}
           </div>
         </div>
-        {typeof d.verdict.risk === 'number' && <RiskGauge risk={d.verdict.risk} />}
+        {(typeof d.verdict.score === 'number' ? d.verdict.score : typeof d.verdict.risk === 'number' ? d.verdict.risk : null) !== null && (
+          <RiskGauge risk={(typeof d.verdict.score === 'number' ? d.verdict.score : d.verdict.risk) as number} />
+        )}
         {id && (
           <div className="flex flex-wrap gap-1.5 justify-center md:justify-start md:ml-auto max-w-md">
             {id.asn && <Chip>{id.asn}</Chip>}

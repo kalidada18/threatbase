@@ -12,7 +12,7 @@ export type Dossier = {
   cached: boolean
   /** Only present on the non-routable answer — that payload omits the rest. */
   note?: string
-  verdict: { malicious_by: number; total_engines: number; status: 'malicious' | 'suspicious' | 'clean' | 'unknown'; risk?: number; feed_count?: number; tags?: string[] }
+  verdict: { score?: number; malicious_by: number; total_engines: number; status: 'malicious' | 'high_risk' | 'suspicious' | 'clean' | 'unknown'; confidence?: 'high' | 'medium' | 'low'; dominant_source?: string | null; risk?: number; feed_count?: number; tags?: string[] }
   identity: { country: string | null; country_code: string | null; city: string | null; region: string | null; isp: string | null; asn: string | null; reverse_dns: string | null; registered: string | null; hosting_type: string } | null
   sources_ok?: string[]
   sources_skipped?: string[]
