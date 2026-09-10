@@ -27,7 +27,7 @@ means an upstream error worth investigating.
 
 - Rate limit: 8 requests/min per client IP (KV counter, checked before cache). 429 on excess.
 - Cache: one Dossier per indicator for 24 h (`inv:<type>:<value>` in KV); cached replies set `cached: true`.
-- `400` unrecognized indicator · `502` every keyed source failed · non-routable IPs answer
+- `400` unrecognized indicator · `502` every source failed · non-routable IPs answer
   `200` with a `note` and no fan-out.
 - Narrative failures never fail the request — the dossier just ships with `narrative: null`.
 

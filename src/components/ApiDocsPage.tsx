@@ -404,8 +404,8 @@ const INVESTIGATE_RESPONSE = `{
     { "date": "2026-08-30T12:00:00Z", "source": "otx", "event": "Emotet campaign pulse" }
   ],
   "narrative": "This host has been observed ...",
-  "sources_ok": ["threatbase", "otx", "geo", "rdap", "shodan"],
-  "sources_skipped": ["virustotal", "malwarebazaar"],
+  "sources_ok": ["threatbase", "otx", "geo", "rdap"],
+  "sources_skipped": ["shodan", "virustotal", "malwarebazaar"],
   "cached": false
 }`
 
@@ -477,7 +477,7 @@ export default function ApiDocsPage() {
       name: 'q',
       type: 'string',
       required: true,
-      desc: 'Indicator to investigate: IPv4/IPv6, domain, URL, or MD5/SHA1/SHA256. Defanged forms (hxxp://evil[.]com) are accepted. No API key required.',
+      desc: 'Indicator to investigate: IPv4/IPv6, domain, URL, or MD5/SHA1/SHA256. No API key required.',
     },
   ]
 
