@@ -5,6 +5,9 @@ import IsoPageShell from './layout/IsoPageShell'
 import { useSEO } from '@/useSEO'
 import { useInvestigation } from '@/useInvestigation'
 import type { Dossier } from '@/investigationTypes'
+import TraceGraph from './investigate/TraceGraph'
+import ActivityCalendar from './investigate/ActivityCalendar'
+import BehaviorPanel from './investigate/BehaviorPanel'
 
 /** "2026-09-02T14:05:00" -> "2d ago" — same clamp as TopAptPage's. */
 function ago(iso: string): string {
@@ -87,7 +90,7 @@ function SourceStrip({ d }: { d: Dossier }) {
   )
 }
 
-function ReportView({ d }: { d: Dossier }) {
+function ReportView({ d, onPivot }: { d: Dossier; onPivot: (type: string, value: string) => void }) {
   const st = STATUS[d.verdict.status] ?? STATUS.unknown
   const id = d.identity
   const torExit = !!id && id.hosting_type === 'vps/cloud' && (d.verdict.tags ?? []).some((t) => /tor/i.test(t))
@@ -125,11 +128,21 @@ function ReportView({ d }: { d: Dossier }) {
         </span>
       </div>
 
-      {/* Blocks filled by Task 6 */}
-      {/* trace-graph */}
-      {/* calendar */}
-      {/* behavior */}
-      {/* narrative */}
+      {/* Trace graph — pivot any relation; list view is always present (mobile + accessible) */}
+      {d.relations.length > 0 && (
+        <section>
+          <div className="eyebrow mb-2">Trace network</div>
+          <div className="glass-card rounded-2xl p-4 md:p-6">
+            <TraceGraph relations={d.relations} queryValue={d.query.value} onPivot={onPivot} />
+          </div>
+        </section>
+      )}
+      {(d.timeline?.length ?? 0) > 0 && (
+        <div className="glass-card rounded-2xl p-4 md:p-6">
+          <ActivityCalendar timeline={d.timeline!} />
+        </div>
+      )}
+      <BehaviorPanel d={d} />
     </div>
   )
 }
@@ -164,6 +177,22 @@ export default function InvestigatePage() {
     e.preventDefault()
     const v = term.trim()
     if (v) navigate(`/investigate?q=${encodeURIComponent(v)}`)
+  }
+
+  // Pivot = a real route navigation (Back works); crumbs are our own trail,
+  // sessionStorage so a fresh share-link starts clean. Cap 6, oldest dropped.
+  const [crumbs, setCrumbs] = useState<string[]>(() => {
+    try { return JSON.parse(sessionStorage.getItem('inv:crumbs') || '[]') } catch { return [] }
+  })
+  const pushCrumb = (value: string) => {
+    const next = [...crumbs.filter((c) => c !== value), value].slice(-6)
+    sessionStorage.setItem('inv:crumbs', JSON.stringify(next))
+    setCrumbs(next)
+  }
+  const onPivot = (_type: string, value: string) => {
+    if (q) pushCrumb(q)
+    pushCrumb(value)
+    navigate(`/investigate?q=${encodeURIComponent(value)}`)
   }
 
   const search = (
@@ -217,7 +246,15 @@ export default function InvestigatePage() {
       )}
 
       {q && !loading && !error && dossier && (
-        dossier.note ? <NonRoutable d={dossier} /> : <ReportView d={dossier} />
+        dossier.note ? <NonRoutable d={dossier} /> : <ReportView d={dossier} onPivot={onPivot} />
+      )}
+      {crumbs.length > 1 && (
+        <nav aria-label="Investigation trail" className="flex flex-wrap gap-2 justify-center mt-10">
+          {crumbs.map((c) => (
+            // ponytail: co-IP ISP-on-hover deferred — needs per-relation geo fan-out; plain pivot link for now
+            <IocLink key={c} value={c}>{c.length > 24 ? c.slice(0, 24) + '…' : c}</IocLink>
+          ))}
+        </nav>
       )}
     </IsoPageShell>
   )
