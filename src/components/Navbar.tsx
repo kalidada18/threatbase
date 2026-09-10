@@ -82,7 +82,7 @@ export default function Navbar() {
     }
 
     return (
-        <header>
+        <header className="no-print">
             <motion.nav
                 variants={{
                     visible: { y: 0 },

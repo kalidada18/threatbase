@@ -350,3 +350,16 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ── Print: the dark dossier prints as-is (ruling in plan T7 Step 2 —
+   print-color-adjust, NOT filter:invert). Decorative chrome is dropped. */
+@media print {
+  .no-print { display: none !important; }
+  /* isometric warp canvas — the only canvas on the site is decorative bg */
+  canvas { display: none !important; }
+  html, body { background: #05070c !important; }
+  *, *::before, *::after {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}

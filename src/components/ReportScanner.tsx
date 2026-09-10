@@ -6,6 +6,7 @@ import supabaseClient from '../supabaseClient'
 import { timeAgo, categoryTier, TIER_CHIP, TIER_ACCENT, countryFlag } from '../utils'
 import { useAuth } from '../AuthContext'
 import ScanPulse from './ui/scan-pulse'
+import { IocLink } from './investigate/IocLink'
 import { getMalwareDescription } from '../malwareDictionary'
 
 // Derive a credible 0–100 confidence-of-abuse score from real signals
@@ -740,6 +741,9 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
                             ? `${flaggedBy.length} flagging feed${flaggedBy.length === 1 ? '' : 's'}`
                             : `${reports.length} community report${reports.length === 1 ? '' : 's'}`}
                         </span>
+                        {type !== 'warn' && (
+                          <IocLink value={ip} className="!text-xs uppercase tracking-tight">Deep Investigation →</IocLink>
+                        )}
                       </div>
                       {/* Which intel sources actually list this indicator. Neutral
                           platinum pills: a vendor name is provenance, not severity,

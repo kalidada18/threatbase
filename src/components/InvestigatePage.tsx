@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { motion, useReducedMotion } from 'framer-motion'
 import IsoPageShell from './layout/IsoPageShell'
 import { useSEO } from '@/useSEO'
@@ -8,6 +8,12 @@ import type { Dossier } from '@/investigationTypes'
 import TraceGraph from './investigate/TraceGraph'
 import ActivityCalendar from './investigate/ActivityCalendar'
 import BehaviorPanel from './investigate/BehaviorPanel'
+import { IocLink } from './investigate/IocLink'
+
+// Re-export so existing deep-imports of IocLink keep working; the component
+// itself lives in a dependency-light module the entry-point pages can import
+// without pulling the dossier chunks into their bundles.
+export { IocLink }
 
 /** "2026-09-02T14:05:00" -> "2d ago" — same clamp as TopAptPage's. */
 function ago(iso: string): string {
@@ -30,18 +36,6 @@ const Chip = ({ children, tone = 'neutral' }: { children: ReactNode; tone?: 'neu
     {children}
   </span>
 )
-
-/** Any IOC value becomes a pivot link into the investigation page. */
-export function IocLink({ type: _type, value, children }: { type?: string; value: string; children?: ReactNode }) {
-  return (
-    <Link
-      to={`/investigate?q=${encodeURIComponent(value)}`}
-      className="font-mono text-[11px] text-slate-400 hover:text-red-200 transition-colors underline decoration-white/10 underline-offset-2"
-    >
-      {children ?? value}
-    </Link>
-  )
-}
 
 const STATUS: Record<Dossier['verdict']['status'], { label: string; icon: string; cls: string }> = {
   malicious: { label: 'MALICIOUS', icon: '!', cls: 'text-red-400 border-red-500/40 bg-red-500/10' },
@@ -90,12 +84,33 @@ function SourceStrip({ d }: { d: Dossier }) {
   )
 }
 
+/** Print + JSON download affordances — native, zero deps. */
+function ReportActions({ d }: { d: Dossier }) {
+  const downloadJson = () => {
+    const blob = new Blob([JSON.stringify(d, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `threatbase-${d.query.type}-${d.query.value.replace(/[^a-zA-Z0-9._-]/g, '_')}.json`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+  const btn = 'font-mono text-[10px] uppercase tracking-[0.2em] text-slate-400 border border-white/10 rounded-full px-3.5 py-1.5 hover:text-red-200 hover:border-red-500/30 transition-colors'
+  return (
+    <div className="no-print flex justify-center md:justify-end gap-2 mb-3">
+      <button type="button" onClick={() => window.print()} className={btn}>Print / PDF</button>
+      <button type="button" onClick={downloadJson} className={btn}>Download JSON</button>
+    </div>
+  )
+}
+
 function ReportView({ d, onPivot }: { d: Dossier; onPivot: (type: string, value: string) => void }) {
   const st = STATUS[d.verdict.status] ?? STATUS.unknown
   const id = d.identity
   const torExit = !!id && id.hosting_type === 'vps/cloud' && (d.verdict.tags ?? []).some((t) => /tor/i.test(t))
   return (
     <div className="space-y-8">
+      <ReportActions d={d} />
       {/* Verdict tile */}
       <div className="glass-card rounded-2xl p-6 md:p-8 flex flex-col md:flex-row gap-6 md:gap-8 items-center">
         <div className="text-center md:text-left">
@@ -196,7 +211,7 @@ export default function InvestigatePage() {
   }
 
   const search = (
-    <form onSubmit={submit} className="max-w-xl mx-auto mb-10">
+    <form onSubmit={submit} className="no-print max-w-xl mx-auto mb-10">
       <input
         value={term}
         onChange={(e) => setTerm(e.target.value)}
@@ -214,7 +229,7 @@ export default function InvestigatePage() {
         initial={reduce ? false : { opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="max-w-3xl mx-auto text-center mb-8"
+        className="no-print max-w-3xl mx-auto text-center mb-8"
       >
         <div className="eyebrow mb-6">Deep Investigation</div>
         <h1 className="text-5xl md:text-6xl font-extrabold tracking-tighter text-white mb-6">
@@ -249,7 +264,7 @@ export default function InvestigatePage() {
         dossier.note ? <NonRoutable d={dossier} /> : <ReportView d={dossier} onPivot={onPivot} />
       )}
       {crumbs.length > 1 && (
-        <nav aria-label="Investigation trail" className="flex flex-wrap gap-2 justify-center mt-10">
+        <nav aria-label="Investigation trail" className="no-print flex flex-wrap gap-2 justify-center mt-10">
           {crumbs.map((c) => (
             // ponytail: co-IP ISP-on-hover deferred — needs per-relation geo fan-out; plain pivot link for now
             <IocLink key={c} value={c}>{c.length > 24 ? c.slice(0, 24) + '…' : c}</IocLink>

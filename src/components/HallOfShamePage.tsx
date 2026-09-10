@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, useReducedMotion } from 'framer-motion'
 import IsoPageShell from './layout/IsoPageShell'
+import { IocLink } from './investigate/IocLink'
 import { useSEO } from '@/useSEO'
 import { getBaseUrl, fmt, feedPath } from '@/utils'
 
@@ -136,10 +137,10 @@ export default function HallOfShamePage() {
           >
             <ol className="grid grid-cols-1 lg:grid-cols-2 lg:gap-x-10 list-none">
               {rest.map((e, i) => (
-                <li key={e.ip}>
+                <li key={e.ip} className="group flex items-center gap-2 border-b border-white/[0.04] last:border-b-0 hover:bg-white/[0.02] transition-colors">
                   <Link
                     to={`/?search=${e.ip}`}
-                    className="group flex items-center gap-4 py-3 border-b border-white/[0.04] last:border-b-0 hover:bg-white/[0.02] transition-colors"
+                    className="flex items-center gap-4 flex-1 min-w-0 py-3"
                   >
                     <span className="font-mono text-xs text-slate-600 w-7 shrink-0 tabular-nums">{i + 4}</span>
                     <span className="font-mono text-sm text-slate-200 group-hover:text-red-200 transition-colors tracking-tight w-[135px] shrink-0">{e.ip}</span>
@@ -150,6 +151,7 @@ export default function HallOfShamePage() {
                     {isStale(e) && <span className="hidden md:inline font-mono text-[10px] uppercase text-slate-600 border border-white/10 rounded-full px-2 py-0.5 shrink-0">stale</span>}
                     <span className="font-mono text-xs text-red-400/90 tabular-nums shrink-0">{e.feeds}<span className="text-slate-600 lowercase font-sans"> feeds</span></span>
                   </Link>
+                  <IocLink type="ipv4" value={e.ip} className="shrink-0 pr-1 opacity-0 focus:opacity-100 group-hover:opacity-100 transition-opacity">→ investigate</IocLink>
                 </li>
               ))}
             </ol>

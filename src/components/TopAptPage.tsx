@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import IsoPageShell from './layout/IsoPageShell'
+import { IocLink } from './investigate/IocLink'
 import { useSEO } from '@/useSEO'
 import { getBaseUrl, feedPath } from '@/utils'
 
@@ -73,7 +74,9 @@ function SectionLabel({ children }: { children: ReactNode }) {
   return <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-2">{children}</div>
 }
 
-/** Click-to-copy list of IOC values (IPs/domains/hashes). Native clipboard, no deps. */
+/** Click-to-copy list of IOC values (IPs/domains/hashes). Value text pivots
+ *  into Deep Investigation; the copy glyph is a sibling button (button-in-link
+ *  is invalid HTML). Native clipboard, no deps. */
 function IocList({ label, values }: { label: string; values: string[] }) {
   const [copied, setCopied] = useState<string | null>(null)
   if (!values.length) return null
@@ -82,17 +85,19 @@ function IocList({ label, values }: { label: string; values: string[] }) {
       <SectionLabel>{label}</SectionLabel>
       <ul className="space-y-1 list-none">
         {values.map((v) => (
-          <li key={v}>
+          <li key={v} className="flex items-baseline gap-2 min-w-0">
+            <IocLink value={v} className="min-w-0 truncate" />
             <button
               onClick={() => {
                 navigator.clipboard?.writeText(v)
                 setCopied(v)
                 setTimeout(() => setCopied((c) => (c === v ? null : c)), 1200)
               }}
-              title="Click to copy"
-              className="w-full min-w-0 text-left font-mono text-[11px] text-slate-400 hover:text-red-200 transition-colors truncate"
+              title="Copy to clipboard"
+              aria-label={`Copy ${v}`}
+              className={`font-mono text-[10px] transition-colors shrink-0 ${copied === v ? 'text-emerald-400' : 'text-slate-600 hover:text-red-200'}`}
             >
-              {copied === v ? 'copied ✓' : v}
+              {copied === v ? '✓' : '⧉'}
             </button>
           </li>
         ))}
@@ -252,15 +257,28 @@ export default function TopAptPage() {
                 </div>
                 {first.summary && <GroupSummary text={first.summary} className="mb-7" />}
                 <ul className="space-y-2.5">
-                  {first.campaigns.slice(0, 4).map((c) => (
-                    <li key={c.url}>
-                      <a href={c.url} target="_blank" rel="noopener noreferrer" className="group flex items-baseline gap-3 min-w-0 text-sm text-slate-300 hover:text-red-100 transition-colors">
+                  {first.campaigns.slice(0, 4).map((c) => {
+                    // upstream-sourced href — http(s) only, javascript:/data: never (same guard as BehaviorPanel)
+                    const safe = /^https?:\/\//i.test(c.url)
+                    const inner = (
+                      <>
                         <span className={`mt-1 shrink-0 w-1 h-1 rounded-full ${c.last_24h ? 'bg-red-400' : 'bg-slate-600'}`} aria-hidden />
                         <span className="min-w-0 truncate group-hover:underline decoration-red-500/30 underline-offset-4">{c.title}</span>
                         <span className="font-mono text-[10px] text-slate-600 shrink-0 tabular-nums ml-auto">{ago(c.modified)}</span>
-                      </a>
-                    </li>
-                  ))}
+                      </>
+                    )
+                    return (
+                      <li key={c.url}>
+                        {safe ? (
+                          <a href={c.url} target="_blank" rel="noopener noreferrer" className="group flex items-baseline gap-3 min-w-0 text-sm text-slate-300 hover:text-red-100 transition-colors">
+                            {inner}
+                          </a>
+                        ) : (
+                          <span className="group flex items-baseline gap-3 min-w-0 text-sm text-slate-500">{inner}</span>
+                        )}
+                      </li>
+                    )
+                  })}
                 </ul>
                 {(first.malware?.length || first.targets?.length || first.ttps?.length || first.iocs) ? (
                   <div className="mt-7 pt-5 border-t border-white/[0.06] space-y-3">
@@ -360,15 +378,22 @@ export default function TopAptPage() {
                             <div className="lg:border-r lg:border-white/[0.06] lg:pr-6">
                             {a.summary && <GroupSummary text={a.summary} className="mb-4" />}
                             <ul className="space-y-2.5 list-none">
-                              {a.campaigns.map((c) => (
+                              {a.campaigns.map((c) => {
+                                const safe = /^https?:\/\//i.test(c.url)
+                                return (
                                 <li key={c.url} className="flex items-baseline gap-3 text-sm">
                                   <span className={`mt-1 shrink-0 w-1 h-1 rounded-full ${c.last_24h ? 'bg-red-400' : 'bg-slate-600'}`} aria-hidden />
-                                  <a href={c.url} target="_blank" rel="noopener noreferrer" className="min-w-0 text-slate-300 hover:text-red-200 hover:underline decoration-red-500/30 underline-offset-4 transition-colors">
-                                    {c.title}
-                                  </a>
+                                  {safe ? (
+                                    <a href={c.url} target="_blank" rel="noopener noreferrer" className="min-w-0 text-slate-300 hover:text-red-200 hover:underline decoration-red-500/30 underline-offset-4 transition-colors">
+                                      {c.title}
+                                    </a>
+                                  ) : (
+                                    <span className="min-w-0 text-slate-500">{c.title}</span>
+                                  )}
                                   <span className="font-mono text-[10px] text-slate-600 shrink-0 tabular-nums ml-auto">{ago(c.modified)}</span>
                                 </li>
-                              ))}
+                                )
+                              })}
                             </ul>
                             </div>
                             <div className="space-y-4 text-sm">

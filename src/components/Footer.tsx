@@ -10,7 +10,7 @@ const GithubIcon = () => (
 
 export default function Footer() {
   return (
-    <footer className="relative border-t border-white/[0.06] overflow-hidden">
+    <footer className="no-print relative border-t border-white/[0.06] overflow-hidden">
       {/* Premium gradient separator */}
       <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-red-500/30 to-transparent" />
       <div className="relative z-10 bg-white/[0.02]">
