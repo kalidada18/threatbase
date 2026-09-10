@@ -182,7 +182,7 @@ export default function InvestigatePage() {
   // Pivot = a real route navigation (Back works); crumbs are our own trail,
   // sessionStorage so a fresh share-link starts clean. Cap 6, oldest dropped.
   const [crumbs, setCrumbs] = useState<string[]>(() => {
-    try { return JSON.parse(sessionStorage.getItem('inv:crumbs') || '[]') } catch { return [] }
+    try { const x = JSON.parse(sessionStorage.getItem('inv:crumbs') || '[]'); return Array.isArray(x) ? x : [] } catch { return [] }
   })
   const pushCrumb = (value: string) => {
     const next = [...crumbs.filter((c) => c !== value), value].slice(-6)

@@ -55,10 +55,15 @@ export default function BehaviorPanel({ d }: { d: Dossier }) {
           <ul className="space-y-1.5">
             {d.pulses!.map((p) => (
               <li key={p.url}>
-                <a href={p.url} target="_blank" rel="noopener noreferrer"
-                  className="font-mono text-[11px] text-slate-400 hover:text-red-200 underline decoration-white/10 underline-offset-2">
-                  {p.title} <span className="text-slate-600">· {p.modified.slice(0, 10)}</span>
-                </a>
+                {/* upstream-sourced href — http(s) only, a javascript:/data: URL is the one XSS sink here */}
+                {/^https?:\/\//i.test(p.url) ? (
+                  <a href={p.url} target="_blank" rel="noopener noreferrer"
+                    className="font-mono text-[11px] text-slate-400 hover:text-red-200 underline decoration-white/10 underline-offset-2">
+                    {p.title} <span className="text-slate-600">· {p.modified.slice(0, 10)}</span>
+                  </a>
+                ) : (
+                  <span className="font-mono text-[11px] text-slate-500">{p.title} <span className="text-slate-600">· {p.modified.slice(0, 10)}</span></span>
+                )}
               </li>
             ))}
           </ul>
