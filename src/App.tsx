@@ -24,6 +24,7 @@ const ContributorsPage = lazy(() => import('./components/ContributorsPage'))
 const ImprovementsPage = lazy(() => import('./components/ImprovementsPage'))
 const HallOfShamePage = lazy(() => import('./components/HallOfShamePage'))
 const TopAptPage = lazy(() => import('./components/TopAptPage'))
+const InvestigatePage = lazy(() => import('./components/InvestigatePage'))
 const ApiDocsPage = lazy(() => import('./components/ApiDocsPage'))
 const PricingPage = lazy(() => import('./components/PricingPage'))
 const ThreatFeedPage = lazy(() => import('./components/ThreatFeedPage'))
@@ -311,6 +312,7 @@ export default function App() {
         <Route path="/improvements" element={page(<ImprovementsPage />)} />
         <Route path="/hall-of-shame" element={page(<HallOfShamePage />)} />
         <Route path="/top-apt" element={page(<TopAptPage />)} />
+        <Route path="/investigate" element={page(<InvestigatePage />)} />
         <Route path="/api" element={page(<ApiDocsPage />)} />
         <Route path="/pricing" element={page(<PricingPage />)} />
         {/* Profiles are private to their owner — there is no public/by-username
