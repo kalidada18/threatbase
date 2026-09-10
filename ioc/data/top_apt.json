@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-09-10T08:15:38+00:00",
+ "generated_at": "2026-09-10T10:21:53+00:00",
  "source": "AlienVault OTX pulse search",
  "note": "Activity = threat-intel pulses (campaign reports) mentioning the group in the window. Vendor/community reporting \u2014 follow each link to its source. Per-group summaries are AI-generated from those titles.",
  "actors": [
@@ -59,7 +59,7 @@
      "last_24h": false
     }
    ],
-   "summary": "Recent reports indicate Kimsuky is increasingly integrating artificial intelligence into its workflow, leveraging local LLMs and AI agents like 'opencode' to generate decoy documents and lures. The group's tactics appear to be evolving to include GitHub-based command-and-control infrastructure utilizing Personal Access Tokens (PATs) and LNK files. These developments coincide with the deployment of AsyncRAT payloads in observed campaigns."
+   "summary": "Recent reports indicate Kimsuky is increasingly integrating artificial intelligence into its attack chain, reportedly using AI agents like 'opencode' and local LLMs to generate decoy documents and lures. The group's infrastructure appears to be evolving toward GitHub-based command-and-control, leveraging Personal Access Tokens (PATs) and LNK files to deploy payloads such as AsyncRAT. These observations suggest a shift toward more automated content creation and living-off-trusted-services tactics."
   },
   {
    "name": "Lazarus Group",
@@ -88,7 +88,7 @@
      "last_24h": false
     }
    ],
-   "summary": "Recent reports indicate Lazarus Group operators continue to run fake employment schemes, specifically posing as a DeFi startup to hire IT workers. Additionally, the group is observed deploying the Ted backdoor and curlRAT malware against media and automotive organizations in South Korea. These activities suggest a dual focus on social engineering for financial gain or access and traditional espionage targeting specific regional sectors."
+   "summary": "Recent reporting indicates Lazarus Group operators continue to run deceptive employment schemes, specifically using a fake DeFi startup to recruit IT workers. Additionally, the group is observed deploying the Ted backdoor and curlRAT malware against media and automotive organizations in South Korea. These activities highlight a dual focus on social engineering for financial gain and targeted espionage against specific regional sectors."
   },
   {
    "name": "Sandworm",
@@ -110,7 +110,7 @@
      "last_24h": true
     }
    ],
-   "summary": "Recent reporting indicates Sandworm is actively exploiting vulnerabilities in Cisco Secure Firewall Management Center. This activity suggests the group is targeting network infrastructure appliances to gain initial access or maintain persistence within victim environments. Observed behavior aligns with the group's historical focus on leveraging edge-device flaws for strategic intrusion."
+   "summary": "Recent reports indicate Sandworm is actively exploiting vulnerabilities in Cisco Secure Firewall Management Center. This activity suggests the group is targeting network infrastructure appliances to gain initial access or maintain persistence. Observations align with the group's historical focus on edge devices and critical infrastructure."
   },
   {
    "name": "MuddyWater",
@@ -138,7 +138,7 @@
      "last_24h": false
     }
    ],
-   "summary": "Recent reporting indicates MuddyWater remains active, with one campaign leveraging ClickFix social engineering tactics to deliver the PatchAgent backdoor via Telegram infrastructure. The group appears to be continuing its pattern of using deception and custom tooling for persistent access."
+   "summary": "Recent reports indicate MuddyWater remains active, with one campaign observed leveraging ClickFix social engineering tactics to deliver the PatchAgent backdoor via Telegram infrastructure. The group appears to be continuing its pattern of using deception and legitimate cloud services for command and control."
   },
   {
    "name": "Gamaredon",
@@ -187,29 +187,7 @@
      "last_24h": false
     }
    ],
-   "summary": "Recent reporting indicates that North Korean threat actors, including APT37, have been observed deploying the Ted backdoor and curlRAT malware against organizations in South Korea. The campaign appears to focus specifically on the media and automotive sectors. These observations suggest a continued interest in intelligence gathering or disruption within these specific industries."
-  },
-  {
-   "name": "APT28",
-   "aka": [
-    "Fancy Bear",
-    "Sofacy",
-    "STRONTIUM"
-   ],
-   "sponsor": "Russia (GRU)",
-   "pulses_24h": 0,
-   "pulses_7d": 1,
-   "malware": [],
-   "targets": [],
-   "campaigns": [
-    {
-     "title": "Investigating Midnight Blizzard's AI Powered Infrastructure.",
-     "url": "https://otx.alienvault.com/pulse/6a9b1b352e3dc6b4f370fa6e",
-     "modified": "2026-09-04T19:25:41.967000",
-     "last_24h": false
-    }
-   ],
-   "summary": "Recent reporting indicates that APT28, also known as Midnight Blizzard, is being investigated for leveraging artificial intelligence to support or enhance its operational infrastructure. Observations suggest the group may be adopting AI-powered tools or techniques to potentially improve the scale, speed, or stealth of its activities."
+   "summary": "Recent reporting indicates that North Korean threat actors have deployed the Ted backdoor and curlRAT malware against organizations in South Korea's media and automotive industries. The activity suggests a continued focus on espionage targeting strategic sectors within the region."
   },
   {
    "name": "Turla",
@@ -231,7 +209,29 @@
      "last_24h": false
     }
    ],
-   "summary": "The provided titles only list the threat group name \"Turla\" without describing any specific recent campaign activity, techniques, or targets. No observable actions or operations are detailed in the source text."
+   "summary": "The provided title list contains only the threat group name \"Turla\" without any accompanying campaign report titles or descriptive text. Consequently, no specific recent activity, tactics, or targeting information can be derived from this input alone. Further report titles or content are required to generate a meaningful summary."
+  },
+  {
+   "name": "APT28",
+   "aka": [
+    "Fancy Bear",
+    "Sofacy",
+    "STRONTIUM"
+   ],
+   "sponsor": "Russia (GRU)",
+   "pulses_24h": 0,
+   "pulses_7d": 1,
+   "malware": [],
+   "targets": [],
+   "campaigns": [
+    {
+     "title": "Investigating Midnight Blizzard's AI Powered Infrastructure.",
+     "url": "https://otx.alienvault.com/pulse/6a9b1b352e3dc6b4f370fa6e",
+     "modified": "2026-09-04T19:25:41.967000",
+     "last_24h": false
+    }
+   ],
+   "summary": "Recent reporting indicates that APT28, also tracked as Midnight Blizzard, has been observed utilizing artificial intelligence to support or enhance their operational infrastructure. Investigations suggest the group is exploring or deploying AI-powered tools, potentially to automate tasks, improve evasion, or scale their campaigns. These observations highlight a potential evolution in the group's technical capabilities and tradecraft."
   }
  ]
 }
