@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-09-09T10:21:42+00:00",
+ "generated_at": "2026-09-10T02:21:46+00:00",
  "source": "AlienVault OTX pulse search",
  "note": "Activity = threat-intel pulses (campaign reports) mentioning the group in the window. Vendor/community reporting \u2014 follow each link to its source.",
  "actors": [
@@ -11,16 +11,34 @@
     "Velvet Chollima"
    ],
    "sponsor": "North Korea",
-   "pulses_24h": 1,
-   "pulses_7d": 4,
+   "pulses_24h": 3,
+   "pulses_7d": 7,
    "malware": [],
    "targets": [],
    "campaigns": [
     {
+     "title": "Kimsuky Integrates AI into Attack Operations, From AI-Generated Decoy Documents to a Local LLM",
+     "url": "https://otx.alienvault.com/pulse/6a7a077f3608869fb93fc711",
+     "modified": "2026-09-09T13:12:30.966000",
+     "last_24h": true
+    },
+    {
+     "title": "Integrating AI into Attack Operations, From AI-Generated Decoy Documents to a Local LLM",
+     "url": "https://otx.alienvault.com/pulse/6a79d612a1f9e2ac4e744aa8",
+     "modified": "2026-09-09T13:12:30.966000",
+     "last_24h": true
+    },
+    {
+     "title": "Kimsuky Uses Local LLMs, AI-Generated Lures and GitHub C2 to Deploy AsyncRAT",
+     "url": "https://otx.alienvault.com/pulse/6a79ac473fe6b48d51cf0725",
+     "modified": "2026-09-09T10:23:45.584000",
+     "last_24h": true
+    },
+    {
      "title": "Kimsuky Uses the AI Agent 'opencode' to Create Decoys as Its GitHub PAT-Based LNK Attacks Evolve",
      "url": "https://otx.alienvault.com/pulse/6a9ff5d14ec39add3c2490d4",
      "modified": "2026-09-08T11:47:29.229000",
-     "last_24h": true
+     "last_24h": false
     },
     {
      "title": "Kimsuky Uses the AI Agent 'opencode' to Create Decoys as Its GitHub PAT-Based LNK Attacks Evolve",
@@ -38,6 +56,34 @@
      "title": "Kimsuky",
      "url": "https://otx.alienvault.com/pulse/6a99fba08b6192c30cef4565",
      "modified": "2026-09-03T22:58:40.443000",
+     "last_24h": false
+    }
+   ]
+  },
+  {
+   "name": "Lazarus Group",
+   "aka": [
+    "Lazarus",
+    "APT38",
+    "Hidden Cobra",
+    "BlueNoroff"
+   ],
+   "sponsor": "North Korea",
+   "pulses_24h": 1,
+   "pulses_7d": 2,
+   "malware": [],
+   "targets": [],
+   "campaigns": [
+    {
+     "title": "IOC - Smile, You\u2019re on Camera. Part 2: Hiring Lazarus APT\u2019s IT Workers in a Fake DeFi Startup",
+     "url": "https://otx.alienvault.com/pulse/6a7a83379fe99658df18ed7f",
+     "modified": "2026-09-10T02:09:19.632000",
+     "last_24h": true
+    },
+    {
+     "title": "DPRK APTs: Ted backdoor and curlRAT target South Korean media and automotive sectors. | Lazarus",
+     "url": "https://otx.alienvault.com/pulse/6a9db5ef43636929696eac66",
+     "modified": "2026-09-06T18:50:23.858000",
      "last_24h": false
     }
    ]
@@ -96,27 +142,6 @@
    ]
   },
   {
-   "name": "Turla",
-   "aka": [
-    "Dragonfly",
-    "CRONY",
-    "Uroburos"
-   ],
-   "sponsor": "Russia",
-   "pulses_24h": 0,
-   "pulses_7d": 1,
-   "malware": [],
-   "targets": [],
-   "campaigns": [
-    {
-     "title": "Turla",
-     "url": "https://otx.alienvault.com/pulse/6a9dd822e0b521d84f4536d1",
-     "modified": "2026-09-06T21:16:18.532000",
-     "last_24h": false
-    }
-   ]
-  },
-  {
    "name": "APT28",
    "aka": [
     "Fancy Bear",
@@ -138,28 +163,6 @@
    ]
   },
   {
-   "name": "Lazarus Group",
-   "aka": [
-    "Lazarus",
-    "APT38",
-    "Hidden Cobra",
-    "BlueNoroff"
-   ],
-   "sponsor": "North Korea",
-   "pulses_24h": 0,
-   "pulses_7d": 1,
-   "malware": [],
-   "targets": [],
-   "campaigns": [
-    {
-     "title": "DPRK APTs: Ted backdoor and curlRAT target South Korean media and automotive sectors. | Lazarus",
-     "url": "https://otx.alienvault.com/pulse/6a9db5ef43636929696eac66",
-     "modified": "2026-09-06T18:50:23.858000",
-     "last_24h": false
-    }
-   ]
-  },
-  {
    "name": "APT37",
    "aka": [
     "Reaper",
@@ -176,6 +179,27 @@
      "title": "DPRK APTs: Ted backdoor and curlRAT target South Korean media and automotive sectors",
      "url": "https://otx.alienvault.com/pulse/6a9af7a5158ae188847551b5",
      "modified": "2026-09-07T10:18:49.336000",
+     "last_24h": false
+    }
+   ]
+  },
+  {
+   "name": "Turla",
+   "aka": [
+    "Dragonfly",
+    "CRONY",
+    "Uroburos"
+   ],
+   "sponsor": "Russia",
+   "pulses_24h": 0,
+   "pulses_7d": 1,
+   "malware": [],
+   "targets": [],
+   "campaigns": [
+    {
+     "title": "Turla",
+     "url": "https://otx.alienvault.com/pulse/6a9dd822e0b521d84f4536d1",
+     "modified": "2026-09-06T21:16:18.532000",
      "last_24h": false
     }
    ]
