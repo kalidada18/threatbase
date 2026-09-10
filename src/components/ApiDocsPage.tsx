@@ -391,6 +391,24 @@ const REPORT_RESPONSE = `{
   "message": "IP reported successfully."
 }`
 
+const CURL_INVESTIGATE = `curl "${BASE_URL}/api/investigate?q=45.155.205.233"`
+
+const INVESTIGATE_RESPONSE = `{
+  "query": { "type": "ipv4", "value": "45.155.205.233" },
+  "verdict": { "malicious_by": 7, "total_engines": 9, "status": "malicious", "risk": 80, "tags": ["C2", "Botnet"] },
+  "identity": { "country": "RU", "isp": "HostGator SIP", "asn": "AS204957", "hosting_type": "VPS" },
+  "relations": [
+    { "type": "domain", "value": "evil-c2.example", "edge": "same_pulse", "via": "Emotet Tracker", "weight": 4 }
+  ],
+  "timeline": [
+    { "date": "2026-08-30T12:00:00Z", "source": "otx", "event": "Emotet campaign pulse" }
+  ],
+  "narrative": "This host has been observed ...",
+  "sources_ok": ["threatbase", "otx", "geo", "rdap", "shodan"],
+  "sources_skipped": ["virustotal", "malwarebazaar"],
+  "cached": false
+}`
+
 const AUTH_HEADER_EXAMPLE = `x-api-key: tb_api_xxxxxxxxxxxxxxxx`
 
 /* ------------------------------------------------------------------ */
@@ -451,6 +469,15 @@ export default function ApiDocsPage() {
       type: 'string',
       required: true,
       desc: 'A short description with supporting evidence for the report.',
+    },
+  ]
+
+  const investigateParams: ParamRow[] = [
+    {
+      name: 'q',
+      type: 'string',
+      required: true,
+      desc: 'Indicator to investigate: IPv4/IPv6, domain, URL, or MD5/SHA1/SHA256. Defanged forms (hxxp://evil[.]com) are accepted. No API key required.',
     },
   ]
 
@@ -655,6 +682,44 @@ export default function ApiDocsPage() {
             <p className="mb-3 text-xs font-bold uppercase tracking-widest text-slate-400">Example Response · 200 OK</p>
             <CodeBlock code={REPORT_RESPONSE} language="json" filename="200 OK" />
           </div>
+        </div>
+      </section>
+
+      {/* GET /investigate (Deep Investigation) */}
+      <section className="mx-auto mb-28 w-full max-w-4xl">
+        <div className="mb-6 flex flex-wrap items-center gap-3 glass-card px-5 py-4 shadow-none border-white/[0.04]">
+          <MethodBadge method="GET" />
+          <code className="font-mono text-sm font-semibold text-white sm:text-base">/api/investigate</code>
+          <span className="text-sm text-slate-400">Deep fan-out investigation of any indicator. No API key required.</span>
+        </div>
+
+        <div className="space-y-6">
+          <ParamTable rows={investigateParams} title="Query Parameters" />
+
+          <div>
+            <p className="mb-3 text-xs font-bold uppercase tracking-widest text-slate-400">Example Request</p>
+            <CodeBlock code={CURL_INVESTIGATE} language="bash" filename="cURL" />
+          </div>
+
+          <div>
+            <p className="mb-3 text-xs font-bold uppercase tracking-widest text-slate-400">Example Response · 200 OK (excerpt)</p>
+            <CodeBlock code={INVESTIGATE_RESPONSE} language="json" filename="200 OK" />
+          </div>
+
+          <p className="max-w-2xl text-sm leading-relaxed text-slate-400">
+            Fans out across onsite feeds, AlienVault OTX, Shodan, VirusTotal, MalwareBazaar,
+            geo and RDAP, and merges everything into one dossier with a pivot graph, timeline and
+            AI narrative (the same report behind{' '}
+            <Link to="/investigate" className="font-semibold text-red-400 underline-offset-4 hover:underline">
+              /investigate
+            </Link>
+            ). Results are cached 24 h per indicator; repeated requests are rate limited to{' '}
+            <span className="font-semibold text-white">8/min per IP</span> (independent of the
+            keyed API limit) and return{' '}
+            <code className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-xs text-platinum-300 border border-white/10">429</code>{' '}
+            on excess. Sources without a configured key appear under{' '}
+            <code className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-xs text-platinum-300 border border-white/10">sources_skipped</code>.
+          </p>
         </div>
       </section>
 

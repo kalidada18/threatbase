@@ -88,7 +88,7 @@ threatbase/
 │   ├── firewall/ deploy-ready formats (EDL, ipset, Suricata, NDJSON.gz)
 │   └── data/    stats, manifest, history, geo, feed_health, community data
 ├── src/         Web console (Cloudflare Pages)
-├── functions/   API endpoints: /api/v1/* scan, report, community (Cloudflare)
+├── functions/   API endpoints: /api/v1/* scan, report, community · /api/investigate deep dossier (Cloudflare)
 ├── db/          Supabase SQL: schema, RLS, RPCs (apply manually, see db/README)
 ├── public/      Static assets, _redirects/_headers, robots, sitemap
 └── .github/     update-feed.yml workflow (triggered via workflow_dispatch)
