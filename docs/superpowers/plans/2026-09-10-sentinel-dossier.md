@@ -1019,7 +1019,35 @@ git commit -m "feat(cache): tiered TTL by verdict confidence + force-refresh wit
 
 ---
 
-## Dependency Graph
+## Task F: Dense Analyst Cockpit (user requirement, 2026-09-10: "a fully dense visualize must be there so that every detail I need is there")
+
+**What changes:** the dossier page becomes a one-viewport information dashboard — zero hunting, zero tab-switching. Every detail the backend returns is on screen by default; nothing is hidden behind expand-to-find.
+
+**Files:**
+- Modify: `src/components/InvestigatePage.tsx` (layout grid)
+- Modify: `src/components/investigate/TraceGraph.tsx` (node-selection detail)
+- Create: `src/components/investigate/RelationsTable.tsx`
+- Modify: `src/index.css` (dense grid + print parity — the printed report must carry the same density)
+
+**Layout (lg breakpoint, 12-col grid):**
+- Row 1: verdict tile + score gauge (A) | identity strip (B: asn/holder/tags incl. bgp_*) | narrative cards (C) — all visible simultaneously.
+- Row 2 (main, ~60vh): trace graph (D, with rings + breadcrumbs) at cols 1–8 | **inspector column** cols 9–12: details of the SELECTED graph node — value, type, edge type, via pulse, weight, first/last_seen, its verdict part (malicious_by for the sub-dossier when expanded), and its full row set from the relations table.
+- Row 3: activity calendar | timeline | behavior panel (ports table with service names, every tag chip).
+- Row 4: **RelationsTable** — every relation, not top-N: columns type / value / edge / via / weight / first_seen / last_seen / verdict-dot; sortable by each, client-side filter box, IocLink on each value cell. The `<details>` list view from T6 is replaced by this (keep the `<details>` on sm screens where the table can't breathe).
+- Row 5: pulses (all 10, compact rows not cards) + **raw source evidence accordion**: one `<details>` per source in P — its SourceResult JSON pretty-printed, collapsed by default but PRESENT (this is the "every detail" backstop: nothing the Worker gathered is invisible; React auto-escape via <pre>, no dangerouslySetInnerHTML).
+
+**Density rules:** 12–13px mono base for data cells (labels stay ≥12px), 4px gap scale, no decorative padding; status/verdict always icon+text (dataviz constraint unchanged); single-hue ramps unchanged; keyboard: arrow-keys move selection through RelationsTable rows ↔ graph nodes in sync (selected row highlights its node and vice versa).
+**Ceiling marker (mandatory):** `ponytail:` comment where the layout hard-codes the 3-row grid — upgrade path is a user-configurable panel toggle set, "add when operators start asking to hide panels."
+
+**Tests:** RelationsTable sorting/filtering pure helpers (sortRelations(rows, key, dir), filterRelations(rows, query)) exported + unit-tested; inspector selection state test (selecting a node with no sub-dossier shows its dossier-row fields, not an empty panel).
+
+**Commit:** `feat(ui): dense analyst cockpit — one-viewport dossier, relations table, node inspector, raw evidence`
+
+**Ordering:** F runs LAST (after D — it consumes multi-ring graph + inspector interplay; after E — refresh/stale chip lives in the header row it lays out).
+
+---
+
+## Dependency Graph (updated for F)
 
 ```
 Task A (Weighted Scorer)        ← no deps — do first
