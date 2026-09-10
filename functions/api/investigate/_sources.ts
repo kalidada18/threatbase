@@ -57,6 +57,17 @@ export function vtStatsToPart(json: any): VerdictPart {
   return { source: 'virustotal', malicious: malicious > 0 }
 }
 
+/** Resolution relationship ids are "<ip>_<hostname>" — keep the hostname part. */
+export function vtResolutionsToRelations(json: any): Relation[] {
+  return arr(json?.data?.relationships?.resolutions?.data)
+    .map((d: any) => {
+      const id = String(d?.id ?? '')
+      const host = id.includes('_') ? id.slice(id.indexOf('_') + 1) : id
+      return { type: 'domain' as IndicatorType, value: host.toLowerCase(), edge: 'vt_resolution', via: 'VirusTotal', weight: 1 }
+    })
+    .filter((r) => r.value)
+}
+
 export function shodanToBehavior(json: any): { ports: { port: number; service: string; banner?: string }[]; tags: string[]; relations: Relation[] } {
   const ports = arr(json?.data)
     .filter((d) => Number.isFinite(+d?.port))
@@ -81,8 +92,10 @@ export async function onsite(value: string, _fetchImpl: typeof fetch): Promise<S
     const risk = s.riskScore === 'High' ? 80 : s.riskScore === 'Medium' ? 50 : s.isMalicious ? 40 : 10
     return {
       source: 'threatbase', ok: true,
+      // Verdict rides ONLY in parts[] — the orchestrator also pushes a top-level
+      // `malicious` boolean into parts; carrying both double-counts threatbase.
       data: {
-        malicious: s.isMalicious === true, risk, feed_count: Number(s.feedCount) || 1,
+        risk, feed_count: Number(s.feedCount) || 1,
         tags: arr(s.tags), parts: [{ source: 'threatbase', malicious: s.isMalicious === true } as VerdictPart],
         relations: [], sightings: [], // feed rows carry no dates — OTX provides the timeline
       },
@@ -173,14 +186,10 @@ export async function vtReport(type: IndicatorType, value: string, env: { VT_API
     if (r.status === 404) return { source: 'virustotal', ok: true, data: null } // "no record" is an answer
     if (!r.ok) return { source: 'virustotal', ok: false, error: `HTTP ${r.status}` }
     const j = await r.json()
-    const relations: Relation[] = arr(j?.data?.relationships?.resolutions?.data)
-      .map((d: any) => ({ value: String(d?.id ?? '').toLowerCase(), edge: 'vt_resolution' }))
-      .filter((d: any) => d.value)
-      .map((d: any) => ({ type: 'domain' as IndicatorType, value: d.value, edge: d.edge, via: 'VirusTotal', weight: 1 }))
     const mod = Number(j?.data?.attributes?.last_modification_date)
     return {
       source: 'virustotal', ok: true,
-      data: { parts: [vtStatsToPart(j)], relations, sightings: Number.isFinite(mod) ? [{ date: new Date(mod * 1000).toISOString(), source: 'virustotal', event: 'last analysed' }] : [] },
+      data: { parts: [vtStatsToPart(j)], relations: vtResolutionsToRelations(j), sightings: Number.isFinite(mod) ? [{ date: new Date(mod * 1000).toISOString(), source: 'virustotal', event: 'last analysed' }] : [] },
     }
   } catch (e) {
     return { source: 'virustotal', ok: false, error: String(e) }

@@ -2,7 +2,7 @@
 // minimal hand-recorded snippets matching the documented OTX/VirusTotal/Shodan
 // response shapes — no network calls anywhere in this file.
 import { describe, expect, it } from 'vitest'
-import { otxPulseIndicatorsToRelations, vtStatsToPart, shodanToBehavior, otxTypePath, typeToIndicator } from './_sources'
+import { otxPulseIndicatorsToRelations, vtStatsToPart, vtResolutionsToRelations, shodanToBehavior, otxTypePath, typeToIndicator } from './_sources'
 
 // GET /pulses/<id>/indicators — real keys, two pulses' worth in one fixture call
 const OTX_PULSE_INDICATORS = {
@@ -25,6 +25,15 @@ const VT_IP = {
     attributes: {
       last_analysis_stats: { malicious: 14, undetected: 8, harmful: 0, suspicious: 0, timeout: 0 },
       last_modification_date: 1757000000,
+    },
+    relationships: {
+      resolutions: {
+        data: [
+          { type: 'resolution', id: '45.155.205.23_evil.example.com' },
+          { type: 'resolution', id: '45.155.205.23_SUB.EVIL.NET' },
+          { type: 'resolution', id: 'bareno-underscore' }, // no '_' -> keep as-is
+        ],
+      },
     },
   },
 }
@@ -77,6 +86,19 @@ describe('vtStatsToPart', () => {
   it('no stats = no opinion', () => {
     expect(vtStatsToPart(VT_EMPTY)).toEqual({ source: 'virustotal', malicious: null })
     expect(vtStatsToPart({})).toEqual({ source: 'virustotal', malicious: null })
+  })
+})
+
+describe('vtResolutionsToRelations', () => {
+  it('strips the "<ip>_" prefix, lowercases, keeps underscore-less ids whole', () => {
+    expect(vtResolutionsToRelations(VT_IP)).toEqual([
+      { type: 'domain', value: 'evil.example.com', edge: 'vt_resolution', via: 'VirusTotal', weight: 1 },
+      { type: 'domain', value: 'sub.evil.net', edge: 'vt_resolution', via: 'VirusTotal', weight: 1 },
+      { type: 'domain', value: 'bareno-underscore', edge: 'vt_resolution', via: 'VirusTotal', weight: 1 },
+    ])
+  })
+  it('survives garbage payloads', () => {
+    expect(vtResolutionsToRelations({})).toEqual([])
   })
 })
 
