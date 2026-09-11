@@ -1,4 +1,4 @@
-import { cacheKey, sanitizeKv, cacheTtl, staleAt, isPublicIp, sniffType, mergeVerdict, rankRelations, buildTimeline, hostingType, validateNarrative, type Dossier, type Relation, type Sighting, type VerdictPart, type SourceResult } from './_lib'
+import { cacheKey, sanitizeKv, cacheTtl, staleAt, isPublicIp, sniffType, mergeVerdict, rankRelations, buildTimeline, hostingType, validateNarrative, trimEvidence, type Dossier, type Relation, type Sighting, type VerdictPart, type SourceResult } from './_lib'
 import { geoLookup, rdapLookup } from '../_net'
 import { onsite, otxInvestigate, shodanHost, vtReport, bazaar, feodoCheck, urlhausCheck, greynoiseCheck, spamhausCheck, ripestatlookup } from './_sources'
 import { json } from '../_common'
@@ -103,9 +103,9 @@ export const onRequestGet = async (context: any) => {
     verdict, identity, behavior: { ports, tags: onTags, first_seen: seen[0] ?? null, last_seen: seen.at(-1) ?? null },
     relations: rankRelations(relations, 40), pulses: pulses.slice(0, 10), timeline: buildTimeline(sightings).slice(-120),
     narrative: null, investigated_by: 1,
-    // Task F evidence accordion: the assembled SourceResult[] (adapter output,
-    // not upstream bodies). Optional — pre-F KV copies omit it; UI guards.
-    evidence: P,
+    // Task F evidence accordion: trimmed per trimEvidence — rdap stripped to
+    // public summary fields (no registrant PII), relations arrays capped at 40.
+    evidence: trimEvidence(P),
   }
   if (kv && dossier.sources_ok.length === 0) return json({ error: 'all sources failed' }, 502, request)
 

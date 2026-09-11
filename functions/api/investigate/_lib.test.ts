@@ -1,6 +1,6 @@
 // functions/api/investigate/_lib.test.ts
 import { describe, expect, it } from 'vitest'
-import { sniffType, isPublicIp, cacheKey, sanitizeKv, cacheTtl, staleAt, mergeVerdict, rankRelations, hostingType, buildTimeline, validateNarrative, type Relation, type Sighting, type Verdict } from './_lib'
+import { sniffType, isPublicIp, cacheKey, sanitizeKv, cacheTtl, staleAt, mergeVerdict, rankRelations, hostingType, buildTimeline, validateNarrative, trimEvidence, type Relation, type Sighting, type Verdict } from './_lib'
 
 describe('sniffType', () => {
   it('recognizes every supported indicator shape', () => {
@@ -201,5 +201,44 @@ describe('validateNarrative — Task C structured output', () => {
     const out = validateNarrative(JSON.stringify({ ...noNotes, verdict_sentence: 'x'.repeat(400) }))!
     expect(out.infrastructure_notes).toBe('')
     expect(out.verdict_sentence).toHaveLength(300)
+  })
+})
+
+describe('trimEvidence', () => {
+  it('strips rdap verbatim upstream body to public summary fields (no entities/vcard PII)', () => {
+    const rdap = {
+      source: 'rdap', ok: true,
+      data: {
+        objectClassName: 'domain', handle: 'ex1', ldhName: 'evil.com', status: ['active'],
+        events: [{ eventAction: ['registration'] }],
+        entities: [{ vcardArray: ['vcard', [['fn', {}, 'text', 'Jane Registrant']]] }],
+        remarks: [{ description: ['huge blob'] }],
+      },
+    }
+    const [out] = trimEvidence([rdap as any]) as any[]
+    expect(out.data).toEqual({ objectClassName: 'domain', handle: 'ex1', ldhName: 'evil.com', status: ['active'], events: [{ eventAction: ['registration'] }] })
+    expect(out.data.entities).toBeUndefined()
+  })
+  it('caps relations at 40 (OTX bulk), keeps other keys, preserves status fields', () => {
+    const bulk = Array.from({ length: 500 }, (_, i) => ({ type: 'domain', value: `h${i}.com`, edge: 'same_pulse', weight: i }))
+    const src = { source: 'otx', ok: true, data: { parts: [{ source: 'otx', malicious: true }], relations: bulk, tags: ['x'] } }
+    const [out] = trimEvidence([src as any]) as any[]
+    expect(out.data.relations).toHaveLength(40)
+    expect(out.data.relations[0].value).toBe('h499.com') // rankRelations keeps heaviest
+    expect(out.data.parts).toHaveLength(1)
+    expect(out.data.tags).toEqual(['x'])
+    expect(out.source).toBe('otx'); expect(out.ok).toBe(true)
+  })
+  it('leaves non-array/absent relations, null data, skipped and failed entries untouched', () => {
+    const cases: any[] = [
+      { source: 'geo', ok: true, data: { country: 'NL' } },
+      { source: 'virustotal', ok: true, data: null },
+      { source: 'shodan', ok: false, skipped: true },
+      { source: 'feodo', ok: false, error: 'HTTP 500' },
+      { source: 'spamhaus', ok: true, data: { relations: [1, 2, 3] } }, // under cap
+    ]
+    expect(trimEvidence(cases)).toEqual(cases)
+    const [rdap] = trimEvidence([{ source: 'rdap', ok: false, skipped: true }] as any[]) as any[]
+    expect(rdap).toEqual({ source: 'rdap', ok: false, skipped: true }) // no data → untouched
   })
 })

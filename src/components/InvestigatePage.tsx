@@ -575,7 +575,9 @@ export default function InvestigatePage() {
 
       {q && !loading && !error && dossier && (
         dossier.note ? <NonRoutable d={dossier} /> : (
-          <ReportView d={dossier} graph={graphState} expandingKey={expandingNode} onExpand={expandNode} onCollapse={collapseToDepth} onRefresh={onRefresh} />
+          // key by the indicator: a new q remounts the cockpit and drops the
+          // selectedKey (row 4/inspector selection belongs to the old dossier)
+          <ReportView key={dossier.query.value} d={dossier} graph={graphState} expandingKey={expandingNode} onExpand={expandNode} onCollapse={collapseToDepth} onRefresh={onRefresh} />
         )
       )}
       {crumbs.length > 1 && (

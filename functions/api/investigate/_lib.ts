@@ -42,9 +42,11 @@ export type Dossier = {
   narrative: Narrative | null
   investigated_by: number
   stale_at: string // ISO instant when this dossier expires — set at KV-write time from cacheTtl
-  /** Raw per-source results (Task F evidence accordion). Optional: dossiers
-   *  cached in KV before F deploy and the non-routable early-return omit it —
-   *  the cockpit guards. Includes adapter-transformed data, not upstream bodies. */
+  /** Raw per-source results (Task F evidence accordion), REDACTED by
+   *  trimEvidence before it reaches here: no verbatim upstream bodies (rdap is
+   *  a raw pass-through with registrant PII) and relation arrays capped at the
+   *  dossier's own rankRelations limit. Optional: pre-F KV copies and the
+   *  non-routable early-return omit it — the cockpit guards. */
   evidence?: SourceResult<unknown>[]
 }
 
@@ -192,6 +194,24 @@ export function rankRelations(relations: Relation[], cap = 40): Relation[] {
   return [...best.values()]
     .sort((a, b) => b.weight - a.weight || (b.last_seen ?? '').localeCompare(a.last_seen ?? ''))
     .slice(0, cap)
+}
+
+/** Evidence redaction (Task F review): the accordion must not become a proxy
+ *  for upstream bodies. rdap is a verbatim pass-through (registrant PII lives
+ *  in entities[].vcardArray) → whitelist the public summary fields. Any
+ *  adapter's relations array (OTX alone can carry thousands) is capped to the
+ *  dossier's own 40 via rankRelations. Pure + unit-tested in _lib.test.ts. */
+export function trimEvidence(P: SourceResult<any>[]): SourceResult<unknown>[] {
+  return P.map((p) => {
+    const d: any = p.data
+    if (!d || typeof d !== 'object') return { ...p }
+    let data = d
+    if (p.source === 'rdap') {
+      data = { objectClassName: d.objectClassName, handle: d.handle, ldhName: d.ldhName, status: d.status, events: d.events }
+    }
+    if (Array.isArray(data.relations) && data.relations.length > 40) data = { ...data, relations: rankRelations(data.relations, 40) }
+    return { ...p, data }
+  })
 }
 
 const VPS = /hetzner|ovh|digitalocean|vultr|linode|amazon|microsoft|google|azure|aws|cloudflare|tencent|alibaba|contabo|serverius|nucleonec|choopa|bandwidth|iqi|aeza/i

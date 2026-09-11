@@ -55,8 +55,7 @@ export function NarrativeCard({ n }: { n: Narrative }) {
 }
 
 /** AI narrative section — branches on the legacy string shape (stale pre-C KV)
- *  exactly like NarrativeCard's callers must. Exported so the cockpit can place
- *  it in its own grid row; BehaviorPanel's default view reuses it. */
+ *  exactly like NarrativeCard's callers must. Exported for the cockpit's row 1. */
 export function NarrativeSection({ d }: { d: Dossier }) {
   if (!d.narrative) return null
   return (
