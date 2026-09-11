@@ -403,7 +403,14 @@ const INVESTIGATE_RESPONSE = `{
   "timeline": [
     { "date": "2026-08-30T12:00:00Z", "source": "otx", "event": "Emotet campaign pulse" }
   ],
-  "narrative": "This host has been observed ...",
+  "narrative": {
+    "verdict_sentence": "This host has been observed scanning SSH on known-exploited ranges.",
+    "confidence": "high",
+    "why_malicious": ["Flagged by Feodo as an active C2 endpoint"],
+    "infrastructure_notes": "Hosted on a bulletproof VPS provider in NL.",
+    "recommended_action": "block",
+    "mitre_techniques": ["T1071"]
+  },
   "sources_ok": ["threatbase", "otx", "geo", "rdap"],
   "sources_skipped": ["shodan", "virustotal", "malwarebazaar"],
   "cached": false

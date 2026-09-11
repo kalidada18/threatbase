@@ -1,6 +1,6 @@
 // functions/api/investigate/_lib.test.ts
 import { describe, expect, it } from 'vitest'
-import { sniffType, isPublicIp, cacheKey, mergeVerdict, rankRelations, hostingType, buildTimeline, type Relation, type Sighting } from './_lib'
+import { sniffType, isPublicIp, cacheKey, mergeVerdict, rankRelations, hostingType, buildTimeline, validateNarrative, type Relation, type Sighting } from './_lib'
 
 describe('sniffType', () => {
   it('recognizes every supported indicator shape', () => {
@@ -119,4 +119,49 @@ it('buildTimeline merges sightings, collapses per day, sorts', () => {
   const t = buildTimeline(s)
   expect(t.map((p) => p.count)).toEqual([1, 2])   // oldest first
   expect(t[1].sources).toEqual(['feodo', 'otx'])
+})
+
+describe('validateNarrative — Task C structured output', () => {
+  const good = {
+    verdict_sentence: 'Active C2 host.',
+    confidence: 'high',
+    why_malicious: ['feodo hit'],
+    infrastructure_notes: 'Hetzner VPS, NL.',
+    recommended_action: 'block',
+    mitre_techniques: ['T1071', 'T1566.001'],
+  }
+  it('accepts a valid object and preserves ATT&CK ids (incl. sub-techniques)', () => {
+    expect(validateNarrative(JSON.stringify(good))).toEqual({
+      ...good, why_malicious: ['feodo hit'], mitre_techniques: ['T1071', 'T1566.001'],
+    })
+  })
+  it('strips markdown fences (```json and bare ```) before parsing', () => {
+    const wrapped = '```json\n' + JSON.stringify(good) + '\n```'
+    expect(validateNarrative(wrapped)?.confidence).toBe('high')
+    expect(validateNarrative('```\n' + JSON.stringify(good) + '\n```')).not.toBeNull()
+  })
+  it('rejects malformed JSON and missing fields', () => {
+    expect(validateNarrative('not json at all')).toBeNull()
+    const { verdict_sentence: _drop, ...partial } = good
+    expect(validateNarrative(JSON.stringify(partial))).toBeNull()
+  })
+  it('rejects out-of-enum confidence and recommended_action', () => {
+    expect(validateNarrative(JSON.stringify({ ...good, confidence: 'definite' }))).toBeNull()
+    expect(validateNarrative(JSON.stringify({ ...good, recommended_action: 'nuke' }))).toBeNull()
+  })
+  it('filters non-ATT&CK strings and caps lists (5 reasons, 8 techniques)', () => {
+    const out = validateNarrative(JSON.stringify({
+      ...good,
+      why_malicious: Array.from({ length: 9 }, (_, i) => `r${i}`),
+      mitre_techniques: ['T1071', 'C2 traffic', 'attack.mitre.org', 'T999', 'T9999', 'T99999', 'T1', 'T1234.1', 'T1234.001', 'T1566'],
+    }))!
+    expect(out.why_malicious).toHaveLength(5)
+    expect(out.mitre_techniques).toEqual(['T1071', 'T9999', 'T1234.001', 'T1566']) // T999/T99999/T1/T1234.1 rejected; ≤8 cap not hit
+  })
+  it('infrastructure_notes missing degrades to empty string, not null; strings are sliced', () => {
+    const { infrastructure_notes: _drop, ...noNotes } = good
+    const out = validateNarrative(JSON.stringify({ ...noNotes, verdict_sentence: 'x'.repeat(400) }))!
+    expect(out.infrastructure_notes).toBe('')
+    expect(out.verdict_sentence).toHaveLength(300)
+  })
 })

@@ -5,6 +5,18 @@ export type IndicatorType = 'ipv4' | 'ipv6' | 'domain' | 'url' | 'md5' | 'sha1' 
 export type Relation = { type: IndicatorType; value: string; edge: string; via?: string; weight: number; malicious?: boolean | null; first_seen?: string; last_seen?: string }
 export type TimelinePoint = { date: string; count: number; sources: string[] }
 
+/** Mirror of _lib.ts Narrative. The KV round-trip can still carry the legacy
+ *  plain-string narrative for up to 24 h after deploy — read sites must branch
+ *  on typeof. Server emits object|null only. */
+export type Narrative = {
+  verdict_sentence: string
+  confidence: 'high' | 'medium' | 'low'
+  why_malicious: string[]
+  infrastructure_notes: string
+  recommended_action: 'block' | 'monitor' | 'investigate_further' | 'safe_to_ignore'
+  mitre_techniques: string[]
+}
+
 export type Dossier = {
   query: { type: IndicatorType; value: string }
   /** Missing on the non-routable answer — guard before formatting. */
@@ -21,6 +33,7 @@ export type Dossier = {
   relations: Relation[]
   pulses?: { title: string; url: string; modified: string }[]
   timeline?: TimelinePoint[]
-  narrative: string | null
+  /** object|null from the server; plain string only from stale pre-C KV (<24 h). */
+  narrative: Narrative | string | null
   investigated_by?: number
 }

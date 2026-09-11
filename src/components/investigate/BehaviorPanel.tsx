@@ -1,4 +1,58 @@
-import type { Dossier } from '@/investigationTypes'
+import type { Dossier, Narrative } from '@/investigationTypes'
+
+const ACTIONS: Record<Narrative['recommended_action'], { label: string; icon: string; cls: string }> = {
+  block: { label: 'Block', icon: '⛔', cls: 'text-red-300 border-red-500/40 bg-red-500/10' },
+  monitor: { label: 'Monitor', icon: '👁', cls: 'text-amber-300 border-amber-500/40 bg-amber-500/10' },
+  investigate_further: { label: 'Investigate Further', icon: '🔍', cls: 'text-sky-300 border-sky-500/40 bg-sky-500/10' },
+  safe_to_ignore: { label: 'Safe', icon: '✓', cls: 'text-emerald-300 border-emerald-500/40 bg-emerald-500/10' },
+}
+
+function ActionChip({ action }: { action: Narrative['recommended_action'] }) {
+  const a = ACTIONS[action] ?? ACTIONS.investigate_further
+  return (
+    <span className={`inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider rounded-full px-2.5 py-1 border ${a.cls}`}>
+      <span aria-hidden>{a.icon}</span>{a.label}
+    </span>
+  )
+}
+
+/** Structured analyst card (Task C). Legacy string narratives render as the
+ *  old paragraph — stale KV dossiers live up to 24 h after deploy. */
+function NarrativeCard({ n }: { n: Narrative }) {
+  return (
+    <div className="glass-card rounded-2xl p-5">
+      <p className="text-lg font-mono text-white leading-snug mb-4">{n.verdict_sentence}</p>
+      <div className="flex flex-wrap items-center gap-2">
+        <ActionChip action={n.recommended_action} />
+        <span className="font-mono text-[10px] uppercase tracking-wider text-slate-500">confidence: {n.confidence}</span>
+      </div>
+      {n.why_malicious.length > 0 && (
+        <ul className="mt-3 space-y-1">
+          {n.why_malicious.map((reason, i) => (
+            <li key={i} className="flex gap-2 text-sm text-slate-300">
+              <span className="text-red-500 shrink-0">▸</span>
+              <span>{reason}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+      {n.mitre_techniques.length > 0 && (
+        <div className="flex flex-wrap gap-2 mt-4">
+          {n.mitre_techniques.map((t) => (
+            <a key={t} href={`https://attack.mitre.org/techniques/${t.replace('.', '/')}`}
+              target="_blank" rel="noopener noreferrer"
+              className="px-2 py-0.5 bg-slate-800 border border-slate-600 rounded font-mono text-xs text-slate-300 hover:border-red-500 transition-colors">
+              {t}
+            </a>
+          ))}
+        </div>
+      )}
+      {n.infrastructure_notes && (
+        <p className="mt-3 text-sm text-slate-400 italic">{n.infrastructure_notes}</p>
+      )}
+    </div>
+  )
+}
 
 /** Ports + merged tags + first/last seen + AI narrative + pulse source links. */
 export default function BehaviorPanel({ d }: { d: Dossier }) {
@@ -44,7 +98,12 @@ export default function BehaviorPanel({ d }: { d: Dossier }) {
       {d.narrative && (
         <section aria-label="AI summary">
           <div className="eyebrow mb-2">Analyst summary (AI)</div>
-          <p className="text-sm text-slate-300 leading-relaxed glass-card rounded-2xl p-5">{d.narrative}</p>
+          {typeof d.narrative === 'string' ? (
+            /* legacy pre-C dossier still cached in KV (<24 h) — plain paragraph, same as before */
+            <p className="text-sm text-slate-300 leading-relaxed glass-card rounded-2xl p-5">{d.narrative}</p>
+          ) : (
+            <NarrativeCard n={d.narrative} />
+          )}
           <p className="font-mono text-[9px] text-slate-600 mt-2">Machine-generated from the facts above — verify before acting.</p>
         </section>
       )}

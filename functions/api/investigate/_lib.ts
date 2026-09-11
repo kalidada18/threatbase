@@ -16,6 +16,16 @@ export type Sighting = { date: string; source: string; event: string }
 export type TimelinePoint = { date: string; count: number; sources: string[] }
 export type SourceResult<T> = { source: string; ok: boolean; data?: T; error?: string; skipped?: boolean }
 
+/** Task C structured analyst assessment. Mirrored in src/investigationTypes.ts. */
+export type Narrative = {
+  verdict_sentence: string          // one sentence — what this indicator is
+  confidence: 'high' | 'medium' | 'low'
+  why_malicious: string[]           // empty array if clean
+  infrastructure_notes: string      // one sentence on hosting/ASN context
+  recommended_action: 'block' | 'monitor' | 'investigate_further' | 'safe_to_ignore'
+  mitre_techniques: string[]        // ATT&CK IDs e.g. ['T1071', 'T1566'], empty if none inferable
+}
+
 export type Dossier = {
   query: { type: IndicatorType; value: string }
   generated_at: string
@@ -29,7 +39,7 @@ export type Dossier = {
   relations: Relation[]
   pulses: { title: string; url: string; modified: string }[]
   timeline: TimelinePoint[]
-  narrative: string | null
+  narrative: Narrative | null
   investigated_by: number
 }
 
@@ -181,4 +191,31 @@ export function buildTimeline(sightings: Sighting[]): TimelinePoint[] {
   return [...byDay.entries()]
     .sort((a, b) => a[0].localeCompare(b[0]))
     .map(([date, sources]) => ({ date, count: sources.size, sources: [...sources].sort() }))
+}
+
+/** Parse + validate a raw LLM narrative response into a Narrative.
+ *  Malformed output degrades to null — the UI's job is never to trust the model.
+ *  Strips accidental markdown fences, enforces every schema field, caps lengths. */
+export function validateNarrative(raw: string): Narrative | null {
+  try {
+    const clean = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim()
+    const parsed = JSON.parse(clean)
+    if (
+      typeof parsed.verdict_sentence !== 'string' ||
+      !['high', 'medium', 'low'].includes(parsed.confidence) ||
+      !Array.isArray(parsed.why_malicious) ||
+      !['block', 'monitor', 'investigate_further', 'safe_to_ignore'].includes(parsed.recommended_action) ||
+      !Array.isArray(parsed.mitre_techniques)
+    ) return null
+    return {
+      verdict_sentence: String(parsed.verdict_sentence).slice(0, 300),
+      confidence: parsed.confidence,
+      why_malicious: parsed.why_malicious.slice(0, 5).map((s: any) => String(s).slice(0, 200)),
+      infrastructure_notes: String(parsed.infrastructure_notes ?? '').slice(0, 300),
+      recommended_action: parsed.recommended_action,
+      mitre_techniques: parsed.mitre_techniques
+        .filter((t: any) => /^T\d{4}(\.\d{3})?$/.test(String(t))) // validate ATT&CK ID format
+        .slice(0, 8),
+    }
+  } catch { return null }
 }
