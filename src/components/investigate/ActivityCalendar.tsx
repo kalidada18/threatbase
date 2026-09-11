@@ -26,9 +26,9 @@ export default function ActivityCalendar({ timeline }: { timeline: TimelinePoint
     <section aria-label="Activity calendar">
       <div className="flex items-baseline justify-between mb-2">
         <span className="eyebrow">90-day activity</span>
-        <span className="font-mono text-[9px] text-slate-600">none → 4+ sources same day</span>
+        <span className="font-mono text-[11px] text-slate-400">none → 4+ sources same day</span>
       </div>
-      <div className="font-mono text-[9px] uppercase text-slate-500 mb-1 grid gap-1 items-center" style={{ gridTemplateColumns: '64px 1fr' }}>
+      <div className="font-mono text-[10px] uppercase text-slate-400 mb-1 grid gap-1 items-center" style={{ gridTemplateColumns: '64px 1fr' }}>
         <span />
         <span className="grid gap-1" style={{ gridTemplateColumns: `repeat(${COLS}, 1fr)`, gridAutoRows: '10px' }}>
           {Array.from({ length: COLS }, (_, c) => {
@@ -41,7 +41,7 @@ export default function ActivityCalendar({ timeline }: { timeline: TimelinePoint
       </div>
       {lanes.map((lane) => (
         <div key={lane} className="grid gap-1 items-center mb-1" style={{ gridTemplateColumns: '64px 1fr' }}>
-          <span className="truncate uppercase tracking-wide text-[9px] font-mono text-slate-500" title={lane}>{lane}</span>
+          <span className="truncate uppercase tracking-wide text-[10px] font-mono text-slate-400" title={lane}>{lane}</span>
           <span className="grid gap-1" style={{ gridTemplateColumns: `repeat(${COLS}, 1fr)`, gridTemplateRows: `repeat(7, 1fr)`, gridAutoFlow: 'column' }}>
             {Array.from({ length: DAYS }, (_, i) => {
               const d = days[i]

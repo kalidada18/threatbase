@@ -77,7 +77,11 @@ export default function RelationsTable({
   const move = (delta: number) => {
     if (!rows.length) return
     const next = selIdx < 0 ? (delta > 0 ? 0 : rows.length - 1) : Math.min(rows.length - 1, Math.max(0, selIdx + delta))
-    if (keys[next] !== selectedKey) onSelect(keys[next])
+    if (keys[next] !== selectedKey) {
+      onSelect(keys[next])
+      // follow the highlight with DOM focus so Tab continues from the new row
+      bodyRef.current?.querySelector<HTMLElement>(`[data-k="${keys[next].replace(/"/g, '\\"')}"]`)?.focus()
+    }
   }
 
   const toggleSort = (key: SortKey) =>
@@ -95,15 +99,15 @@ export default function RelationsTable({
           placeholder="filter relations…"
           aria-label="Filter relations"
           spellCheck={false}
-          className="bg-white/[0.03] border border-white/10 rounded-md px-2.5 py-1 font-mono text-[12px] text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-red-500/40 w-52"
+          className="bg-white/[0.03] border border-white/10 rounded-md px-2.5 py-1 font-mono text-[12px] text-slate-200 caret-red-500 placeholder:text-slate-500 focus:border-red-500/40 w-52"
         />
-        <span className="font-mono text-[10px] text-slate-500 tabular-nums" role="status">
+        <span className="font-mono text-[10px] text-slate-400 tabular-nums" role="status">
           {rows.length} of {relations?.length ?? 0} relations · ↑↓ to select
         </span>
       </div>
-      <div className="overflow-x-auto rounded-lg border border-white/[0.06]">
-        <table className="w-full text-left font-mono text-[12px]">
-          <thead className="text-slate-500 uppercase text-[10px] tracking-wider bg-white/[0.02]">
+      <div className="overflow-x-auto rounded-md border border-white/[0.06]">
+        <table role="grid" className="w-full text-left font-mono text-[12px]">
+          <thead className="text-slate-400 uppercase text-[10px] tracking-wider bg-white/[0.02]">
             <tr>
               {COLS.map((c) => (
                 <th key={c.key} className="px-2 py-1.5 font-semibold" aria-sort={sort.key === c.key ? (sort.dir === 'asc' ? 'ascending' : 'descending') : undefined}>
@@ -129,18 +133,18 @@ export default function RelationsTable({
                   <td className="px-2 py-1 uppercase text-[10px] text-slate-500">{r.type}</td>
                   <td className="px-2 py-1 break-all max-w-[300px]"><IocLink value={r.value} className="text-[12px]">{r.value}</IocLink></td>
                   <td className="px-2 py-1 text-slate-400">{r.edge?.replace(/_/g, ' ')}</td>
-                  <td className="px-2 py-1 text-slate-500 max-w-[180px] truncate" title={r.via}>{r.via || '—'}</td>
+                  <td className="px-2 py-1 text-slate-400 max-w-[180px] truncate" title={r.via}>{r.via || 'n/a'}</td>
                   <td className="px-2 py-1 tabular-nums">{r.weight}</td>
-                  <td className="px-2 py-1 tabular-nums text-slate-400">{r.first_seen?.slice(0, 10) || '—'}</td>
-                  <td className="px-2 py-1 tabular-nums text-slate-400">{r.last_seen?.slice(0, 10) || '—'}</td>
+                  <td className="px-2 py-1 tabular-nums text-slate-400">{r.first_seen?.slice(0, 10) || 'n/a'}</td>
+                  <td className="px-2 py-1 tabular-nums text-slate-400">{r.last_seen?.slice(0, 10) || 'n/a'}</td>
                   <td className="px-2 py-1 whitespace-nowrap">
-                    {/* icon + text, never color alone (dataviz constraint) */}
+                    {/* text carries the meaning; no redundant dot glyph (icon+color kept via red for flagged) */}
                     {r.malicious === true ? (
-                      <span className="text-red-400"><span aria-hidden>●</span> flagged</span>
+                      <span className="text-red-400">flagged</span>
                     ) : r.malicious === false ? (
-                      <span className="text-slate-400"><span aria-hidden>○</span> clean</span>
+                      <span className="text-slate-400">clean</span>
                     ) : (
-                      <span className="text-slate-600"><span aria-hidden>·</span> n/a</span>
+                      <span className="text-slate-500">n/a</span>
                     )}
                   </td>
                 </tr>

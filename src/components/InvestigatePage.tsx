@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { motion, useReducedMotion } from 'framer-motion'
-import { Lock, RefreshCw } from 'lucide-react'
+import { Check, CircleAlert, CircleDashed, CircleSlash, HelpCircle, Lock, Minus, RefreshCw, Search, ShieldAlert, ShieldCheck, TriangleAlert, type LucideIcon } from 'lucide-react'
 import IsoPageShell from './layout/IsoPageShell'
 import { useSEO } from '@/useSEO'
 import { useAuth } from '@/AuthContext'
@@ -46,12 +46,17 @@ const Chip = ({ children, tone = 'neutral' }: { children: ReactNode; tone?: 'neu
   </span>
 )
 
-const STATUS: Record<Dossier['verdict']['status'], { label: string; icon: string; cls: string }> = {
-  malicious: { label: 'MALICIOUS', icon: '!', cls: 'text-red-400 border-red-500/40 bg-red-500/10' },
-  high_risk: { label: 'HIGH RISK', icon: '!', cls: 'text-red-300/90 border-red-500/35 bg-red-500/10' },
-  suspicious: { label: 'SUSPICIOUS', icon: '!', cls: 'text-red-300/80 border-red-500/25 bg-red-500/5' },
-  clean: { label: 'CLEAN', icon: '✓', cls: 'text-slate-200 border-white/15 bg-white/[0.04]' },
-  unknown: { label: 'UNKNOWN', icon: '?', cls: 'text-slate-400 border-white/10 bg-white/[0.02]' },
+const STATUS: Record<Dossier['verdict']['status'], { label: string; icon: LucideIcon; cls: string }> = {
+  malicious: { label: 'MALICIOUS', icon: ShieldAlert, cls: 'text-red-400 border-red-500/40 bg-red-500/10' },
+  high_risk: { label: 'HIGH RISK', icon: TriangleAlert, cls: 'text-red-300/90 border-red-500/35 bg-red-500/10' },
+  suspicious: { label: 'SUSPICIOUS', icon: Search, cls: 'text-red-300/80 border-red-500/25 bg-red-500/5' },
+  clean: { label: 'CLEAN', icon: ShieldCheck, cls: 'text-slate-200 border-white/15 bg-white/[0.04]' },
+  unknown: { label: 'UNKNOWN', icon: HelpCircle, cls: 'text-slate-400 border-white/10 bg-white/[0.02]' },
+}
+
+/** One ok/skipped/failed vocabulary for evidence chips + source strip. */
+const EV_ICON: Record<'ok' | 'skipped' | 'failed', LucideIcon> = {
+  ok: Check, skipped: Minus, failed: CircleAlert,
 }
 
 /** Single-hue risk gauge — hsl(var(--chart-1)) intensity is severity itself;
@@ -63,33 +68,19 @@ function RiskGauge({ risk }: { risk: number }) {
     <div className="relative w-[88px] h-[88px] shrink-0" role="img" aria-label={`Risk score ${Math.round(risk)} of 100`}>
       <svg viewBox="0 0 88 88" className="w-full h-full -rotate-90">
         <circle cx="44" cy="44" r={R} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="7" />
-        <circle
-          cx="44" cy="44" r={R} fill="none" stroke="hsl(var(--chart-1))" strokeWidth="7" strokeLinecap="round"
-          strokeDasharray={`${frac * C} ${C}`}
-        />
+        {/* zero-length dash + round linecap still paints a red dot at 0 — only draw the arc above zero */}
+        {frac > 0 && (
+          <circle
+            cx="44" cy="44" r={R} fill="none" stroke="hsl(var(--chart-1))" strokeWidth="7" strokeLinecap="round"
+            strokeDasharray={`${frac * C} ${C}`}
+          />
+        )}
       </svg>
-      <div className="absolute inset-0 grid place-items-center font-mono font-bold text-white tabular-nums leading-none">
+      <div className="absolute inset-0 grid place-items-center font-mono font-bold text-2xl text-white tabular-nums leading-none">
         {Math.round(risk)}
         <span className="sr-only">/100</span>
       </div>
-      <div className="absolute inset-x-0 -bottom-1 text-center font-mono text-[9px] uppercase tracking-[0.2em] text-slate-500">risk</div>
-    </div>
-  )
-}
-
-function SourceStrip({ d }: { d: Dossier }) {
-  const chips: { label: string; cls: string }[] = [
-    ...(d.sources_ok ?? []).map((s) => ({ label: s, cls: 'text-slate-400 border-white/10 bg-white/[0.03]' })),
-    ...(d.sources_skipped ?? []).map((s) => ({ label: `${s} · off`, cls: 'text-slate-600 border-dashed border-white/10' })),
-    ...(d.sources_failed ?? []).map((s) => ({ label: `⚠ ${s} · failed`, cls: 'text-red-300/80 border-red-500/30 bg-red-500/10' })),
-  ]
-  if (!chips.length) return null
-  return (
-    <div className="flex flex-wrap gap-1.5 items-center">
-      <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500 mr-1">sources</span>
-      {chips.map((c) => (
-        <span key={c.label} className={`font-mono text-[10px] rounded-full px-2.5 py-1 border ${c.cls}`}>{c.label}</span>
-      ))}
+      <div className="absolute inset-x-0 -bottom-1 text-center font-mono text-[9px] uppercase tracking-[0.2em] text-slate-400">risk</div>
     </div>
   )
 }
@@ -105,7 +96,7 @@ function ReportActions({ d }: { d: Dossier }) {
     a.click()
     URL.revokeObjectURL(url)
   }
-  const btn = 'font-mono text-[10px] uppercase tracking-[0.2em] text-slate-400 border border-white/10 rounded-full px-3.5 py-1.5 hover:text-red-200 hover:border-red-500/30 transition-colors'
+  const btn = 'font-mono text-[10px] uppercase tracking-[0.2em] text-slate-400 border border-white/10 rounded-full px-3.5 py-1.5 hover:text-red-200 hover:border-red-500/30 transition-colors active:scale-[0.98] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-red-500/40'
   return (
     <div className="no-print flex justify-center md:justify-end gap-2 mb-3">
       <button type="button" onClick={() => window.print()} className={btn}>Print / PDF</button>
@@ -131,7 +122,7 @@ function TimelineStrip({ timeline }: { timeline: TimelinePoint[] }) {
           ))}
         </ul>
       ) : (
-        <p className="font-mono text-[11px] text-slate-500">no dated sightings</p>
+        <p className="font-mono text-[11px] text-slate-400">no dated sightings</p>
       )}
     </section>
   )
@@ -151,10 +142,11 @@ function EvidenceAccordion({ d }: { d: Dossier }) {
           // 'unknown' can repeat when several settled rejections occur — index in the key
           <details key={`${s.source}-${i}`} className="bg-white/[0.02] border border-white/[0.06] rounded-md px-2 py-1">
             <summary className="font-mono text-[11px] text-slate-400 cursor-pointer select-none whitespace-nowrap overflow-hidden text-ellipsis">
-              {s.ok ? '✓' : s.skipped ? '—' : '⚠'} {s.source}{' '}
-              <span className="text-slate-600">{s.ok ? 'ok' : s.skipped ? 'skipped' : `failed${s.error ? ` · ${s.error}` : ''}`}</span>
+              {(() => { const Icon = EV_ICON[s.ok ? 'ok' : s.skipped ? 'skipped' : 'failed']; return <Icon size={10} strokeWidth={2} aria-hidden className="inline-block align-[-1px] mr-1.5" /> })()}
+              <span>{s.source}</span>{' '}
+              <span className="text-slate-500">{s.ok ? 'ok' : s.skipped ? 'skipped' : `failed${s.error ? ` · ${s.error}` : ''}`}</span>
             </summary>
-            <pre className="mt-1 max-h-64 overflow-auto font-mono text-[10px] leading-tight text-slate-500 whitespace-pre-wrap break-all">
+            <pre className="mt-1 max-h-64 overflow-auto font-mono text-[10px] leading-tight text-slate-400 whitespace-pre-wrap break-all">
               {JSON.stringify(s, null, 2)}
             </pre>
           </details>
@@ -168,12 +160,13 @@ function EvidenceAccordion({ d }: { d: Dossier }) {
  *  or the root when nothing is picked, so the panel is never empty. Nodes
  *  without a fetched sub-dossier still get their full relation-row set. */
 function NodeInspector({
-  d, graph, selectedKey, pivotError, onSelect, onExpand,
+  d, graph, selectedKey, pivotError, expandingKey, onSelect, onExpand,
 }: {
   d: Dossier
   graph: GraphState | null
   selectedKey: string | null
   pivotError: string | null
+  expandingKey: string | null
   onSelect: (key: string | null) => void
   onExpand: (type: IndicatorType, value: string) => void
 }) {
@@ -183,35 +176,34 @@ function NodeInspector({
   const { rows, verdict } = inspectNode(node, d.relations ?? [])
   if (!node) return null
   const isRoot = node.ring === 0
+  const expanding = expandingKey === nodeKey(node.type, node.value)
+  const mal = isRoot ? d.verdict.malicious_by > 0 : !!node.malicious
   const vb = isRoot ? `${d.verdict.malicious_by}/${d.verdict.total_engines} sources flag it` : verdict
-  const rootMal = isRoot ? d.verdict.malicious_by > 0 : !!node.malicious
   return (
     <section aria-label="Node inspector" className="glass-card rounded-xl p-3 h-full overflow-auto">
       <div className="flex items-center justify-between gap-2 mb-2">
         <span className="eyebrow">Inspector</span>
         {!isRoot && (
-          <button type="button" onClick={() => onSelect(null)} className="font-mono text-[10px] uppercase text-slate-500 hover:text-slate-300">root</button>
+          <button type="button" onClick={() => onSelect(null)} className="font-mono text-[10px] uppercase text-slate-400 hover:text-slate-200 active:scale-[0.98] transition-colors">root</button>
         )}
       </div>
       <div className="font-mono text-[13px] text-white break-all leading-snug">{node.value}</div>
-      <div className="font-mono text-[10px] uppercase text-slate-500 mt-0.5">
+      <div className="font-mono text-[10px] uppercase text-slate-400 mt-0.5">
         {node.type} · ring {node.ring}{node.edge ? ` · ${node.edge.replace(/_/g, ' ')}` : ''}{node.via ? ` · via ${node.via}` : ''} · weight {node.weight}
       </div>
       <div className="font-mono text-[11px] mt-2 tabular-nums">
         {vb ? (
-          <span className="text-slate-300">
-            <span aria-hidden className={rootMal ? 'text-red-400 mr-1' : 'text-slate-500 mr-1'}>{rootMal ? '●' : '○'}</span>
-            {vb}
-          </span>
+          <span className={mal ? 'text-red-300' : 'text-slate-300'}>{vb}</span>
         ) : (
-          <span className="text-slate-500">no verdict yet —{' '}
+          <span className="text-slate-400">No verdict yet.{' '}
             <button
               type="button"
               onClick={() => onExpand(node.type, node.value)}
-              disabled={node.expanded || node.ring >= MAX_RINGS}
-              className="text-red-400 hover:text-red-300 underline underline-offset-2 disabled:text-slate-600 disabled:no-underline"
+              disabled={node.expanded || node.ring >= MAX_RINGS || expanding}
+              className="text-red-400 hover:text-red-300 underline underline-offset-2 disabled:text-slate-500 disabled:no-underline active:scale-[0.98] inline-flex items-center gap-1"
             >
-              {node.expanded ? 'verdict unavailable' : node.ring >= MAX_RINGS ? 'max depth' : 'expand to investigate'}
+              {expanding && <RefreshCw size={10} className="animate-spin" aria-hidden />}
+              {node.expanded ? 'verdict unavailable' : node.ring >= MAX_RINGS ? 'max depth' : expanding ? 'expanding…' : 'expand to investigate'}
             </button>
           </span>
         )}
@@ -219,41 +211,52 @@ function NodeInspector({
       {/* U6: pivot expansion failures surface here — icon+text, never silent. */}
       {pivotError && (
         <p className="font-mono text-[11px] text-slate-400 mt-2 flex items-start gap-1.5">
-          <span aria-hidden className="text-red-400 shrink-0">⚠</span>
+          <CircleAlert size={12} strokeWidth={2} aria-hidden className="text-red-400 shrink-0 mt-0.5" />
           <span className="break-all">{pivotError}</span>
         </p>
       )}
       <div className="mt-3 border-t border-white/[0.06] pt-2">
-        <div className="font-mono text-[9px] uppercase tracking-widest text-slate-600 mb-1">relations ({rows.length})</div>
+        <div className="font-mono text-[11px] uppercase tracking-widest text-slate-400 mb-1">relations ({rows.length})</div>
         {rows.length ? (
           <ul className="divide-y divide-white/[0.04] font-mono text-[11px] text-slate-400">
             {rows.map((r, i) => (
               <li key={`${r.edge}-${i}`} className="py-1 grid grid-cols-[auto_1fr_auto] gap-x-2 items-baseline">
-                <span className="text-slate-500 uppercase text-[9px]">{r.edge.replace(/_/g, ' ')}</span>
-                <span className="text-slate-500 truncate" title={r.via}>{r.via || '—'}</span>
-                <span className="tabular-nums">{r.weight}·{(r.last_seen ?? r.first_seen ?? '—').slice(0, 10)}</span>
+                <span className="text-slate-400 uppercase text-[10px]">{r.edge.replace(/_/g, ' ')}</span>
+                <span className="text-slate-400 truncate" title={r.via}>{r.via || 'n/a'}</span>
+                <span className="tabular-nums">{r.weight}·{(r.last_seen ?? r.first_seen ?? 'n/a').slice(0, 10)}</span>
               </li>
             ))}
           </ul>
         ) : (
-          <p className="font-mono text-[11px] text-slate-600">none in this dossier</p>
+          <p className="font-mono text-[11px] text-slate-500">none in this dossier</p>
         )}
       </div>
     </section>
   )
 }
 
+/** Label/value dossier row (identity card): scans top-to-bottom, empty fields drop. */
+const IdRow = ({ label, value }: { label: string; value?: string | null }) => (
+  value ? (
+    <div className="flex items-baseline justify-between gap-3 py-1 border-b border-white/[0.04] last:border-b-0">
+      <span className="font-mono text-[10px] uppercase tracking-wider text-slate-500 shrink-0">{label}</span>
+      <span className="font-mono text-[11px] text-slate-200 text-right break-all min-w-0">{value}</span>
+    </div>
+  ) : null
+)
+
 /** Dense analyst cockpit (Task F): every detail on one scrolling screen —
  *  verdict, identity, narrative, graph+inspector, calendar/timeline/behavior,
  *  full relations table, pulses, raw evidence. lg = 12-col grid; below lg the
  *  same panels stack (mobile fallback keeps the old vertical flow). */
 function ReportView({
-  d, graph, expandingKey, pivotError, onExpand, onCollapse, onRefresh,
+  d, graph, expandingKey, pivotError, refreshing, onExpand, onCollapse, onRefresh,
 }: {
   d: Dossier
   graph: GraphState | null
   expandingKey: string | null
   pivotError: string | null
+  refreshing: boolean
   onExpand: (type: IndicatorType, value: string) => void
   onCollapse: (depth: number) => void
   onRefresh: () => void
@@ -273,31 +276,36 @@ function ReportView({
       <ReportActions d={d} />
 
       {/* Row 1 — verdict | identity | narrative, all visible at once */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-2">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 items-start">
         <div className="glass-card rounded-xl p-3 lg:col-span-4 flex items-center gap-4">
           <div className="min-w-0">
             <div className={`inline-flex items-center gap-2 font-mono font-bold tracking-wider border rounded-full px-3 py-1 ${st.cls}`}>
-              <span aria-hidden>{st.icon}</span>{st.label}
+              <st.icon size={12} strokeWidth={2} aria-hidden />{st.label}
             </div>
-            <div className="font-mono text-[11px] text-slate-500 mt-2 tabular-nums">
+            <div className="font-mono text-[11px] text-slate-400 mt-2 tabular-nums">
               {d.verdict.malicious_by} of {d.verdict.total_engines} sources flag it
               {typeof d.verdict.score === 'number' && d.verdict.confidence && (
                 <span className="ml-1 text-slate-400">· conf {d.verdict.confidence.toUpperCase()}</span>
               )}
             </div>
-            <div className="mt-2"><SourceStrip d={d} /></div>
-            <div className="font-mono text-[10px] text-slate-500 mt-2 tabular-nums">
-              {d.cached ? `report from ${ago(d.generated_at ?? '')}` : 'live'}
-              {typeof d.investigated_by === 'number' && ` · ${d.investigated_by} investigation${d.investigated_by === 1 ? '' : 's'}`}
+            <div className="font-mono text-[10px] text-slate-400 mt-2 tabular-nums flex items-center gap-2 flex-wrap">
+              <span>
+                {d.cached ? `report from ${ago(d.generated_at ?? '')}` : 'live'}
+                {typeof d.investigated_by === 'number' && ` · ${d.investigated_by} investigation${d.investigated_by === 1 ? '' : 's'}`}
+                {d.cached && ` · refreshes ${formatRelative(d.stale_at)}`}
+              </span>
               {d.cached && (
-                <span className="ml-1">
-                  · refreshes {formatRelative(d.stale_at)}
-                  {!d.refresh_blocked ? (
-                    <button type="button" onClick={onRefresh} className="ml-1 text-red-500 hover:text-red-400 underline underline-offset-2">now</button>
-                  ) : (
-                    <span className="text-slate-600"> (1 h cooldown)</span>
-                  )}
-                </span>
+                !d.refresh_blocked ? (
+                  <button
+                    type="button"
+                    onClick={onRefresh}
+                    className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-red-300 border border-red-500/30 bg-red-500/10 rounded-full px-2.5 py-0.5 hover:text-red-200 hover:border-red-500/50 transition-colors active:scale-[0.98]"
+                  >
+                    <RefreshCw size={10} aria-hidden className={refreshing ? 'animate-spin' : undefined} />{refreshing ? 'refreshing' : 'refresh now'}
+                  </button>
+                ) : (
+                  <span className="text-slate-500">1 h cooldown</span>
+                )
               )}
             </div>
           </div>
@@ -309,25 +317,29 @@ function ReportView({
         <div className="glass-card rounded-xl p-3 lg:col-span-3">
           <div className="eyebrow mb-2">Identity</div>
           {id ? (
-            <div className="flex flex-wrap gap-1.5">
-              {idEmpty ? (
-                /* U8: every identity field null → one honest line, not a grid of dashes */
-                <p className="font-mono text-[11px] text-slate-500">No geolocation data</p>
-              ) : (
-                <>
-                  {id.asn && <Chip>{id.asn}</Chip>}
-                  {id.isp && <Chip>{id.isp}</Chip>}
-                  {(id.country || id.city) && <Chip>{[id.city, id.country].filter(Boolean).join(', ')}</Chip>}
-                  {id.hosting_type !== 'unknown' && <Chip>{id.hosting_type}</Chip>}
-                  {id.reverse_dns && <Chip>{id.reverse_dns}</Chip>}
-                  {id.registered && <Chip>reg {id.registered.slice(0, 10)}</Chip>}
-                  {torExit && <Chip tone="red">tor exit</Chip>}
-                  {(d.verdict.tags ?? []).slice(0, 12).map((t) => <Chip key={t} tone="red">{t}</Chip>)}
-                </>
-              )}
-            </div>
+            idEmpty ? (
+              /* U8: every identity field null → one honest line, not a grid of dashes */
+              <p className="font-mono text-[11px] text-slate-400">No geolocation data</p>
+            ) : (
+              <>
+                <div>
+                  <IdRow label="ASN" value={id.asn} />
+                  <IdRow label="ISP" value={id.isp} />
+                  <IdRow label="Location" value={[id.city, id.region, id.country].filter(Boolean).join(', ') || null} />
+                  <IdRow label="rDNS" value={id.reverse_dns} />
+                  <IdRow label="Registered" value={id.registered?.slice(0, 10)} />
+                </div>
+                {(id.hosting_type !== 'unknown' || torExit || (d.verdict.tags ?? []).length > 0) && (
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {id.hosting_type !== 'unknown' && <Chip>{id.hosting_type}</Chip>}
+                    {torExit && <Chip tone="red">tor exit</Chip>}
+                    {(d.verdict.tags ?? []).slice(0, 12).map((t) => <Chip key={t} tone="red">{t}</Chip>)}
+                  </div>
+                )}
+              </>
+            )
           ) : (
-            <p className="font-mono text-[11px] text-slate-500">no identity data returned</p>
+            <p className="font-mono text-[11px] text-slate-400">no identity data returned</p>
           )}
         </div>
 
@@ -336,14 +348,14 @@ function ReportView({
 
       {/* Row 2 — graph + inspector */}
       {graph && graph.nodes.size > 1 && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-2">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 items-start">
           <section className="glass-card rounded-xl p-3 lg:col-span-8" aria-label="Trace network">
             <div className="eyebrow mb-2">Trace network</div>
             {graph.pivotStack.length > 1 && <PivotBreadcrumb graph={graph} onCollapse={onCollapse} />}
             <TraceGraph graph={graph} onPivot={onExpand} expandingKey={expandingKey} selectedKey={selectedKey} onSelectNode={setSelectedKey} />
           </section>
           <div className="lg:col-span-4">
-            <NodeInspector d={d} graph={graph} selectedKey={selectedKey} pivotError={pivotError} onSelect={setSelectedKey} onExpand={onExpand} />
+            <NodeInspector d={d} graph={graph} selectedKey={selectedKey} pivotError={pivotError} expandingKey={expandingKey} onSelect={setSelectedKey} onExpand={onExpand} />
           </div>
         </div>
       )}
@@ -352,9 +364,9 @@ function ReportView({
           either row 3's behavior card or row 4, one compact full-width card
           replaces both instead of two stretched bordered voids. */}
       {behaviorEmpty && relsEmpty ? (
-        <section aria-label="Behavior and relations" className="glass-card rounded-xl p-3 flex items-center justify-center gap-2.5">
-          <span aria-hidden className="text-slate-500">◇</span>
-          <p className="font-mono text-[12px] text-slate-500">No behaviour or relation data for this indicator</p>
+        <section aria-label="Behavior and relations" className="glass-card rounded-xl p-3 flex items-center justify-center gap-3">
+          <CircleDashed size={24} strokeWidth={1.5} aria-hidden className="text-slate-500 shrink-0" />
+          <p className="font-mono text-[12px] text-slate-400">No behavior or relation data for this indicator</p>
         </section>
       ) : (
         <>
@@ -370,7 +382,7 @@ function ReportView({
           <section className="glass-card rounded-xl p-3" aria-label="Relations">
             <div className="eyebrow mb-2">Relations · {d.relations?.length ?? 0}</div>
             {relsEmpty ? (
-              <p className="font-mono text-[11px] text-slate-500">No relations reported for this indicator</p>
+              <p className="font-mono text-[11px] text-slate-400">No relations reported for this indicator</p>
             ) : (
               <RelationsTable relations={d.relations ?? []} selectedKey={selectedKey} onSelect={setSelectedKey} />
             )}
@@ -380,7 +392,7 @@ function ReportView({
 
       {/* Row 5 — pulses + raw evidence backstop */}
       {((d.pulses?.length ?? 0) > 0 || (d.evidence?.length ?? 0) > 0) && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-2">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 items-start">
           {(d.pulses?.length ?? 0) > 0 && <div className="glass-card rounded-xl p-3 lg:col-span-5"><PulsesSection d={d} /></div>}
           {(d.evidence?.length ?? 0) > 0 && <div className="glass-card rounded-xl p-3 lg:col-span-7"><EvidenceAccordion d={d} /></div>}
         </div>
@@ -413,9 +425,9 @@ function PivotBreadcrumb({ graph, onCollapse }: { graph: GraphState; onCollapse:
 function NonRoutable({ d }: { d: Dossier }) {
   return (
     <div className="glass-card rounded-2xl p-8 text-center max-w-md mx-auto">
-      <div className="font-mono text-3xl text-slate-400 mb-3" aria-hidden>⊘</div>
+      <div className="flex justify-center mb-3 text-slate-400"><CircleSlash size={24} strokeWidth={1.5} aria-hidden /></div>
       <div className="font-mono text-sm text-slate-300 mb-2 break-all">{d.query.value}</div>
-      <p className="text-sm text-slate-500">{d.note || 'This address is private or reserved — it cannot be investigated.'}</p>
+      <p className="text-sm text-slate-400">{d.note || 'This address is private or reserved. It cannot be investigated.'}</p>
     </div>
   )
 }
@@ -430,7 +442,7 @@ const GateCard = ({ children }: { children: ReactNode }) => (
 const GateLink = ({ children, href }: { children: ReactNode; href: string }) => (
   <Link
     to={href}
-    className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-slate-300 border border-white/15 rounded-full px-5 py-2.5 hover:text-white hover:border-white/30 transition-colors"
+    className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-slate-300 border border-white/15 rounded-full px-5 py-2.5 hover:text-white hover:border-white/30 transition-colors active:scale-[0.98]"
   >
     {children}
   </Link>
@@ -439,7 +451,7 @@ const GateLink = ({ children, href }: { children: ReactNode; href: string }) => 
 export default function InvestigatePage() {
   useSEO({
     title: 'Deep Investigation | Threatbase',
-    description: 'Trace everything a public IP, domain, URL or file hash touched — verdicts, relations, behavior and an AI summary.',
+    description: 'Trace everything a public IP, domain, URL or file hash touched: verdicts, relations, behavior and an AI summary.',
     path: '/investigate',
   })
   const reduce = useReducedMotion()
@@ -538,9 +550,9 @@ export default function InvestigatePage() {
     setPivotError(null)
     try {
       const res = await fetch(`${import.meta.env.BASE_URL}api/investigate?q=${encodeURIComponent(value)}`)
-      if (!res.ok) { setPivotError(`Couldn't expand ${value} — ${res.status === 429 ? "rate-limited, try again in a minute" : 'upstream failed, try again'}`); return }
+      if (!res.ok) { setPivotError(`Couldn't expand ${value}: ${res.status === 429 ? "rate-limited, try again in a minute" : 'upstream failed, try again'}`); return }
       const pd: Dossier | null = await res.json().catch(() => null)
-      if (!pd || !pd.query) { setPivotError(`Couldn't expand ${value} — no dossier returned`); return }
+      if (!pd || !pd.query) { setPivotError(`Couldn't expand ${value}: no dossier returned`); return }
       const now = graphRef.current!
       let next = mergeRelationsIntoGraph(now, pd.relations ?? [], key, node.ring + 1)
       const fresh = next.nodes.get(key)
@@ -552,7 +564,7 @@ export default function InvestigatePage() {
       pushCrumb(value) // keep the sessionStorage trail current for back-nav affordance
     } catch {
       // graph simply doesn't grow, but the inspector says why (U6)
-      setPivotError(`Couldn't expand ${value} — network error, try again`)
+      setPivotError(`Couldn't expand ${value}: network error, try again`)
     } finally {
       busyRef.current = false
       setExpandingNode(null)
@@ -569,15 +581,21 @@ export default function InvestigatePage() {
     syncPivotsParam(next.pivotStack, false)
   }, [])
 
+  // Keep the last successful dossier for the CURRENT query on screen while a
+  // re-run is in flight: refreshing must not destroy the report you're
+  // refreshing. A new q (or an error) falls through to the skeleton instead.
+  const shown = q && dossier && !error && dossier.query.value.toLowerCase() === q.toLowerCase() ? dossier : null
+  const hasReport = !!(shown && !shown.note)
+
   const search = (
-    <form onSubmit={submit} className="no-print max-w-xl mx-auto mb-10 flex gap-2">
+    <form onSubmit={submit} className={`no-print max-w-xl mx-auto flex gap-2 ${hasReport ? 'mb-3' : 'mb-10'}`}>
       <input
         value={term}
         onChange={(e) => setTerm(e.target.value)}
         placeholder="8.8.8.8 · evil.example.com · e3b0c442…"
         aria-label="Indicator to investigate"
         spellCheck={false}
-        className="min-w-0 flex-1 bg-white/[0.03] border border-white/10 rounded-xl px-5 py-4 font-mono text-lg text-white placeholder:text-slate-600 focus:outline-none focus:border-red-500/40"
+        className="min-w-0 flex-1 bg-white/[0.03] border border-white/10 rounded-xl px-5 py-4 font-mono text-lg text-white caret-red-500 placeholder:text-slate-500 focus:border-red-500/40"
       />
       {/* U7: Enter worked; clicking where a button should be did nothing. */}
       <button
@@ -588,8 +606,6 @@ export default function InvestigatePage() {
       </button>
     </form>
   )
-
-  const hasReport = !!(q && !loading && !error && dossier && !dossier.note)
 
   // Pro gate (hooks above already ran — safe to branch here).
   if (proStatus !== 'pro') {
@@ -612,12 +628,9 @@ export default function InvestigatePage() {
         )}
         {proStatus === 'not-pro' && (
           <GateCard>
-            <div className="flex items-center justify-center gap-2 eyebrow mb-3">
-              <Lock size={12} aria-hidden />Deep Investigation
-            </div>
-            <h2 className="text-2xl font-extrabold tracking-tight text-white mb-3">A Pro feature</h2>
+            <h2 className="text-2xl font-extrabold tracking-tight text-white mb-3"><Lock size={16} aria-hidden className="inline-block mr-2 -mt-1" />A Pro feature</h2>
             <p className="text-sm text-slate-400 mb-2">
-              Trace everything an IP, domain, URL or hash touched — 12 intel sources,
+              Trace everything an IP, domain, URL or hash touched. 12 intel sources,
               a weighted verdict, an AI analyst summary and a shareable dossier.
             </p>
             <p className="text-sm text-slate-400 mb-6">
@@ -652,14 +665,14 @@ export default function InvestigatePage() {
         )}
         {proStatus === 'unavailable' && (
           <GateCard>
-            <div className="font-mono text-2xl text-slate-400 mb-3" aria-hidden>⚠</div>
+            <div className="flex justify-center mb-3 text-red-400"><TriangleAlert size={24} strokeWidth={1.5} aria-hidden /></div>
             <h2 className="text-xl font-extrabold tracking-tight text-white mb-3">
-              Couldn&rsquo;t verify your access — check your connection.
+              Couldn&rsquo;t verify your access. Check your connection.
             </h2>
             <button
               type="button"
               onClick={refetch}
-              className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-white bg-red-600 hover:bg-red-500 rounded-full px-5 py-2.5 transition-colors"
+              className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-white bg-red-600 hover:bg-red-500 rounded-full px-5 py-2.5 transition-colors active:scale-[0.98]"
             >
               <RefreshCw size={12} aria-hidden /> Retry
             </button>
@@ -697,12 +710,12 @@ export default function InvestigatePage() {
       {search}
 
       {!q && (
-        <p className="text-center text-slate-500 text-sm font-mono">
-          Paste any IP, domain, URL or hash. Shared results at this URL.
+        <p className="text-center text-slate-400 text-sm font-mono">
+          Paste an IP, domain, URL or hash. Every result has a shareable URL.
         </p>
       )}
 
-      {q && loading && (
+      {q && loading && !shown && (
         <div className="space-y-4 max-w-3xl mx-auto">
           <div className="h-32 rounded-2xl bg-white/[0.04] animate-pulse" />
           <div className="h-8 w-2/3 mx-auto rounded-xl bg-white/[0.04] animate-pulse" style={{ animationDelay: '60ms' }} />
@@ -712,16 +725,16 @@ export default function InvestigatePage() {
 
       {q && !loading && error && (
         <div className="glass-card rounded-2xl p-6 text-center max-w-md mx-auto border-red-500/20">
-          <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-red-400 mb-2">⚠ investigation failed</div>
+          <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-red-400 mb-2 inline-flex items-center gap-1.5 justify-center"><CircleAlert size={12} strokeWidth={2} aria-hidden />Investigation failed</div>
           <p className="text-sm text-slate-400 break-words">{error}</p>
         </div>
       )}
 
-      {q && !loading && !error && dossier && (
-        dossier.note ? <NonRoutable d={dossier} /> : (
+      {shown && (
+        shown.note ? <NonRoutable d={shown} /> : (
           // key by the indicator: a new q remounts the cockpit and drops the
           // selectedKey (row 4/inspector selection belongs to the old dossier)
-          <ReportView key={dossier.query.value} d={dossier} graph={graphState} expandingKey={expandingNode} pivotError={pivotError} onExpand={expandNode} onCollapse={collapseToDepth} onRefresh={onRefresh} />
+          <ReportView key={shown.query.value} d={shown} graph={graphState} expandingKey={expandingNode} pivotError={pivotError} refreshing={loading} onExpand={expandNode} onCollapse={collapseToDepth} onRefresh={onRefresh} />
         )
       )}
       {crumbs.length > 1 && (

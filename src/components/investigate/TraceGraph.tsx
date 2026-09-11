@@ -40,7 +40,7 @@ export default function TraceGraph({
   return (
     <section aria-label="Trace graph">
       <div className="relative hidden md:block">
-        <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label={`Relation graph: ${graph.nodes.size - 1} nodes around ${queryValue}`}>
+        <svg viewBox={`0 0 ${W} ${H}`} className="w-full max-w-[640px] mx-auto" role="group" aria-label={`Relation graph: ${graph.nodes.size - 1} nodes around ${queryValue}`}>
           {/* cluster hulls first so nodes/edges paint on top */}
           {[...clusters].filter(([, pts]) => pts.length >= 2).map(([via, pts]) => {
             const hull = convexHull(pts)
@@ -55,7 +55,7 @@ export default function TraceGraph({
             return (
               <g key={'c' + via} aria-hidden="true">
                 <polygon points={padded} stroke="rgba(206,22,50,0.12)" fill="rgba(206,22,50,0.04)" strokeWidth="1" />
-                <text x={top.x} y={top.y - 26} textAnchor="middle" fontSize="9" fill="rgba(148,163,184,0.45)" className="font-mono select-none">
+                <text x={top.x} y={top.y - 26} textAnchor="middle" fontSize="9" fill="rgba(148,163,184,0.8)" className="font-mono select-none">
                   {via.length > 20 ? via.slice(0, 20) + '…' : via}
                 </text>
               </g>
@@ -82,8 +82,8 @@ export default function TraceGraph({
           })}
           {[...positions].filter(([, p]) => p.node.ring > 0).map(([k, p]) => (
             <g key={k} opacity={ringOpacity(p.node.ring)}
-              className="cursor-pointer" tabIndex={0} role="button"
-              aria-label={`${p.node.value} (${p.node.type}) — ${p.node.expanded ? 'expanded' : p.node.ring >= MAX_RINGS ? 'maximum depth' : 'expand into graph'}`}
+              className="cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500/60" tabIndex={0} role="button"
+              aria-label={`${p.node.value} (${p.node.type}, ${p.node.expanded ? 'expanded' : p.node.ring >= MAX_RINGS ? 'maximum depth' : 'expand into graph'})`}
               onMouseEnter={() => setHover(p.node)} onMouseLeave={() => setHover(null)}
               onFocus={() => setHover(p.node)} onBlur={() => setHover(null)}
               onClick={() => { onSelectNode?.(k); onPivot(p.node.type, p.node.value) }}
@@ -119,14 +119,14 @@ export default function TraceGraph({
           )}
         </svg>
         {hover && (
-          <div className="absolute top-2 left-2 glass-card rounded-lg px-3 py-2 text-xs font-mono text-slate-300 pointer-events-none max-w-[60%]" role="status">
+          <div className="absolute top-2 left-2 glass-card rounded-md px-3 py-2 text-xs font-mono text-slate-300 pointer-events-none max-w-[60%]" role="status">
             <span className="text-white break-all">{hover.value}</span>{' '}
             <span className="text-slate-500">[{hover.type}]</span>
             <div className="text-slate-400">
               {hover.edge?.replace(/_/g, ' ')}{hover.via ? ` · ${hover.via}` : ''} · weight {hover.weight}
             </div>
             {!hover.expanded && (
-              <div className="text-red-200/80">{hover.ring >= MAX_RINGS ? 'max depth — table view only' : 'expand to investigate'}</div>
+              <div className="text-red-200/80">{hover.ring >= MAX_RINGS ? 'max depth, table view only' : 'expand to investigate'}</div>
             )}
           </div>
         )}
@@ -151,8 +151,8 @@ function NodeTable({ graph, onPivot }: { graph: GraphState; onPivot: (type: Grap
             className="font-mono text-[11px] text-slate-300 hover:text-red-200 disabled:opacity-50 text-left truncate flex-1">
             {n.malicious === true && <span aria-hidden className="text-red-400 mr-1">!</span>}{n.value}
           </button>
-          <span className="font-mono text-[9px] uppercase text-slate-600 shrink-0">{n.type}</span>
-          <span className="font-mono text-[9px] text-slate-500 shrink-0">{n.edge?.replace(/_/g, ' ')}{n.via ? ` · ${n.via}` : ''}{n.expanded ? ' · expanded' : ''}</span>
+          <span className="font-mono text-[10px] uppercase text-slate-500 shrink-0">{n.type}</span>
+          <span className="font-mono text-[9px] text-slate-400 shrink-0">{n.edge?.replace(/_/g, ' ')}{n.via ? ` · ${n.via}` : ''}{n.expanded ? ' · expanded' : ''}</span>
         </li>
       ))}
     </ul>

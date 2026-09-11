@@ -1,17 +1,19 @@
+import type { ComponentType } from 'react'
+import { Ban, Check, Eye, Info, Search, type LucideProps } from 'lucide-react'
 import type { Dossier, Narrative } from '@/investigationTypes'
 
-const ACTIONS: Record<Narrative['recommended_action'], { label: string; icon: string; cls: string }> = {
-  block: { label: 'Block', icon: '⛔', cls: 'text-red-300 border-red-500/40 bg-red-500/10' },
-  monitor: { label: 'Monitor', icon: '👁', cls: 'text-amber-300 border-amber-500/40 bg-amber-500/10' },
-  investigate_further: { label: 'Investigate Further', icon: '🔍', cls: 'text-sky-300 border-sky-500/40 bg-sky-500/10' },
-  safe_to_ignore: { label: 'Safe', icon: '✓', cls: 'text-emerald-300 border-emerald-500/40 bg-emerald-500/10' },
+const ACTIONS: Record<Narrative['recommended_action'], { label: string; icon: ComponentType<LucideProps>; cls: string }> = {
+  block: { label: 'Block', icon: Ban, cls: 'text-red-300 border-red-500/40 bg-red-500/10' },
+  monitor: { label: 'Monitor', icon: Eye, cls: 'text-amber-300 border-amber-500/40 bg-amber-500/10' },
+  investigate_further: { label: 'Investigate Further', icon: Search, cls: 'text-sky-300 border-sky-500/40 bg-sky-500/10' },
+  safe_to_ignore: { label: 'Safe', icon: Check, cls: 'text-emerald-300 border-emerald-500/40 bg-emerald-500/10' },
 }
 
 function ActionChip({ action }: { action: Narrative['recommended_action'] }) {
   const a = ACTIONS[action] ?? ACTIONS.investigate_further
   return (
     <span className={`inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider rounded-full px-2.5 py-1 border ${a.cls}`}>
-      <span aria-hidden>{a.icon}</span>{a.label}
+      <a.icon size={12} strokeWidth={2} aria-hidden />{a.label}
     </span>
   )
 }
@@ -20,11 +22,11 @@ function ActionChip({ action }: { action: Narrative['recommended_action'] }) {
  *  old paragraph — stale KV dossiers live up to 24 h after deploy. */
 export function NarrativeCard({ n }: { n: Narrative }) {
   return (
-    <div className="glass-card rounded-2xl p-5">
+    <div className="glass-card rounded-xl p-5">
       <p className="text-lg font-mono text-white leading-snug mb-4">{n.verdict_sentence}</p>
       <div className="flex flex-wrap items-center gap-2">
         <ActionChip action={n.recommended_action} />
-        <span className="font-mono text-[10px] uppercase tracking-wider text-slate-500">confidence: {n.confidence}</span>
+        <span className="font-mono text-[10px] uppercase tracking-wider text-slate-400">confidence: {n.confidence}</span>
       </div>
       {n.why_malicious.length > 0 && (
         <ul className="mt-3 space-y-1">
@@ -63,11 +65,16 @@ export function NarrativeSection({ d }: { d: Dossier }) {
     return (
       <section aria-label="AI summary">
         <div className="eyebrow mb-2">Analyst summary (AI)</div>
-        <div className="glass-card rounded-2xl p-5 flex items-start gap-2.5">
-          <span aria-hidden className="text-slate-500 mt-0.5">ⓘ</span>
-          <p className="text-sm text-slate-400 leading-relaxed">
-            AI summary unavailable — the structured facts below stand on their own.
-          </p>
+        <div className="glass-card rounded-xl p-5 flex items-start gap-2.5">
+          <Info size={12} strokeWidth={2} aria-hidden className="text-slate-400 shrink-0 mt-1" />
+          <div>
+            <p className="text-sm text-slate-300 leading-relaxed">
+              {d.verdict.malicious_by} of {d.verdict.total_engines} sources flag it.
+            </p>
+            <p className="text-sm text-slate-400 leading-relaxed">
+              No AI summary generated. The structured facts below stand on their own.
+            </p>
+          </div>
         </div>
       </section>
     )
@@ -76,12 +83,12 @@ export function NarrativeSection({ d }: { d: Dossier }) {
     <section aria-label="AI summary">
       <div className="eyebrow mb-2">Analyst summary (AI)</div>
       {typeof d.narrative === 'string' ? (
-        /* legacy pre-C dossier still cached in KV (<24 h) — plain paragraph, same as before */
-        <p className="text-sm text-slate-300 leading-relaxed glass-card rounded-2xl p-5">{d.narrative}</p>
+        /* legacy pre-C dossier still cached in KV (<24 h): plain paragraph, same as before */
+        <p className="text-sm text-slate-300 leading-relaxed glass-card rounded-xl p-5">{d.narrative}</p>
       ) : (
         <NarrativeCard n={d.narrative} />
       )}
-      <p className="font-mono text-[9px] text-slate-600 mt-2">Machine-generated from the facts above — verify before acting.</p>
+      <p className="font-mono text-[11px] text-slate-400 mt-2">Machine-generated from the facts above. Verify before acting.</p>
     </section>
   )
 }
@@ -93,24 +100,24 @@ export function BehaviorSection({ d }: { d: Dossier }) {
     <section aria-label="Behavior">
       <div className="eyebrow mb-2">Behavior</div>
       {b && b.ports.length > 0 ? (
-        <div className="overflow-x-auto rounded-xl border border-white/[0.06]">
+        <div className="overflow-x-auto rounded-md border border-white/[0.06]">
           <table className="w-full text-left font-mono text-[11px]">
-            <thead className="text-slate-500 uppercase text-[9px] tracking-wider bg-white/[0.02]">
+            <thead className="text-slate-400 uppercase text-[9px] tracking-wider bg-white/[0.02]">
               <tr><th className="px-3 py-2">Port</th><th className="px-3 py-2">Service</th><th className="px-3 py-2">Banner</th></tr>
             </thead>
             <tbody className="text-slate-300 divide-y divide-white/[0.04]">
               {[...b.ports].sort((x, y) => x.port - y.port).map((p) => (
                 <tr key={p.port}>
                   <td className="px-3 py-2 tabular-nums">{p.port}</td>
-                  <td className="px-3 py-2">{p.service || '—'}</td>
-                  <td className="px-3 py-2 text-slate-500 max-w-[280px] truncate" title={p.banner}>{p.banner || '—'}</td>
+                  <td className="px-3 py-2">{p.service || 'n/a'}</td>
+                  <td className="px-3 py-2 text-slate-400 max-w-[280px] truncate" title={p.banner}>{p.banner || 'n/a'}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       ) : (
-        <p className="text-sm text-slate-500 font-mono">no open ports reported</p>
+        <p className="text-sm text-slate-400 font-mono">no open ports reported</p>
       )}
       {b && b.tags.length > 0 && (
         <div className="flex flex-wrap gap-1.5 mt-3">
@@ -120,8 +127,8 @@ export function BehaviorSection({ d }: { d: Dossier }) {
         </div>
       )}
       {b && (b.first_seen || b.last_seen) && (
-        <p className="font-mono text-[10px] text-slate-500 mt-3 tabular-nums">
-          first seen {b.first_seen?.slice(0, 10) ?? '—'} · last seen {b.last_seen?.slice(0, 10) ?? '—'}
+        <p className="font-mono text-[10px] text-slate-400 mt-3 tabular-nums">
+          first seen {b.first_seen?.slice(0, 10) ?? 'n/a'} · last seen {b.last_seen?.slice(0, 10) ?? 'n/a'}
         </p>
       )}
     </section>
@@ -139,10 +146,10 @@ export function BehaviorSection({ d }: { d: Dossier }) {
             {/^https?:\/\//i.test(p.url) ? (
               <a href={p.url} target="_blank" rel="noopener noreferrer"
                 className="font-mono text-[11px] text-slate-400 hover:text-red-200 underline decoration-white/10 underline-offset-2">
-                {p.title} <span className="text-slate-600">· {p.modified.slice(0, 10)}</span>
+                {p.title} <span className="text-slate-500">· {p.modified.slice(0, 10)}</span>
               </a>
             ) : (
-              <span className="font-mono text-[11px] text-slate-500">{p.title} <span className="text-slate-600">· {p.modified.slice(0, 10)}</span></span>
+              <span className="font-mono text-[11px] text-slate-400">{p.title} <span className="text-slate-500">· {p.modified.slice(0, 10)}</span></span>
             )}
           </li>
         ))}

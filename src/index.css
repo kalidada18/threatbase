@@ -137,6 +137,13 @@
     color: #fff;
   }
 
+  /* Shared keyboard focus ring for every interactive surface (cockpit included).
+     One token instead of per-page hand-rolled focus-visible rings. */
+  :where(a,button,input,summary,[tabindex]):focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+
   /* Premium dark scrollbar with a restrained red thumb on hover. */
   * {
     scrollbar-width: thin;
@@ -157,6 +164,10 @@
 }
 
 @layer components {
+  /* Radius ladder (locked — don't invent new values): interactive controls =
+     pill (rounded-full), cockpit panels = rounded-xl, standalone cards =
+     rounded-2xl (the .glass-card default below), inner containers/accordions
+     = rounded-md. Token --radius (0.875rem) is for shadcn primitives only. */
   /* Unified premium glass surface — single source of truth for all cards.
      Hairline border + inset top highlight + tinted elevation. */
   .glass-card {
