@@ -41,6 +41,7 @@ export type Dossier = {
   timeline: TimelinePoint[]
   narrative: Narrative | null
   investigated_by: number
+  stale_at: string // ISO instant when this dossier expires — set at KV-write time from cacheTtl
 }
 
 // Refang first: attackers write hxxp://, [.], [:] to dodge scanners. Strip whitespace.
@@ -89,6 +90,25 @@ export function isPublicIp(v: string): boolean {
 }
 
 export const cacheKey = (type: IndicatorType, value: string) => `inv:${type}:${value}`
+
+/** KV keys reject spaces/unicode — strip everything outside [a-z0-9._:].
+ *  ponytail: collisions only across exotic chars (URL query junk, IDN), acceptable for a rate-limit key. */
+export const sanitizeKv = (s: string) => s.replace(/[^a-z0-9._:]/g, '')
+
+/** Verdict-driven cache TTL (seconds). Lower score = more likely clean = safe to cache longer;
+ *  higher score = actively malicious = re-investigate sooner. */
+export function cacheTtl(verdict: Verdict): number {
+  if (verdict.status === 'malicious' && verdict.confidence === 'high') return 7_200       // 2 h — C2/confirmed threat
+  if (verdict.status === 'malicious')                                   return 14_400      // 4 h
+  if (verdict.status === 'high_risk')                                   return 21_600      // 6 h
+  if (verdict.status === 'suspicious')                                  return 43_200      // 12 h
+  if (verdict.status === 'clean')                                       return 172_800     // 48 h
+  return 86_400 // unknown → 24 h default
+}
+
+export function staleAt(generatedAt: string, ttl: number): string {
+  return new Date(new Date(generatedAt).getTime() + ttl * 1000).toISOString()
+}
 
 const SOURCE_WEIGHT: Record<string, number> = {
   feodo:          10,   // C2 botnet confirmed — highest signal
