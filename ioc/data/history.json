@@ -2302,33 +2302,64 @@
   },
   {
     "date": "2026-09-10",
-    "total_unique_ips": 963510,
-    "total_unique_ipv6": 16821,
-    "total_unique_cidrs": 21510,
-    "total_unique_domains": 3524110,
-    "total_unique_hashes": 1135209,
-    "total_unique_urls": 127165,
-    "active_feeds": 55,
+    "total_unique_ips": 966503,
+    "total_unique_ipv6": 17001,
+    "total_unique_cidrs": 21604,
+    "total_unique_domains": 3525551,
+    "total_unique_hashes": 1138105,
+    "total_unique_urls": 127734,
+    "active_feeds": 54,
     "category_counts": {
-      "Mixed": 740373,
-      "Malicious": 187139,
-      "Brute-Force": 28284,
-      "Spam": 13421,
-      "Botnet": 3506,
+      "Mixed": 741066,
+      "Malicious": 187514,
+      "Compromised": 15552,
+      "Brute-Force": 26962,
+      "Spam": 12872,
+      "Botnet": 3031,
       "Malware": 2728,
-      "Compromised": 15553,
-      "Tor": 6733,
+      "Tor": 6748,
       "C2": 7607,
-      "Exploit": 9513
+      "Exploit": 9532
     },
     "top_sources": {
       "romainmarcoux_outgoing_aa": 131072,
       "ipsum": 125551,
-      "romainmarcoux_outgoing_ab": 50467,
+      "romainmarcoux_outgoing_ab": 50609,
       "romainmarcoux_outgoing_40k": 40000,
-      "blocklist_de": 24744
+      "blocklist_de": 23864
     },
     "stale_count": 0,
-    "avg_freshness": 5.0
+    "avg_freshness": 4.9
+  },
+  {
+    "date": "2026-09-11",
+    "total_unique_ips": 971363,
+    "total_unique_ipv6": 17061,
+    "total_unique_cidrs": 21604,
+    "total_unique_domains": 3526675,
+    "total_unique_hashes": 1138202,
+    "total_unique_urls": 127996,
+    "active_feeds": 54,
+    "category_counts": {
+      "Mixed": 749083,
+      "Malicious": 187920,
+      "Compromised": 15573,
+      "Brute-Force": 26842,
+      "Spam": 12750,
+      "Botnet": 2921,
+      "Malware": 2728,
+      "Tor": 6780,
+      "C2": 7607,
+      "Exploit": 9775
+    },
+    "top_sources": {
+      "romainmarcoux_outgoing_aa": 131072,
+      "ipsum": 123060,
+      "romainmarcoux_outgoing_ab": 51331,
+      "romainmarcoux_outgoing_40k": 40000,
+      "blocklist_de": 23257
+    },
+    "stale_count": 0,
+    "avg_freshness": 5.6
   }
 ]
