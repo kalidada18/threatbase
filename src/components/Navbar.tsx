@@ -11,6 +11,7 @@ const menuItems = [
     { name: 'About Us', href: '/about' },
     { name: 'Threat Feeds', href: '/threatfeed#feeds' },
     { name: 'Hall of Shame', href: '/hall-of-shame' },
+    { name: 'Investigate', href: '/investigate' },
     { name: 'Top APT', href: '/top-apt' },
     { name: 'Improvements', href: '/improvements' },
     { name: 'API Docs', href: '/api' },

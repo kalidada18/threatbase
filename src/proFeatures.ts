@@ -10,6 +10,7 @@ export const PRO_FEATURES = [
   'First-hand honeypot intel, listed minutes after our sensors see it',
   'Every source liveness-monitored: dead ones dropped, never stale',
   'Formats for your firewall, IDS/IPS and SIEM, under one stable auto-update URL',
+  'Deep Investigation — trace everything any IOC touched across 12 sources',
 ] as const
 
 /** The three the landing band leads with, in the same ranked order. */

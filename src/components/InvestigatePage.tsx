@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { motion, useReducedMotion } from 'framer-motion'
+import { Lock, RefreshCw } from 'lucide-react'
 import IsoPageShell from './layout/IsoPageShell'
 import { useSEO } from '@/useSEO'
+import { useAuth } from '@/AuthContext'
 import { useInvestigation } from '@/useInvestigation'
+import { usePro } from '@/usePro'
 import type { Dossier, IndicatorType, TimelinePoint } from '@/investigationTypes'
 import TraceGraph from './investigate/TraceGraph'
 import ActivityCalendar from './investigate/ActivityCalendar'
@@ -417,6 +420,22 @@ function NonRoutable({ d }: { d: Dossier }) {
   )
 }
 
+/** Pro gate shell: one centered glass card for every non-'pro' state. */
+const GateCard = ({ children }: { children: ReactNode }) => (
+  <div className="glass-card rounded-2xl p-8 text-center max-w-md mx-auto">
+    {children}
+  </div>
+)
+
+const GateLink = ({ children, href }: { children: ReactNode; href: string }) => (
+  <Link
+    to={href}
+    className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-slate-300 border border-white/15 rounded-full px-5 py-2.5 hover:text-white hover:border-white/30 transition-colors"
+  >
+    {children}
+  </Link>
+)
+
 export default function InvestigatePage() {
   useSEO({
     title: 'Deep Investigation | Threatbase',
@@ -426,6 +445,8 @@ export default function InvestigatePage() {
   const reduce = useReducedMotion()
   const navigate = useNavigate()
   const [params] = useSearchParams()
+  const { status: proStatus, refetch } = usePro()
+  const { user } = useAuth()
   const q = params.get('q')?.trim() || ''
   const wantsRefresh = params.get('refresh') === '1'
   const { dossier, loading, error } = useInvestigation(q || null, wantsRefresh)
@@ -570,6 +591,85 @@ export default function InvestigatePage() {
   )
 
   const hasReport = !!(q && !loading && !error && dossier && !dossier.note)
+
+  // Pro gate (hooks above already ran — safe to branch here).
+  if (proStatus !== 'pro') {
+    return (
+      <IsoPageShell>
+        <motion.div
+          initial={reduce ? false : { opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="mx-auto max-w-3xl mb-8 text-center"
+        >
+          <div className="eyebrow mb-6">Deep Investigation</div>
+        </motion.div>
+        {proStatus === 'checking' && (
+          <div className="space-y-4 max-w-md mx-auto" aria-busy="true">
+            <div className="h-24 rounded-2xl bg-white/[0.04] animate-pulse" />
+            <div className="h-4 w-2/3 mx-auto rounded-xl bg-white/[0.04] animate-pulse" style={{ animationDelay: '60ms' }} />
+            <div className="h-4 w-1/2 mx-auto rounded-xl bg-white/[0.04] animate-pulse" style={{ animationDelay: '120ms' }} />
+          </div>
+        )}
+        {proStatus === 'not-pro' && (
+          <GateCard>
+            <div className="flex items-center justify-center gap-2 eyebrow mb-3">
+              <Lock size={12} aria-hidden />Deep Investigation
+            </div>
+            <h2 className="text-2xl font-extrabold tracking-tight text-white mb-3">A Pro feature</h2>
+            <p className="text-sm text-slate-400 mb-2">
+              Trace everything an IP, domain, URL or hash touched — 12 intel sources,
+              a weighted verdict, an AI analyst summary and a shareable dossier.
+            </p>
+            <p className="text-sm text-slate-400 mb-6">
+              Pro is on manual onboarding right now:{' '}
+              <a
+                href="mailto:threatbasepro@gmail.com"
+                className="text-red-400 hover:text-red-300 underline underline-offset-2 break-all"
+              >
+                Email threatbasepro@gmail.com
+              </a>{' '}
+              to unlock it.
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <GateLink href="/pricing">See pricing</GateLink>
+            </div>
+            {!user && (
+              <p className="text-xs text-slate-500 mt-4">Sign in first (top right) to check your access.</p>
+            )}
+          </GateCard>
+        )}
+        {proStatus === 'signed-out' && (
+          <GateCard>
+            <h2 className="text-2xl font-extrabold tracking-tight text-white mb-3">Sign in to check your access</h2>
+            <p className="text-sm text-slate-400 mb-6">
+              Deep Investigation is a Pro feature. Use the sign-in buttons at the top
+              right and we&rsquo;ll check what&rsquo;s on your account.
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <GateLink href="/pricing">See pricing</GateLink>
+            </div>
+          </GateCard>
+        )}
+        {proStatus === 'unavailable' && (
+          <GateCard>
+            <div className="font-mono text-2xl text-slate-400 mb-3" aria-hidden>⚠</div>
+            <h2 className="text-xl font-extrabold tracking-tight text-white mb-3">
+              Couldn&rsquo;t verify your access — check your connection.
+            </h2>
+            <button
+              type="button"
+              onClick={refetch}
+              className="inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-white bg-red-600 hover:bg-red-500 rounded-full px-5 py-2.5 transition-colors"
+            >
+              <RefreshCw size={12} aria-hidden /> Retry
+            </button>
+          </GateCard>
+        )}
+      </IsoPageShell>
+    )
+  }
+
   return (
     <IsoPageShell>
       {/* Cockpit mode (Task F): with a dossier on screen the hero collapses to
