@@ -180,6 +180,34 @@ describe('normalizeGreynoise', () => {
     expect(scanner.tags).toEqual(['mass_scanner', 'greynoise:mirai_scanner'])
     expect(normalizeGreynoise({ classification: 'benign' }).malicious).toBe(false)
     expect(normalizeGreynoise({}).malicious).toBeNull()
-    expect(normalizeGreynoise(null)).toEqual({ malicious: null, tags: [], last_seen: null })
+    expect(normalizeGreynoise(null)).toEqual({ malicious: null, tags: [], last_seen: null, relations: [], sightings: [] })
+  })
+  it('enterprise /v3/ip shape: classification, intention tags, CVEs, actor, rdns, sightings', () => {
+    const r = normalizeGreynoise({
+      internet_scanner_intelligence: {
+        found: true, classification: 'malicious', actor: 'Mirai Botnet',
+        last_seen: '2026-09-11',
+        tags: [
+          { slug: 'ssh-connection-attempt', name: 'SSH Connection Attempt', cves: [] },
+          { name: 'Log4Shell Exploit', cves: ['cve-2021-44228'] },
+        ],
+      },
+      metadata: { domain: 'dmzhost.co' },
+    })
+    expect(r.malicious).toBe(true)
+    expect(r.last_seen).toBe('2026-09-11')
+    expect(r.tags).toContain('greynoise:ssh-connection-attempt')
+    expect(r.tags).toContain('greynoise:log4shell_exploit')
+    expect(r.tags).toContain('cve:CVE-2021-44228')
+    expect(r.tags).toContain('greynoise_actor:mirai_botnet')
+    expect(r.relations).toEqual([{ type: 'domain', value: 'dmzhost.co', edge: 'greynoise_rdns', via: 'GreyNoise', weight: 1 }])
+    expect(r.sightings).toHaveLength(2)
+    expect(r.sightings[0]).toEqual({ date: '2026-09-11', source: 'greynoise', event: 'SSH Connection Attempt' })
+  })
+  it('enterprise: suspicious stays opinion-free, unknown actor emits nothing', () => {
+    const r = normalizeGreynoise({ internet_scanner_intelligence: { classification: 'suspicious', actor: 'unknown', tags: [], last_seen: '' }, metadata: {} })
+    expect(r.malicious).toBeNull()
+    expect(r.tags).toEqual([])
+    expect(r.last_seen).toBeNull()
   })
 })

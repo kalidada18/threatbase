@@ -113,8 +113,34 @@ export function ipInCidr(ip: string, cidr: string): boolean {
   return a !== null && b !== null && (a & mask) === (b & mask)
 }
 
-/** GreyNoise riot-over-classification rule, pure. */
-export function normalizeGreynoise(json: any): { malicious: boolean | null; tags: string[]; last_seen: string | null } {
+/** GreyNoise normalizer — handles both API shapes. Enterprise /v3/ip
+ * (internet_scanner_intelligence: tags w/ intention+CVEs, actor, rdns domain,
+ * last_seen) and Community /v3/community (riot/noise/name). Pure, fixture-tested. */
+export function normalizeGreynoise(json: any): { malicious: boolean | null; tags: string[]; last_seen: string | null; relations: Relation[]; sightings: Sighting[] } {
+  const gi = json?.internet_scanner_intelligence
+  if (gi && typeof gi === 'object') {
+    const cat = String(gi.classification ?? '')
+    // suspicious stays opinion-free (null) — GreyNoise itself hedges; the
+    // greynoise:<tag> chips carry the signal instead of the verdict.
+    const malicious = cat === 'malicious' ? true : cat === 'benign' ? false : null
+    const last_seen: string | null = String(gi.last_seen ?? json?.last_seen_timestamp ?? '').slice(0, 10) || null
+    const tags: string[] = []
+    const sightings: Sighting[] = []
+    for (const t of arr(gi.tags)) {
+      const slug = String(t?.slug ?? t?.name ?? '').toLowerCase().replace(/\s+/g, '_')
+      if (!slug) continue
+      tags.push(`greynoise:${slug}`)
+      for (const cve of arr(t?.cves)) tags.push(`cve:${String(cve).toUpperCase()}`)
+      if (gi.found === true && last_seen) sightings.push({ date: last_seen, source: 'greynoise', event: String(t?.name ?? slug) })
+    }
+    const actor = String(gi.actor ?? '')
+    if (actor && actor !== 'unknown') tags.push(`greynoise_actor:${actor.toLowerCase().replace(/\s+/g, '_')}`)
+    const relations: Relation[] = []
+    const dm = String(json?.metadata?.domain ?? '').trim()
+    if (/^[\w-]+(\.[\w-]+)+$/.test(dm)) relations.push({ type: 'domain', value: dm.toLowerCase(), edge: 'greynoise_rdns', via: 'GreyNoise', weight: 1 })
+    return { malicious, tags: [...new Set(tags)], last_seen, relations, sightings }
+  }
+  // Community shape (also the Enterprise 401/403/404 fallback).
   const malicious =
     json?.riot === true ? false :
     json?.classification === 'malicious' ? true :
@@ -123,7 +149,7 @@ export function normalizeGreynoise(json: any): { malicious: boolean | null; tags
   if (json?.noise && malicious !== true) tags.push('mass_scanner')
   if (json?.riot) tags.push('known_safe_service')
   if (json?.name) tags.push(`greynoise:${String(json.name).toLowerCase().replace(/\s+/g, '_')}`)
-  return { malicious, tags, last_seen: json?.last_seen ?? null }
+  return { malicious, tags, last_seen: json?.last_seen ?? null, relations: [], sightings: [] }
 }
 
 // --- adapters ---------------------------------------------------------------
@@ -346,20 +372,34 @@ export async function urlhausCheck(type: IndicatorType, value: string, fetchImpl
   }
 }
 
-/** GreyNoise Community (v3) — scanner/riot classification. Skipped without key. */
-export async function greynoiseCheck(ip: string, env: { GREYNOISE_API_KEY?: string }, fetchImpl: typeof fetch): Promise<SourceResult<{ parts: VerdictPart[]; tags: string[] }>> {
+/** GreyNoise (v3) — Enterprise /v3/ip when the key allows it, Community
+ * /v3/community otherwise. Enterprise 404 is a coverage gap (sensor data only
+ * for scanned/attacking IPs), not an opinion — it falls back to community. */
+export async function greynoiseCheck(ip: string, env: { GREYNOISE_API_KEY?: string }, fetchImpl: typeof fetch): Promise<SourceResult<{ parts: VerdictPart[]; tags: string[]; relations: Relation[]; sightings: Sighting[] }>> {
   if (!env.GREYNOISE_API_KEY) return { source: 'greynoise', ok: false, skipped: true }
   if (!/^[\d.]+$/.test(ip) && !ip.includes(':')) return { source: 'greynoise', ok: false, skipped: true }
-  try {
-    const r = await fetchImpl(`https://api.greynoise.io/v3/community/${encodeURIComponent(ip)}`, {
-      headers: { ...HEADERS, key: env.GREYNOISE_API_KEY },
-      signal: timeout(),
-    })
+  const headers = { ...HEADERS, key: env.GREYNOISE_API_KEY }
+  const get = async (url: string) => {
+    const r = await fetchImpl(url, { headers, signal: timeout() })
     // 404 = "not seen by GreyNoise" — an opinion-free answer, not a failure.
-    if (r.status === 404) return { source: 'greynoise', ok: true, data: { parts: [{ source: 'greynoise', malicious: null, last_seen: null }], tags: [] } }
-    if (!r.ok) return { source: 'greynoise', ok: false, error: `HTTP ${r.status}` }
-    const { malicious, tags, last_seen } = normalizeGreynoise(await r.json())
-    return { source: 'greynoise', ok: true, data: { parts: [{ source: 'greynoise', malicious, last_seen }], tags } }
+    if (r.status === 404) return { json: null as any, opinionFree: true }
+    if (!r.ok) throw new Error(`HTTP ${r.status}`)
+    return { json: await r.json(), opinionFree: false }
+  }
+  try {
+    let json: any
+    try {
+      const ent = await get(`https://api.greynoise.io/v3/ip/${encodeURIComponent(ip)}`)
+      // Enterprise 404 is a coverage gap (GN only holds sensor data for
+      // scanned/attacking IPs), not "clean" — community may still know it.
+      json = ent.opinionFree ? (await get(`https://api.greynoise.io/v3/community/${encodeURIComponent(ip)}`)).json : ent.json
+    } catch {
+      // 401/403 (community-tier key) or transient enterprise error — community still works.
+      json = (await get(`https://api.greynoise.io/v3/community/${encodeURIComponent(ip)}`)).json
+    }
+    if (json === null) return { source: 'greynoise', ok: true, data: { parts: [{ source: 'greynoise', malicious: null, last_seen: null }], tags: [], relations: [], sightings: [] } }
+    const { malicious, tags, last_seen, relations, sightings } = normalizeGreynoise(json)
+    return { source: 'greynoise', ok: true, data: { parts: [{ source: 'greynoise', malicious, last_seen }], tags, relations, sightings } }
   } catch (e) {
     return { source: 'greynoise', ok: false, error: String(e) }
   }
