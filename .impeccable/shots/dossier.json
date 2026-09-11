@@ -1,0 +1,85 @@
+{
+  "query": { "type": "ipv4", "value": "45.148.10.182" },
+  "generated_at": "2026-09-11T09:40:00Z",
+  "cached": true,
+  "verdict": { "score": 0.92, "malicious_by": 27, "total_engines": 41, "status": "malicious", "confidence": "high", "dominant_source": "urlhaus", "risk": 92, "feed_count": 18, "tags": ["c2", "bruteforce", "ssh"] },
+  "identity": { "country": "Netherlands", "country_code": "NL", "city": "Amsterdam", "region": "North Holland", "isp": "Red Byte Technologies Ltd", "asn": "AS208226", "reverse_dns": "host.wifly.co.il", "registered": "2024-03-02", "hosting_type": "bulletproof_vps" },
+  "sources_ok": ["urlhaus", "threatfox", "abusech", "feodo", "phishunt", "otx"],
+  "sources_skipped": ["virustotal"],
+  "sources_failed": ["openrouter"],
+  "behavior": {
+    "ports": [
+      { "port": 22, "service": "ssh", "banner": "SSH-2.0-libssh_0.9.6" },
+      { "port": 80, "service": "http", "banner": "nginx/1.18.0 (Ubuntu)" },
+      { "port": 443, "service": "https", "banner": "nginx/1.18.0" },
+      { "port": 8081, "service": "http", "banner": "XMRig miner panel" },
+      { "port": 3389, "service": "rdp", "banner": "broidoRdpmeta" }
+    ],
+    "tags": ["c2", "bruteforce", "ssh", " mining", "tor_exit"],
+    "first_seen": "2025-11-04T00:00:00Z",
+    "last_seen": "2026-09-11T08:55:00Z"
+  },
+  "relations": [
+    { "type": "domain", "value": "wifly-update.com", "edge": "resolved_from", "via": "urlhaus", "weight": 9, "malicious": true, "first_seen": "2026-02-11", "last_seen": "2026-09-10" },
+    { "type": "domain", "value": "cdn-sysguard.net", "edge": "resolved_from", "via": "threatfox", "weight": 7, "malicious": true, "first_seen": "2026-05-02", "last_seen": "2026-09-09" },
+    { "type": "url", "value": "http://45.148.10.182/gate.php", "edge": "hosts", "via": "urlhaus", "weight": 8, "malicious": true, "first_seen": "2026-01-19", "last_seen": "2026-09-11" },
+    { "type": "sha256", "value": "9f2c8a7d4e1b6f03a5c8d9e0f1a2b3c4d5e6f7081425364758697a0b1c2d3e4f", "edge": "delivered_by", "via": "urlhaus", "weight": 6, "malicious": true, "first_seen": "2026-03-05", "last_seen": "2026-08-30" },
+    { "type": "ipv4", "value": "45.148.10.180", "edge": "same_subnet", "via": "asn", "weight": 4, "malicious": true, "first_seen": "2026-04-12", "last_seen": "2026-09-08" },
+    { "type": "ipv4", "value": "45.148.10.181", "edge": "same_subnet", "via": "asn", "weight": 3, "malicious": null, "first_seen": "2026-06-01", "last_seen": "2026-09-07" },
+    { "type": "ipv6", "value": "2a10:87a0:12:3::45", "edge": "same_hosting", "via": "asn", "weight": 2, "malicious": false, "first_seen": "2026-07-22", "last_seen": "2026-09-01" },
+    { "type": "md5", "value": "4d1e86f2a3b5c7d9e0f1a2b3c4d5e6f7", "edge": "delivered_by", "via": "feodo", "weight": 5, "malicious": true, "first_seen": "2026-02-14", "last_seen": "2026-09-10" },
+    { "type": "domain", "value": "login-verify-office.com", "edge": "resolved_from", "via": "phishunt", "weight": 7, "malicious": true, "first_seen": "2026-06-18", "last_seen": "2026-09-06" },
+    { "type": "url", "value": "https://wifly-update.com/panel/login.php", "edge": "hosts", "via": "urlhaus", "weight": 5, "malicious": true, "first_seen": "2026-07-02", "last_seen": "2026-09-05" },
+    { "type": "sha1", "value": "3a5c8d9e0f1a2b3c4d5e6f708142536475869700", "edge": "delivered_by", "via": "threatfox", "weight": 4, "malicious": true, "first_seen": "2026-05-11", "last_seen": "2026-08-27" },
+    { "type": "domain", "value": "amsterdam-vps-hosting.example", "edge": "registered_to", "via": "otx", "weight": 1, "malicious": false, "first_seen": "2024-03-02", "last_seen": "2026-01-04" }
+  ],
+  "pulses": [
+    { "title": "Red Byte / AS208226 C2 cluster activity", "url": "https://otx.alienvault.com/pulse/68ab12f3c2d4", "modified": "2026-09-08T12:00:00Z" },
+    { "title": "Persistent SSH bruteforce + LokiBot delivery", "url": "https://threatfox.abuse.ch/browse/malware/win.lokirbot/", "modified": "2026-09-03T07:30:00Z" },
+    { "title": "Phishing kit hosted on bulletproof VPS range", "url": "https://urlhaus.abuse.ch/host/45.148.10.182/", "modified": "2026-08-29T19:10:00Z" }
+  ],
+  "timeline": [
+    { "date": "2026-08-15", "count": 3, "sources": ["urlhaus", "threatfox", "abusech"] },
+    { "date": "2026-08-17", "count": 4, "sources": ["urlhaus", "threatfox", "abusech", "feodo"] },
+    { "date": "2026-08-18", "count": 2, "sources": ["urlhaus", "phishunt"] },
+    { "date": "2026-08-21", "count": 4, "sources": ["urlhaus", "threatfox", "abusech", "feodo"] },
+    { "date": "2026-08-22", "count": 1, "sources": ["abusech"] },
+    { "date": "2026-08-25", "count": 3, "sources": ["urlhaus", "threatfox", "feodo"] },
+    { "date": "2026-08-27", "count": 4, "sources": ["urlhaus", "threatfox", "abusech", "feodo"] },
+    { "date": "2026-08-29", "count": 2, "sources": ["urlhaus", "phishunt"] },
+    { "date": "2026-09-01", "count": 4, "sources": ["urlhaus", "threatfox", "abusech", "otx"] },
+    { "date": "2026-09-02", "count": 3, "sources": ["urlhaus", "threatfox", "abusech"] },
+    { "date": "2026-09-04", "count": 1, "sources": ["feodo"] },
+    { "date": "2026-09-06", "count": 4, "sources": ["urlhaus", "threatfox", "abusech", "feodo"] },
+    { "date": "2026-09-07", "count": 2, "sources": ["phishunt", "otx"] },
+    { "date": "2026-09-09", "count": 4, "sources": ["urlhaus", "threatfox", "abusech", "feodo"] },
+    { "date": "2026-09-10", "count": 3, "sources": ["urlhaus", "threatfox", "abusech"] },
+    { "date": "2026-09-11", "count": 4, "sources": ["urlhaus", "threatfox", "abusech", "feodo"] }
+  ],
+  "narrative": {
+    "verdict_sentence": "Active C2 and credential-harvesting host inside a bulletproof-hosting cluster.",
+    "confidence": "high",
+    "why_malicious": [
+      "27 of 41 engines flag it, led by urlhaus with 18 independent feed sightings.",
+      "Serves a LokiBot delivery gate (gate.php) and two phishing domains.",
+      "Open SSH, RDP and a miner panel on 8081; brute-force pattern sustained for 90 days."
+    ],
+    "infrastructure_notes": "AS208226 (Red Byte) hosts 4 flagged siblings in 45.148.10.0/24. Registration date and reverse DNS are mismatched with the geolocation claim.",
+    "recommended_action": "block",
+    "mitre_techniques": ["T1071.001", "T1110", "T1583.004", "T1496"]
+  },
+  "investigated_by": 41,
+  "stale_at": "2026-09-11T10:40:00Z",
+  "evidence": [
+    { "source": "urlhaus", "ok": true, "data": { "url_count": 42, "latest": "2026-09-11T08:55:00Z" } },
+    { "source": "threatfox", "ok": true, "data": { "ioCs": 17 } },
+    { "source": "abuseipdb", "ok": true, "data": { "confidence": 96, "reports": 134 } },
+    { "source": "greynoise", "skipped": true, "ok": false, "data": null, "error": "community key: no enterprise classification" },
+    { "source": "feodotracker", "ok": true, "data": { "botnet": "Lokibot" } },
+    { "source": "virustotal", "skipped": true, "ok": false, "data": null, "error": "no VT key configured" },
+    { "source": "openrouter", "ok": false, "data": null, "error": "HTTP 401: no provider available for the requested model (credits or key missing)" },
+    { "source": "phishunt", "ok": true, "data": { "campaigns": 3 } },
+    { "source": "geo", "ok": true, "data": { "country": "NL", "asn": "AS208226" } },
+    { "source": "rdap", "ok": true, "data": { "registered": "2024-03-02" } }
+  ]
+}

@@ -1,0 +1,120 @@
+{
+  "title": "Choose the visual world: Investigate",
+  "question": "The roll assigned The Evidence Board. Keep it, take the pick or a challenger, or re-roll.",
+  "options": [
+    {
+      "id": "assigned",
+      "label": "The Evidence Board",
+      "kicker": "THE ROLL",
+      "lineage": "analyst pinboards, case files, chain-of-custody exhibits",
+      "thesis": "The dossier is a physical evidence board: the IOC is the anchor exhibit, every source a pinned card, and the block decision a case you could defend in court.",
+      "palette": ["#241f19", "#e8dcbf", "#f4ecd9", "#a51f1f", "#171412"],
+      "materials": ["cork board ground", "kraft/manila cards", "red cotton string", "rubber stamps", "typewriter ink", "brass pins"],
+      "viewport": "The looked-up IOC lands as a stamped anchor exhibit card top-left on the cork field, verdict stamp diagonally across it, red string radiating to pinned relation cards, source-evidence strips tacked along the bottom edge.",
+      "risk": "Lapses into prop-kit kitsch the moment string becomes decoration instead of data.",
+      "raised": [
+        { "from": "Tropicalia sleeve collage", "raise": "Exhibit nodes are sized by evidentiary weight with deliberate scale mismatch: the anchor IP huge, related domains postage-sized, never a uniform grid." },
+        { "from": "Googie starburst diner", "raise": "One continuous red-string path carries the eye from verdict stamp through the graph to the recommended action; sections hang off the string, not off a scroll." },
+        { "from": "Power-hammer forge", "raise": "Each corroborating source gets exactly one full-width strike row: stenciled cap header, tabular evidence values, chalk-rule dividers, no nested columns." }
+      ]
+    },
+    {
+      "id": "model-pick",
+      "label": "The Seismograph Station",
+      "kicker": "IMPECCABLE’S PICK",
+      "lineage": "seismic observatory drum recorders and station bulletins",
+      "thesis": "Threatbase's own honeypots are sensor stations: the IOC is an earthquake, and the page is the drum record proving it.",
+      "palette": ["#f2efe6", "#141311", "#b3261e", "#23577a"],
+      "materials": ["chart-paper drum", "stylus ink traces", "ruled time grid", "station log cards"],
+      "viewport": "A full-width 90-day strip chart runs the top of the page with station-by-station event ticks and amplitudes; below it, the bulletin: magnitude verdict, hypocenter identity, aftershock relations table.",
+      "risk": "Where most grounded runs in this category land; the metaphor can overstay at dense-text panels."
+    },
+    {
+      "id": "challenger-nixie",
+      "label": "Nixie Instrument Panel",
+      "verdict": "competitive",
+      "lineage": "nixie-lab laboratory counters",
+      "thesis": "Every count arrives as visible plasma: score, engines, feeds glowing inside glass tubes.",
+      "palette": ["#0d0c0a", "#ff8a3d", "#3b3630", "#cfd6c8"],
+      "materials": ["blackened steel chassis", "glass envelopes", "orange glow digits", "engraved caps"],
+      "case": "Reads as instruments the SOC trusts, but tubes carry numbers only and cannot hold dense evidence text.",
+      "risk": "Glow-on-black is one step from the cockpit you are replacing.",
+      "hero": "https://impeccable.style/worlds/cards/signals-instruments-nixie-laboratory-counter-hero.webp",
+      "board": "https://impeccable.style/worlds/cards/signals-instruments-nixie-laboratory-counter.webp"
+    },
+    {
+      "id": "challenger-darkroom",
+      "label": "Darkroom Exposure Record",
+      "verdict": "competitive",
+      "lineage": "print darkroom zone-system records",
+      "thesis": "Evidence as stacked translucent sheets over an eleven-step zone ramp, where hatch density is load and crossed hatches are conflict.",
+      "palette": ["#f5f2ec", "#111111", "#c2185b", "#8a8f98"],
+      "materials": ["backlit neutrals", "tracing overlays", "hatch density", "condensed legends"],
+      "case": "The conflict-notation and tonal discipline fuse beautifully into multi-source disagreement, but a darkroom is not the analyst's daily world.",
+      "risk": "Hatch layers turn to noise at table densities.",
+      "hero": "https://impeccable.style/worlds/cards/operate-b-exposure-record-zone-sheets-hero.webp",
+      "board": "https://impeccable.style/worlds/cards/operate-b-exposure-record-zone-sheets.webp"
+    },
+    {
+      "id": "challenger-azulejo",
+      "label": "Azulejo Station Hall",
+      "verdict": "competitive",
+      "lineage": "tin-glazed tile halls of Portuguese rail stations",
+      "thesis": "Cobalt-on-white tile panels narrate the case; the grout seams run straight through the scene, admitting the grid is the truth.",
+      "palette": ["#f6f3ea", "#1d4e9e", "#c9971f", "#3a3a3a"],
+      "materials": ["glazed tile", "painted washes", "cartouche frames", "grout grid"],
+      "case": "Blank-tile absence is the honest empty state this product needs, and the calendar is already a tile grid, but station tiles do not read as security operations.",
+      "risk": "Decorative heritage tone undercuts threat credibility.",
+      "hero": "https://impeccable.style/worlds/cards/architecture-places-azulejo-station-hall-hero.webp",
+      "board": "https://impeccable.style/worlds/cards/architecture-places-azulejo-station-hall.webp"
+    },
+    {
+      "id": "challenger-tropicalia",
+      "label": "Tropicalia Sleeve Collage",
+      "verdict": "declined",
+      "lineage": "Brazilian Tropicália album sleeves",
+      "palette": ["#1f7a33", "#f7a400", "#d93a2b", "#0e1b2e"],
+      "materials": ["cut-out paper", "painted jungle ground", "scattered lettering"],
+      "case": "Collage chaos defeats scanability for an evaluation surface analysts must read in seconds.",
+      "kept": "Scale mismatch as compositional honesty, now a named raise on the board.",
+      "hero": "https://impeccable.style/worlds/cards/posters-covers-sleeves-tropicalia-sleeve-collage-hero.webp"
+    },
+    {
+      "id": "challenger-googie",
+      "label": "Googie Starburst Diner",
+      "verdict": "declined",
+      "lineage": "space-age roadside architecture",
+      "palette": ["#2ec4b6", "#ff6b6b", "#f4f1de", "#1b1b2f"],
+      "materials": ["chrome", "boomerang speckle", "neon"],
+      "case": "Sun-bright futurism sells coffee, not a blocklist decision.",
+      "kept": "The single sweeping sightline, now a named raise on the board.",
+      "hero": "https://impeccable.style/worlds/cards/design-canon-googie-starburst-diner-hero.webp"
+    },
+    {
+      "id": "challenger-forge",
+      "label": "Power-Hammer Forge",
+      "verdict": "declined",
+      "lineage": "industrial forging patina records",
+      "palette": ["#16130f", "#6e6a64", "#ff5c1a", "#e8e2d6"],
+      "materials": ["anvil steel", "heat gradient", "scale flecks", "stencil caps"],
+      "case": "Heat-as-status has no true mapping to source verdicts; it would force claims the product can't make.",
+      "kept": "One-blow-per-row discipline, now a named raise on the board.",
+      "hero": "https://impeccable.style/worlds/cards/metal-forging-patina-blacksmith-scale-shower-hero.webp"
+    },
+    {
+      "id": "canon",
+      "label": "The category standard",
+      "kicker": "STANDING EXIT",
+      "lineage": "modern intel consoles (VirusTotal, Recorded Future idiom)",
+      "thesis": "Clean score ring, tabbed panels, sortable evidence table, blue-grey calm.",
+      "palette": ["#0b1220", "#16233a", "#4f8cff", "#e6edf7"],
+      "materials": ["flat cards", "status chips", "data tables"],
+      "viewport": "Search bar centered, verdict ring left, tabs of evidence right, exactly as analysts expect.",
+      "risk": "Indistinguishable from what you already shipped, by design."
+    }
+  ],
+  "reroll": { "registers": ["safer", "bolder"] },
+  "buildPath": { "value": "code", "toggle": false },
+  "canon": true,
+  "steer": true
+}

@@ -1,0 +1,208 @@
+/* Raku Smoke Flash — the Investigate surface world.
+   Scoped to .raku-root so the rest of the site keeps the incumbent system.
+   Materials: soot-black clay ground, crackled silver-white glaze panels,
+   ember orange for live interaction only (touch = heat), iron-slip red for
+   flagged evidence, copper-flash green for clean, ash for skipped/failed. */
+
+.raku-root {
+  --soot: #17140f;
+  --soot-2: #1f1b14;
+  --soot-3: #29241b;
+  --glaze: #d8d2c4;
+  --glaze-lo: #cdc6b6;
+  --ink: #241f17;
+  --ink-soft: #584f42;
+  --silver: #d8d2c4;
+  --silver-dim: #a9a091;
+  --ember: #ff6a2b;
+  --ember-lo: #d1541d;
+  --iron: #a4432c;
+  --iron-hi: #d97b58;
+  --copper: #5f8a72;
+  --copper-hi: #8fb89b;
+  --ash: #6e675c;
+
+  position: relative;
+  min-height: 100dvh;
+  background-color: var(--soot);
+  color: var(--silver);
+  overflow: hidden;
+}
+
+/* Kiln mouth: one low warm glow off the vessel axis (left), never centered. */
+.raku-root::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(72% 46% at 18% -10%, rgba(255, 106, 43, 0.07), transparent 60%),
+    radial-gradient(90% 60% at 80% 112%, rgba(0, 0, 0, 0.55), transparent 62%);
+}
+
+/* Smoke grain over the whole ground. */
+.raku-root::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.5;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+}
+
+.raku-root > * { position: relative; z-index: 1; }
+
+.raku-root ::selection { background: rgba(164, 67, 44, 0.4); color: #fff; }
+
+/* Scrollbars inside the surface: clay thumb, ember on hover. */
+.raku-root * { scrollbar-width: thin; scrollbar-color: rgba(216, 210, 196, 0.16) transparent; }
+.raku-root *::-webkit-scrollbar { width: 8px; height: 8px; }
+.raku-root *::-webkit-scrollbar-track { background: transparent; }
+.raku-root *::-webkit-scrollbar-thumb { background: rgba(216, 210, 196, 0.14); border-radius: 2px; }
+.raku-root *::-webkit-scrollbar-thumb:hover { background: rgba(255, 106, 43, 0.45); }
+
+/* Focus = heat: the vessel responds to touch with ember. */
+.raku-root :where(a, button, input, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--ember);
+  outline-offset: 2px;
+}
+
+/* ── Glaze shards: the body panels. Crackle glaze over a warm silver
+      gradient, clipped to a hand-cut clay edge. ─────────────────────── */
+.raku-root .shard {
+  position: relative;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cg stroke='%236e675c' stroke-width='0.6' fill='none' opacity='0.4'%3E%3Cpath d='M18 -4 C28 26 12 52 26 84 C36 108 22 138 36 172 C44 196 34 218 44 244'/%3E%3Cpath d='M26 84 C48 92 70 80 92 98 C108 112 104 136 120 152'/%3E%3Cpath d='M92 98 C96 74 118 62 142 66 C166 70 176 52 196 48'/%3E%3Cpath d='M142 66 C148 92 168 108 166 136 C164 158 182 174 180 202 C178 222 190 236 192 246'/%3E%3Cpath d='M166 136 C144 146 128 168 132 194 C135 214 124 228 126 246'/%3E%3Cpath d='M36 172 C60 178 82 198 86 222 C88 234 84 242 86 248'/%3E%3C/g%3E%3C/svg%3E"),
+    linear-gradient(168deg, #e3ddce 0%, var(--glaze) 46%, var(--glaze-lo) 100%);
+  color: var(--ink);
+  clip-path: polygon(0.5% 1.4%, 3% 0.3%, 97% 0.6%, 99.6% 3%, 99.2% 97%, 96.8% 99.6%, 2.6% 99.3%, 0.4% 96.6%);
+  box-shadow: 0 24px 48px -28px rgba(0, 0, 0, 0.85);
+}
+.raku-root .shard-b { clip-path: polygon(1.8% 0.4%, 98.4% 1.6%, 99.7% 4%, 98.6% 96.4%, 96.4% 99.5%, 1.2% 98.2%, 0.2% 95.6%, 0.8% 3%); }
+.raku-root .shard-c { clip-path: polygon(0.3% 2.6%, 2.2% 0.5%, 98.8% 1.2%, 99.5% 6%, 97.8% 98.4%, 4% 99.5%, 0.6% 96%, 1.4% 5%); }
+
+.raku-root .shard :where(a) { color: var(--ink); text-decoration-color: rgba(110, 103, 92, 0.5); }
+.raku-root .shard :where(a:hover) { color: var(--iron); text-decoration-color: var(--iron); }
+
+/* Soot shard: dark clay for code/raw evidence panels. */
+.raku-root .soot-shard {
+  background: linear-gradient(168deg, var(--soot-3) 0%, var(--soot-2) 60%, #1a1610 100%);
+  color: var(--silver);
+  clip-path: polygon(0.5% 1.4%, 3% 0.3%, 97% 0.6%, 99.6% 3%, 99.2% 97%, 96.8% 99.6%, 2.6% 99.3%, 0.4% 96.6%);
+  box-shadow: 0 24px 48px -28px rgba(0, 0, 0, 0.85);
+}
+
+/* ── Kiln-log stage label: numbered firing stage with a leader rule. ── */
+.raku-root .kiln {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: theme('fontFamily.mono');
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--ash);
+  margin-bottom: 0.75rem;
+}
+.raku-root .kiln .kiln-n { color: var(--ember); }
+.raku-root .kiln::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(110, 103, 92, 0.5), transparent);
+}
+/* On glaze, the log is ink-dark. */
+.raku-root .shard .kiln { color: var(--ink-soft); }
+.raku-root .shard .kiln .kiln-n { color: var(--ember-lo); }
+.raku-root .shard .kiln::after { background: linear-gradient(90deg, rgba(110, 103, 92, 0.55), transparent); }
+
+/* ── Controls. Ember is reserved: only live commit controls wear it. ── */
+.raku-root .ember-btn {
+  font-family: theme('fontFamily.mono');
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #17140f;
+  background: linear-gradient(180deg, #ff7c42, var(--ember) 55%, var(--ember-lo));
+  padding: 0 1.5rem;
+  clip-path: polygon(4% 0, 100% 3%, 97% 100%, 0 96%);
+  box-shadow: 0 10px 24px -12px rgba(255, 106, 43, 0.55);
+  transition: filter 150ms ease-out, transform 100ms ease-out;
+}
+.raku-root .ember-btn:hover { filter: brightness(1.08) saturate(1.05); }
+.raku-root .ember-btn:active { transform: scale(0.98); }
+
+.raku-root .ghost-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-family: theme('fontFamily.mono');
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--silver-dim);
+  border: 1px solid rgba(216, 210, 196, 0.22);
+  border-radius: 2px;
+  padding: 0.375rem 0.875rem;
+  transition: color 150ms ease-out, border-color 150ms ease-out;
+}
+.raku-root .ghost-btn:hover { color: var(--ember); border-color: rgba(255, 106, 43, 0.55); }
+.raku-root .ghost-btn:active { transform: scale(0.98); }
+.raku-root .ghost-btn:disabled { color: var(--ash); border-color: rgba(216, 210, 196, 0.1); cursor: not-allowed; }
+
+.raku-root .query-input {
+  background: rgba(216, 210, 196, 0.04);
+  border: 1px solid rgba(216, 210, 196, 0.22);
+  border-radius: 2px;
+  color: var(--silver);
+  caret-color: var(--ember);
+  transition: border-color 150ms ease-out, background-color 150ms ease-out;
+}
+.raku-root .query-input::placeholder { color: #7d7668; }
+.raku-root .query-input:hover { border-color: rgba(216, 210, 196, 0.38); }
+.raku-root .query-input:focus { border-color: rgba(255, 106, 43, 0.6); background: rgba(255, 106, 43, 0.03); }
+
+/* ── Data type: mono for counts, grotesk for reading. ── */
+.raku-root .metric { font-family: theme('fontFamily.mono'); font-variant-numeric: tabular-nums; }
+
+/* Status vocabulary on glaze ink. */
+.raku-root .st-iron { color: var(--iron); }
+.raku-root .st-copper { color: #33604a; }
+.raku-root .st-ash { color: var(--ink-soft); }
+
+/* Fracture bullet for reason lists. */
+.raku-root .frac {
+  position: relative;
+  padding-left: 1rem;
+}
+.raku-root .frac::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.42em;
+  width: 0.5rem;
+  height: 2px;
+  background: var(--iron);
+  transform: rotate(-32deg);
+}
+
+/* Loading: cooling shards. */
+.raku-root .cool-skel {
+  background: rgba(216, 210, 196, 0.06);
+  border: 1px solid rgba(216, 210, 196, 0.08);
+  clip-path: polygon(1% 2%, 99% 0.5%, 98.6% 97.5%, 1.6% 99%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .raku-root .ember-btn,
+  .raku-root .ghost-btn,
+  .raku-root .query-input { transition: none; }
+}
+
+@media print {
+  .raku-root .shard, .raku-root .soot-shard { break-inside: avoid; }
+}
