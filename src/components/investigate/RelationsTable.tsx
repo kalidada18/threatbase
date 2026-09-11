@@ -99,27 +99,27 @@ export default function RelationsTable({
           placeholder="filter relations…"
           aria-label="Filter relations"
           spellCheck={false}
-          className="query-input rounded-[2px] px-2.5 py-1 metric text-[12px] w-52"
+          className="bg-white/[0.03] border border-white/10 rounded-md px-2.5 py-1 font-mono text-[12px] text-slate-200 caret-red-500 placeholder:text-slate-500 focus:border-red-500/40 w-52"
         />
-        <span className="metric text-[10px] text-[#584f42] tabular-nums" role="status">
+        <span className="font-mono text-[10px] text-slate-400 tabular-nums" role="status">
           {rows.length} of {relations?.length ?? 0} relations · ↑↓ to select
         </span>
       </div>
-      <div className="overflow-x-auto rounded-[2px] border border-[#6e675c]/30">
-        <table role="grid" className="w-full text-left metric text-[12px]">
-          <thead className="text-[#584f42] uppercase text-[10px] tracking-wider bg-[#6e675c]/10">
+      <div className="overflow-x-auto rounded-md border border-white/[0.06]">
+        <table role="grid" className="w-full text-left font-mono text-[12px]">
+          <thead className="text-slate-400 uppercase text-[10px] tracking-wider bg-white/[0.02]">
             <tr>
               {COLS.map((c) => (
                 <th key={c.key} className="px-2 py-1.5 font-semibold" aria-sort={sort.key === c.key ? (sort.dir === 'asc' ? 'ascending' : 'descending') : undefined}>
-                  <button type="button" onClick={() => toggleSort(c.key)} className="hover:text-[#ff6a2b] transition-colors inline-flex items-center gap-1">
+                  <button type="button" onClick={() => toggleSort(c.key)} className="hover:text-slate-200 transition-colors inline-flex items-center gap-1">
                     {c.label}
-                    <span aria-hidden className="text-[#a4432c] w-2.5 inline-block">{sort.key === c.key ? (sort.dir === 'asc' ? '▲' : '▼') : ''}</span>
+                    <span aria-hidden className="text-red-400 w-2.5 inline-block">{sort.key === c.key ? (sort.dir === 'asc' ? '▲' : '▼') : ''}</span>
                   </button>
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody ref={bodyRef} className="text-[#241f17] divide-y divide-[#6e675c]/20">
+          <tbody ref={bodyRef} className="text-slate-300 divide-y divide-white/[0.04]">
             {rows.map((r, i) => {
               const k = nodeKey(r.type, r.value)
               const sel = k === selectedKey
@@ -128,30 +128,30 @@ export default function RelationsTable({
                   key={k + i} data-k={k} tabIndex={selIdx < 0 && i === 0 ? 0 : sel ? 0 : -1}
                   aria-selected={sel}
                   onClick={() => onSelect(k)}
-                  className={`cursor-pointer ${sel ? 'bg-[#a4432c]/10 outline outline-1 -outline-offset-1 outline-[#a4432c]/50' : 'hover:bg-[#6e675c]/5'}`}
+                  className={`cursor-pointer ${sel ? 'bg-red-500/10 outline outline-1 -outline-offset-1 outline-red-500/40' : 'hover:bg-white/[0.03]'}`}
                 >
-                  <td className="px-2 py-1 uppercase text-[10px] text-[#584f42]">{r.type}</td>
-                  <td className="px-2 py-1 break-all max-w-[300px]"><IocLink value={r.value} className="text-[12px] !text-[#241f17] hover:!text-[#a4432c] !decoration-[#6e675c]/40">{r.value}</IocLink></td>
-                  <td className="px-2 py-1 text-[#584f42]">{r.edge?.replace(/_/g, ' ')}</td>
-                  <td className="px-2 py-1 text-[#584f42] max-w-[180px] truncate" title={r.via}>{r.via || 'n/a'}</td>
+                  <td className="px-2 py-1 uppercase text-[10px] text-slate-500">{r.type}</td>
+                  <td className="px-2 py-1 break-all max-w-[300px]"><IocLink value={r.value} className="text-[12px]">{r.value}</IocLink></td>
+                  <td className="px-2 py-1 text-slate-400">{r.edge?.replace(/_/g, ' ')}</td>
+                  <td className="px-2 py-1 text-slate-400 max-w-[180px] truncate" title={r.via}>{r.via || 'n/a'}</td>
                   <td className="px-2 py-1 tabular-nums">{r.weight}</td>
-                  <td className="px-2 py-1 tabular-nums text-[#584f42]">{r.first_seen?.slice(0, 10) || 'n/a'}</td>
-                  <td className="px-2 py-1 tabular-nums text-[#584f42]">{r.last_seen?.slice(0, 10) || 'n/a'}</td>
+                  <td className="px-2 py-1 tabular-nums text-slate-400">{r.first_seen?.slice(0, 10) || 'n/a'}</td>
+                  <td className="px-2 py-1 tabular-nums text-slate-400">{r.last_seen?.slice(0, 10) || 'n/a'}</td>
                   <td className="px-2 py-1 whitespace-nowrap">
-                    {/* text carries the meaning; no redundant dot glyph (iron/copper also encode, never alone) */}
+                    {/* text carries the meaning; no redundant dot glyph (icon+color kept via red for flagged) */}
                     {r.malicious === true ? (
-                      <span className="text-[#a4432c]">flagged</span>
+                      <span className="text-red-400">flagged</span>
                     ) : r.malicious === false ? (
-                      <span className="text-[#33604a]">clean</span>
+                      <span className="text-slate-400">clean</span>
                     ) : (
-                      <span className="text-[#584f42]">n/a</span>
+                      <span className="text-slate-500">n/a</span>
                     )}
                   </td>
                 </tr>
               )
             })}
             {rows.length === 0 && (
-              <tr><td colSpan={COLS.length} className="px-2 py-3 text-[#584f42] text-center">no relations{q ? ' match the filter' : ' reported'}</td></tr>
+              <tr><td colSpan={COLS.length} className="px-2 py-3 text-slate-500 text-center">no relations{q ? ' match the filter' : ' reported'}</td></tr>
             )}
           </tbody>
         </table>

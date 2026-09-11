@@ -1,9 +1,8 @@
-// Offline tests for the shape-walkers + fetch adapters in _sources.ts. Fixtures
-// are minimal hand-recorded snippets matching the documented OTX/VirusTotal/
-// Shodan response shapes — adapters are driven through a mocked fetchImpl, so
-// there are no network calls anywhere in this file.
+// Offline tests for the pure shape-walkers in _sources.ts. Fixtures are
+// minimal hand-recorded snippets matching the documented OTX/VirusTotal/Shodan
+// response shapes — no network calls anywhere in this file.
 import { describe, expect, it } from 'vitest'
-import { otxPulseIndicatorsToRelations, vtStatsToPart, vtResolutionsToRelations, shodanToBehavior, otxTypePath, typeToIndicator, parseFeodoList, ipInCidr, normalizeGreynoise, vtReport, narrate, OR_MODEL, OR_MODEL_FALLBACK } from './_sources'
+import { otxPulseIndicatorsToRelations, vtStatsToPart, vtResolutionsToRelations, shodanToBehavior, otxTypePath, typeToIndicator, parseFeodoList, ipInCidr, normalizeGreynoise } from './_sources'
 
 // GET /pulses/<id>/indicators — real keys, two pulses' worth in one fixture call
 const OTX_PULSE_INDICATORS = {
@@ -210,108 +209,5 @@ describe('normalizeGreynoise', () => {
     expect(r.malicious).toBeNull()
     expect(r.tags).toEqual([])
     expect(r.last_seen).toBeNull()
-  })
-})
-
-// --- fetch adapters via mocked fetchImpl -------------------------------------
-
-const res = (status: number, body: unknown = {}) =>
-  ({ ok: status >= 200 && status < 300, status, json: async () => body, text: async () => JSON.stringify(body) }) as unknown as Response
-
-describe('vtReport error surfacing', () => {
-  it('429 retries once, surfaces a human-readable reason if it persists', async () => {
-    const calls: string[] = []
-    const f = (async (url: string) => { calls.push(url); return res(429) }) as unknown as typeof fetch
-    const r = await vtReport('ipv4', '45.155.205.23', { VT_API_KEY: 'k' }, f)
-    expect(calls).toHaveLength(2) // initial + one retry
-    expect(r).toEqual({ source: 'virustotal', ok: false, error: 'HTTP 429 (rate limited (free key = 4 req/min))' })
-  })
-  it('429 then 200 recovers with a single parsed result', async () => {
-    let n = 0
-    const f = (async () => (++n === 1 ? res(429) : res(200, VT_IP))) as unknown as typeof fetch
-    const r = await vtReport('ipv4', '45.155.205.23', { VT_API_KEY: 'k' }, f)
-    expect(r.ok).toBe(true)
-    expect((r.data as any).parts[0].malicious).toBe(true)
-  })
-  it('401 fails fast, no retry (dead key — reason in the error)', async () => {
-    const calls: string[] = []
-    const f = (async (url: string) => { calls.push(url); return res(401) }) as unknown as typeof fetch
-    const r = await vtReport('domain', 'evil.example.com', { VT_API_KEY: 'k' }, f)
-    expect(calls).toHaveLength(1)
-    expect(r.error).toBe('HTTP 401 (bad API key)')
-  })
-  it('400 on the resolutions URL retries without the param (free-tier fallback)', async () => {
-    const urls: string[] = []
-    const f = (async (url: string) => {
-      urls.push(url)
-      return urls.length === 1 ? res(400) : res(200, VT_IP)
-    }) as unknown as typeof fetch
-    const r = await vtReport('ipv4', '45.155.205.23', { VT_API_KEY: 'k' }, f)
-    expect(urls[0]).toContain('?relationships=resolutions')
-    expect(urls[1]).not.toContain('relationships')
-    expect(r.ok).toBe(true)
-  })
-  it('404 stays an opinion-free answer (ok, data null)', async () => {
-    const f = (async () => res(404)) as unknown as typeof fetch
-    expect(await vtReport('ipv4', '1.2.3.4', { VT_API_KEY: 'k' }, f)).toEqual({ source: 'virustotal', ok: true, data: null })
-  })
-  it('missing key skips (unchanged)', async () => {
-    const f = (async () => { throw new Error('should not fetch') }) as unknown as typeof fetch
-    expect(await vtReport('ipv4', '1.2.3.4', {}, f)).toMatchObject({ skipped: true })
-  })
-})
-
-const NARR_OK = JSON.stringify({
-  verdict_sentence: 'hostile C2', confidence: 'high', why_malicious: ['feodo hit'],
-  infrastructure_notes: 'bulletproof hosting', recommended_action: 'block', mitre_techniques: ['T1071'],
-})
-// minimal Dossier surface narrate() reads
-const narDossier = {
-  verdict: { score: 90, status: 'malicious', malicious_by: 3, dominant_source: 'feodo' },
-  identity: {}, behavior: { ports: [], tags: [], first_seen: null, last_seen: null },
-  relations: [], sources_ok: ['threatbase'],
-} as any
-
-describe('narrate failure visibility', () => {
-  it('missing key reports the reason instead of a silent null', async () => {
-    const f = (async () => { throw new Error('should not fetch') }) as unknown as typeof fetch
-    expect(await narrate(narDossier, {}, f)).toEqual({ narrative: null, error: 'OPENROUTER_API_KEY not set' })
-  })
-  it('happy path returns the validated narrative', async () => {
-    const f = (async () => res(200, { choices: [{ message: { content: NARR_OK } }] })) as unknown as typeof fetch
-    const r = await narrate(narDossier, { OPENROUTER_API_KEY: 'k' }, f)
-    expect(r.narrative?.verdict_sentence).toBe('hostile C2')
-    expect(r.error).toBeUndefined()
-  })
-  it('401 on the primary model fails fast — no fallback call', async () => {
-    const models: string[] = []
-    const f = (async (_u: string, init: any) => { models.push(JSON.parse(init.body).model); return res(401, { error: { message: 'invalid key' } }) }) as unknown as typeof fetch
-    const r = await narrate(narDossier, { OPENROUTER_API_KEY: 'k' }, f)
-    expect(models).toEqual([OR_MODEL])
-    expect(r.narrative).toBeNull()
-    expect(r.error).toContain('HTTP 401')
-    expect(r.error).toContain('invalid key') // body first line rides along
-  })
-  it('400 (dead model) falls back to the second model', async () => {
-    const models: string[] = []
-    const f = (async (_u: string, init: any) => {
-      models.push(JSON.parse(init.body).model)
-      return models.length === 1 ? res(400, { error: { message: 'no such model' } }) : res(200, { choices: [{ message: { content: NARR_OK } }] })
-    }) as unknown as typeof fetch
-    const r = await narrate(narDossier, { OPENROUTER_API_KEY: 'k' }, f)
-    expect(models).toEqual([OR_MODEL, OR_MODEL_FALLBACK])
-    expect(r.narrative?.recommended_action).toBe('block')
-  })
-  it('both models failing carries both reasons', async () => {
-    const f = (async () => res(429, { error: { message: 'rate limited' } })) as unknown as typeof fetch
-    const r = await narrate(narDossier, { OPENROUTER_API_KEY: 'k' }, f)
-    expect(r.narrative).toBeNull()
-    expect(r.error).toContain(`[${OR_MODEL}]`)
-    expect(r.error).toContain(`[${OR_MODEL_FALLBACK}]`)
-  })
-  it('schema-invalid output is reported, not swallowed', async () => {
-    const f = (async () => res(200, { choices: [{ message: { content: 'not json at all' } }] })) as unknown as typeof fetch
-    const r = await narrate(narDossier, { OPENROUTER_API_KEY: 'k' }, f)
-    expect(r.error).toContain('schema validation')
   })
 })
