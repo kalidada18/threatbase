@@ -2,6 +2,7 @@ import { cacheKey, sanitizeKv, cacheTtl, staleAt, isPublicIp, sniffType, mergeVe
 import { geoLookup, rdapLookup } from '../_net'
 import { onsite, otxInvestigate, shodanHost, vtReport, bazaar, feodoCheck, urlhausCheck, greynoiseCheck, spamhausCheck, ripestatlookup } from './_sources'
 import { json } from '../_common'
+import { proStatus } from '../_pro'
 
 export const onRequestGet = async (context: any) => {
   const { request, env } = context
@@ -14,6 +15,9 @@ export const onRequestGet = async (context: any) => {
   const value = refang(q).toLowerCase()
   if ((type === 'ipv4' || type === 'ipv6') && !isPublicIp(value))
     return json({ query: { type, value }, verdict: { score: 0, malicious_by: 0, total_engines: 0, status: 'clean', confidence: 'low', dominant_source: null }, identity: null, relations: [], narrative: null, note: 'non-routable address — not investigated', cached: false } as unknown as Dossier, 200, request)
+
+  const pro = await proStatus(request, env)
+  if (pro !== 'pro') return json({ error: pro === 'not-pro' ? 'pro_required' : pro === 'no-auth' ? 'sign_in_required' : 'pro_check_unavailable' }, pro === 'not-pro' ? 403 : pro === 'no-auth' ? 401 : 503, request)
 
   const kv = env.IOC_CACHE
   // Public rate limit: 8/min per client IP. In-isolate counter first (B1:
