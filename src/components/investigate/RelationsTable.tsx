@@ -15,7 +15,7 @@ const lc = (v: string | undefined | null) => (v ?? '').toLowerCase()
 export function sortRelations(rows: Relation[], key: SortKey, dir: 'asc' | 'desc' = 'desc'): Relation[] {
   const m = dir === 'asc' ? 1 : -1
   return [...rows].sort((a, b) => {
-    let c = 0
+    let c: number
     if (key === 'weight') c = a.weight - b.weight
     else if (key === 'verdict') c = (a.malicious === true ? 1 : 0) - (b.malicious === true ? 1 : 0)
     else c = lc(a[key]).localeCompare(lc(b[key]))

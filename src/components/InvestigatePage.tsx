@@ -512,7 +512,6 @@ export default function InvestigatePage() {
       })()
       return () => { cancelled = true }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dossier])
 
   const syncPivotsParam = (stack: string[], push: boolean) => {
