@@ -75,7 +75,7 @@ export const onRequestGet = async (context: any) => {
   const parts: VerdictPart[] = []
   const relations: Relation[] = []
   const sightings: Sighting[] = []
-  let identity: Dossier['identity'] = { country: null, country_code: null, city: null, region: null, isp: null, asn: null, reverse_dns: null, registered: null, hosting_type: 'unknown' }
+  const identity: Dossier['identity'] = { country: null, country_code: null, city: null, region: null, isp: null, asn: null, reverse_dns: null, registered: null, hosting_type: 'unknown' }
   let ports: any[] = [], onTags: string[] = [], pulses: Dossier['pulses'] = []
   let onRisk: number | undefined, onFeeds: number | undefined
   for (const p of P) {

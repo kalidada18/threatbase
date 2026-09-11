@@ -7,10 +7,6 @@
  * `_`-prefixed => un-routed. Behavior identical to the inline versions.
  */
 
-// Shape check only: the upstream hosts are hard-coded, so this exists to keep
-// the caller inside the path segment it owns (no scheme, no slashes, no query).
-const IP = /^(?:(?:\d{1,3}\.){3}\d{1,3}|[0-9a-f:]{2,45})$/
-
 // Only the shapes RDAP takes: IPv4/IPv6/domain, plus an optional CIDR suffix.
 const QUERY = /^[a-z0-9.:-]{3,253}(\/\d{1,3})?$/
 
