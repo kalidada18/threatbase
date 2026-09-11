@@ -23,15 +23,18 @@ export async function proStatus(request: Request, env: any): Promise<ProState> {
     const admin = createClient(env.SUPABASE_URL || SUPABASE_URL, serviceKey)
     const { data: userData, error: userError } = await admin.auth.getUser(token)
     if (userError || !userData.user) return 'no-auth'
-    const { data: row, error: rowError } = await admin
+    // limit(1), not maybeSingle(): api_keys_inherit_pro makes every new key of
+    // a Pro user is_pro=true, so a rotate-and-revoke moment can leave 2 active
+    // pro rows — maybeSingle would then error and fail the check closed.
+    const { data: rows, error: rowError } = await admin
       .from('api_keys')
       .select('is_pro')
       .eq('user_id', userData.user.id)
       .eq('is_pro', true)
       .eq('is_active', true)
-      .maybeSingle()
+      .limit(1)
     if (rowError) throw rowError
-    return row ? 'pro' : 'not-pro'
+    return rows?.length ? 'pro' : 'not-pro'
   } catch (e) {
     console.error('proStatus failed:', e)
     return 'no-config'
