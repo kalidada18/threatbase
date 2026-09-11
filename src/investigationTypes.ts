@@ -23,4 +23,8 @@ export type Dossier = {
   timeline?: TimelinePoint[]
   narrative: string | null
   investigated_by?: number
+  /** ISO instant when the cached dossier expires (Task E tiered TTL). */
+  stale_at?: string
+  /** Set when a ?refresh=1 was rate-limited and the cached copy was served instead. */
+  refresh_blocked?: boolean
 }

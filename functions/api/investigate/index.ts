@@ -1,4 +1,4 @@
-import { cacheKey, isPublicIp, sniffType, mergeVerdict, rankRelations, buildTimeline, hostingType, type Dossier, type Relation, type Sighting, type VerdictPart, type SourceResult } from './_lib'
+import { cacheKey, sanitizeKv, cacheTtl, staleAt, isPublicIp, sniffType, mergeVerdict, rankRelations, buildTimeline, hostingType, type Dossier, type Relation, type Sighting, type VerdictPart, type SourceResult } from './_lib'
 import { geoLookup, rdapLookup } from '../_net'
 import { onsite, otxInvestigate, shodanHost, vtReport, bazaar, feodoCheck, urlhausCheck, greynoiseCheck, spamhausCheck, ripestatlookup } from './_sources'
 import { json } from '../_common'
@@ -22,11 +22,30 @@ export const onRequestGet = async (context: any) => {
     if (n >= 8) return json({ error: 'too many investigations — retry in a minute' }, 429, request)
     await kv.put(rl, String(n + 1), { expirationTtl: 90 })
   }
-  // Cache hit?
+  // Cache hit? (rl_inv flood posture stays ahead of everything; refresh rides after cacheKey.)
   const key = cacheKey(type, value)
+  const wantsRefresh = u.searchParams.get('refresh') === '1'
   if (kv) {
-    const hit = await kv.get(key)
-    if (hit) { const d = JSON.parse(hit); d.cached = true; return json(d, 200, request) }
+    if (wantsRefresh) {
+      // Rate-limit refresh: 1 per IP per indicator per hour
+      const refreshKey = `rl_refresh:${sanitizeKv(request.headers.get('cf-connecting-ip') || 'unknown')}:${sanitizeKv(key)}`
+      if (await kv.get(refreshKey)) {
+        // Serve cached with a note rather than 429 — less abrasive UX
+        const hit = await kv.get(key)
+        if (hit) {
+          try { const d = JSON.parse(hit); d.cached = true; d.refresh_blocked = true; return json(d, 200, request) }
+          catch { /* corrupt KV value — fall through to fresh fan-out */ }
+        }
+      }
+      await kv.put(refreshKey, '1', { expirationTtl: 3600 })
+      // Fall through to fresh fan-out — don't read cache
+    } else {
+      const hit = await kv.get(key)
+      if (hit) {
+        try { const d = JSON.parse(hit); d.cached = true; return json(d, 200, request) }
+        catch { /* corrupt KV value — fall through to fresh fan-out */ }
+      }
+    }
   }
 
   const skip = (name: string) => Promise.resolve({ source: name, ok: false, skipped: true } as SourceResult<any>)
@@ -74,8 +93,10 @@ export const onRequestGet = async (context: any) => {
   identity.hosting_type = hostingType(identity.isp)
   const verdict = { ...mergeVerdict(parts), risk: onRisk, feed_count: onFeeds, tags: onTags }
   const seen = sightings.filter((s) => s.date).map((s) => s.date).sort()
+  const ttl = cacheTtl(verdict)
+  const generated_at = new Date().toISOString()
   const dossier: Dossier = {
-    query: { type, value }, generated_at: new Date().toISOString(), cached: false,
+    query: { type, value }, generated_at, cached: false, stale_at: staleAt(generated_at, ttl),
     sources_ok: P.filter((p) => p.ok).map((p) => p.source),
     sources_skipped: P.filter((p) => p.skipped).map((p) => p.source),
     sources_failed: P.filter((p) => !p.ok && !p.skipped).map((p) => p.source),
@@ -91,7 +112,7 @@ export const onRequestGet = async (context: any) => {
     const nKey = `inv_n:${type}:${value}`
     try { n = (+(await kv.get(nKey)) || 0) + 1; await kv.put(nKey, String(n), { expirationTtl: 604800 }) } catch {}
     dossier.investigated_by = n
-    await kv.put(key, JSON.stringify(dossier), { expirationTtl: 86400 })
+    await kv.put(key, JSON.stringify(dossier), { expirationTtl: ttl })
   }
   return json(dossier, 200, request)
 }

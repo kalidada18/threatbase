@@ -9,6 +9,7 @@ import TraceGraph from './investigate/TraceGraph'
 import ActivityCalendar from './investigate/ActivityCalendar'
 import BehaviorPanel from './investigate/BehaviorPanel'
 import { IocLink } from './investigate/IocLink'
+import { formatRelative } from './investigate/formatRelative'
 
 // Re-export so existing deep-imports of IocLink keep working; the component
 // itself lives in a dependency-light module the entry-point pages can import
@@ -105,7 +106,7 @@ function ReportActions({ d }: { d: Dossier }) {
   )
 }
 
-function ReportView({ d, onPivot }: { d: Dossier; onPivot: (type: string, value: string) => void }) {
+function ReportView({ d, onPivot, onRefresh }: { d: Dossier; onPivot: (type: string, value: string) => void; onRefresh: () => void }) {
   const st = STATUS[d.verdict.status] ?? STATUS.unknown
   const id = d.identity
   const torExit = !!id && id.hosting_type === 'vps/cloud' && (d.verdict.tags ?? []).some((t) => /tor/i.test(t))
@@ -147,6 +148,22 @@ function ReportView({ d, onPivot }: { d: Dossier; onPivot: (type: string, value:
           {d.cached ? `report from ${ago(d.generated_at ?? '')}` : 'live'}
           {typeof d.investigated_by === 'number' && ` · ${d.investigated_by} investigation${d.investigated_by === 1 ? '' : 's'}`}
         </span>
+        {d.cached && !d.note && (
+          <span className="text-xs font-mono text-slate-500">
+            cached · refreshes {formatRelative(d.stale_at)}
+            {!d.refresh_blocked ? (
+              <button
+                type="button"
+                onClick={onRefresh}
+                className="ml-2 text-red-500 hover:text-red-400 underline underline-offset-2"
+              >
+                refresh now
+              </button>
+            ) : (
+              <span className="ml-2 text-slate-600">(refresh in 1 h)</span>
+            )}
+          </span>
+        )}
       </div>
 
       {/* Trace graph — pivot any relation; list view is always present (mobile + accessible) */}
@@ -188,7 +205,8 @@ export default function InvestigatePage() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const q = params.get('q')?.trim() || ''
-  const { dossier, loading, error } = useInvestigation(q || null)
+  const wantsRefresh = params.get('refresh') === '1'
+  const { dossier, loading, error } = useInvestigation(q || null, wantsRefresh)
   const [term, setTerm] = useState(q)
   // Route key is pathname-only, so q changes don't remount — keep the box in
   // sync with the URL (pivots from Task 6, back/forward).
@@ -215,6 +233,9 @@ export default function InvestigatePage() {
     pushCrumb(value)
     navigate(`/investigate?q=${encodeURIComponent(value)}`)
   }
+  // Force-refresh drops the server cache for this indicator (1/IP/hour; the
+  // endpoint serves the cached copy with refresh_blocked when it's used up).
+  const onRefresh = () => navigate(`/investigate?q=${encodeURIComponent(q)}&refresh=1`)
 
   const search = (
     <form onSubmit={submit} className="no-print max-w-xl mx-auto mb-10">
@@ -267,7 +288,7 @@ export default function InvestigatePage() {
       )}
 
       {q && !loading && !error && dossier && (
-        dossier.note ? <NonRoutable d={dossier} /> : <ReportView d={dossier} onPivot={onPivot} />
+        dossier.note ? <NonRoutable d={dossier} /> : <ReportView d={dossier} onPivot={onPivot} onRefresh={onRefresh} />
       )}
       {crumbs.length > 1 && (
         <nav aria-label="Investigation trail" className="no-print flex flex-wrap gap-2 justify-center mt-10">

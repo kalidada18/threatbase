@@ -1,6 +1,6 @@
 // functions/api/investigate/_lib.test.ts
 import { describe, expect, it } from 'vitest'
-import { sniffType, isPublicIp, cacheKey, mergeVerdict, rankRelations, hostingType, buildTimeline, type Relation, type Sighting } from './_lib'
+import { sniffType, isPublicIp, cacheKey, sanitizeKv, cacheTtl, staleAt, mergeVerdict, rankRelations, hostingType, buildTimeline, type Relation, type Sighting, type Verdict } from './_lib'
 
 describe('sniffType', () => {
   it('recognizes every supported indicator shape', () => {
@@ -27,6 +27,44 @@ describe('isPublicIp', () => {
 
 it('cacheKey is stable and namespaced', () => {
   expect(cacheKey('ipv4', '8.8.8.8')).toBe('inv:ipv4:8.8.8.8')
+})
+
+describe('sanitizeKv', () => {
+  it('strips spaces, unicode and path separators KV rejects', () => {
+    expect(sanitizeKv('rl_refresh:2001:db8:: 1:inv:ipv4:8.8.8.8')).toBe('rl_refresh:2001:db8::1:inv:ipv4:8.8.8.8')
+    expect(sanitizeKv('ünïcödé x')).toBe('ncdx') // unicode/space out, ASCII survives
+    expect(sanitizeKv('evil.com/a?x=1')).toBe('evil.comax1')
+    expect(sanitizeKv('')).toBe('')
+  })
+  it('keeps legit ipv6/domain keys intact', () => {
+    expect(sanitizeKv(cacheKey('ipv6', '2001:db8::1'))).toBe('inv:ipv6:2001:db8::1')
+    expect(sanitizeKv(cacheKey('domain', 'evil.example.com'))).toBe('inv:domain:evil.example.com')
+  })
+})
+
+describe('cacheTtl', () => {
+  const v = (status: Verdict['status'], confidence: Verdict['confidence']): Verdict =>
+    ({ score: 0, malicious_by: 0, total_engines: 0, status, confidence, dominant_source: null })
+  it('assigns 2h to high-confidence malicious verdict', () => {
+    expect(cacheTtl({ score: 95, status: 'malicious', confidence: 'high', malicious_by: 3, total_engines: 5, dominant_source: 'feodo' })).toBe(7200)
+  })
+  it('assigns 48h to clean verdict', () => {
+    expect(cacheTtl({ score: 0, status: 'clean', confidence: 'low', malicious_by: 0, total_engines: 4, dominant_source: null })).toBe(172800)
+  })
+  it('tiers per status/confidence', () => {
+    expect(cacheTtl(v('malicious', 'medium'))).toBe(14400)   // malicious, not high conf
+    expect(cacheTtl(v('malicious', 'low'))).toBe(14400)
+    expect(cacheTtl(v('high_risk', 'high'))).toBe(21600)     // high_risk even at high conf
+    expect(cacheTtl(v('suspicious', 'high'))).toBe(43200)
+    expect(cacheTtl(v('clean', 'high'))).toBe(172800)
+    expect(cacheTtl(v('unknown', 'low'))).toBe(86400)        // 24h default
+  })
+})
+
+it('staleAt adds ttl seconds to generatedAt', () => {
+  const at = '2026-09-10T00:00:00.000Z'
+  const result = staleAt(at, 7200)
+  expect(result).toBe('2026-09-10T02:00:00.000Z')
 })
 
 describe('mergeVerdict', () => {
