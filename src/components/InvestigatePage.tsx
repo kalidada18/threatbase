@@ -1,15 +1,19 @@
-import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
+import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { motion, useReducedMotion } from 'framer-motion'
 import IsoPageShell from './layout/IsoPageShell'
 import { useSEO } from '@/useSEO'
 import { useInvestigation } from '@/useInvestigation'
-import type { Dossier } from '@/investigationTypes'
+import type { Dossier, IndicatorType } from '@/investigationTypes'
 import TraceGraph from './investigate/TraceGraph'
 import ActivityCalendar from './investigate/ActivityCalendar'
 import BehaviorPanel from './investigate/BehaviorPanel'
 import { IocLink } from './investigate/IocLink'
 import { formatRelative } from './investigate/formatRelative'
+import {
+  MAX_RINGS, collapseGraph, deserializePivotStack, mergeRelationsIntoGraph,
+  nodeKey, restoreQueue, serializePivotStack, type GraphState,
+} from './investigate/traceState'
 
 // Re-export so existing deep-imports of IocLink keep working; the component
 // itself lives in a dependency-light module the entry-point pages can import
@@ -106,7 +110,16 @@ function ReportActions({ d }: { d: Dossier }) {
   )
 }
 
-function ReportView({ d, onPivot, onRefresh }: { d: Dossier; onPivot: (type: string, value: string) => void; onRefresh: () => void }) {
+function ReportView({
+  d, graph, expandingKey, onExpand, onCollapse, onRefresh,
+}: {
+  d: Dossier
+  graph: GraphState | null
+  expandingKey: string | null
+  onExpand: (type: IndicatorType, value: string) => void
+  onCollapse: (depth: number) => void
+  onRefresh: () => void
+}) {
   const st = STATUS[d.verdict.status] ?? STATUS.unknown
   const id = d.identity
   const torExit = !!id && id.hosting_type === 'vps/cloud' && (d.verdict.tags ?? []).some((t) => /tor/i.test(t))
@@ -166,12 +179,14 @@ function ReportView({ d, onPivot, onRefresh }: { d: Dossier; onPivot: (type: str
         )}
       </div>
 
-      {/* Trace graph — pivot any relation; list view is always present (mobile + accessible) */}
-      {d.relations.length > 0 && (
+      {/* Trace graph — expand any relation in-graph (Task D); the pivot also
+          deep-links a fresh investigation via the breadcrumb-less table rows */}
+      {graph && graph.nodes.size > 1 && (
         <section>
           <div className="eyebrow mb-2">Trace network</div>
           <div className="glass-card rounded-2xl p-4 md:p-6">
-            <TraceGraph relations={d.relations} queryValue={d.query.value} onPivot={onPivot} />
+            {graph.pivotStack.length > 1 && <PivotBreadcrumb graph={graph} onCollapse={onCollapse} />}
+            <TraceGraph graph={graph} onPivot={onExpand} expandingKey={expandingKey} />
           </div>
         </section>
       )}
@@ -182,6 +197,27 @@ function ReportView({ d, onPivot, onRefresh }: { d: Dossier; onPivot: (type: str
       )}
       <BehaviorPanel d={d} />
     </div>
+  )
+}
+
+/** Breadcrumb strip above the graph: root › pivot › pivot… click to collapse. */
+function PivotBreadcrumb({ graph, onCollapse }: { graph: GraphState; onCollapse: (depth: number) => void }) {
+  return (
+    <nav className="flex items-center gap-1 text-xs font-mono text-slate-400 mb-2 overflow-x-auto" aria-label="Pivot trail">
+      {graph.pivotStack.map((key, i) => {
+        const v = key.slice(key.indexOf(':') + 1)
+        const label = v.length > 24 ? v.slice(0, 24) + '…' : v
+        const last = i === graph.pivotStack.length - 1
+        return (
+          <span key={`${key}-${i}`} className="flex items-center gap-1 shrink-0">
+            {i > 0 && <span aria-hidden className="text-slate-600">›</span>}
+            {last
+              ? <span aria-current="page" className="text-slate-200 truncate max-w-32">{label}</span>
+              : <button onClick={() => onCollapse(i)} className="hover:text-white transition-colors truncate max-w-32">{label}</button>}
+          </span>
+        )
+      })}
+    </nav>
   )
 }
 
@@ -218,24 +254,111 @@ export default function InvestigatePage() {
     if (v) navigate(`/investigate?q=${encodeURIComponent(v)}`)
   }
 
-  // Pivot = a real route navigation (Back works); crumbs are our own trail,
-  // sessionStorage so a fresh share-link starts clean. Cap 6, oldest dropped.
+  // Crumb = sessionStorage value trail (survives the new in-graph pivots too).
+  // Functional update so async callers (expandNode) never see stale state.
   const [crumbs, setCrumbs] = useState<string[]>(() => {
     try { const x = JSON.parse(sessionStorage.getItem('inv:crumbs') || '[]'); return Array.isArray(x) ? x : [] } catch { return [] }
   })
   const pushCrumb = (value: string) => {
-    const next = [...crumbs.filter((c) => c !== value), value].slice(-6)
-    sessionStorage.setItem('inv:crumbs', JSON.stringify(next))
-    setCrumbs(next)
+    setCrumbs((prev) => {
+      const next = [...prev.filter((c) => c !== value), value].slice(-6)
+      sessionStorage.setItem('inv:crumbs', JSON.stringify(next))
+      return next
+    })
   }
-  const onPivot = (_type: string, value: string) => {
-    if (q) pushCrumb(q)
-    pushCrumb(value)
-    navigate(`/investigate?q=${encodeURIComponent(value)}`)
+
+  // --- In-graph expansion (Task D) -----------------------------------------
+  // graphRef is the single source of truth read/written from async code
+  // (amendment #9: never touch graphState inside closures). setGraphState only
+  // receives pre-computed values, so stale-closure clobbering can't happen.
+  const [graphState, setGraphState] = useState<GraphState | null>(null)
+  const graphRef = useRef<GraphState | null>(null)
+  const [expandingNode, setExpandingNode] = useState<string | null>(null)
+  const busyRef = useRef(false)
+
+  // (Re)build the graph from the root dossier — and restore any ?pivots= trail.
+  useEffect(() => {
+    if (!dossier || dossier.note) { graphRef.current = null; setGraphState(null); return }
+    const rootKey = nodeKey(dossier.query.type, dossier.query.value)
+    const initial: GraphState = {
+      nodes: new Map([[rootKey, { type: dossier.query.type, value: dossier.query.value, malicious: dossier.verdict?.malicious_by > 0, weight: 100, ring: 0, expanded: true }]]),
+      edges: [],
+      pivotStack: [rootKey],
+    }
+    graphRef.current = mergeRelationsIntoGraph(initial, dossier.relations ?? [], rootKey, 1)
+    setGraphState(graphRef.current)
+
+    // Restore: re-fetch each trail pivot sequentially; index 0 is the root
+    // (== current q, already fetched). Ref-based so the loop never reads stale
+    // closure state.
+    const pivots = deserializePivotStack(params.get('pivots') ?? '')
+    if (pivots.length > 1) {
+      let cancelled = false
+      ;(async () => {
+        for (const key of restoreQueue(pivots)) {
+          if (cancelled) return
+          const sep = key.indexOf(':')
+          // replace, not push: restoring a shared link shouldn't add 7 back-stops
+          await expandNode(key.slice(0, sep) as IndicatorType, key.slice(sep + 1), false)
+        }
+      })()
+      return () => { cancelled = true }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dossier])
+
+  const syncPivotsParam = (stack: string[], push: boolean) => {
+    const u = new URL(window.location.href)
+    if (stack.length > 1) u.searchParams.set('pivots', serializePivotStack(stack))
+    else u.searchParams.delete('pivots')
+    window.history[push ? 'pushState' : 'replaceState']({}, '', u.toString())
   }
   // Force-refresh drops the server cache for this indicator (1/IP/hour; the
   // endpoint serves the cached copy with refresh_blocked when it's used up).
   const onRefresh = () => navigate(`/investigate?q=${encodeURIComponent(q)}&refresh=1`)
+
+  /** Fetch the node's dossier and merge its relations in as the next ring.
+   *  No-op while another expansion is in flight (keeps rl_inv headroom).
+   *  `push=false` replaces the URL instead of adding history (restore loop). */
+  const expandNode = useCallback(async (type: IndicatorType, value: string, push = true) => {
+    const cur = graphRef.current
+    if (!cur || busyRef.current) return
+    const key = nodeKey(type, value)
+    const node = cur.nodes.get(key)
+    if (!node || node.expanded || node.ring >= MAX_RINGS) return
+    busyRef.current = true
+    setExpandingNode(key)
+    try {
+      const res = await fetch(`${import.meta.env.BASE_URL}api/investigate?q=${encodeURIComponent(value)}`)
+      if (!res.ok) return
+      const pd: Dossier | null = await res.json().catch(() => null)
+      if (!pd || !pd.query) return
+      const now = graphRef.current!
+      let next = mergeRelationsIntoGraph(now, pd.relations ?? [], key, node.ring + 1)
+      const fresh = next.nodes.get(key)
+      if (fresh) next.nodes.set(key, { ...fresh, expanded: true, malicious: (pd.verdict?.malicious_by ?? 0) > 0 })
+      next = { ...next, pivotStack: [...next.pivotStack, key] }
+      graphRef.current = next
+      setGraphState(next)
+      syncPivotsParam(next.pivotStack, push)
+      pushCrumb(value) // keep the sessionStorage trail current for back-nav affordance
+    } catch {
+      // failed pivot fetch: graph simply doesn't grow; toast is overkill here
+    } finally {
+      busyRef.current = false
+      setExpandingNode(null)
+    }
+  }, [])
+
+  /** Breadcrumb click: drop everything deeper than `depth`. */
+  const collapseToDepth = useCallback((depth: number) => {
+    const cur = graphRef.current
+    if (!cur) return
+    const next = collapseGraph(cur, depth)
+    graphRef.current = next
+    setGraphState(next)
+    syncPivotsParam(next.pivotStack, false)
+  }, [])
 
   const search = (
     <form onSubmit={submit} className="no-print max-w-xl mx-auto mb-10">
@@ -288,7 +411,9 @@ export default function InvestigatePage() {
       )}
 
       {q && !loading && !error && dossier && (
-        dossier.note ? <NonRoutable d={dossier} /> : <ReportView d={dossier} onPivot={onPivot} onRefresh={onRefresh} />
+        dossier.note ? <NonRoutable d={dossier} /> : (
+          <ReportView d={dossier} graph={graphState} expandingKey={expandingNode} onExpand={expandNode} onCollapse={collapseToDepth} onRefresh={onRefresh} />
+        )
       )}
       {crumbs.length > 1 && (
         <nav aria-label="Investigation trail" className="no-print flex flex-wrap gap-2 justify-center mt-10">
