@@ -165,11 +165,12 @@ function EvidenceAccordion({ d }: { d: Dossier }) {
  *  or the root when nothing is picked, so the panel is never empty. Nodes
  *  without a fetched sub-dossier still get their full relation-row set. */
 function NodeInspector({
-  d, graph, selectedKey, onSelect, onExpand,
+  d, graph, selectedKey, pivotError, onSelect, onExpand,
 }: {
   d: Dossier
   graph: GraphState | null
   selectedKey: string | null
+  pivotError: string | null
   onSelect: (key: string | null) => void
   onExpand: (type: IndicatorType, value: string) => void
 }) {
@@ -212,6 +213,13 @@ function NodeInspector({
           </span>
         )}
       </div>
+      {/* U6: pivot expansion failures surface here — icon+text, never silent. */}
+      {pivotError && (
+        <p className="font-mono text-[11px] text-slate-400 mt-2 flex items-start gap-1.5">
+          <span aria-hidden className="text-red-400 shrink-0">⚠</span>
+          <span className="break-all">{pivotError}</span>
+        </p>
+      )}
       <div className="mt-3 border-t border-white/[0.06] pt-2">
         <div className="font-mono text-[9px] uppercase tracking-widest text-slate-600 mb-1">relations ({rows.length})</div>
         {rows.length ? (
@@ -237,11 +245,12 @@ function NodeInspector({
  *  full relations table, pulses, raw evidence. lg = 12-col grid; below lg the
  *  same panels stack (mobile fallback keeps the old vertical flow). */
 function ReportView({
-  d, graph, expandingKey, onExpand, onCollapse, onRefresh,
+  d, graph, expandingKey, pivotError, onExpand, onCollapse, onRefresh,
 }: {
   d: Dossier
   graph: GraphState | null
   expandingKey: string | null
+  pivotError: string | null
   onExpand: (type: IndicatorType, value: string) => void
   onCollapse: (depth: number) => void
   onRefresh: () => void
@@ -250,6 +259,10 @@ function ReportView({
   const id = d.identity
   const torExit = !!id && id.hosting_type === 'vps/cloud' && (d.verdict.tags ?? []).some((t) => /tor/i.test(t))
   const [selectedKey, setSelectedKey] = useState<string | null>(null)
+  const b = d.behavior
+  const behaviorEmpty = !(b && (b.ports?.length || b.tags?.length || b.first_seen || b.last_seen))
+  const relsEmpty = !(d.relations?.length)
+  const idEmpty = !!id && !(id.asn || id.isp || id.country || id.city || id.region || id.reverse_dns || id.registered || id.hosting_type !== 'unknown') && !(d.verdict.tags?.length)
   return (
     // ponytail: rows below are the hard-coded cockpit — upgrade path is a
     // user-configurable panel toggle set, add when operators ask to hide panels.
@@ -294,14 +307,21 @@ function ReportView({
           <div className="eyebrow mb-2">Identity</div>
           {id ? (
             <div className="flex flex-wrap gap-1.5">
-              {id.asn && <Chip>{id.asn}</Chip>}
-              {id.isp && <Chip>{id.isp}</Chip>}
-              {(id.country || id.city) && <Chip>{[id.city, id.country].filter(Boolean).join(', ')}</Chip>}
-              {id.hosting_type !== 'unknown' && <Chip>{id.hosting_type}</Chip>}
-              {id.reverse_dns && <Chip>{id.reverse_dns}</Chip>}
-              {id.registered && <Chip>reg {id.registered.slice(0, 10)}</Chip>}
-              {torExit && <Chip tone="red">tor exit</Chip>}
-              {(d.verdict.tags ?? []).slice(0, 12).map((t) => <Chip key={t} tone="red">{t}</Chip>)}
+              {idEmpty ? (
+                /* U8: every identity field null → one honest line, not a grid of dashes */
+                <p className="font-mono text-[11px] text-slate-500">No geolocation data</p>
+              ) : (
+                <>
+                  {id.asn && <Chip>{id.asn}</Chip>}
+                  {id.isp && <Chip>{id.isp}</Chip>}
+                  {(id.country || id.city) && <Chip>{[id.city, id.country].filter(Boolean).join(', ')}</Chip>}
+                  {id.hosting_type !== 'unknown' && <Chip>{id.hosting_type}</Chip>}
+                  {id.reverse_dns && <Chip>{id.reverse_dns}</Chip>}
+                  {id.registered && <Chip>reg {id.registered.slice(0, 10)}</Chip>}
+                  {torExit && <Chip tone="red">tor exit</Chip>}
+                  {(d.verdict.tags ?? []).slice(0, 12).map((t) => <Chip key={t} tone="red">{t}</Chip>)}
+                </>
+              )}
             </div>
           ) : (
             <p className="font-mono text-[11px] text-slate-500">no identity data returned</p>
@@ -320,25 +340,40 @@ function ReportView({
             <TraceGraph graph={graph} onPivot={onExpand} expandingKey={expandingKey} selectedKey={selectedKey} onSelectNode={setSelectedKey} />
           </section>
           <div className="lg:col-span-4">
-            <NodeInspector d={d} graph={graph} selectedKey={selectedKey} onSelect={setSelectedKey} onExpand={onExpand} />
+            <NodeInspector d={d} graph={graph} selectedKey={selectedKey} pivotError={pivotError} onSelect={setSelectedKey} onExpand={onExpand} />
           </div>
         </div>
       )}
 
-      {/* Row 3 — calendar | timeline | behavior */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-2">
-        {(d.timeline?.length ?? 0) > 0 && (
-          <div className="glass-card rounded-xl p-3 lg:col-span-5"><ActivityCalendar timeline={d.timeline!} /></div>
-        )}
-        <div className="glass-card rounded-xl p-3 lg:col-span-3"><TimelineStrip timeline={d.timeline ?? []} /></div>
-        <div className="glass-card rounded-xl p-3 lg:col-span-4"><BehaviorSection d={d} /></div>
-      </div>
+      {/* Row 3 — calendar | timeline | behavior. U1: with nothing to say in
+          either row 3's behavior card or row 4, one compact full-width card
+          replaces both instead of two stretched bordered voids. */}
+      {behaviorEmpty && relsEmpty ? (
+        <section aria-label="Behavior and relations" className="glass-card rounded-xl p-3 flex items-center justify-center gap-2.5">
+          <span aria-hidden className="text-slate-500">◇</span>
+          <p className="font-mono text-[12px] text-slate-500">No behaviour or relation data for this indicator</p>
+        </section>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 items-start">
+            {(d.timeline?.length ?? 0) > 0 && (
+              <div className="glass-card rounded-xl p-3 lg:col-span-5"><ActivityCalendar timeline={d.timeline!} /></div>
+            )}
+            <div className="glass-card rounded-xl p-3 lg:col-span-3"><TimelineStrip timeline={d.timeline ?? []} /></div>
+            <div className="glass-card rounded-xl p-3 lg:col-span-4"><BehaviorSection d={d} /></div>
+          </div>
 
-      {/* Row 4 — every relation, sortable/filterable, selection synced to graph */}
-      <section className="glass-card rounded-xl p-3" aria-label="Relations">
-        <div className="eyebrow mb-2">Relations · {d.relations?.length ?? 0}</div>
-        <RelationsTable relations={d.relations ?? []} selectedKey={selectedKey} onSelect={setSelectedKey} />
-      </section>
+          {/* Row 4 — every relation, sortable/filterable, selection synced to graph */}
+          <section className="glass-card rounded-xl p-3" aria-label="Relations">
+            <div className="eyebrow mb-2">Relations · {d.relations?.length ?? 0}</div>
+            {relsEmpty ? (
+              <p className="font-mono text-[11px] text-slate-500">No relations reported for this indicator</p>
+            ) : (
+              <RelationsTable relations={d.relations ?? []} selectedKey={selectedKey} onSelect={setSelectedKey} />
+            )}
+          </section>
+        </>
+      )}
 
       {/* Row 5 — pulses + raw evidence backstop */}
       {((d.pulses?.length ?? 0) > 0 || (d.evidence?.length ?? 0) > 0) && (
@@ -425,6 +460,7 @@ export default function InvestigatePage() {
   const [graphState, setGraphState] = useState<GraphState | null>(null)
   const graphRef = useRef<GraphState | null>(null)
   const [expandingNode, setExpandingNode] = useState<string | null>(null)
+  const [pivotError, setPivotError] = useState<string | null>(null) // U6: failed pivots must not be a dead click
   const busyRef = useRef(false)
 
   // (Re)build the graph from the root dossier — and restore any ?pivots= trail.
@@ -479,11 +515,12 @@ export default function InvestigatePage() {
     if (!node || node.expanded || node.ring >= MAX_RINGS) return
     busyRef.current = true
     setExpandingNode(key)
+    setPivotError(null)
     try {
       const res = await fetch(`${import.meta.env.BASE_URL}api/investigate?q=${encodeURIComponent(value)}`)
-      if (!res.ok) return
+      if (!res.ok) { setPivotError(`Couldn't expand ${value} — ${res.status === 429 ? "rate-limited, try again in a minute" : 'upstream failed, try again'}`); return }
       const pd: Dossier | null = await res.json().catch(() => null)
-      if (!pd || !pd.query) return
+      if (!pd || !pd.query) { setPivotError(`Couldn't expand ${value} — no dossier returned`); return }
       const now = graphRef.current!
       let next = mergeRelationsIntoGraph(now, pd.relations ?? [], key, node.ring + 1)
       const fresh = next.nodes.get(key)
@@ -494,7 +531,8 @@ export default function InvestigatePage() {
       syncPivotsParam(next.pivotStack, push)
       pushCrumb(value) // keep the sessionStorage trail current for back-nav affordance
     } catch {
-      // failed pivot fetch: graph simply doesn't grow; toast is overkill here
+      // graph simply doesn't grow, but the inspector says why (U6)
+      setPivotError(`Couldn't expand ${value} — network error, try again`)
     } finally {
       busyRef.current = false
       setExpandingNode(null)
@@ -512,15 +550,22 @@ export default function InvestigatePage() {
   }, [])
 
   const search = (
-    <form onSubmit={submit} className="no-print max-w-xl mx-auto mb-10">
+    <form onSubmit={submit} className="no-print max-w-xl mx-auto mb-10 flex gap-2">
       <input
         value={term}
         onChange={(e) => setTerm(e.target.value)}
         placeholder="8.8.8.8 · evil.example.com · e3b0c442…"
         aria-label="Indicator to investigate"
         spellCheck={false}
-        className="w-full bg-white/[0.03] border border-white/10 rounded-xl px-5 py-4 font-mono text-lg text-white placeholder:text-slate-600 focus:outline-none focus:border-red-500/40"
+        className="min-w-0 flex-1 bg-white/[0.03] border border-white/10 rounded-xl px-5 py-4 font-mono text-lg text-white placeholder:text-slate-600 focus:outline-none focus:border-red-500/40"
       />
+      {/* U7: Enter worked; clicking where a button should be did nothing. */}
+      <button
+        type="submit"
+        className="shrink-0 self-stretch rounded-xl px-5 font-mono text-[11px] uppercase tracking-[0.2em] font-bold text-white bg-red-600 hover:bg-red-500 active:scale-[0.98] transition-colors"
+      >
+        Investigate
+      </button>
     </form>
   )
 
@@ -577,7 +622,7 @@ export default function InvestigatePage() {
         dossier.note ? <NonRoutable d={dossier} /> : (
           // key by the indicator: a new q remounts the cockpit and drops the
           // selectedKey (row 4/inspector selection belongs to the old dossier)
-          <ReportView key={dossier.query.value} d={dossier} graph={graphState} expandingKey={expandingNode} onExpand={expandNode} onCollapse={collapseToDepth} onRefresh={onRefresh} />
+          <ReportView key={dossier.query.value} d={dossier} graph={graphState} expandingKey={expandingNode} pivotError={pivotError} onExpand={expandNode} onCollapse={collapseToDepth} onRefresh={onRefresh} />
         )
       )}
       {crumbs.length > 1 && (

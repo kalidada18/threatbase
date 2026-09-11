@@ -55,9 +55,23 @@ export function NarrativeCard({ n }: { n: Narrative }) {
 }
 
 /** AI narrative section — branches on the legacy string shape (stale pre-C KV)
- *  exactly like NarrativeCard's callers must. Exported for the cockpit's row 1. */
+ *  exactly like NarrativeCard's callers must. Exported for the cockpit's row 1.
+ *  A null narrative is prod-reachable (any OpenRouter failure → null), so it
+ *  renders an honest placeholder rather than leaving the col-span-5 slot dead. */
 export function NarrativeSection({ d }: { d: Dossier }) {
-  if (!d.narrative) return null
+  if (!d.narrative) {
+    return (
+      <section aria-label="AI summary">
+        <div className="eyebrow mb-2">Analyst summary (AI)</div>
+        <div className="glass-card rounded-2xl p-5 flex items-start gap-2.5">
+          <span aria-hidden className="text-slate-500 mt-0.5">ⓘ</span>
+          <p className="text-sm text-slate-400 leading-relaxed">
+            AI summary unavailable — the structured facts below stand on their own.
+          </p>
+        </div>
+      </section>
+    )
+  }
   return (
     <section aria-label="AI summary">
       <div className="eyebrow mb-2">Analyst summary (AI)</div>
