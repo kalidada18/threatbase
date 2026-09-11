@@ -15,11 +15,13 @@ const alpha = (w: number) => 0.25 + 0.75 * Math.min(1, (w || 0) / 8)
 const ringOpacity = (ring: number) => (ring >= 3 ? 0.4 : ring === 2 ? 0.7 : 1)
 
 export default function TraceGraph({
-  graph, onPivot, expandingKey,
+  graph, onPivot, expandingKey, selectedKey, onSelectNode,
 }: {
   graph: GraphState
   onPivot: (type: GraphNode['type'], value: string) => void
   expandingKey: string | null
+  selectedKey?: string | null
+  onSelectNode?: (key: string | null) => void
 }) {
   const [hover, setHover] = useState<GraphNode | null>(null)
   const { positions } = multiRingLayout(graph, W, H)
@@ -84,12 +86,15 @@ export default function TraceGraph({
               aria-label={`${p.node.value} (${p.node.type}) — ${p.node.expanded ? 'expanded' : p.node.ring >= MAX_RINGS ? 'maximum depth' : 'expand into graph'}`}
               onMouseEnter={() => setHover(p.node)} onMouseLeave={() => setHover(null)}
               onFocus={() => setHover(p.node)} onBlur={() => setHover(null)}
-              onClick={() => onPivot(p.node.type, p.node.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') onPivot(p.node.type, p.node.value) }}>
+              onClick={() => { onSelectNode?.(k); onPivot(p.node.type, p.node.value) }}
+              onKeyDown={(e) => { if (e.key === 'Enter') { onSelectNode?.(k); onPivot(p.node.type, p.node.value) } }}>
               <circle cx={p.x} cy={p.y} r={8}
                 fill={p.node.malicious === true ? 'hsl(351 80% 45%)' : 'rgba(15,23,42,0.9)'}
                 stroke={p.node.malicious === true ? 'hsl(351 90% 70%)' : 'rgba(148,163,184,0.6)'}
                 strokeWidth="1.5" strokeDasharray={!p.node.expanded && p.node.ring < MAX_RINGS ? '2 2' : undefined} />
+              {selectedKey === k && (
+                <circle cx={p.x} cy={p.y} r={12} fill="none" stroke="hsl(351 80% 45%)" strokeWidth="1.5" aria-hidden="true" />
+              )}
               {p.node.malicious === true && (
                 <text x={p.x} y={p.y + 3.5} textAnchor="middle" fontSize="10" fontWeight="700" fill="#fff">!</text>
               )}
@@ -126,12 +131,10 @@ export default function TraceGraph({
           </div>
         )}
       </div>
+      {/* Mobile fallback list only — on lg the cockpit's RelationsTable carries
+          the dense view (Task F replaced the desktop <details> list with it). */}
       <details className="md:hidden mt-2">
         <summary className="font-mono text-[11px] uppercase tracking-wider text-slate-400 cursor-pointer">Relation list ({Math.max(0, graph.nodes.size - 1)})</summary>
-        <NodeTable graph={graph} onPivot={onPivot} />
-      </details>
-      <details className="hidden md:block mt-1">
-        <summary className="font-mono text-[10px] uppercase tracking-wider text-slate-600 cursor-pointer">Table view</summary>
         <NodeTable graph={graph} onPivot={onPivot} />
       </details>
     </section>

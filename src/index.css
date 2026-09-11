@@ -352,9 +352,12 @@
 }
 
 /* ── Print: the dark dossier prints as-is (ruling in plan T7 Step 2 —
-   print-color-adjust, NOT filter:invert). Decorative chrome is dropped. */
+   print-color-adjust, NOT filter:invert). Decorative chrome is dropped.
+   Task F: the cockpit's dense grid prints with the same layout — keep each
+   panel intact across page breaks so density survives on paper. ── */
 @media print {
   .no-print { display: none !important; }
+  .glass-card { break-inside: avoid; }
   /* isometric warp canvas — the only canvas on the site is decorative bg */
   canvas { display: none !important; }
   html, body { background: #05070c !important; }

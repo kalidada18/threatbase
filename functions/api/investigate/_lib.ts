@@ -42,6 +42,10 @@ export type Dossier = {
   narrative: Narrative | null
   investigated_by: number
   stale_at: string // ISO instant when this dossier expires — set at KV-write time from cacheTtl
+  /** Raw per-source results (Task F evidence accordion). Optional: dossiers
+   *  cached in KV before F deploy and the non-routable early-return omit it —
+   *  the cockpit guards. Includes adapter-transformed data, not upstream bodies. */
+  evidence?: SourceResult<unknown>[]
 }
 
 // Refang first: attackers write hxxp://, [.], [:] to dodge scanners. Strip whitespace.

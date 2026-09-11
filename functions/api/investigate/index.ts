@@ -103,6 +103,9 @@ export const onRequestGet = async (context: any) => {
     verdict, identity, behavior: { ports, tags: onTags, first_seen: seen[0] ?? null, last_seen: seen.at(-1) ?? null },
     relations: rankRelations(relations, 40), pulses: pulses.slice(0, 10), timeline: buildTimeline(sightings).slice(-120),
     narrative: null, investigated_by: 1,
+    // Task F evidence accordion: the assembled SourceResult[] (adapter output,
+    // not upstream bodies). Optional — pre-F KV copies omit it; UI guards.
+    evidence: P,
   }
   if (kv && dossier.sources_ok.length === 0) return json({ error: 'all sources failed' }, 502, request)
 

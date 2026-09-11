@@ -13,6 +13,10 @@ export type GraphNode = {
   expanded: boolean
   edge?: string
   via?: string
+  /** Verdict part of this node's sub-dossier, captured at expansion time
+   *  (Task F inspector). Undefined until a dossier has been fetched for it. */
+  mal_by?: number
+  engines?: number
 }
 
 export type GraphEdge = {

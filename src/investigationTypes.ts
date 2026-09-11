@@ -17,6 +17,9 @@ export type Narrative = {
   mitre_techniques: string[]
 }
 
+/** Mirror of _lib.ts SourceResult — raw per-source evidence for the cockpit accordion. */
+export type SourceResult = { source: string; ok: boolean; data?: unknown; error?: string; skipped?: boolean }
+
 export type Dossier = {
   query: { type: IndicatorType; value: string }
   /** Missing on the non-routable answer — guard before formatting. */
@@ -40,4 +43,6 @@ export type Dossier = {
   stale_at?: string
   /** Set when a ?refresh=1 was rate-limited and the cached copy was served instead. */
   refresh_blocked?: boolean
+  /** Raw per-source results (Task F evidence accordion). Optional: pre-F KV copies omit it. */
+  evidence?: SourceResult[]
 }

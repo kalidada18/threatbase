@@ -4,10 +4,11 @@ import { motion, useReducedMotion } from 'framer-motion'
 import IsoPageShell from './layout/IsoPageShell'
 import { useSEO } from '@/useSEO'
 import { useInvestigation } from '@/useInvestigation'
-import type { Dossier, IndicatorType } from '@/investigationTypes'
+import type { Dossier, IndicatorType, TimelinePoint } from '@/investigationTypes'
 import TraceGraph from './investigate/TraceGraph'
 import ActivityCalendar from './investigate/ActivityCalendar'
-import BehaviorPanel from './investigate/BehaviorPanel'
+import { BehaviorSection, NarrativeSection, PulsesSection } from './investigate/BehaviorPanel'
+import RelationsTable, { inspectNode } from './investigate/RelationsTable'
 import { IocLink } from './investigate/IocLink'
 import { formatRelative } from './investigate/formatRelative'
 import {
@@ -110,6 +111,131 @@ function ReportActions({ d }: { d: Dossier }) {
   )
 }
 
+/** Compact chronological strip beside the calendar — newest 8 sighting days. */
+function TimelineStrip({ timeline }: { timeline: TimelinePoint[] }) {
+  const recent = timeline.slice(-8).reverse()
+  return (
+    <section aria-label="Timeline">
+      <div className="eyebrow mb-2">Timeline</div>
+      {recent.length ? (
+        <ul className="divide-y divide-white/[0.04] font-mono text-[12px] text-slate-400">
+          {recent.map((t) => (
+            <li key={t.date} className="flex gap-2 py-1 tabular-nums">
+              <span className="text-slate-300 shrink-0">{t.date.slice(0, 10)}</span>
+              <span className="text-red-400/80 shrink-0">{t.count}×</span>
+              <span className="truncate" title={t.sources.join(', ')}>{t.sources.join(', ')}</span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="font-mono text-[11px] text-slate-500">no dated sightings</p>
+      )}
+    </section>
+  )
+}
+
+/** Raw source evidence — the "every detail" backstop. One <details> per
+ *  SourceResult, pretty JSON in <pre> (React-escaped; never
+ *  dangerouslySetInnerHTML). Absent on pre-F cached copies → section hidden. */
+function EvidenceAccordion({ d }: { d: Dossier }) {
+  const ev = d.evidence
+  if (!ev?.length) return null
+  return (
+    <section aria-label="Raw source evidence">
+      <div className="eyebrow mb-2">Raw source evidence</div>
+      <div className="grid sm:grid-cols-2 gap-1">
+        {ev.map((s, i) => (
+          // 'unknown' can repeat when several settled rejections occur — index in the key
+          <details key={`${s.source}-${i}`} className="bg-white/[0.02] border border-white/[0.06] rounded-md px-2 py-1">
+            <summary className="font-mono text-[11px] text-slate-400 cursor-pointer select-none whitespace-nowrap overflow-hidden text-ellipsis">
+              {s.ok ? '✓' : s.skipped ? '—' : '⚠'} {s.source}{' '}
+              <span className="text-slate-600">{s.ok ? 'ok' : s.skipped ? 'skipped' : `failed${s.error ? ` · ${s.error}` : ''}`}</span>
+            </summary>
+            <pre className="mt-1 max-h-64 overflow-auto font-mono text-[10px] leading-tight text-slate-500 whitespace-pre-wrap break-all">
+              {JSON.stringify(s, null, 2)}
+            </pre>
+          </details>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+/** Node inspector (cockpit row 2, cols 9–12). Shows the SELECTED graph node —
+ *  or the root when nothing is picked, so the panel is never empty. Nodes
+ *  without a fetched sub-dossier still get their full relation-row set. */
+function NodeInspector({
+  d, graph, selectedKey, onSelect, onExpand,
+}: {
+  d: Dossier
+  graph: GraphState | null
+  selectedKey: string | null
+  onSelect: (key: string | null) => void
+  onExpand: (type: IndicatorType, value: string) => void
+}) {
+  const rootKey = graph ? graph.pivotStack[0] : null
+  const selKey = selectedKey ?? rootKey
+  const node = (selKey && graph?.nodes.get(selKey)) || (rootKey ? graph!.nodes.get(rootKey) ?? null : null)
+  const { rows, verdict } = inspectNode(node, d.relations ?? [])
+  if (!node) return null
+  const isRoot = node.ring === 0
+  const vb = isRoot ? `${d.verdict.malicious_by}/${d.verdict.total_engines} sources flag it` : verdict
+  const rootMal = isRoot ? d.verdict.malicious_by > 0 : !!node.malicious
+  return (
+    <section aria-label="Node inspector" className="glass-card rounded-xl p-3 h-full overflow-auto">
+      <div className="flex items-center justify-between gap-2 mb-2">
+        <span className="eyebrow">Inspector</span>
+        {!isRoot && (
+          <button type="button" onClick={() => onSelect(null)} className="font-mono text-[10px] uppercase text-slate-500 hover:text-slate-300">root</button>
+        )}
+      </div>
+      <div className="font-mono text-[13px] text-white break-all leading-snug">{node.value}</div>
+      <div className="font-mono text-[10px] uppercase text-slate-500 mt-0.5">
+        {node.type} · ring {node.ring}{node.edge ? ` · ${node.edge.replace(/_/g, ' ')}` : ''}{node.via ? ` · via ${node.via}` : ''} · weight {node.weight}
+      </div>
+      <div className="font-mono text-[11px] mt-2 tabular-nums">
+        {vb ? (
+          <span className="text-slate-300">
+            <span aria-hidden className={rootMal ? 'text-red-400 mr-1' : 'text-slate-500 mr-1'}>{rootMal ? '●' : '○'}</span>
+            {vb}
+          </span>
+        ) : (
+          <span className="text-slate-500">no verdict yet —{' '}
+            <button
+              type="button"
+              onClick={() => onExpand(node.type, node.value)}
+              disabled={node.expanded || node.ring >= MAX_RINGS}
+              className="text-red-400 hover:text-red-300 underline underline-offset-2 disabled:text-slate-600 disabled:no-underline"
+            >
+              {node.expanded ? 'verdict unavailable' : node.ring >= MAX_RINGS ? 'max depth' : 'expand to investigate'}
+            </button>
+          </span>
+        )}
+      </div>
+      <div className="mt-3 border-t border-white/[0.06] pt-2">
+        <div className="font-mono text-[9px] uppercase tracking-widest text-slate-600 mb-1">relations ({rows.length})</div>
+        {rows.length ? (
+          <ul className="divide-y divide-white/[0.04] font-mono text-[11px] text-slate-400">
+            {rows.map((r, i) => (
+              <li key={`${r.edge}-${i}`} className="py-1 grid grid-cols-[auto_1fr_auto] gap-x-2 items-baseline">
+                <span className="text-slate-500 uppercase text-[9px]">{r.edge.replace(/_/g, ' ')}</span>
+                <span className="text-slate-500 truncate" title={r.via}>{r.via || '—'}</span>
+                <span className="tabular-nums">{r.weight}·{(r.last_seen ?? r.first_seen ?? '—').slice(0, 10)}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="font-mono text-[11px] text-slate-600">none in this dossier</p>
+        )}
+      </div>
+    </section>
+  )
+}
+
+/** Dense analyst cockpit (Task F): every detail on one scrolling screen —
+ *  verdict, identity, narrative, graph+inspector, calendar/timeline/behavior,
+ *  full relations table, pulses, raw evidence. lg = 12-col grid; below lg the
+ *  same panels stack (mobile fallback keeps the old vertical flow). */
 function ReportView({
   d, graph, expandingKey, onExpand, onCollapse, onRefresh,
 }: {
@@ -123,79 +249,104 @@ function ReportView({
   const st = STATUS[d.verdict.status] ?? STATUS.unknown
   const id = d.identity
   const torExit = !!id && id.hosting_type === 'vps/cloud' && (d.verdict.tags ?? []).some((t) => /tor/i.test(t))
+  const [selectedKey, setSelectedKey] = useState<string | null>(null)
   return (
-    <div className="space-y-8">
+    // ponytail: rows below are the hard-coded cockpit — upgrade path is a
+    // user-configurable panel toggle set, add when operators ask to hide panels.
+    <div className="space-y-2 w-full max-w-[1400px]">
       <ReportActions d={d} />
-      {/* Verdict tile */}
-      <div className="glass-card rounded-2xl p-6 md:p-8 flex flex-col md:flex-row gap-6 md:gap-8 items-center">
-        <div className="text-center md:text-left">
-          <div className={`inline-flex items-center gap-2 font-mono font-bold tracking-wider border rounded-full px-4 py-1.5 ${st.cls}`}>
-            <span aria-hidden>{st.icon}</span>{st.label}
+
+      {/* Row 1 — verdict | identity | narrative, all visible at once */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-2">
+        <div className="glass-card rounded-xl p-3 lg:col-span-4 flex items-center gap-4">
+          <div className="min-w-0">
+            <div className={`inline-flex items-center gap-2 font-mono font-bold tracking-wider border rounded-full px-3 py-1 ${st.cls}`}>
+              <span aria-hidden>{st.icon}</span>{st.label}
+            </div>
+            <div className="font-mono text-[11px] text-slate-500 mt-2 tabular-nums">
+              {d.verdict.malicious_by} of {d.verdict.total_engines} sources flag it
+              {typeof d.verdict.score === 'number' && d.verdict.confidence && (
+                <span className="ml-1 text-slate-400">· conf {d.verdict.confidence.toUpperCase()}</span>
+              )}
+            </div>
+            <div className="mt-2"><SourceStrip d={d} /></div>
+            <div className="font-mono text-[10px] text-slate-500 mt-2 tabular-nums">
+              {d.cached ? `report from ${ago(d.generated_at ?? '')}` : 'live'}
+              {typeof d.investigated_by === 'number' && ` · ${d.investigated_by} investigation${d.investigated_by === 1 ? '' : 's'}`}
+              {d.cached && (
+                <span className="ml-1">
+                  · refreshes {formatRelative(d.stale_at)}
+                  {!d.refresh_blocked ? (
+                    <button type="button" onClick={onRefresh} className="ml-1 text-red-500 hover:text-red-400 underline underline-offset-2">now</button>
+                  ) : (
+                    <span className="text-slate-600"> (1 h cooldown)</span>
+                  )}
+                </span>
+              )}
+            </div>
           </div>
-          <div className="font-mono text-[11px] text-slate-500 mt-3 tabular-nums">
-            {d.verdict.malicious_by} of {d.verdict.total_engines} sources flag it
-            {typeof d.verdict.score === 'number' && d.verdict.confidence && (
-              <span className="ml-2 text-slate-400">· confidence {d.verdict.confidence.toUpperCase()}</span>
-            )}
-          </div>
+          {(typeof d.verdict.score === 'number' ? d.verdict.score : typeof d.verdict.risk === 'number' ? d.verdict.risk : null) !== null && (
+            <RiskGauge risk={(typeof d.verdict.score === 'number' ? d.verdict.score : d.verdict.risk) as number} />
+          )}
         </div>
-        {(typeof d.verdict.score === 'number' ? d.verdict.score : typeof d.verdict.risk === 'number' ? d.verdict.risk : null) !== null && (
-          <RiskGauge risk={(typeof d.verdict.score === 'number' ? d.verdict.score : d.verdict.risk) as number} />
-        )}
-        {id && (
-          <div className="flex flex-wrap gap-1.5 justify-center md:justify-start md:ml-auto max-w-md">
-            {id.asn && <Chip>{id.asn}</Chip>}
-            {(id.country || id.city) && <Chip>{[id.city, id.country].filter(Boolean).join(', ')}</Chip>}
-            {id.isp && <Chip>{id.isp}</Chip>}
-            {id.hosting_type !== 'unknown' && <Chip>{id.hosting_type}</Chip>}
-            {id.reverse_dns && <Chip>{id.reverse_dns}</Chip>}
-            {torExit && <Chip tone="red">tor exit</Chip>}
-          </div>
-        )}
+
+        <div className="glass-card rounded-xl p-3 lg:col-span-3">
+          <div className="eyebrow mb-2">Identity</div>
+          {id ? (
+            <div className="flex flex-wrap gap-1.5">
+              {id.asn && <Chip>{id.asn}</Chip>}
+              {id.isp && <Chip>{id.isp}</Chip>}
+              {(id.country || id.city) && <Chip>{[id.city, id.country].filter(Boolean).join(', ')}</Chip>}
+              {id.hosting_type !== 'unknown' && <Chip>{id.hosting_type}</Chip>}
+              {id.reverse_dns && <Chip>{id.reverse_dns}</Chip>}
+              {id.registered && <Chip>reg {id.registered.slice(0, 10)}</Chip>}
+              {torExit && <Chip tone="red">tor exit</Chip>}
+              {(d.verdict.tags ?? []).slice(0, 12).map((t) => <Chip key={t} tone="red">{t}</Chip>)}
+            </div>
+          ) : (
+            <p className="font-mono text-[11px] text-slate-500">no identity data returned</p>
+          )}
+        </div>
+
+        <div className="lg:col-span-5"><NarrativeSection d={d} /></div>
       </div>
 
-      {/* Honesty strip */}
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-        <SourceStrip d={d} />
-        <span className="font-mono text-[10px] text-slate-500 tabular-nums">
-          {d.cached ? `report from ${ago(d.generated_at ?? '')}` : 'live'}
-          {typeof d.investigated_by === 'number' && ` · ${d.investigated_by} investigation${d.investigated_by === 1 ? '' : 's'}`}
-        </span>
-        {d.cached && !d.note && (
-          <span className="text-xs font-mono text-slate-500">
-            cached · refreshes {formatRelative(d.stale_at)}
-            {!d.refresh_blocked ? (
-              <button
-                type="button"
-                onClick={onRefresh}
-                className="ml-2 text-red-500 hover:text-red-400 underline underline-offset-2"
-              >
-                refresh now
-              </button>
-            ) : (
-              <span className="ml-2 text-slate-600">(refresh in 1 h)</span>
-            )}
-          </span>
-        )}
-      </div>
-
-      {/* Trace graph — expand any relation in-graph (Task D); the pivot also
-          deep-links a fresh investigation via the breadcrumb-less table rows */}
+      {/* Row 2 — graph + inspector */}
       {graph && graph.nodes.size > 1 && (
-        <section>
-          <div className="eyebrow mb-2">Trace network</div>
-          <div className="glass-card rounded-2xl p-4 md:p-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-2">
+          <section className="glass-card rounded-xl p-3 lg:col-span-8" aria-label="Trace network">
+            <div className="eyebrow mb-2">Trace network</div>
             {graph.pivotStack.length > 1 && <PivotBreadcrumb graph={graph} onCollapse={onCollapse} />}
-            <TraceGraph graph={graph} onPivot={onExpand} expandingKey={expandingKey} />
+            <TraceGraph graph={graph} onPivot={onExpand} expandingKey={expandingKey} selectedKey={selectedKey} onSelectNode={setSelectedKey} />
+          </section>
+          <div className="lg:col-span-4">
+            <NodeInspector d={d} graph={graph} selectedKey={selectedKey} onSelect={setSelectedKey} onExpand={onExpand} />
           </div>
-        </section>
-      )}
-      {(d.timeline?.length ?? 0) > 0 && (
-        <div className="glass-card rounded-2xl p-4 md:p-6">
-          <ActivityCalendar timeline={d.timeline!} />
         </div>
       )}
-      <BehaviorPanel d={d} />
+
+      {/* Row 3 — calendar | timeline | behavior */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-2">
+        {(d.timeline?.length ?? 0) > 0 && (
+          <div className="glass-card rounded-xl p-3 lg:col-span-5"><ActivityCalendar timeline={d.timeline!} /></div>
+        )}
+        <div className="glass-card rounded-xl p-3 lg:col-span-3"><TimelineStrip timeline={d.timeline ?? []} /></div>
+        <div className="glass-card rounded-xl p-3 lg:col-span-4"><BehaviorSection d={d} /></div>
+      </div>
+
+      {/* Row 4 — every relation, sortable/filterable, selection synced to graph */}
+      <section className="glass-card rounded-xl p-3" aria-label="Relations">
+        <div className="eyebrow mb-2">Relations · {d.relations?.length ?? 0}</div>
+        <RelationsTable relations={d.relations ?? []} selectedKey={selectedKey} onSelect={setSelectedKey} />
+      </section>
+
+      {/* Row 5 — pulses + raw evidence backstop */}
+      {((d.pulses?.length ?? 0) > 0 || (d.evidence?.length ?? 0) > 0) && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-2">
+          {(d.pulses?.length ?? 0) > 0 && <div className="glass-card rounded-xl p-3 lg:col-span-5"><PulsesSection d={d} /></div>}
+          {(d.evidence?.length ?? 0) > 0 && <div className="glass-card rounded-xl p-3 lg:col-span-7"><EvidenceAccordion d={d} /></div>}
+        </div>
+      )}
     </div>
   )
 }
@@ -336,7 +487,7 @@ export default function InvestigatePage() {
       const now = graphRef.current!
       let next = mergeRelationsIntoGraph(now, pd.relations ?? [], key, node.ring + 1)
       const fresh = next.nodes.get(key)
-      if (fresh) next.nodes.set(key, { ...fresh, expanded: true, malicious: (pd.verdict?.malicious_by ?? 0) > 0 })
+      if (fresh) next.nodes.set(key, { ...fresh, expanded: true, malicious: (pd.verdict?.malicious_by ?? 0) > 0, mal_by: pd.verdict?.malicious_by, engines: pd.verdict?.total_engines })
       next = { ...next, pivotStack: [...next.pivotStack, key] }
       graphRef.current = next
       setGraphState(next)
@@ -373,18 +524,30 @@ export default function InvestigatePage() {
     </form>
   )
 
+  const hasReport = !!(q && !loading && !error && dossier && !dossier.note)
   return (
     <IsoPageShell>
+      {/* Cockpit mode (Task F): with a dossier on screen the hero collapses to
+          a one-line header so the dense grid starts at the top of the viewport. */}
       <motion.div
         initial={reduce ? false : { opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="no-print max-w-3xl mx-auto text-center mb-8"
+        className={`no-print mx-auto text-center ${hasReport ? 'max-w-3xl mb-4' : 'max-w-3xl mb-8'}`}
       >
-        <div className="eyebrow mb-6">Deep Investigation</div>
-        <h1 className="text-5xl md:text-6xl font-extrabold tracking-tighter text-white mb-6">
-          Everything it <span className="text-liquid-red">touched</span>.
-        </h1>
+        {hasReport ? (
+          <div className="flex flex-wrap items-baseline justify-center gap-x-3 gap-y-1">
+            <span className="eyebrow">Deep Investigation</span>
+            <span className="font-mono text-sm text-slate-300 break-all">{q}</span>
+          </div>
+        ) : (
+          <>
+            <div className="eyebrow mb-6">Deep Investigation</div>
+            <h1 className="text-5xl md:text-6xl font-extrabold tracking-tighter text-white mb-6">
+              Everything it <span className="text-liquid-red">touched</span>.
+            </h1>
+          </>
+        )}
       </motion.div>
 
       {search}
