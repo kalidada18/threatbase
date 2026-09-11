@@ -1,4 +1,4 @@
-import { cacheKey, sanitizeKv, cacheTtl, staleAt, isPublicIp, sniffType, mergeVerdict, rankRelations, buildTimeline, hostingType, validateNarrative, trimEvidence, type Dossier, type Relation, type Sighting, type VerdictPart, type SourceResult } from './_lib'
+import { cacheKey, sanitizeKv, cacheTtl, staleAt, isPublicIp, sniffType, mergeVerdict, rankRelations, buildTimeline, hostingType, validateNarrative, trimEvidence, takeRateToken, refreshAllowed, refang, type Dossier, type Relation, type Sighting, type VerdictPart, type SourceResult } from './_lib'
 import { geoLookup, rdapLookup } from '../_net'
 import { onsite, otxInvestigate, shodanHost, vtReport, bazaar, feodoCheck, urlhausCheck, greynoiseCheck, spamhausCheck, ripestatlookup } from './_sources'
 import { json } from '../_common'
@@ -9,14 +9,19 @@ export const onRequestGet = async (context: any) => {
   const q = (u.searchParams.get('q') || '').trim()
   const type = sniffType(q)
   if (!type) return json({ error: 'unrecognized indicator' }, 400, request)
-  const value = q.toLowerCase()
+  // sniffType refangs internally — the value every adapter + cache key uses
+  // must be refanged too, or evil[.]com is looked up as the junk string.
+  const value = refang(q).toLowerCase()
   if ((type === 'ipv4' || type === 'ipv6') && !isPublicIp(value))
     return json({ query: { type, value }, verdict: { score: 0, malicious_by: 0, total_engines: 0, status: 'clean', confidence: 'low', dominant_source: null }, identity: null, relations: [], narrative: null, note: 'non-routable address — not investigated', cached: false } as unknown as Dossier, 200, request)
 
   const kv = env.IOC_CACHE
-  // Public rate limit: 8/min per client IP.
+  // Public rate limit: 8/min per client IP. In-isolate counter first (B1:
+  // KV get-then-put is non-atomic), KV counter as cross-isolate backstop.
+  const ip = request.headers.get('cf-connecting-ip') || 'unknown'
+  if (!takeRateToken(ip)) return json({ error: 'too many investigations — retry in a minute' }, 429, request)
   const minute = Math.floor(Date.now() / 60000)
-  const rl = `rl_inv:${request.headers.get('cf-connecting-ip') || 'unknown'}:${minute}`
+  const rl = `rl_inv:${ip}:${minute}`
   if (kv) {
     const n = +(await kv.get(rl)) || 0
     if (n >= 8) return json({ error: 'too many investigations — retry in a minute' }, 429, request)
@@ -27,9 +32,9 @@ export const onRequestGet = async (context: any) => {
   const wantsRefresh = u.searchParams.get('refresh') === '1'
   if (kv) {
     if (wantsRefresh) {
-      // Rate-limit refresh: 1 per IP per indicator per hour
-      const refreshKey = `rl_refresh:${sanitizeKv(request.headers.get('cf-connecting-ip') || 'unknown')}:${sanitizeKv(key)}`
-      if (await kv.get(refreshKey)) {
+      // Rate-limit refresh: 1 per IP per indicator per hour (isolate layer B1)
+      const refreshKey = `rl_refresh:${sanitizeKv(ip)}:${sanitizeKv(key)}`
+      if (!refreshAllowed(refreshKey) || await kv.get(refreshKey)) {
         // Serve cached with a note rather than 429 — less abrasive UX
         const hit = await kv.get(key)
         if (hit) {

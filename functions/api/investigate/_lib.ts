@@ -101,6 +101,32 @@ export const cacheKey = (type: IndicatorType, value: string) => `inv:${type}:${v
  *  ponytail: collisions only across exotic chars (URL query junk, IDN), acceptable for a rate-limit key. */
 export const sanitizeKv = (s: string) => s.replace(/[^a-z0-9._:]/g, '')
 
+/** B1: KV get-then-put is non-atomic — N concurrent same-IP requests all pass
+ *  the check. First layer: synchronous in-isolate counter (no await between
+ *  read and write). KV stays as the cross-isolate backstop.
+ *  ponytail: ceiling is 8/min *per isolate* worst-case (Worker isolates don't
+ *  share a heap); the KV layer bounds the aggregate. Upgrade: KV atomic
+ *  counters if they ever exist on the platform. */
+const rlBucket = new Map<string, { n: number; min: number }>()
+export function takeRateToken(ip: string, now = Date.now(), limit = 8): boolean {
+  const min = Math.floor(now / 60000)
+  for (const k of rlBucket.keys()) if (!k.endsWith(`:${min}`)) rlBucket.delete(k) // prune past minutes
+  const cur = rlBucket.get(`${ip}:${min}`)
+  if (!cur) { rlBucket.set(`${ip}:${min}`, { n: 1, min }); return true }
+  if (cur.n >= limit) return false
+  cur.n++
+  return true
+}
+
+/** B1 same pattern for the ?refresh=1 gate: 1 per IP+indicator per hour. */
+const refreshBucket = new Map<string, number>() // key -> expiry (ms)
+export function refreshAllowed(key: string, now = Date.now(), ttlMs = 3_600_000): boolean {
+  for (const [k, exp] of refreshBucket) if (exp <= now) refreshBucket.delete(k)
+  if (refreshBucket.has(key)) return false
+  refreshBucket.set(key, now + ttlMs)
+  return true
+}
+
 /** Verdict-driven cache TTL (seconds). Lower score = more likely clean = safe to cache longer;
  *  higher score = actively malicious = re-investigate sooner. */
 export function cacheTtl(verdict: Verdict): number {
@@ -122,6 +148,7 @@ const SOURCE_WEIGHT: Record<string, number> = {
   threatbase:      8,   // curated internal feeds
   greynoise:       7,   // targeted attacker vs. scanner classification
   malwarebazaar:   6,   // malware sample confirmed
+  'abusech-bazaar': 6,  // alias: the bazaar adapter's verdict part emits this name (was silently defaulting to weight 2)
   otx:             5,   // community-driven, moderate signal
   spamhaus:        5,   // BGP-level block — dedicated fraud infra
   ripestat:        4,   // routing anomaly — possible hijack indicator
@@ -258,7 +285,11 @@ export function validateNarrative(raw: string): Narrative | null {
       infrastructure_notes: String(parsed.infrastructure_notes ?? '').slice(0, 300),
       recommended_action: parsed.recommended_action,
       mitre_techniques: parsed.mitre_techniques
-        .filter((t: any) => /^T\d{4}(\.\d{3})?$/.test(String(t))) // validate ATT&CK ID format
+        // typeof filter, not String(): String(["T1071"]) === "T1071" launders a
+        // nested array past the regex, and BehaviorPanel's t.replace() then
+        // throws. Non-strings are dropped (why_malicious keeps its String()
+        // coercion — free text, harmless).
+        .filter((t: any) => typeof t === 'string' && /^T\d{4}(\.\d{3})?$/.test(t))
         .slice(0, 8),
     }
   } catch { return null }

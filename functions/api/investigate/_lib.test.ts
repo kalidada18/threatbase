@@ -1,6 +1,6 @@
 // functions/api/investigate/_lib.test.ts
 import { describe, expect, it } from 'vitest'
-import { sniffType, isPublicIp, cacheKey, sanitizeKv, cacheTtl, staleAt, mergeVerdict, rankRelations, hostingType, buildTimeline, validateNarrative, trimEvidence, type Relation, type Sighting, type Verdict } from './_lib'
+import { sniffType, isPublicIp, cacheKey, sanitizeKv, cacheTtl, staleAt, mergeVerdict, rankRelations, hostingType, buildTimeline, validateNarrative, trimEvidence, takeRateToken, refreshAllowed, type Relation, type Sighting, type Verdict } from './_lib'
 
 describe('sniffType', () => {
   it('recognizes every supported indicator shape', () => {
@@ -201,6 +201,49 @@ describe('validateNarrative — Task C structured output', () => {
     const out = validateNarrative(JSON.stringify({ ...noNotes, verdict_sentence: 'x'.repeat(400) }))!
     expect(out.infrastructure_notes).toBe('')
     expect(out.verdict_sentence).toHaveLength(300)
+  })
+})
+
+describe('takeRateToken — B1 in-isolate cap', () => {
+  const min = 1_800_000_000_000 // fixed minute base, no real clocks
+  it('allows 8 tokens per IP per minute, rejects the 9th, resets next minute', () => {
+    for (let i = 0; i < 8; i++) expect(takeRateToken('5.6.7.8', min + i)).toBe(true)
+    expect(takeRateToken('5.6.7.8', min + 9)).toBe(false)
+    expect(takeRateToken('5.6.7.8', min + 60_000)).toBe(true)
+    expect(takeRateToken('5.6.7.9', min + 9)).toBe(true) // other IPs unaffected
+  })
+})
+
+describe('refreshAllowed — B1 refresh gate', () => {
+  it('one per key per hour; expiry frees it; other keys unaffected', () => {
+    expect(refreshAllowed('rl_refresh:1.2.3.4:inv:ipv4:8.8.8.8', 1000)).toBe(true)
+    expect(refreshAllowed('rl_refresh:1.2.3.4:inv:ipv4:8.8.8.8', 1000)).toBe(false)
+    expect(refreshAllowed('rl_refresh:1.2.3.4:inv:ipv4:9.9.9.9', 1000)).toBe(true)
+    expect(refreshAllowed('rl_refresh:1.2.3.4:inv:ipv4:8.8.8.8', 3_601_001)).toBe(true)
+  })
+})
+
+describe('mergeVerdict — B3 abusech-bazaar weight alias', () => {
+  it('fresh confirmed bazaar sample gets weight 6 (score ≥ 48), not the default 2 (score 16)', () => {
+    const v = mergeVerdict([{ source: 'abusech-bazaar', malicious: true, last_seen: new Date().toISOString() }])
+    expect(v.score).toBeGreaterThanOrEqual(48)
+    expect(v.dominant_source).toBe('abusech-bazaar')
+    expect(v.confidence).toBe('medium') // weight 6 ≥ 4; default-2 would be 'low'
+  })
+})
+
+describe('validateNarrative — B4 string-typed techniques', () => {
+  const good = {
+    verdict_sentence: 'x', confidence: 'low', why_malicious: [],
+    infrastructure_notes: '', recommended_action: 'monitor', mitre_techniques: ['T1071'],
+  }
+  it('drops non-string technique entries instead of laundering arrays through String()', () => {
+    const out = validateNarrative(JSON.stringify({
+      ...good,
+      mitre_techniques: [['T1071'], 'T1566', { t: 'T1021' }, null, 1071, 'T1021.001'],
+    }))!
+    expect(out.mitre_techniques).toEqual(['T1566', 'T1021.001'])
+    out.mitre_techniques.forEach((t) => expect(typeof t).toBe('string'))
   })
 })
 
