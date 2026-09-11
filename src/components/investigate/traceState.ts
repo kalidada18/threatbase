@@ -92,5 +92,7 @@ export function serializePivotStack(stack: string[]): string {
 }
 
 export function deserializePivotStack(s: string): string[] {
-  return s ? s.split(',').map(decodeURIComponent) : []
+  // ?pivots= is untrusted input — a lone '%' makes decodeURIComponent throw;
+  // drop that entry, keep the rest (degrade, never crash the effect).
+  return s ? s.split(',').map((x) => { try { return decodeURIComponent(x) } catch { return null } }).filter((x): x is string => x !== null) : []
 }

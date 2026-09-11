@@ -73,6 +73,10 @@ describe('pivot stack URL codec', () => {
   it('empty string deserializes to no pivots', () => {
     expect(deserializePivotStack('')).toEqual([])
   })
+  it('drops malformed percent-encoding entries without throwing (untrusted URL)', () => {
+    expect(deserializePivotStack('%zz')).toEqual([])
+    expect(deserializePivotStack('ipv4:8.8.8.8,%,domain:ok.com')).toEqual(['ipv4:8.8.8.8', 'domain:ok.com'])
+  })
 })
 
 describe('collapseGraph', () => {
