@@ -3,6 +3,7 @@ import { geoLookup, rdapLookup } from '../_net'
 import { onsite, otxInvestigate, shodanHost, vtReport, bazaar, feodoCheck, urlhausCheck, greynoiseCheck, spamhausCheck, ripestatlookup } from './_sources'
 import { json } from '../_common'
 import { proStatus } from '../_pro'
+import { recordTrace } from './_trace'
 
 export const onRequestGet = async (context: any) => {
   const { request, env } = context
@@ -14,21 +15,30 @@ export const onRequestGet = async (context: any) => {
   // must be refanged too, or evil[.]com is looked up as the junk string.
   const value = refang(q).toLowerCase()
   if ((type === 'ipv4' || type === 'ipv6') && !isPublicIp(value))
-    return json({ query: { type, value }, verdict: { score: 0, malicious_by: 0, total_engines: 0, status: 'clean', confidence: 'low', dominant_source: null }, identity: null, relations: [], narrative: null, note: 'non-routable address — not investigated', cached: false } as unknown as Dossier, 200, request)
+    return json({ query: { type, value }, verdict: { score: 0, malicious_by: 0, total_engines: 0, status: 'clean', confidence: 'low', dominant_source: null }, identity: null, relations: [], narrative: null, note: 'non-routable address, not investigated', cached: false } as unknown as Dossier, 200, request)
 
   const pro = await proStatus(request, env)
-  if (pro !== 'pro') return json({ error: pro === 'not-pro' ? 'pro_required' : pro === 'no-auth' ? 'sign_in_required' : 'pro_check_unavailable' }, pro === 'not-pro' ? 403 : pro === 'no-auth' ? 401 : 503, request)
+  // FREE_TRIAL — owner 2026-09-12: Deep Investigation is open to everyone for
+  // pre-launch testing and improvements. rl_inv (8/min/IP) + the 1/h refresh cap
+  // stay as the abuse guard. Flip to false when Pro goes paid (then also delete
+  // the matching client flag in InvestigatePage).
+  const FREE_TRIAL = true
+  if (pro !== 'pro') {
+    if (pro === 'no-config' && !FREE_TRIAL) return json({ error: 'pro_check_unavailable' }, 503, request)
+    if (!FREE_TRIAL) return json({ error: pro === 'not-pro' ? 'pro_required' : pro === 'no-auth' ? 'sign_in_required' : 'pro_check_unavailable' }, pro === 'not-pro' ? 403 : pro === 'no-auth' ? 401 : 503, request)
+  }
+  const trial = pro !== 'pro'
 
   const kv = env.IOC_CACHE
   // Public rate limit: 8/min per client IP. In-isolate counter first (B1:
   // KV get-then-put is non-atomic), KV counter as cross-isolate backstop.
   const ip = request.headers.get('cf-connecting-ip') || 'unknown'
-  if (!takeRateToken(ip)) return json({ error: 'too many investigations — retry in a minute' }, 429, request)
+  if (!takeRateToken(ip)) return json({ error: 'too many investigations, retry in a minute' }, 429, request)
   const minute = Math.floor(Date.now() / 60000)
   const rl = `rl_inv:${ip}:${minute}`
   if (kv) {
     const n = +(await kv.get(rl)) || 0
-    if (n >= 8) return json({ error: 'too many investigations — retry in a minute' }, 429, request)
+    if (n >= 8) return json({ error: 'too many investigations, retry in a minute' }, 429, request)
     await kv.put(rl, String(n + 1), { expirationTtl: 90 })
   }
   // Cache hit? (rl_inv flood posture stays ahead of everything; refresh rides after cacheKey.)
@@ -36,22 +46,28 @@ export const onRequestGet = async (context: any) => {
   const wantsRefresh = u.searchParams.get('refresh') === '1'
   if (kv) {
     if (wantsRefresh) {
-      // Rate-limit refresh: 1 per IP per indicator per hour (isolate layer B1)
+      // Rate-limit refresh: 1 per IP per indicator per hour (isolate layer B1).
+      // The KV value stores the real unlock epoch so a blocked probe can echo
+      // the actual remaining cooldown instead of re-promising a fresh hour.
       const refreshKey = `rl_refresh:${sanitizeKv(ip)}:${sanitizeKv(key)}`
-      if (!refreshAllowed(refreshKey) || await kv.get(refreshKey)) {
-        // Serve cached with a note rather than 429 — less abrasive UX
+      const allowed = refreshAllowed(refreshKey)
+      const unlockAt = allowed ? 0 : +(await kv.get(refreshKey)) || 0
+      if (!allowed || unlockAt) {
+        // Blocked: serve cached (never re-arm, never fan out — the fallthrough
+        // when the cache was missing let blocked probes hammer fan-out).
         const hit = await kv.get(key)
         if (hit) {
-          try { const d = JSON.parse(hit); d.cached = true; d.refresh_blocked = true; return json(d, 200, request) }
-          catch { /* corrupt KV value — fall through to fresh fan-out */ }
+          try { const d = JSON.parse(hit); d.cached = true; d.trial = trial; d.refresh_blocked = true; d.refresh_retry_at = new Date(unlockAt || Date.now() + 3_600_000).toISOString(); return json(d, 200, request) }
+          catch { /* corrupt KV value — fall through below to the 429 */ }
         }
+        return json({ error: 'too many investigations, retry in a minute', retry_at: new Date(unlockAt || Date.now() + 3_600_000).toISOString() }, 429, request)
       }
-      await kv.put(refreshKey, '1', { expirationTtl: 3600 })
+      await kv.put(refreshKey, String(Date.now() + 3_600_000), { expirationTtl: 3600 })
       // Fall through to fresh fan-out — don't read cache
     } else {
       const hit = await kv.get(key)
       if (hit) {
-        try { const d = JSON.parse(hit); d.cached = true; return json(d, 200, request) }
+        try { const d = JSON.parse(hit); d.cached = true; d.trial = trial; return json(d, 200, request) }
         catch { /* corrupt KV value — fall through to fresh fan-out */ }
       }
     }
@@ -111,7 +127,7 @@ export const onRequestGet = async (context: any) => {
     sources_failed: P.filter((p) => !p.ok && !p.skipped).map((p) => p.source),
     verdict, identity, behavior: { ports, tags: onTags, first_seen: seen[0] ?? null, last_seen: seen.at(-1) ?? null },
     relations: rankRelations(relations, 40), pulses: pulses.slice(0, 10), timeline: buildTimeline(sightings).slice(-120),
-    narrative: null, investigated_by: 1,
+    narrative: null, investigated_by: 1, trial,
     // Task F evidence accordion: trimmed per trimEvidence — rdap stripped to
     // public summary fields (no registrant PII), relations arrays capped at 40.
     evidence: trimEvidence(P),
@@ -126,7 +142,14 @@ export const onRequestGet = async (context: any) => {
     dossier.investigated_by = n
     await kv.put(key, JSON.stringify(dossier), { expirationTtl: ttl })
   }
+  // Threat Trace: feed the persistent campaign graph. Fire-and-forget — the
+  // dossier response must not wait on (or fail because of) the trace write.
+  ctxWaitUntil(context, recordTrace(dossier, env).catch(() => {}))
   return json(dossier, 200, request)
+}
+
+function ctxWaitUntil(context: any, p: Promise<unknown>) {
+  try { context?.waitUntil?.(p) } catch { /* plain dev server without waitUntil */ }
 }
 
 async function narrate(d: Dossier, env: any): Promise<Dossier['narrative']> {

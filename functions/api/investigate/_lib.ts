@@ -48,6 +48,12 @@ export type Dossier = {
    *  dossier's own rankRelations limit. Optional: pre-F KV copies and the
    *  non-routable early-return omit it — the cockpit guards. */
   evidence?: SourceResult<unknown>[]
+  /** Set when a ?refresh=1 was rate-limited and the cached copy was served (set at read time). */
+  refresh_blocked?: boolean
+  /** ISO instant when the refresh cooldown unlocks (paired with refresh_blocked). */
+  refresh_retry_at?: string
+  /** FREE_TRIAL: true when the dossier rode the open-trial gate (non-Pro viewer). */
+  trial?: boolean
 }
 
 // Refang first: attackers write hxxp://, [.], [:] to dodge scanners. Strip whitespace.
@@ -125,6 +131,12 @@ export function refreshAllowed(key: string, now = Date.now(), ttlMs = 3_600_000)
   if (refreshBucket.has(key)) return false
   refreshBucket.set(key, now + ttlMs)
   return true
+}
+
+/** Epoch ms when a blocked refresh unlocks (0 = not blocked in this isolate). */
+export function refreshRetryAt(key: string, now = Date.now()): number {
+  const exp = refreshBucket.get(key)
+  return exp && exp > now ? exp : 0
 }
 
 /** Verdict-driven cache TTL (seconds). Lower score = more likely clean = safe to cache longer;
