@@ -228,6 +228,9 @@ export async function shodanHost(ip: string, env: { SHODAN_API_KEY?: string }, f
   try {
     const r = await fetchImpl(`https://api.shodan.io/shodan/host/${encodeURIComponent(ip)}?key=${env.SHODAN_API_KEY}`,
       { headers: HEADERS, signal: timeout() })
+    // "No information available for that IP" (404) is an answer, not a
+    // failure — same treatment VT gives a no-record lookup.
+    if (r.status === 404) return { source: 'shodan', ok: true, data: null }
     if (!r.ok) return { source: 'shodan', ok: false, error: `HTTP ${r.status}` }
     const j = await r.json()
     const b = shodanToBehavior(j)
@@ -255,7 +258,9 @@ export async function vtReport(type: IndicatorType, value: string, env: { VT_API
   try {
     const rel = coll === 'ip_addresses' ? '?relationships=resolutions' : ''
     const r = await fetchImpl(`https://www.virustotal.com/api/v3/${coll}/${encodeURIComponent(value)}${rel}`,
-      { headers: { ...HEADERS, Authorization: `Bearer ${env.VT_API_KEY}` }, signal: timeout() })
+      // X-Apikey, NOT Authorization: Bearer — VT v3 reserves Bearer for OAuth
+      // access tokens and answers 401 for plain API keys sent that way.
+      { headers: { ...HEADERS, 'X-Apikey': env.VT_API_KEY }, signal: timeout() })
     if (r.status === 404) return { source: 'virustotal', ok: true, data: null } // "no record" is an answer
     if (!r.ok) return { source: 'virustotal', ok: false, error: `HTTP ${r.status}` }
     const j = await r.json()
