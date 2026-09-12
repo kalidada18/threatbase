@@ -2,9 +2,13 @@
  *  with client-side sort + filter and selection synced to the trace graph.
  *  Sort/filter/inspector logic is pure + exported for unit tests. */
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { ArrowDown, ArrowUp } from 'lucide-react'
 import type { Relation } from '@/investigationTypes'
 import { nodeKey, type GraphNode } from './traceState'
 import { IocLink } from './IocLink'
+import { Chip } from './states'
+import { edgeLabel, viaLabel, weightLabel } from './labels'
+import { formatAgo, formatDay } from './formatRelative'
 
 export type SortKey = 'type' | 'value' | 'edge' | 'via' | 'weight' | 'first_seen' | 'last_seen' | 'verdict'
 
@@ -41,12 +45,12 @@ export function inspectNode(node: GraphNode | null, relations: Relation[]) {
   return { node, rows, verdict }
 }
 
-const COLS: { key: SortKey; label: string; cls?: string }[] = [
+const COLS: { key: SortKey; label: string }[] = [
   { key: 'type', label: 'Type' },
   { key: 'value', label: 'Value' },
   { key: 'edge', label: 'Edge' },
   { key: 'via', label: 'Via' },
-  { key: 'weight', label: 'W' },
+  { key: 'weight', label: 'Strength' },
   { key: 'first_seen', label: 'First' },
   { key: 'last_seen', label: 'Last' },
   { key: 'verdict', label: 'Verdict' },
@@ -99,27 +103,29 @@ export default function RelationsTable({
           placeholder="filter relations…"
           aria-label="Filter relations"
           spellCheck={false}
-          className="bg-white/[0.03] border border-white/10 rounded-md px-2.5 py-1 font-mono text-[12px] text-slate-200 caret-red-500 placeholder:text-slate-500 focus:border-red-500/40 w-52"
+          className="bg-white/[0.03] border border-white/10 rounded-md px-2.5 py-1 font-mono text-[12px] text-slate-200 caret-red-500 placeholder:text-slate-400 focus:border-red-500/40 w-52"
         />
         <span className="font-mono text-[10px] text-slate-400 tabular-nums" role="status">
-          {rows.length} of {relations?.length ?? 0} relations · ↑↓ to select
+          {rows.length} of {relations?.length ?? 0} relations · use arrow keys to select
         </span>
       </div>
       <div className="overflow-x-auto rounded-md border border-white/[0.06]">
-        <table role="grid" className="w-full text-left font-mono text-[12px]">
+        <table role="grid" className="w-full text-left text-[12px]">
           <thead className="text-slate-400 uppercase text-[10px] tracking-wider bg-white/[0.02]">
             <tr>
               {COLS.map((c) => (
                 <th key={c.key} className="px-2 py-1.5 font-semibold" aria-sort={sort.key === c.key ? (sort.dir === 'asc' ? 'ascending' : 'descending') : undefined}>
                   <button type="button" onClick={() => toggleSort(c.key)} className="hover:text-slate-200 transition-colors inline-flex items-center gap-1">
                     {c.label}
-                    <span aria-hidden className="text-red-400 w-2.5 inline-block">{sort.key === c.key ? (sort.dir === 'asc' ? '▲' : '▼') : ''}</span>
+                    <span aria-hidden className="text-red-400 w-2.5 inline-flex">
+                      {sort.key === c.key ? (sort.dir === 'asc' ? <ArrowUp size={10} strokeWidth={2.5} /> : <ArrowDown size={10} strokeWidth={2.5} />) : ''}
+                    </span>
                   </button>
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody ref={bodyRef} className="text-slate-300 divide-y divide-white/[0.04]">
+          <tbody ref={bodyRef} className="text-slate-200 divide-y divide-white/[0.04]">
             {rows.map((r, i) => {
               const k = nodeKey(r.type, r.value)
               const sel = k === selectedKey
@@ -130,28 +136,35 @@ export default function RelationsTable({
                   onClick={() => onSelect(k)}
                   className={`cursor-pointer ${sel ? 'bg-red-500/10 outline outline-1 -outline-offset-1 outline-red-500/40' : 'hover:bg-white/[0.03]'}`}
                 >
-                  <td className="px-2 py-1 uppercase text-[10px] text-slate-500">{r.type}</td>
-                  <td className="px-2 py-1 break-all max-w-[300px]"><IocLink value={r.value} className="text-[12px]">{r.value}</IocLink></td>
-                  <td className="px-2 py-1 text-slate-400">{r.edge?.replace(/_/g, ' ')}</td>
-                  <td className="px-2 py-1 text-slate-400 max-w-[180px] truncate" title={r.via}>{r.via || 'n/a'}</td>
-                  <td className="px-2 py-1 tabular-nums">{r.weight}</td>
-                  <td className="px-2 py-1 tabular-nums text-slate-400">{r.first_seen?.slice(0, 10) || 'n/a'}</td>
-                  <td className="px-2 py-1 tabular-nums text-slate-400">{r.last_seen?.slice(0, 10) || 'n/a'}</td>
-                  <td className="px-2 py-1 whitespace-nowrap">
-                    {/* text carries the meaning; no redundant dot glyph (icon+color kept via red for flagged) */}
+                  <td className="px-2 py-1.5 font-mono text-[10px] text-slate-400">{r.type.toUpperCase()}</td>
+                  <td className="px-2 py-1.5 break-all max-w-[300px]"><IocLink value={r.value} className="text-[12px]">{r.value}</IocLink></td>
+                  <td className="px-2 py-1.5 text-slate-300">{edgeLabel(r.edge)}</td>
+                  <td className="px-2 py-1.5 text-slate-400 max-w-[180px] truncate" title={r.via ?? undefined}>{viaLabel(r.edge, r.via)}</td>
+                  <td className="px-2 py-1.5">
+                    <Chip tone={r.weight >= 4 ? 'red' : 'neutral'} className="normal-case">
+                      <span title={`${r.weight} corroborating links`}>{weightLabel(r.weight)}</span>
+                    </Chip>
+                  </td>
+                  <td className="px-2 py-1.5 font-mono text-[11px] tabular-nums text-slate-400">
+                    {r.first_seen ? <time dateTime={r.first_seen}>{formatDay(r.first_seen)}</time> : 'never'}
+                  </td>
+                  <td className="px-2 py-1.5 font-mono text-[11px] tabular-nums text-slate-300">
+                    {r.last_seen ? <time dateTime={r.last_seen} title={formatDay(r.last_seen)}>{formatAgo(r.last_seen)}</time> : 'never'}
+                  </td>
+                  <td className="px-2 py-1.5 whitespace-nowrap">
                     {r.malicious === true ? (
-                      <span className="text-red-400">flagged</span>
+                      <span className="text-red-400 font-medium">flagged</span>
                     ) : r.malicious === false ? (
-                      <span className="text-slate-400">clean</span>
+                      <span className="text-emerald-400/90">clean</span>
                     ) : (
-                      <span className="text-slate-500">n/a</span>
+                      <span className="text-slate-400">no opinion</span>
                     )}
                   </td>
                 </tr>
               )
             })}
             {rows.length === 0 && (
-              <tr><td colSpan={COLS.length} className="px-2 py-3 text-slate-500 text-center">no relations{q ? ' match the filter' : ' reported'}</td></tr>
+              <tr><td colSpan={COLS.length} className="px-2 py-3 text-slate-400 text-center">No relations {q ? 'match the filter.' : 'reported.'}</td></tr>
             )}
           </tbody>
         </table>

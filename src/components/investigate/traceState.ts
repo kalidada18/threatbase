@@ -39,7 +39,7 @@ export const MAX_NODES_PER_RING = 40
  *  already fetched as q) + at most MAX_RESTORE_PIVOTS re-fetches. */
 export const MAX_RESTORE_PIVOTS = 7
 
-export const nodeKey = (type: string, value: string) => `${type}:${value}`
+export const nodeKey = (type: string, value: string) => `${type}:${value.toLowerCase()}`
 
 export function mergeRelationsIntoGraph(
   state: GraphState,

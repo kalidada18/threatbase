@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import IsoPageShell from './layout/IsoPageShell'
 import { IocLink } from './investigate/IocLink'
+import { formatAgo } from './investigate/formatRelative'
 import { useSEO } from '@/useSEO'
 import { getBaseUrl, feedPath } from '@/utils'
 
@@ -21,15 +22,8 @@ type Actor = {
   campaigns: Campaign[]
 }
 
-/** "2026-09-02T14:05:00" -> "2d ago" (clamped, no future drift surprises) */
-function ago(iso: string): string {
-  const then = new Date(iso).getTime()
-  if (Number.isNaN(then)) return ''
-  const mins = Math.max(0, Math.floor((Date.now() - then) / 60000))
-  if (mins < 60) return `${Math.max(1, mins)}m ago`
-  if (mins < 24 * 60) return `${Math.floor(mins / 60)}h ago`
-  return `${Math.floor(mins / (24 * 60))}d ago`
-}
+/** "2026-09-02T14:05:00" -> "2d ago" — shared clamp lives in investigate/formatRelative. */
+const ago = formatAgo
 
 const Chip = ({ children, tone = 'neutral' }: { children: ReactNode; tone?: 'neutral' | 'red' }) => (
   <span

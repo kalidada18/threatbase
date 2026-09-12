@@ -41,8 +41,14 @@ export type Dossier = {
   investigated_by?: number
   /** ISO instant when the cached dossier expires (Task E tiered TTL). */
   stale_at?: string
+  /** FREE_TRIAL: set when this dossier rode the open-trial gate (non-Pro).
+   *  Remove with the trial flag when Pro goes paid. */
+  trial?: boolean
   /** Set when a ?refresh=1 was rate-limited and the cached copy was served instead. */
   refresh_blocked?: boolean
+  /** ISO instant when the 1/h refresh cooldown unlocks (paired with refresh_blocked).
+   *  Absent on pre-change cached copies (KV TTL ≤ 24 h). */
+  refresh_retry_at?: string
   /** Raw per-source results (Task F evidence accordion). Optional: pre-F KV copies omit it. */
   evidence?: SourceResult[]
 }

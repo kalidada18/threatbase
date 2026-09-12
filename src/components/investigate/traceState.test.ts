@@ -50,8 +50,18 @@ describe('mergeRelationsIntoGraph', () => {
   })
 })
 
-describe('restoreQueue', () => {
-  it('skips index 0 (root == current q) and preserves order', () => {
+describe('nodeKey case canonicalization', () => {
+  it('lowercases values so Evil.com and evil.com merge into one node', () => {
+    let s = rootState()
+    s = mergeRelationsIntoGraph(s, [rel('domain', 'Evil.com')], 'ipv4:1.2.3.4', 1)
+    expect(s.nodes.has('domain:evil.com')).toBe(true)
+    // re-merging the same domain in different case must not add a second node
+    const again = mergeRelationsIntoGraph(s, [rel('domain', 'EVIL.COM')], 'ipv4:1.2.3.4', 1)
+    expect(again.nodes.size).toBe(s.nodes.size)
+  })
+})
+
+describe('restoreQueue', () => {  it('skips index 0 (root == current q) and preserves order', () => {
     expect(restoreQueue(['ipv4:1.1.1.1', 'domain:a.com', 'url:http://x'])).toEqual(['domain:a.com', 'url:http://x'])
   })
   it('single-item stack (root only) restores nothing', () => {

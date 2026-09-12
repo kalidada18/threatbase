@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import { motion } from 'framer-motion'
 import { multiRingLayout, convexHull } from './traceGeometry'
-import { MAX_RINGS, type GraphNode, type GraphState } from './traceState'
+import { MAX_RINGS, nodeKey, type GraphNode, type GraphState } from './traceState'
+import { edgeLabel, viaLabel, weightLabel } from './labels'
 
 const W = 720, H = 460
 
@@ -26,7 +28,7 @@ export default function TraceGraph({
   const [hover, setHover] = useState<GraphNode | null>(null)
   const { positions } = multiRingLayout(graph, W, H)
   const root = [...graph.nodes.values()].find((n) => n.ring === 0) ?? null
-  const rootPos = root ? positions.get(`${root.type}:${root.value}`) : undefined
+  const rootPos = root ? positions.get(nodeKey(root.type, root.value)) : undefined
   const queryValue = root?.value ?? ''
 
   // Cluster detection: non-root nodes sharing a `via` pulse get a faint hull.
@@ -54,7 +56,7 @@ export default function TraceGraph({
             const top = pts.reduce((a, b) => (b.y < a.y ? b : a))
             return (
               <g key={'c' + via} aria-hidden="true">
-                <polygon points={padded} stroke="rgba(206,22,50,0.12)" fill="rgba(206,22,50,0.04)" strokeWidth="1" />
+                <polygon points={padded} stroke="hsl(var(--chart-1) / 0.12)" fill="hsl(var(--chart-1) / 0.04)" strokeWidth="1" />
                 <text x={top.x} y={top.y - 26} textAnchor="middle" fontSize="9" fill="rgba(148,163,184,0.8)" className="font-mono select-none">
                   {via.length > 20 ? via.slice(0, 20) + '…' : via}
                 </text>
@@ -65,52 +67,57 @@ export default function TraceGraph({
             const a = positions.get(e.from), b = positions.get(e.to)
             if (!a || !b) return null
             const deep = b.node.ring >= MAX_RINGS
-            const hot = hover && (e.from === `${hover.type}:${hover.value}` || e.to === `${hover.type}:${hover.value}`)
+            const hot = hover && (e.from === nodeKey(hover.type, hover.value) || e.to === nodeKey(hover.type, hover.value))
             return (
-              <g key={'e' + i}>
+              <motion.g key={'e' + i}
+                initial={{ pathLength: 0, opacity: 0 }} animate={{ pathLength: 1, opacity: 1 }}
+                transition={{ duration: 0.5, ease: 'easeOut', delay: 0.1 }}>
                 <line x1={a.x} y1={a.y} x2={b.x} y2={b.y}
-                  stroke={`rgba(206,22,50,${alpha(e.weight) * (deep ? 0.55 : 1)})`}
+                  stroke={`hsl(var(--chart-1) / ${alpha(e.weight) * (deep ? 0.55 : 1)})`}
                   strokeWidth="1" strokeDasharray={deep ? '4 3' : undefined} />
                 {/* labels only for the hovered node's edges — 100+ midpoint
                     labels at 9px are unreadable noise (deviation from brief) */}
                 {hot && (
                   <text x={(a.x + b.x) / 2} y={(a.y + b.y) / 2 - 3} textAnchor="middle" fontSize="9"
-                    fill="rgba(148,163,184,0.9)" className="font-mono select-none">{e.edge.replace(/_/g, ' ')}</text>
+                    fill="rgba(203,213,225,0.9)" className="font-mono select-none">{edgeLabel(e.edge)}</text>
                 )}
-              </g>
+              </motion.g>
             )
           })}
           {[...positions].filter(([, p]) => p.node.ring > 0).map(([k, p]) => (
-            <g key={k} opacity={ringOpacity(p.node.ring)}
+            <motion.g key={k}
               className="cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500/60" tabIndex={0} role="button"
               aria-label={`${p.node.value} (${p.node.type}, ${p.node.expanded ? 'expanded' : p.node.ring >= MAX_RINGS ? 'maximum depth' : 'expand into graph'})`}
               onMouseEnter={() => setHover(p.node)} onMouseLeave={() => setHover(null)}
               onFocus={() => setHover(p.node)} onBlur={() => setHover(null)}
               onClick={() => { onSelectNode?.(k); onPivot(p.node.type, p.node.value) }}
-              onKeyDown={(e) => { if (e.key === 'Enter') { onSelectNode?.(k); onPivot(p.node.type, p.node.value) } }}>
-              <circle cx={p.x} cy={p.y} r={8}
-                fill={p.node.malicious === true ? 'hsl(351 80% 45%)' : 'rgba(15,23,42,0.9)'}
+              onKeyDown={(e) => { if (e.key === 'Enter') { onSelectNode?.(k); onPivot(p.node.type, p.node.value) } }}
+              initial={{ x: p.x, y: p.y, opacity: 0, scale: 0.5 }}
+              animate={{ x: p.x, y: p.y, opacity: ringOpacity(p.node.ring), scale: 1 }}
+              transition={{ type: 'spring', stiffness: 220, damping: 24 }}>
+              <circle cx={0} cy={0} r={8}
+                fill={p.node.malicious === true ? 'hsl(var(--chart-1))' : 'rgba(15,23,42,0.9)'}
                 stroke={p.node.malicious === true ? 'hsl(351 90% 70%)' : 'rgba(148,163,184,0.6)'}
                 strokeWidth="1.5" strokeDasharray={!p.node.expanded && p.node.ring < MAX_RINGS ? '2 2' : undefined} />
               {selectedKey === k && (
-                <circle cx={p.x} cy={p.y} r={12} fill="none" stroke="hsl(351 80% 45%)" strokeWidth="1.5" aria-hidden="true" />
+                <circle cx={0} cy={0} r={12} fill="none" stroke="hsl(var(--chart-1))" strokeWidth="1.5" aria-hidden="true" />
               )}
               {p.node.malicious === true && (
-                <text x={p.x} y={p.y + 3.5} textAnchor="middle" fontSize="10" fontWeight="700" fill="#fff">!</text>
+                <text x={0} y={3.5} textAnchor="middle" fontSize="10" fontWeight="700" fill="#fff">!</text>
               )}
-              <text x={p.x} y={p.y + 22} textAnchor="middle"
+              <text x={0} y={22} textAnchor="middle"
                 fontSize="10" fill="rgba(148,163,184,0.9)" className="font-mono select-none">{nodeLabel(p.node)}</text>
-            </g>
+            </motion.g>
           ))}
           {expandingKey && positions.get(expandingKey) && (() => {
             const p = positions.get(expandingKey)!
-            return <circle cx={p.x} cy={p.y} r={13} fill="none" stroke="hsl(351 80% 45%)" strokeWidth="2"
+            return <circle cx={p.x} cy={p.y} r={13} fill="none" stroke="hsl(var(--chart-1))" strokeWidth="2"
               strokeDasharray="20 62" className="animate-spin"
               style={{ transformBox: 'fill-box', transformOrigin: 'center' }} aria-hidden="true" />
           })()}
           {rootPos && (
             <>
-              <circle cx={rootPos.x} cy={rootPos.y} r={14} fill="rgba(2,6,23,0.95)" stroke="hsl(351 80% 45%)" strokeWidth="2" />
+              <circle cx={rootPos.x} cy={rootPos.y} r={14} fill="rgba(8,11,18,0.95)" stroke="hsl(var(--chart-1))" strokeWidth="2" />
               <text x={rootPos.x} y={rootPos.y + 30} textAnchor="middle" fontSize="12" fill="#e2e8f0" className="font-mono select-none">
                 {queryValue.length > 18 ? queryValue.slice(0, 18) + '…' : queryValue}
                 <title>{queryValue}</title>
@@ -121,9 +128,9 @@ export default function TraceGraph({
         {hover && (
           <div className="absolute top-2 left-2 glass-card rounded-md px-3 py-2 text-xs font-mono text-slate-300 pointer-events-none max-w-[60%]" role="status">
             <span className="text-white break-all">{hover.value}</span>{' '}
-            <span className="text-slate-500">[{hover.type}]</span>
+            <span className="text-slate-400">[{hover.type}]</span>
             <div className="text-slate-400">
-              {hover.edge?.replace(/_/g, ' ')}{hover.via ? ` · ${hover.via}` : ''} · weight {hover.weight}
+              {edgeLabel(hover.edge) || 'linked'}{hover.via ? ` · via ${viaLabel(hover.edge, hover.via)}` : ''} · {weightLabel(hover.weight)} link
             </div>
             {!hover.expanded && (
               <div className="text-red-200/80">{hover.ring >= MAX_RINGS ? 'max depth, table view only' : 'expand to investigate'}</div>
@@ -146,13 +153,13 @@ function NodeTable({ graph, onPivot }: { graph: GraphState; onPivot: (type: Grap
   return (
     <ul className="mt-2 divide-y divide-white/[0.04]">
       {nodes.map((n) => (
-        <li key={`${n.type}:${n.value}`} className="flex items-center gap-3 py-1.5">
+        <li key={nodeKey(n.type, n.value)} className="flex items-center gap-3 py-1.5">
           <button onClick={() => onPivot(n.type, n.value)} disabled={n.expanded || n.ring >= MAX_RINGS}
             className="font-mono text-[11px] text-slate-300 hover:text-red-200 disabled:opacity-50 text-left truncate flex-1">
             {n.malicious === true && <span aria-hidden className="text-red-400 mr-1">!</span>}{n.value}
           </button>
-          <span className="font-mono text-[10px] uppercase text-slate-500 shrink-0">{n.type}</span>
-          <span className="font-mono text-[9px] text-slate-400 shrink-0">{n.edge?.replace(/_/g, ' ')}{n.via ? ` · ${n.via}` : ''}{n.expanded ? ' · expanded' : ''}</span>
+          <span className="font-mono text-[10px] uppercase text-slate-400 shrink-0">{n.type}</span>
+          <span className="font-mono text-[9px] text-slate-400 shrink-0">{edgeLabel(n.edge) || 'linked'}{n.via ? ` · ${viaLabel(n.edge, n.via)}` : ''}{n.expanded ? ' · expanded' : ''}</span>
         </li>
       ))}
     </ul>
