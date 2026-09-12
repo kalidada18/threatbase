@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { multiRingLayout, convexHull } from './traceGeometry'
 import { MAX_RINGS, nodeKey, type GraphNode, type GraphState } from './traceState'
-import { edgeLabel, viaLabel, weightLabel } from './labels'
+import { edgeLabel, TYPE_LABEL, viaLabel, weightLabel } from './labels'
 
 const W = 720, H = 460
 
@@ -13,7 +13,14 @@ function nodeLabel(n: GraphNode): string {
   return n.value.length > 14 ? n.value.slice(0, 14) + '…' : n.value
 }
 
-const alpha = (w: number) => 0.25 + 0.75 * Math.min(1, (w || 0) / 8)
+// Floor raised to 0.6: weight-0/1 links (the common case) were ~1.3:1 against
+// the panel and practically invisible. Keeps the weight ramp, honors the WCAG
+// small-graphic floor at the dim end. Deep-ring edges keep dimming via the
+// dashed style + the 0.8 multiplier at the call site.
+const alpha = (w: number) => 0.6 + 0.4 * Math.min(1, (w || 0) / 8)
+// ringOpacity now dims the node DOT only (fillOpacity/strokeOpacity on the
+// circle). Group opacity is not used for the depth fade because it also faded
+// the text label, which would fail contrast at rings >= 2.
 const ringOpacity = (ring: number) => (ring >= 3 ? 0.4 : ring === 2 ? 0.7 : 1)
 
 export default function TraceGraph({
@@ -73,7 +80,7 @@ export default function TraceGraph({
                 initial={{ pathLength: 0, opacity: 0 }} animate={{ pathLength: 1, opacity: 1 }}
                 transition={{ duration: 0.5, ease: 'easeOut', delay: 0.1 }}>
                 <line x1={a.x} y1={a.y} x2={b.x} y2={b.y}
-                  stroke={`hsl(var(--chart-1) / ${alpha(e.weight) * (deep ? 0.55 : 1)})`}
+                  stroke={`hsl(var(--chart-1) / ${alpha(e.weight) * (deep ? 0.8 : 1)})`}
                   strokeWidth="1" strokeDasharray={deep ? '4 3' : undefined} />
                 {/* labels only for the hovered node's edges — 100+ midpoint
                     labels at 9px are unreadable noise (deviation from brief) */}
@@ -93,11 +100,12 @@ export default function TraceGraph({
               onClick={() => { onSelectNode?.(k); onPivot(p.node.type, p.node.value) }}
               onKeyDown={(e) => { if (e.key === 'Enter') { onSelectNode?.(k); onPivot(p.node.type, p.node.value) } }}
               initial={{ x: p.x, y: p.y, opacity: 0, scale: 0.5 }}
-              animate={{ x: p.x, y: p.y, opacity: ringOpacity(p.node.ring), scale: 1 }}
+              animate={{ x: p.x, y: p.y, opacity: 1, scale: 1 }}
               transition={{ type: 'spring', stiffness: 220, damping: 24 }}>
               <circle cx={0} cy={0} r={8}
                 fill={p.node.malicious === true ? 'hsl(var(--chart-1))' : 'rgba(15,23,42,0.9)'}
                 stroke={p.node.malicious === true ? 'hsl(351 90% 70%)' : 'rgba(148,163,184,0.6)'}
+                fillOpacity={ringOpacity(p.node.ring)} strokeOpacity={ringOpacity(p.node.ring)}
                 strokeWidth="1.5" strokeDasharray={!p.node.expanded && p.node.ring < MAX_RINGS ? '2 2' : undefined} />
               {selectedKey === k && (
                 <circle cx={0} cy={0} r={12} fill="none" stroke="hsl(var(--chart-1))" strokeWidth="1.5" aria-hidden="true" />
@@ -128,7 +136,7 @@ export default function TraceGraph({
         {hover && (
           <div className="absolute top-2 left-2 glass-card rounded-md px-3 py-2 text-xs font-mono text-slate-300 pointer-events-none max-w-[60%]" role="status">
             <span className="text-white break-all">{hover.value}</span>{' '}
-            <span className="text-slate-400">[{hover.type}]</span>
+            <span className="text-slate-400">[{TYPE_LABEL[hover.type] ?? hover.type}]</span>
             <div className="text-slate-400">
               {edgeLabel(hover.edge) || 'linked'}{hover.via ? ` · via ${viaLabel(hover.edge, hover.via)}` : ''} · {weightLabel(hover.weight)} link
             </div>
@@ -158,7 +166,7 @@ function NodeTable({ graph, onPivot }: { graph: GraphState; onPivot: (type: Grap
             className="font-mono text-[11px] text-slate-300 hover:text-red-200 disabled:opacity-50 text-left truncate flex-1">
             {n.malicious === true && <span aria-hidden className="text-red-400 mr-1">!</span>}{n.value}
           </button>
-          <span className="font-mono text-[10px] uppercase text-slate-400 shrink-0">{n.type}</span>
+          <span className="font-mono text-[10px] uppercase text-slate-400 shrink-0">{TYPE_LABEL[n.type] ?? n.type}</span>
           <span className="font-mono text-[9px] text-slate-400 shrink-0">{edgeLabel(n.edge) || 'linked'}{n.via ? ` · ${viaLabel(n.edge, n.via)}` : ''}{n.expanded ? ' · expanded' : ''}</span>
         </li>
       ))}

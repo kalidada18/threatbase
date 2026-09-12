@@ -4,12 +4,15 @@ import { edgeLabel, hostingLabel, labelSource, weightLabel } from './labels'
 
 describe('tagLabel presentation', () => {
   it('humanizes greynoise slugs without touching wire format', () => {
-    expect(tagLabel('greynoise:ssh-bruteforcer')).toBe('ssh bruteforcer')
+    expect(tagLabel('greynoise:ssh-bruteforcer')).toBe('SSH brute-forcer')
+    expect(tagLabel('greynoise:phpunit_rce')).toBe('PHPUnit RCE')
+    expect(tagLabel('greynoise_actor:mirai_botnet')).toBe('Mirai botnet actor')
     expect(tagLabel('cve:CVE-2021-41773')).toBe('CVE-2021-41773')
   })
   it('tones hard claims red, observations neutral', () => {
     expect(tagTone('cve:CVE-2021-41773')).toBe('red')
     expect(tagTone('greynoise:tor exit')).toBe('red')
+    expect(tagTone('greynoise:tor_exit')).toBe('red')
     expect(tagTone('greynoise:web-crawler')).toBe('neutral')
   })
 })

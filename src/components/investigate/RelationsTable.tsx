@@ -7,7 +7,7 @@ import type { Relation } from '@/investigationTypes'
 import { nodeKey, type GraphNode } from './traceState'
 import { IocLink } from './IocLink'
 import { Chip } from './states'
-import { edgeLabel, viaLabel, weightLabel } from './labels'
+import { edgeLabel, TYPE_LABEL, viaLabel, weightLabel } from './labels'
 import { formatAgo, formatDay } from './formatRelative'
 
 export type SortKey = 'type' | 'value' | 'edge' | 'via' | 'weight' | 'first_seen' | 'last_seen' | 'verdict'
@@ -136,7 +136,7 @@ export default function RelationsTable({
                   onClick={() => onSelect(k)}
                   className={`cursor-pointer ${sel ? 'bg-red-500/10 outline outline-1 -outline-offset-1 outline-red-500/40' : 'hover:bg-white/[0.03]'}`}
                 >
-                  <td className="px-2 py-1.5 font-mono text-[10px] text-slate-400">{r.type.toUpperCase()}</td>
+                  <td className="px-2 py-1.5 font-mono text-[10px] text-slate-400">{(TYPE_LABEL[r.type] ?? r.type).toUpperCase()}</td>
                   <td className="px-2 py-1.5 break-all max-w-[300px]"><IocLink value={r.value} className="text-[12px]">{r.value}</IocLink></td>
                   <td className="px-2 py-1.5 text-slate-300">{edgeLabel(r.edge)}</td>
                   <td className="px-2 py-1.5 text-slate-400 max-w-[180px] truncate" title={r.via ?? undefined}>{viaLabel(r.edge, r.via)}</td>

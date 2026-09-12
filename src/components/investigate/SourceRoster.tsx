@@ -1,4 +1,4 @@
-import { CircleAlert, CircleDashed, ShieldAlert, ShieldCheck } from 'lucide-react'
+import { CircleAlert, CircleDashed, Minus, ShieldAlert, ShieldCheck } from 'lucide-react'
 import type { SourceResult } from '@/investigationTypes'
 import { labelSource } from './labels'
 
@@ -36,7 +36,7 @@ export function buildRoster(evidence: SourceResult[] | undefined): RosterTile[] 
 
 const TILE_STATE: Record<RosterState, { cls: string; label: string }> = {
   pending: { cls: 'text-slate-400 border-white/10 bg-white/[0.02]', label: 'querying' },
-  flags: { cls: 'text-red-200 border-red-500/30 bg-red-500/10', label: 'responded' },
+  flags: { cls: 'text-red-200 border-red-500/30 bg-red-500/10', label: 'flagged' },
   clean: { cls: 'text-emerald-200/90 border-emerald-500/25 bg-emerald-500/5', label: 'responded' },
   skipped: { cls: 'text-slate-400 border-white/10 bg-white/[0.02]', label: 'not applicable' },
   failed: { cls: 'text-red-300/80 border-red-500/25 bg-red-500/5', label: 'failed' },
@@ -45,7 +45,7 @@ const TILE_STATE: Record<RosterState, { cls: string; label: string }> = {
 function TileIcon({ state }: { state: RosterState }) {
   if (state === 'flags') return <ShieldAlert size={11} strokeWidth={2} aria-hidden className="text-red-400 shrink-0" />
   if (state === 'clean') return <ShieldCheck size={11} strokeWidth={2} aria-hidden className="text-emerald-400 shrink-0" />
-  if (state === 'skipped') return <CircleDashed size={11} strokeWidth={2} aria-hidden className="text-slate-400 shrink-0" />
+  if (state === 'skipped') return <Minus size={11} strokeWidth={2} aria-hidden className="text-slate-400 shrink-0" />
   if (state === 'failed') return <CircleAlert size={11} strokeWidth={2} aria-hidden className="text-red-400 shrink-0" />
   return <CircleDashed size={11} strokeWidth={2} aria-hidden className="text-slate-400 shrink-0 animate-pulse" />
 }

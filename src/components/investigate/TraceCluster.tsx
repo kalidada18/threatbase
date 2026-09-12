@@ -4,9 +4,9 @@
  *  Read-only preview; deep-diving a node navigates to its own dossier. */
 import { useEffect, useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
-import { Radar, Network } from 'lucide-react'
+import { Radar } from 'lucide-react'
 import { Chip } from './states'
-import { edgeLabel, viaLabel, weightLabel } from './labels'
+import { edgeLabel, TYPE_LABEL, viaLabel, weightLabel } from './labels'
 import { formatDay } from './formatRelative'
 import { EASE_EXPO } from '../motion/primitives'
 
@@ -50,7 +50,6 @@ export default function TraceCluster({ q, onNavigate }: { q: string; onNavigate:
       className="glass-card rounded-xl p-4"
     >
       <div className="flex items-center gap-2 mb-1">
-        <Network size={12} strokeWidth={2} aria-hidden className="text-red-400" />
         <span className="eyebrow">Campaign cluster</span>
         <Chip tone="neutral"><Radar size={10} strokeWidth={2} aria-hidden />Threat Trace</Chip>
       </div>
@@ -69,7 +68,7 @@ export default function TraceCluster({ q, onNavigate }: { q: string; onNavigate:
             >
               <span className="block font-mono text-[12px] text-slate-100 truncate">{n.value}</span>
               <span className="block font-mono text-[9px] uppercase tracking-wider text-slate-400 mt-0.5 truncate">
-                {n.type} · {weightLabel(n.weight)} · {n.degree} edge{n.degree === 1 ? '' : 's'}
+                {TYPE_LABEL[n.type as keyof typeof TYPE_LABEL] ?? n.type} · {weightLabel(n.weight)} · {n.degree} edge{n.degree === 1 ? '' : 's'}
                 {n.last_seen && <> · {formatDay(n.last_seen)}</>}
               </span>
             </button>

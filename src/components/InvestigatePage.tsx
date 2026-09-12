@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
-import { CircleAlert, CircleDashed, CircleSlash, Lock, RefreshCw, Search, ShieldAlert, ShieldCheck, TriangleAlert, HelpCircle, type LucideIcon } from 'lucide-react'
+import { CircleAlert, CircleDashed, CircleSlash, Download, Lock, Printer, RefreshCw, Search, ShieldAlert, ShieldCheck, TriangleAlert, HelpCircle, type LucideIcon } from 'lucide-react'
 import IsoPageShell from './layout/IsoPageShell'
 import { useSEO } from '@/useSEO'
 import { useAuth } from '@/AuthContext'
@@ -20,7 +20,7 @@ import { BehaviorSection, NarrativeSection, PulsesSection } from './investigate/
 import RelationsTable, { inspectNode } from './investigate/RelationsTable'
 import { IocLink } from './investigate/IocLink'
 import { Chip, EV_ICON, ConfidencePill } from './investigate/states'
-import { edgeLabel, hostingLabel, labelDominantSource, labelSource, viaLabel, weightLabel } from './investigate/labels'
+import { edgeLabel, hostingLabel, labelDominantSource, labelSource, TYPE_LABEL, viaLabel, weightLabel } from './investigate/labels'
 import { tagLabel, tagTone } from './investigate/tagLabel'
 import { formatAgo, formatDay, formatRelative } from './investigate/formatRelative'
 import { cockpitBand, cockpitContainer } from './motion/primitives'
@@ -47,9 +47,8 @@ const STATUS: Record<Dossier['verdict']['status'], { label: string; icon: Lucide
   unknown: { label: 'UNKNOWN', icon: HelpCircle, cls: 'text-slate-300 border-white/15 bg-white/[0.04]' },
 }
 
-const TYPE_LABEL: Record<IndicatorType, string> = {
-  ipv4: 'IPv4', ipv6: 'IPv6', domain: 'Domain', url: 'URL', md5: 'MD5', sha1: 'SHA-1', sha256: 'SHA-256',
-}
+// TYPE_LABEL lives in investigate/labels (shared with the trace views + table)
+// so the same token never renders three ways on one screen.
 
 /** One ok/skipped/failed vocabulary for evidence chips (EV_ICON in states). */
 
@@ -90,11 +89,11 @@ function ReportActions({ d }: { d: Dossier }) {
     a.click()
     URL.revokeObjectURL(url)
   }
-  const btn = 'font-mono text-[10px] uppercase tracking-[0.2em] text-slate-400 border border-white/10 rounded-full px-3.5 py-1.5 hover:text-red-200 hover:border-red-500/30 transition-colors active:scale-[0.98] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-red-500/40'
+  const btn = 'inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-slate-400 border border-white/10 rounded-full px-3.5 py-1.5 hover:text-red-200 hover:border-red-500/30 transition-colors active:scale-[0.98] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-red-500/40'
   return (
     <div className="no-print flex gap-2">
-      <button type="button" onClick={() => window.print()} className={btn}>Print / PDF</button>
-      <button type="button" onClick={downloadJson} className={btn}>Download JSON</button>
+      <button type="button" onClick={() => window.print()} className={btn}><Printer size={10} strokeWidth={2} aria-hidden />Print / PDF</button>
+      <button type="button" onClick={downloadJson} className={btn}><Download size={10} strokeWidth={2} aria-hidden />Download JSON</button>
     </div>
   )
 }
@@ -116,7 +115,7 @@ function VerdictBanner({ d, refreshing, onRefresh }: { d: Dossier; refreshing: b
             {d.verdict.malicious_by} of {d.verdict.total_engines} sources with an opinion
             {d.verdict.dominant_source && <span className="text-slate-400"> · primary signal: {labelDominantSource(d.verdict.dominant_source)}</span>}
             {typeof d.verdict.feed_count === 'number' && d.verdict.feed_count > 0 && (
-              <span className="text-slate-400"> · on {d.verdict.feed_count} internal feeds</span>
+              <span className="text-slate-400"> · on {d.verdict.feed_count} internal feed{d.verdict.feed_count === 1 ? '' : 's'}</span>
             )}
           </p>
           {d.verdict.confidence && <div className="mt-2"><ConfidencePill level={d.verdict.confidence} /></div>}
@@ -202,7 +201,7 @@ function EvidenceAccordion({ d }: { d: Dossier }) {
           // 'unknown' can repeat when several settled rejections occur — index in the key
           <details key={`${s.source}-${i}`} className="bg-white/[0.02] border border-white/[0.06] rounded-md px-2 py-1">
             <summary className="font-mono text-[11px] text-slate-300 cursor-pointer select-none whitespace-nowrap overflow-hidden text-ellipsis">
-              {(() => { const Icon = EV_ICON[s.ok ? 'ok' : s.skipped ? 'skipped' : 'failed']; return <Icon size={10} strokeWidth={2} aria-hidden className="inline-block align-[-1px] mr-1.5" /> })()}
+              {(() => { const Icon = EV_ICON[s.ok ? 'ok' : s.skipped ? 'skipped' : 'failed']; return <Icon size={10} strokeWidth={2} aria-hidden className={`inline-block align-[-1px] mr-1.5 ${s.ok ? 'text-emerald-400' : s.skipped ? 'text-slate-400' : 'text-red-400'}`} /> })()}
               <span>{labelSource(s.source)}</span>{' '}
               <span className="text-slate-400">{s.ok ? 'responded' : s.skipped ? 'not applicable' : 'failed'}</span>
             </summary>
@@ -328,7 +327,7 @@ function NodeInspector({
       </div>
       <div className="font-mono text-[13px] text-white break-all leading-snug">{node.value}</div>
       <div className="font-mono text-[10px] uppercase text-slate-400 mt-0.5">
-        {node.type} · {node.ring === 0 ? 'root' : `${node.ring} hop${node.ring === 1 ? '' : 's'}`}{node.edge ? ` · ${edgeLabel(node.edge)}` : ''}{node.via ? ` · via ${viaLabel(node.edge, node.via)}` : ''} · {weightLabel(node.weight)} link
+        {TYPE_LABEL[node.type] ?? node.type} · {node.ring === 0 ? 'root' : `${node.ring} hop${node.ring === 1 ? '' : 's'}`}{node.edge ? ` · ${edgeLabel(node.edge)}` : ''}{node.via ? ` · via ${viaLabel(node.edge, node.via)}` : ''} · {weightLabel(node.weight)} link
       </div>
       <div className="font-mono text-[11px] mt-2 tabular-nums">
         {vb ? (

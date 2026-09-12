@@ -1,6 +1,14 @@
 /** One presentation vocabulary for the dossier: raw server strings (adapter
  *  keys, edge codes, hosting slugs, weights) → human labels. Wire values are
  *  never renamed; these are display-only maps (same contract as tagLabel). */
+import type { IndicatorType } from '../../investigationTypes'
+
+/** Indicator type → canonical display form (RFC hyphenation kept). Shared by
+ *  the masthead chip, inspector, trace views, and the relations table so one
+ *  token never renders three ways on one screen. */
+export const TYPE_LABEL: Record<IndicatorType, string> = {
+  ipv4: 'IPv4', ipv6: 'IPv6', domain: 'Domain', url: 'URL', md5: 'MD5', sha1: 'SHA-1', sha256: 'SHA-256',
+}
 
 /** Keys verified against the fan-out in functions/api/investigate/index.ts
  *  plus the verdict-part aliases in _lib.ts SOURCE_WEIGHT. */
