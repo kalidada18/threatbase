@@ -1,8 +1,171 @@
 {
- "generated_at": "2026-09-13T02:21:24+00:00",
+ "generated_at": "2026-09-13T18:21:45+00:00",
  "source": "AlienVault OTX pulse search",
  "note": "Activity = threat-intel pulses (campaign reports) mentioning the group in the window. Vendor/community reporting \u2014 follow each link to its source. IOCs are community-reported pulse indicators, not Threatbase attribution. TTPs from MITRE ATT&CK. Per-group summaries are AI-generated from the pulse reports.",
  "actors": [
+  {
+   "name": "Kimsuky",
+   "aka": [
+    "APT43",
+    "Thallium",
+    "Velvet Chollima"
+   ],
+   "sponsor": "North Korea",
+   "pulses_24h": 0,
+   "pulses_7d": 6,
+   "malware": [],
+   "targets": [],
+   "campaigns": [
+    {
+     "title": "Kimsuky incorporates AI into its attack framework, from creating lure documents to building a local LLM.",
+     "url": "https://otx.alienvault.com/pulse/6a7c1cea12a9a8902a41a980",
+     "modified": "2026-09-11T07:38:09.599000",
+     "last_24h": false
+    },
+    {
+     "title": "Kimsuky Integrates AI into Attack Operations, From AI-Generated Decoy Documents to a Local LLM",
+     "url": "https://otx.alienvault.com/pulse/6a7a077f3608869fb93fc711",
+     "modified": "2026-09-09T13:12:30.966000",
+     "last_24h": false
+    },
+    {
+     "title": "Integrating AI into Attack Operations, From AI-Generated Decoy Documents to a Local LLM",
+     "url": "https://otx.alienvault.com/pulse/6a79d612a1f9e2ac4e744aa8",
+     "modified": "2026-09-09T13:12:30.966000",
+     "last_24h": false
+    },
+    {
+     "title": "Kimsuky Uses Local LLMs, AI-Generated Lures and GitHub C2 to Deploy AsyncRAT",
+     "url": "https://otx.alienvault.com/pulse/6a79ac473fe6b48d51cf0725",
+     "modified": "2026-09-09T10:23:45.584000",
+     "last_24h": false
+    },
+    {
+     "title": "Kimsuky Uses the AI Agent 'opencode' to Create Decoys as Its GitHub PAT-Based LNK Attacks Evolve",
+     "url": "https://otx.alienvault.com/pulse/6a9ff5d14ec39add3c2490d4",
+     "modified": "2026-09-08T11:47:29.229000",
+     "last_24h": false
+    },
+    {
+     "title": "Kimsuky Uses the AI Agent 'opencode' to Create Decoys as Its GitHub PAT-Based LNK Attacks Evolve",
+     "url": "https://otx.alienvault.com/pulse/6a9e70fd7eb74853a795cc57",
+     "modified": "2026-09-07T15:41:31.543000",
+     "last_24h": false
+    }
+   ],
+   "ttps": [
+    "Account Manipulation",
+    "Acquire Infrastructure",
+    "Adversary-in-the-Middle",
+    "Application Layer Protocol",
+    "Archive Collected Data",
+    "Automated Exfiltration",
+    "Boot or Logon Autostart Execution",
+    "Browser Information Discovery",
+    "Browser Session Hijacking",
+    "Clipboard Data",
+    "Command and Scripting Interpreter",
+    "Compromise Accounts",
+    "Compromise Infrastructure",
+    "Create Account",
+    "Create or Modify System Process",
+    "Credentials from Password Stores",
+    "Data Encoding",
+    "Data Staged",
+    "Data from Local System",
+    "Delay Execution",
+    "Deobfuscate/Decode Files or Information",
+    "Develop Capabilities",
+    "Disable or Modify System Firewall",
+    "Disable or Modify Tools",
+    "Dynamic Resolution",
+    "Email Collection",
+    "Establish Accounts",
+    "Event Triggered Execution",
+    "Execution Guardrails",
+    "Exfiltration Over C2 Channel",
+    "Exfiltration Over Web Service",
+    "Exploit Public-Facing Application",
+    "External Remote Services",
+    "File and Directory Discovery",
+    "Financial Theft",
+    "Gather Victim Identity Information",
+    "Gather Victim Org Information",
+    "Hide Artifacts",
+    "Indicator Removal",
+    "Ingress Tool Transfer",
+    "Input Capture",
+    "Inter-Process Communication",
+    "Internal Spearphishing",
+    "Local Storage Discovery",
+    "Masquerading",
+    "Modify Registry",
+    "Multi-Factor Authentication Interception",
+    "Native API",
+    "Network Sniffing",
+    "OS Credential Dumping",
+    "Obfuscated Files or Information",
+    "Obtain Capabilities",
+    "Phishing",
+    "Phishing for Information",
+    "Process Discovery",
+    "Process Injection",
+    "Query Public AI Services",
+    "Query Registry",
+    "Reflective Code Loading",
+    "Remote Access Tools",
+    "Remote Services",
+    "Scheduled Task/Job",
+    "Screen Capture",
+    "Search Open Technical Databases",
+    "Search Open Websites/Domains",
+    "Search Victim-Owned Websites",
+    "Server Software Component",
+    "Service Stop",
+    "Social Engineering",
+    "Software Discovery",
+    "Software Extensions",
+    "Stage Capabilities",
+    "Steal Web Session Cookie",
+    "Subvert Trust Controls",
+    "System Binary Proxy Execution",
+    "System Information Discovery",
+    "System Network Configuration Discovery",
+    "System Owner/User Discovery",
+    "System Service Discovery",
+    "System Time Discovery",
+    "Traffic Signaling",
+    "Unsecured Credentials",
+    "Use Alternate Authentication Material",
+    "User Execution",
+    "Valid Accounts",
+    "Virtualization/Sandbox Evasion",
+    "Web Service"
+   ],
+   "iocs": {
+    "ips": [],
+    "domains": [
+     "nomic.ai",
+     "microsoft.agents.ai",
+     "microsoft.extensions.ai",
+     "www.genians.com",
+     "toks.great-site.net"
+    ],
+    "hashes": [
+     "02ebc2356f9f700bbdac444cdefa0da2",
+     "0d8ceb7dea7d471afa2f8e753b13d2d6",
+     "1f378c0efc13669dada1fe340c6837bd",
+     "2669731cb5ff664dfb5fbfc37637876d",
+     "2ab3df4762fbde5d86e99a1ad147850e",
+     "2e76d5316663a3dc472398b1c01cb9a8",
+     "2eb77109cce1e8afca6245c2963e52a6",
+     "302725413076d1aeaee2d7f2b3692646",
+     "30792a0c0dfad55fb2b19d3e30e9a7d4",
+     "30d5f17d5e3f85be18220a7cab0b9fff"
+    ]
+   },
+   "summary": "Reports indicate Kimsuky, a North Korean threat group, is integrating artificial intelligence across its attack operations, including running local LLMs such as Ollama, GPT4All, and Msty and using the AI agent \"opencode\" to generate lure documents. The group's ongoing GitHub- and GitLab-based activity \u2014 tracked as Operation GitPower \u2014 employs malicious LNK files disguised as financial or business documents that leverage GitHub Personal Access Tokens for command-and-control and deliver AsyncRAT. Thirteen LNK variants were collected in mid-August 2026, suggesting continued evolution of this technique rather than a new standalone campaign."
+  },
   {
    "name": "Lazarus Group",
    "aka": [
@@ -12,7 +175,7 @@
     "BlueNoroff"
    ],
    "sponsor": "North Korea",
-   "pulses_24h": 1,
+   "pulses_24h": 0,
    "pulses_7d": 4,
    "malware": [],
    "targets": [],
@@ -21,7 +184,7 @@
      "title": "Windows AFD.sys Zero-Day Exploited by Lazarus Hackers to Gain SYSTEM Access",
      "url": "https://otx.alienvault.com/pulse/6a7e137d417182865191ce16",
      "modified": "2026-09-12T18:01:41.666000",
-     "last_24h": true
+     "last_24h": false
     },
     {
      "title": "Lazarus Hackers Actively Exploiting Windows AFD.sys Zero-Day to Deploy FudModule Rootkit",
@@ -152,7 +315,7 @@
      "2b4987c07a3d9a9a5d1a9bf4efa3d1903e775090b611710edafdc92874265ca8"
     ]
    },
-   "summary": "Lazarus Group has been observed exploiting a Windows AFD.sys zero-day vulnerability to gain SYSTEM privileges and deploy the FudModule rootkit. The group also continues its social engineering operations, using a fake DeFi startup to infiltrate Western companies by recruiting IT workers with forged documents and AI-assisted deception. Separately, a Linux toolkit featuring the \"ted backdoor\" and trojanized system binaries has targeted South Korean automotive and media organizations."
+   "summary": "Recent reports indicate Lazarus Group exploited a Windows AFD.sys zero-day vulnerability to gain SYSTEM privileges and deploy the FudModule rootkit. Separately, the group reportedly conducted a fake DeFi startup operation to infiltrate Western companies using forged documents, shipped hardware, and AI-assisted live interviews. Additionally, a new Linux toolkit featuring the \"Ted backdoor\" and trojanized system binaries has been observed targeting South Korean media and automotive organizations."
   },
   {
    "name": "Transparent Tribe",
@@ -161,7 +324,7 @@
     "In-Trode"
    ],
    "sponsor": "Suspected India/Pakistan",
-   "pulses_24h": 1,
+   "pulses_24h": 0,
    "pulses_7d": 2,
    "malware": [],
    "targets": [],
@@ -170,7 +333,7 @@
      "title": "PATCHCORD: New malware cluster targets Afghan telecom and South Asian critical infrastructure",
      "url": "https://otx.alienvault.com/pulse/6a7deb5e9423f6d0a5c5166d",
      "modified": "2026-09-12T16:04:05.943000",
-     "last_24h": true
+     "last_24h": false
     },
     {
      "title": "Analysis of APT-C-56 (Transparent Tribe)'s Recent Attack Activities.",
@@ -223,176 +386,7 @@
      "74d347785dc47f8cda3876826cdd3fb3935ac55dc8e9e0c0f96d5ef4e00089a2"
     ]
    },
-   "summary": "Recent reporting describes a previously undocumented backdoor dubbed PATCHCORD targeting Afghan telecom providers and South Asian critical infrastructure, delivered via fake VPN installers and sector-specific lures. Separate analysis of Transparent Tribe (APT-C-56) details two related attack chains that share infrastructure and use multistage delivery: victims receive disguised image or archive files containing LNK shortcuts that launch hidden BAT scripts to load the final payload."
-  },
-  {
-   "name": "Kimsuky",
-   "aka": [
-    "APT43",
-    "Thallium",
-    "Velvet Chollima"
-   ],
-   "sponsor": "North Korea",
-   "pulses_24h": 0,
-   "pulses_7d": 7,
-   "malware": [],
-   "targets": [],
-   "campaigns": [
-    {
-     "title": "Kimsuky incorporates AI into its attack framework, from creating lure documents to building a local LLM.",
-     "url": "https://otx.alienvault.com/pulse/6a7c1cea12a9a8902a41a980",
-     "modified": "2026-09-11T07:38:09.599000",
-     "last_24h": false
-    },
-    {
-     "title": "Kimsuky Integrates AI into Attack Operations, From AI-Generated Decoy Documents to a Local LLM",
-     "url": "https://otx.alienvault.com/pulse/6a7a077f3608869fb93fc711",
-     "modified": "2026-09-09T13:12:30.966000",
-     "last_24h": false
-    },
-    {
-     "title": "Integrating AI into Attack Operations, From AI-Generated Decoy Documents to a Local LLM",
-     "url": "https://otx.alienvault.com/pulse/6a79d612a1f9e2ac4e744aa8",
-     "modified": "2026-09-09T13:12:30.966000",
-     "last_24h": false
-    },
-    {
-     "title": "Kimsuky Uses Local LLMs, AI-Generated Lures and GitHub C2 to Deploy AsyncRAT",
-     "url": "https://otx.alienvault.com/pulse/6a79ac473fe6b48d51cf0725",
-     "modified": "2026-09-09T10:23:45.584000",
-     "last_24h": false
-    },
-    {
-     "title": "Kimsuky Uses the AI Agent 'opencode' to Create Decoys as Its GitHub PAT-Based LNK Attacks Evolve",
-     "url": "https://otx.alienvault.com/pulse/6a9ff5d14ec39add3c2490d4",
-     "modified": "2026-09-08T11:47:29.229000",
-     "last_24h": false
-    },
-    {
-     "title": "Kimsuky Uses the AI Agent 'opencode' to Create Decoys as Its GitHub PAT-Based LNK Attacks Evolve",
-     "url": "https://otx.alienvault.com/pulse/6a9e70fd7eb74853a795cc57",
-     "modified": "2026-09-07T15:41:31.543000",
-     "last_24h": false
-    },
-    {
-     "title": "Kimsuky",
-     "url": "https://otx.alienvault.com/pulse/6a9d88dac8a6f5b2b55a6bcc",
-     "modified": "2026-09-06T15:44:27.322000",
-     "last_24h": false
-    }
-   ],
-   "ttps": [
-    "Account Manipulation",
-    "Acquire Infrastructure",
-    "Adversary-in-the-Middle",
-    "Application Layer Protocol",
-    "Archive Collected Data",
-    "Automated Exfiltration",
-    "Boot or Logon Autostart Execution",
-    "Browser Information Discovery",
-    "Browser Session Hijacking",
-    "Clipboard Data",
-    "Command and Scripting Interpreter",
-    "Compromise Accounts",
-    "Compromise Infrastructure",
-    "Create Account",
-    "Create or Modify System Process",
-    "Credentials from Password Stores",
-    "Data Encoding",
-    "Data Staged",
-    "Data from Local System",
-    "Delay Execution",
-    "Deobfuscate/Decode Files or Information",
-    "Develop Capabilities",
-    "Disable or Modify System Firewall",
-    "Disable or Modify Tools",
-    "Dynamic Resolution",
-    "Email Collection",
-    "Establish Accounts",
-    "Event Triggered Execution",
-    "Execution Guardrails",
-    "Exfiltration Over C2 Channel",
-    "Exfiltration Over Web Service",
-    "Exploit Public-Facing Application",
-    "External Remote Services",
-    "File and Directory Discovery",
-    "Financial Theft",
-    "Gather Victim Identity Information",
-    "Gather Victim Org Information",
-    "Hide Artifacts",
-    "Indicator Removal",
-    "Ingress Tool Transfer",
-    "Input Capture",
-    "Inter-Process Communication",
-    "Internal Spearphishing",
-    "Local Storage Discovery",
-    "Masquerading",
-    "Modify Registry",
-    "Multi-Factor Authentication Interception",
-    "Native API",
-    "Network Sniffing",
-    "OS Credential Dumping",
-    "Obfuscated Files or Information",
-    "Obtain Capabilities",
-    "Phishing",
-    "Phishing for Information",
-    "Process Discovery",
-    "Process Injection",
-    "Query Public AI Services",
-    "Query Registry",
-    "Reflective Code Loading",
-    "Remote Access Tools",
-    "Remote Services",
-    "Scheduled Task/Job",
-    "Screen Capture",
-    "Search Open Technical Databases",
-    "Search Open Websites/Domains",
-    "Search Victim-Owned Websites",
-    "Server Software Component",
-    "Service Stop",
-    "Social Engineering",
-    "Software Discovery",
-    "Software Extensions",
-    "Stage Capabilities",
-    "Steal Web Session Cookie",
-    "Subvert Trust Controls",
-    "System Binary Proxy Execution",
-    "System Information Discovery",
-    "System Network Configuration Discovery",
-    "System Owner/User Discovery",
-    "System Service Discovery",
-    "System Time Discovery",
-    "Traffic Signaling",
-    "Unsecured Credentials",
-    "Use Alternate Authentication Material",
-    "User Execution",
-    "Valid Accounts",
-    "Virtualization/Sandbox Evasion",
-    "Web Service"
-   ],
-   "iocs": {
-    "ips": [],
-    "domains": [
-     "nomic.ai",
-     "microsoft.agents.ai",
-     "microsoft.extensions.ai",
-     "www.genians.com",
-     "toks.great-site.net"
-    ],
-    "hashes": [
-     "02ebc2356f9f700bbdac444cdefa0da2",
-     "0d8ceb7dea7d471afa2f8e753b13d2d6",
-     "1f378c0efc13669dada1fe340c6837bd",
-     "2669731cb5ff664dfb5fbfc37637876d",
-     "2ab3df4762fbde5d86e99a1ad147850e",
-     "2e76d5316663a3dc472398b1c01cb9a8",
-     "2eb77109cce1e8afca6245c2963e52a6",
-     "302725413076d1aeaee2d7f2b3692646",
-     "30792a0c0dfad55fb2b19d3e30e9a7d4",
-     "30d5f17d5e3f85be18220a7cab0b9fff"
-    ]
-   },
-   "summary": "Kimsuky is integrating artificial intelligence into its operations, reportedly running local large language models such as Ollama, GPT4All, and Msty to generate decoy documents and using the AI agent \"opencode\" for lure creation. The group continues its \"Operation GitPower\" activity, distributing malicious LNK files disguised as financial or business documents that leverage GitHub Personal Access Tokens for command-and-control communication and deliver payloads including AsyncRAT. These observations come from recent tracking of GitHub- and GitLab-based infrastructure linked to the North Korean group."
+   "summary": "Recent reporting describes a previously undocumented backdoor dubbed PATCHCORD targeting Afghan telecom providers and South Asian critical infrastructure, delivered via fake VPN installers and sector-specific lures. Separate analysis of Transparent Tribe (APT-C-56) details two related attack chains that use disguised image or archive files containing LNK shortcuts, which execute hidden BAT scripts to load a final payload through shared infrastructure. No specific malware families or victim organizations were named in the weekly summary beyond the PATCHCORD cluster."
   },
   {
    "name": "Sandworm",
@@ -514,113 +508,7 @@
      "db491181ece3f319de6567ab6f6daa90c6879911cd890155e6b7d8cc7a1a8c8e"
     ]
    },
-   "summary": "One report indicates Sandworm used fake job interviews to deliver a trojanized WireGuard VPN installer targeting IT professionals. A separate report describes active exploitation of two Cisco Secure Firewall Management Center vulnerabilities (CVE-2026-20079 and CVE-2026-20316), though the provided excerpt does not attribute this activity to Sandworm. No specific malware families or targeted countries were detailed in the current reporting."
-  },
-  {
-   "name": "Gamaredon",
-   "aka": [
-    "Primitive Bear",
-    "ShallowBurrow"
-   ],
-   "sponsor": "Russia (GRU)",
-   "pulses_24h": 0,
-   "pulses_7d": 2,
-   "malware": [],
-   "targets": [],
-   "campaigns": [
-    {
-     "title": "Gamaredon",
-     "url": "https://otx.alienvault.com/pulse/6aa29d804176b9cd1fc5a768",
-     "modified": "2026-09-10T12:07:28.542000",
-     "last_24h": false
-    },
-    {
-     "title": "Gamaredon WinRAR exploitation wave, Dec 2025 - Jun 2026 (Ukraine)",
-     "url": "https://otx.alienvault.com/pulse/6a9d2b755df4bc6aee56e0bc",
-     "modified": "2026-09-06T09:02:39.160000",
-     "last_24h": false
-    }
-   ],
-   "ttps": [
-    "Acquire Infrastructure",
-    "Application Layer Protocol",
-    "Automated Collection",
-    "Automated Exfiltration",
-    "Boot or Logon Autostart Execution",
-    "Command and Scripting Interpreter",
-    "Data Obfuscation",
-    "Data from Local System",
-    "Data from Network Shared Drive",
-    "Data from Removable Media",
-    "Defacement",
-    "Deobfuscate/Decode Files or Information",
-    "Develop Capabilities",
-    "Disable or Modify Tools",
-    "Disk Wipe",
-    "Dynamic Resolution",
-    "Execution Guardrails",
-    "Exfiltration Over C2 Channel",
-    "File and Directory Discovery",
-    "Hide Artifacts",
-    "Indicator Removal",
-    "Ingress Tool Transfer",
-    "Inter-Process Communication",
-    "Internal Spearphishing",
-    "Masquerading",
-    "Modify Registry",
-    "Native API",
-    "Non-Application Layer Protocol",
-    "Non-Standard Port",
-    "Obfuscated Files or Information",
-    "Obtain Capabilities",
-    "Office Application Startup",
-    "Peripheral Device Discovery",
-    "Phishing",
-    "Process Discovery",
-    "Process Injection",
-    "Proxy",
-    "Query Registry",
-    "Reflective Code Loading",
-    "Remote Services",
-    "Replication Through Removable Media",
-    "Scheduled Task/Job",
-    "Screen Capture",
-    "Software Discovery",
-    "Stage Capabilities",
-    "System Binary Proxy Execution",
-    "System Information Discovery",
-    "System Network Configuration Discovery",
-    "System Owner/User Discovery",
-    "Taint Shared Content",
-    "Template Injection",
-    "User Execution",
-    "Virtualization/Sandbox Evasion",
-    "Web Service",
-    "Windows Management Instrumentation"
-   ],
-   "iocs": {
-    "ips": [
-     "172.86.83.183"
-    ],
-    "domains": [
-     "bloodywolves.ddns.net",
-     "domains.servehttp.com",
-     "worker.3utilities.com"
-    ],
-    "hashes": [
-     "b991fd80f721d70eae16431ef00806b5450e4db0627cf3d3bac406c68f07009c",
-     "091868a217955a41e0ff5f72b3af5afe38277ce2de1a3a42117051f94ea46787",
-     "2122774f22c225c9bc6f48672d4004c1791369e597921305a5aa3ae52f64fb75",
-     "28431f09c87116adacac29abcd65757f6416110c6ee880011664283ef9e1ec2c",
-     "2add9429d2822ae0c01c08bbd66c3a110ef2e9c3a00cded1477657e9024e391e",
-     "2e79f462f9c8808b832bc2f26d70aa3da0617832b62917730f55d5a60499eae8",
-     "3538618e0ae0f7e73d96843d90323178b1d434262a074fc24be8e36283e7dd92",
-     "3b06ba44b952ae6694cf3efdd745e5a853a42df9636d2706f6998b1cc4b75533",
-     "583754e5e682ea83d58fbf76ea5c82ea0f2ab5db06e9e52343c4d52f35f0a4a6",
-     "68e21d7599d20444232415a7e74214ce50d7b4643215d83b8320e74c95a9dfd3"
-    ]
-   },
-   "summary": "Reporting indicates Gamaredon conducted a WinRAR exploitation wave targeting Ukraine between December 2025 and June 2026, leveraging CVE-2025-8088 and CVE-2025-6218 via spear-phishing attachments to deploy a script loader. Additional indicators were shared through a pulse pivot, though no specific malware families or other targeted countries were detailed in the current reports."
+   "summary": "Reporting indicates Sandworm conducted fake job interviews to deliver a trojanized WireGuard VPN installer targeting IT professionals. Separate reporting describes active exploitation of two Cisco Secure Firewall Management Center vulnerabilities, including a critical authentication bypass granting root access. No specific malware families or targeted countries were identified in this week\u2019s reports."
   },
   {
    "name": "MuddyWater",
@@ -708,79 +596,7 @@
      "350ca389794caf6c0638ca4db2df7afb58c484abc87ff375babeeaf75ec6046b"
     ]
    },
-   "summary": "No specific campaigns, malware usage, or targeting activity were reported for MuddyWater in the last seven days. The available data lists the group name only, without accompanying descriptions, malware families, or targeted countries. Observations are limited to the absence of reported activity in this dataset."
-  },
-  {
-   "name": "APT37",
-   "aka": [
-    "Reaper",
-    "Richochet",
-    "Group123"
-   ],
-   "sponsor": "North Korea",
-   "pulses_24h": 0,
-   "pulses_7d": 1,
-   "malware": [],
-   "targets": [],
-   "campaigns": [
-    {
-     "title": "DPRK APTs: Ted backdoor and curlRAT target South Korean media and automotive sectors",
-     "url": "https://otx.alienvault.com/pulse/6a9af7a5158ae188847551b5",
-     "modified": "2026-09-07T10:18:49.336000",
-     "last_24h": false
-    }
-   ],
-   "ttps": [
-    "Abuse Elevation Control Mechanism",
-    "Application Layer Protocol",
-    "Audio Capture",
-    "Boot or Logon Autostart Execution",
-    "Command and Scripting Interpreter",
-    "Credentials from Password Stores",
-    "Data from Local System",
-    "Disk Wipe",
-    "Drive-by Compromise",
-    "Exploitation for Client Execution",
-    "Ingress Tool Transfer",
-    "Inter-Process Communication",
-    "Masquerading",
-    "Native API",
-    "Obfuscated Files or Information",
-    "Peripheral Device Discovery",
-    "Phishing",
-    "Process Discovery",
-    "Process Injection",
-    "Scheduled Task/Job",
-    "System Information Discovery",
-    "System Owner/User Discovery",
-    "System Shutdown/Reboot",
-    "User Execution",
-    "Web Service"
-   ],
-   "iocs": {
-    "ips": [],
-    "domains": [
-     "img.darklights.store",
-     "img.monderhouse.space",
-     "img.responsive.pstatic.autos",
-     "img.smartnords.site",
-     "img.socialteams.store",
-     "img.worksongo.store"
-    ],
-    "hashes": [
-     "c8c68e629bba773a10ac80012d10bf19",
-     "ecd427ea8330a4ff73618483e00b9b41",
-     "009a1e2d7a582a24e50cf2ffc2a005482c8e38f22bf5ed416053855f8d054e1e",
-     "09739441ed4599bac2f8159028f772f71e4b25c8badfff95574e56d7384f3dbe",
-     "12810854c8b2c391b23e2e18b013e873d0369b0637aa3cf993136c07188ba3b8",
-     "2f02b09d61d432134e994ad671258f523bbf289ae6091fd4eae192c60bd51b6f",
-     "4bb923eb040aa13ca8fd409c31ee4729c60ddff32e350efe1c5a4a9168a065f5",
-     "5db1b6d52faf60b4f32d6fd0c7c938e4d05d29a14c32ded4a9668357c08b6a91",
-     "6cf1b5e92a9c0756f597a5ddefb38eba32961c52efac7ab2a0aa52c639a8fc53",
-     "7007a78d50a993cb174c685eba96eb442c9507e38fd9d8e5dffc712f613ec110"
-    ]
-   },
-   "summary": "Reporting indicates a previously undocumented Linux toolkit, including a \"ted backdoor\" compiled within a victim's existing HAProxy 2.8.12 instance and trojanized curlRAT components, has been targeting South Korean media and automotive organizations since early 2025. The campaign has reportedly maintained minimal detection rates during this period."
+   "summary": "No malware families or targeted countries were reported for MuddyWater in the past week. The sole campaign entry lists only the group name without any accompanying description or observed activity."
   },
   {
    "name": "APT41",
@@ -909,7 +725,79 @@
     ],
     "hashes": []
    },
-   "summary": "Reporting indicates that APT41 indicators were identified through pivoting on a referenced pulse, though no specific malware families, targeted countries, or campaign details were disclosed in the current reports."
+   "summary": "No new malware families or targeted countries were reported for APT41 this week. The sole campaign report indicates that indicators associated with the group were identified by pivoting on a referenced pulse. No specific intrusion activity, victims, or tooling details are described in the current reporting."
+  },
+  {
+   "name": "APT37",
+   "aka": [
+    "Reaper",
+    "Richochet",
+    "Group123"
+   ],
+   "sponsor": "North Korea",
+   "pulses_24h": 0,
+   "pulses_7d": 1,
+   "malware": [],
+   "targets": [],
+   "campaigns": [
+    {
+     "title": "DPRK APTs: Ted backdoor and curlRAT target South Korean media and automotive sectors",
+     "url": "https://otx.alienvault.com/pulse/6a9af7a5158ae188847551b5",
+     "modified": "2026-09-07T10:18:49.336000",
+     "last_24h": false
+    }
+   ],
+   "ttps": [
+    "Abuse Elevation Control Mechanism",
+    "Application Layer Protocol",
+    "Audio Capture",
+    "Boot or Logon Autostart Execution",
+    "Command and Scripting Interpreter",
+    "Credentials from Password Stores",
+    "Data from Local System",
+    "Disk Wipe",
+    "Drive-by Compromise",
+    "Exploitation for Client Execution",
+    "Ingress Tool Transfer",
+    "Inter-Process Communication",
+    "Masquerading",
+    "Native API",
+    "Obfuscated Files or Information",
+    "Peripheral Device Discovery",
+    "Phishing",
+    "Process Discovery",
+    "Process Injection",
+    "Scheduled Task/Job",
+    "System Information Discovery",
+    "System Owner/User Discovery",
+    "System Shutdown/Reboot",
+    "User Execution",
+    "Web Service"
+   ],
+   "iocs": {
+    "ips": [],
+    "domains": [
+     "img.darklights.store",
+     "img.monderhouse.space",
+     "img.responsive.pstatic.autos",
+     "img.smartnords.site",
+     "img.socialteams.store",
+     "img.worksongo.store"
+    ],
+    "hashes": [
+     "c8c68e629bba773a10ac80012d10bf19",
+     "ecd427ea8330a4ff73618483e00b9b41",
+     "009a1e2d7a582a24e50cf2ffc2a005482c8e38f22bf5ed416053855f8d054e1e",
+     "09739441ed4599bac2f8159028f772f71e4b25c8badfff95574e56d7384f3dbe",
+     "12810854c8b2c391b23e2e18b013e873d0369b0637aa3cf993136c07188ba3b8",
+     "2f02b09d61d432134e994ad671258f523bbf289ae6091fd4eae192c60bd51b6f",
+     "4bb923eb040aa13ca8fd409c31ee4729c60ddff32e350efe1c5a4a9168a065f5",
+     "5db1b6d52faf60b4f32d6fd0c7c938e4d05d29a14c32ded4a9668357c08b6a91",
+     "6cf1b5e92a9c0756f597a5ddefb38eba32961c52efac7ab2a0aa52c639a8fc53",
+     "7007a78d50a993cb174c685eba96eb442c9507e38fd9d8e5dffc712f613ec110"
+    ]
+   },
+   "summary": "A report describes a previously undocumented Linux toolkit targeting South Korean media and automotive organizations since early 2025. The campaign reportedly uses a customized HAProxy instance dubbed \"ted backdoor\" and trojanized components alongside curlRAT, achieving minimal detection. Observations indicate the activity focuses on these specific sectors within South Korea."
   },
   {
    "name": "Turla",
@@ -999,7 +887,96 @@
      "043292ec85c61ea44d3497a93b5acaa360719c52a0a582d82097acc303b81dc2"
     ]
    },
-   "summary": "No specific campaigns, malware families, or targeted countries were reported for Turla in the provided intelligence this week; the only entry listed is the group name itself without further description."
+   "summary": "No specific campaigns, malware families, or targeted countries were reported for Turla in the last seven days. The only entry listed is the group name itself without any accompanying description or activity details. Consequently, no observable operations can be summarized from the provided data."
+  },
+  {
+   "name": "Gamaredon",
+   "aka": [
+    "Primitive Bear",
+    "ShallowBurrow"
+   ],
+   "sponsor": "Russia (GRU)",
+   "pulses_24h": 0,
+   "pulses_7d": 1,
+   "malware": [],
+   "targets": [],
+   "campaigns": [
+    {
+     "title": "Gamaredon",
+     "url": "https://otx.alienvault.com/pulse/6aa29d804176b9cd1fc5a768",
+     "modified": "2026-09-10T12:07:28.542000",
+     "last_24h": false
+    }
+   ],
+   "ttps": [
+    "Acquire Infrastructure",
+    "Application Layer Protocol",
+    "Automated Collection",
+    "Automated Exfiltration",
+    "Boot or Logon Autostart Execution",
+    "Command and Scripting Interpreter",
+    "Data Obfuscation",
+    "Data from Local System",
+    "Data from Network Shared Drive",
+    "Data from Removable Media",
+    "Defacement",
+    "Deobfuscate/Decode Files or Information",
+    "Develop Capabilities",
+    "Disable or Modify Tools",
+    "Disk Wipe",
+    "Dynamic Resolution",
+    "Execution Guardrails",
+    "Exfiltration Over C2 Channel",
+    "File and Directory Discovery",
+    "Hide Artifacts",
+    "Indicator Removal",
+    "Ingress Tool Transfer",
+    "Inter-Process Communication",
+    "Internal Spearphishing",
+    "Masquerading",
+    "Modify Registry",
+    "Native API",
+    "Non-Application Layer Protocol",
+    "Non-Standard Port",
+    "Obfuscated Files or Information",
+    "Obtain Capabilities",
+    "Office Application Startup",
+    "Peripheral Device Discovery",
+    "Phishing",
+    "Process Discovery",
+    "Process Injection",
+    "Proxy",
+    "Query Registry",
+    "Reflective Code Loading",
+    "Remote Services",
+    "Replication Through Removable Media",
+    "Scheduled Task/Job",
+    "Screen Capture",
+    "Software Discovery",
+    "Stage Capabilities",
+    "System Binary Proxy Execution",
+    "System Information Discovery",
+    "System Network Configuration Discovery",
+    "System Owner/User Discovery",
+    "Taint Shared Content",
+    "Template Injection",
+    "User Execution",
+    "Virtualization/Sandbox Evasion",
+    "Web Service",
+    "Windows Management Instrumentation"
+   ],
+   "iocs": {
+    "ips": [
+     "172.86.83.183"
+    ],
+    "domains": [
+     "bloodywolves.ddns.net",
+     "domains.servehttp.com",
+     "worker.3utilities.com"
+    ],
+    "hashes": []
+   },
+   "summary": "Reporting indicates that Gamaredon indicators were identified this week by pivoting on a referenced pulse. No specific malware families, targeted countries, or campaign activities were detailed in the available reports."
   }
  ]
 }
