@@ -22,12 +22,15 @@ parent-technique names per group). Regenerate quarterly with
 exits). ATT&CK revs a few times a year — not worth a per-run network call.
 
 Optional AI summaries: with OPENROUTER_API_KEY set (free models at
-openrouter.ai), one chat call summarizes each group's week of campaign
-titles and the result is published as actor.summary (marked AI-generated in
-the UI). Only the top SUMMARIZE_MAX actors are summarized per run and the
-free tier caps at 50 req/day, so 3 runs/day stay under it; actors outside
-the slice keep their previous summary. Without the key — or if the call
-fails — the leaderboard publishes exactly as before.
+openrouter.ai), one chat call summarizes each group's week of activity and
+the result is published as actor.summary (marked AI-generated in the UI).
+The OTX *search* endpoint returns title-only summaries, so before digesting
+we backfill each kept campaign via GET /pulses/{id} (full description,
+malware families, targeted countries, industries) — the AI is fed report
+details, not bare titles. Only the top SUMMARIZE_MAX actors are summarized
+per run and the free tier caps at 50 req/day, so 3 runs/day stay under it;
+actors outside the slice keep their previous summary. Without the key — or
+if the calls fail — the leaderboard publishes exactly as before.
 
 ponytail: registry is curated by hand, not parsed from the ~40 MB MITRE
 ATT&CK bundle, and matching is substring-on-tags, not entity resolution.
@@ -309,6 +312,7 @@ def collect_group(name: str, aliases: list, sponsor: str, now: datetime):
             "url": f"https://otx.alienvault.com/pulse/{p['id']}",
             "modified": p["modified"],
             "last_24h": fresh,
+            "pid": p["id"],
             # Truncated for the AI digest only — stripped before publish (main),
             # so top_apt.json stays as lean as it was.
             "desc": (p.get("description") or "").strip()[:300],
@@ -336,25 +340,119 @@ def collect_group(name: str, aliases: list, sponsor: str, now: datetime):
     }
 
 
+def fetch_pulse_detail(pulse_id: str, deadline: float = float("inf")) -> dict | None:
+    """Full pulse via GET /pulses/{id}. The *search* endpoint returns a
+    title-and-bare-summary; the detail endpoint carries the real description,
+    malware families, targeted countries, and industries. None on failure —
+    the digest then falls back to whatever the search row had."""
+    for attempt in range(3):
+        if time.monotonic() >= deadline:
+            return None
+        try:
+            r = requests.get(f"{BASE}/pulses/{pulse_id}",
+                             headers={"X-OTX-API-KEY": API_KEY, "Accept": "application/json"},
+                             timeout=min(30, max(1, deadline - time.monotonic())))
+            if r.status_code == 200:
+                return r.json()
+            if r.status_code < 500:      # 403/404 won't fix themselves on retry
+                break
+            log.warning("  pulse detail %s for %s (attempt %d)", r.status_code, pulse_id, attempt + 1)
+        except (requests.RequestException, ValueError):
+            log.warning("  pulse detail error for %s (attempt %d)", pulse_id, attempt + 1)
+        backoff = 2 * (attempt + 1)
+        if time.monotonic() + backoff >= deadline:
+            break
+        time.sleep(backoff)
+    return None
+
+
+DETAIL_DESC_CAP = 500
+DETAIL_LIST_CAP = 6
+
+def backfill_campaign_details(actors: list, deadline: float) -> int:
+    """Fetch pulse details for the given actors' campaigns and enrich each
+    campaign in place (desc/malware/targets/industries) so summarize_group can
+    feed the AI report details instead of bare titles. Bounded by deadline;
+    failures just leave the campaign as-is. Returns number enriched."""
+    todo = [(a, c) for a in actors for c in a["campaigns"]]
+    if not todo:
+        return 0
+    lock = __import__("threading").Lock()
+
+    def work(item):
+        _a, c = item
+        if time.monotonic() >= deadline:
+            return False
+        d = fetch_pulse_detail(c.get("pid") or c["url"].rsplit("/", 1)[-1], deadline)
+        if not d:
+            return False
+        parts = []
+        if (d.get("description") or "").strip():
+            parts.append(d["description"].strip()[:DETAIL_DESC_CAP])
+        mw = [m.strip() for m in d.get("malware_families") or [] if isinstance(m, str) and m.strip()][:DETAIL_LIST_CAP]
+        tc = [(x.get("name") if isinstance(x, dict) else x) for x in d.get("targeted_countries") or []]
+        tc = [x.strip() for x in tc if isinstance(x, str) and x.strip()][:DETAIL_LIST_CAP]
+        ind = [x.strip() for x in (d.get("industries") or []) if isinstance(x, str) and x.strip()][:DETAIL_LIST_CAP]
+        with lock:
+            if parts:
+                c["desc"] = " ".join(parts)
+            c["malware"] = mw
+            c["targets"] = tc
+            c["industries"] = ind
+        return True
+
+    with ThreadPoolExecutor(max_workers=WORKERS) as ex:
+        futs = [ex.submit(work, item) for item in todo]
+        done, pending = wait(futs, timeout=max(0, deadline - time.monotonic()))
+        for f in pending:
+            f.cancel()
+    return sum(1 for f in done if f.result())
+
+
+def actor_digest_facts(actor: dict) -> str:
+    """The per-campaign fact lines fed to the summarizer. Prefers detail-
+    enriched fields, falls back to what search returned. Pure function —
+    offline-testable, no network."""
+    lines = []
+    for c in actor["campaigns"]:
+        bits = [c["title"]]
+        detail = c.get("desc") or ""
+        extra = []
+        if c.get("malware"):
+            extra.append("malware: " + ", ".join(c["malware"]))
+        if c.get("targets"):
+            extra.append("targets: " + ", ".join(c["targets"]))
+        if c.get("industries"):
+            extra.append("industries: " + ", ".join(c["industries"]))
+        if detail:
+            bits.append("— " + detail + (f" ({'; '.join(extra)})" if extra else ""))
+        elif extra:
+            bits.append("— " + "; ".join(extra))
+        lines.append("- " + " ".join(bits))
+    return "\n".join(lines)
+
+
 def summarize_group(actor: dict, deadline: float = float("inf")) -> str | None:
     """One OpenRouter call: 2-3 sentence digest of the group's recent activity.
-    Fed the pulse descriptions + malware families + target countries, not just
-    titles (a lone title like "APT41" yields a content-free summary). Pulse
-    text is untrusted third-party content — the prompt says summarize-only and
-    the output is length-capped. Any failure returns None (leaderboard
-    unaffected)."""
-    facts = []
-    for c in actor["campaigns"]:
-        facts.append(f"- {c['title']}" + (f" — {c['desc']}" if c.get("desc") else ""))
+    Fed pulse descriptions + per-pulse malware/targets/industries (from the
+    detail backfill), not just titles (a lone title like "APT41" yields a
+    content-free summary). Pulse text is untrusted third-party content — the
+    prompt says summarize-only and the output is length-capped. Any failure
+    returns None (leaderboard unaffected)."""
+    facts = actor_digest_facts(actor)
+    # Actor-level lists come from search results; if those were empty, roll up
+    # whatever the detail backfill found per campaign.
+    malware = actor["malware"] or sorted({m for c in actor["campaigns"] for m in c.get("malware", [])})
+    targets = actor["targets"] or sorted({t for c in actor["campaigns"] for t in c.get("targets", [])})
     body = {
         "model": OPENROUTER_MODEL,
         "messages": [{"role": "user", "content":
             "You summarize threat-intelligence campaign reports for a public leaderboard.\n"
             f"Threat group: {actor['name']} (aka {', '.join(actor['aka']) or 'none'}), "
             f"attributed to {actor['sponsor']}.\n"
-            f"Malware families reported this week: {', '.join(actor['malware']) or 'none'}.\n"
-            f"Targeted countries reported this week: {', '.join(actor['targets']) or 'none'}.\n"
-            f"Recent campaign reports (last 7 days; title — description):\n" + "\n".join(facts) + "\n\n"
+            f"Malware families reported this week: {', '.join(malware[:6]) or 'none'}.\n"
+            f"Targeted countries reported this week: {', '.join(targets[:6]) or 'none'}.\n"
+            f"Recent campaign reports (last 7 days; title — description, malware, targets, industries):\n{facts}\n\n"
             "Write a 2-3 sentence plain-English summary of what this group has been doing "
             "based ONLY on the reports above. Use the descriptions, malware families and "
             "targets; if the details are thin, say what is reported without padding. State "
@@ -446,6 +544,13 @@ def main() -> int:
         except (OSError, ValueError, KeyError):
             pass
         to_summarize = actors[:SUMMARIZE_MAX]
+        # OTX search returns title + bare summary only — backfill the full
+        # pulse details (description, malware, targets, industries) for the
+        # slice the AI will actually digest, so summaries read real reports.
+        detail_deadline = time.monotonic() + 120
+        enriched = backfill_campaign_details(to_summarize, detail_deadline)
+        log.info("Pulse details enriched for %d campaigns (top %d actors)...",
+                 enriched, len(to_summarize))
         log.info("Summarizing %d groups via OpenRouter (top %d)...", len(to_summarize), SUMMARIZE_MAX)
         with ThreadPoolExecutor(max_workers=2) as ex:  # 2 workers keeps us under free-tier 20 RPM
             sum_deadline = time.monotonic() + 240
@@ -461,11 +566,12 @@ def main() -> int:
                 a["summary"] = prev[a["name"]]
         log.info("  %d/%d groups summarized", sum("summary" in a for a in actors), len(actors))
 
-    # Pulse descriptions were only ever fuel for the digest — publish the same
-    # lean schema as before.
+    # Detail enrichment was only ever fuel for the digest — publish the same
+    # lean schema as before (title/url/modified/last_24h per campaign).
     for a in actors:
         for c in a["campaigns"]:
-            c.pop("desc", None)
+            for k in ("desc", "pid", "malware", "targets", "industries"):
+                c.pop(k, None)
 
     out = {
         "generated_at": now.isoformat(timespec="seconds"),

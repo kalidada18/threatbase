@@ -70,7 +70,37 @@ def test_ttp_cache():
         sa.TTP_FILE = orig
 
 
+def test_digest_facts():
+    """The AI prompt must carry descriptions/details, never bare titles;
+    and the publish-strip must leave the lean schema."""
+    actor = {
+        "name": "APT41", "aka": ["Winnti"], "sponsor": "China (MSS)",
+        "malware": [], "targets": [],
+        "campaigns": [
+            {"title": "Rich pulse", "url": "https://otx.alienvault.com/pulse/aaa", "modified": "x", "last_24h": True,
+             "pid": "aaa", "desc": "Detailed narrative about trojanized installers.",
+             "malware": ["XlabCrate"], "targets": ["United States"], "industries": ["Tech"]},
+            {"title": "Bare title only", "url": "https://otx.alienvault.com/pulse/bbb", "modified": "y", "last_24h": False,
+             "pid": "bbb", "desc": ""},
+        ],
+    }
+    facts = sa.actor_digest_facts(actor)
+    assert "Detailed narrative about trojanized installers." in facts, facts
+    assert "malware: XlabCrate" in facts and "targets: United States" in facts and "industries: Tech" in facts
+    assert "Bare title only" in facts  # thin campaigns still listed, not dropped
+    # roll-up: empty actor-level lists must be filled from per-campaign details
+    malware = actor["malware"] or sorted({m for c in actor["campaigns"] for m in c.get("malware", [])})
+    assert malware == ["XlabCrate"]
+
+    # strip step mirrors main(): published campaigns keep no digest-only keys
+    for c in actor["campaigns"]:
+        for k in ("desc", "pid", "malware", "targets", "industries"):
+            c.pop(k, None)
+    assert set(actor["campaigns"][0]) == {"title", "url", "modified", "last_24h"}
+
+
 if __name__ == "__main__":
     test_bucket_and_filter()
     test_ttp_cache()
+    test_digest_facts()
     print("OK")
