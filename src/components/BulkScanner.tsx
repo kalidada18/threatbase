@@ -2,13 +2,14 @@ import { useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ShieldCheck, Bug, Upload, Download, X } from 'lucide-react'
 import { EASE_EXPO } from './motion/primitives'
-import { parseBulkInput, runBulkScan, bulkToCsv, BULK_MAX_ROWS, type BulkRow } from '../lib/bulkScan'
+import { parseBulkText, parseBulkFile, runBulkScan, bulkToCsv, BULK_MAX_ROWS, type BulkRow, type ParsedBulk } from '../lib/bulkScan'
 import { labelSources } from './sourceLabels'
 
 /**
- * Bulk IOC hunt: paste or load a CSV/TXT of indicators, scan them all against
- * the same client-side engine as the single Hunt (one feed download, then
- * ~sub-ms binary searches), and export the verdicts back as CSV.
+ * Bulk IOC hunt: paste, load a CSV/TXT, or drop an Excel workbook — every
+ * sheet cell is scanned against the same client-side engine as the single
+ * Hunt (one feed download, then sub-ms binary searches), and verdicts export
+ * back as a detailed CSV.
  * The ledger idiom is borrowed from FeedHealth's <ul divide-y> + status dots.
  */
 
@@ -19,48 +20,69 @@ const STATUS_META: Record<string, { label: string; dot: string; cls: string }> =
   error: { label: 'Error', dot: 'bg-slate-500', cls: 'text-slate-400' },
 }
 
-const PREVIEW_ROWS = 100
+const FILTERS = ['all', 'malicious', 'disputed', 'clean', 'error'] as const
+type Filter = (typeof FILTERS)[number]
+
+const PREVIEW_ROWS = 200
+const PAGE_ROWS = 1000
 
 export default function BulkScanner({ feedVersion, statsData, addToast, onClose }: any) {
   const [text, setText] = useState('')
   const [phase, setPhase] = useState<'input' | 'running' | 'done'>('input')
   const [progress, setProgress] = useState({ done: 0, total: 0 })
   const [results, setResults] = useState<BulkRow[]>([])
-  const [showAll, setShowAll] = useState(false)
+  const [filter, setFilter] = useState<Filter>('all')
+  const [limit, setLimit] = useState(PREVIEW_ROWS)
   const abortRef = useRef(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
-  const parsed = phase === 'input' && text.trim() ? parseBulkInput(text) : null
-
-  const handleFile = async (file: File | undefined) => {
-    if (!file) return
-    try {
-      setText(await file.text())
-    } catch {
-      addToast('Could not read that file.', 'error')
-    }
-  }
-
-  const start = async () => {
-    const p = parseBulkInput(text)
-    if (p.valid.length === 0) return addToast('No valid indicators found in that input.', 'error')
-    if (p.invalid.length > 0) addToast(`Skipped ${p.invalid.length} invalid row${p.invalid.length === 1 ? '' : 's'}.`, 'success')
-    if (p.truncated) addToast(`Capped at ${BULK_MAX_ROWS} rows. Split larger lists into multiple files.`, 'error')
+  const scanRows = async (p: ParsedBulk, sourceName?: string) => {
+    if (p.valid.length === 0) { addToast(`No valid indicators found${sourceName ? ` in ${sourceName}` : ''}.`, 'error'); return }
+    if (p.invalid.length > 0) addToast(`${p.invalid.length} unparseable row${p.invalid.length === 1 ? '' : 's'} skipped${sourceName ? ` (${sourceName})` : ''}.`, 'success')
+    if (p.truncated) addToast(`Capped at ${BULK_MAX_ROWS.toLocaleString()} rows. Split larger files into multiple runs.`, 'error')
     abortRef.current = false
     setPhase('running')
-    setShowAll(false)
+    setFilter('all')
+    setLimit(PREVIEW_ROWS)
     setResults([])
     setProgress({ done: 0, total: p.valid.length })
 
+    // Streaming: buffer rows and flush to state every 50 so verdicts appear
+    // while the run works; the final set gets the dispute-annotated rows.
+    let buf: BulkRow[] = []
     const rows = await runBulkScan(
       p.valid,
       feedVersion,
       statsData,
       (done, total) => { setProgress({ done, total }) },
       () => abortRef.current,
+      (row) => {
+        buf.push(row)
+        if (buf.length >= 50) { const b = buf; buf = []; setResults((prev) => [...prev, ...b]) }
+      },
     )
     setResults(rows)
     setPhase('done')
+  }
+
+  const start = async () => {
+    let p: ParsedBulk
+    try {
+      p = await parseBulkText(text)
+    } catch {
+      return addToast('Could not parse that input.', 'error')
+    }
+    void scanRows(p)
+  }
+
+  const handleFile = async (file: File | undefined) => {
+    if (!file) return
+    try {
+      void scanRows(await parseBulkFile(file), file.name)
+    } catch (err: any) {
+      console.error(err)
+      addToast(`Could not read ${file.name}.`, 'error')
+    }
   }
 
   const downloadCsv = () => {
@@ -74,6 +96,7 @@ export default function BulkScanner({ feedVersion, statsData, addToast, onClose 
   }
 
   const counts = {
+    all: results.length,
     malicious: results.filter((r) => r.status === 'malicious').length,
     clean: results.filter((r) => r.status === 'clean').length,
     disputed: results.filter((r) => r.status === 'disputed').length,
@@ -85,8 +108,27 @@ export default function BulkScanner({ feedVersion, statsData, addToast, onClose 
     ...results.filter((r) => r.status === 'error'),
     ...results.filter((r) => r.status === 'clean'),
   ]
-  const visible = showAll ? ranked : ranked.slice(0, PREVIEW_ROWS)
+  const shown = filter === 'all' ? ranked : ranked.filter((r) => r.status === filter)
+  const visible = shown.slice(0, limit)
   const pct = progress.total ? Math.round((progress.done / progress.total) * 100) : 0
+
+  const filterChip = (f: Filter) => (
+    <button
+      key={f}
+      type="button"
+      onClick={() => { setFilter(f); setLimit(PREVIEW_ROWS) }}
+      aria-pressed={filter === f}
+      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/30 ${
+        filter === f
+          ? 'border-white/25 bg-white/[0.08] text-white'
+          : 'border-white/[0.08] bg-transparent text-slate-400 hover:text-slate-200'
+      }`}
+    >
+      {f !== 'all' && <span className={`h-1.5 w-1.5 rounded-full ${STATUS_META[f].dot}`} aria-hidden="true" />}
+      {f === 'all' ? 'All' : STATUS_META[f].label}
+      <span className="tabular-nums text-slate-500">{counts[f as keyof typeof counts].toLocaleString()}</span>
+    </button>
+  )
 
   return (
     <section id="bulk-section" className="py-12 scroll-mt-24">
@@ -101,9 +143,9 @@ export default function BulkScanner({ feedVersion, statsData, addToast, onClose 
           <div className="p-6 md:p-8 border-b border-white/[0.06] flex items-start justify-between gap-4">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-platinum-500">Bulk hunt</p>
-              <h3 className="mt-1 text-xl md:text-[1.65rem] font-bold tracking-tight text-white">Scan a CSV of indicators</h3>
+              <h3 className="mt-1 text-xl md:text-[1.65rem] font-bold tracking-tight text-white">Scan a CSV or Excel of indicators</h3>
               <p className="mt-2 text-sm text-slate-400 leading-relaxed max-w-xl">
-                One IP (or domain / URL / hash) per line — extra columns are ignored. Up to {BULK_MAX_ROWS.toLocaleString()} rows per run.
+                One IP / domain / URL / hash per cell or line — extra columns (dates, notes) are ignored. Up to {BULK_MAX_ROWS.toLocaleString()} unique indicators per run.
               </p>
             </div>
             <button
@@ -127,39 +169,32 @@ export default function BulkScanner({ feedVersion, statsData, addToast, onClose 
                     onChange={(e) => setText(e.target.value)}
                     rows={8}
                     spellCheck={false}
-                    placeholder={'45.9.148.102\n185.220.101.1\nhxxp://evil[.]com/path  ← defanged forms are refanged too\nmalicious-domain.xyz,2026-09-01'}
+                    placeholder={'45.9.148.102\n185.220.101.1\nhxxp://evil[.]com/path  ← defanged forms are refanged too\nmalicious-domain.xyz,2026-09-01\n\n…or load a .csv / .xlsx — every cell of the first sheet is scanned'}
                     className="w-full bg-slate-950/50 border border-slate-700 rounded-xl p-4 font-mono text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-slate-500 focus:ring-1 focus:ring-slate-500 resize-y shadow-inner"
                   />
                   <div className="mt-4 flex flex-wrap items-center gap-3">
-                    <input ref={fileRef} type="file" accept=".csv,.txt,text/csv,text/plain" className="hidden" onChange={(e) => void handleFile(e.target.files?.[0])} />
+                    <input ref={fileRef} type="file" accept=".csv,.txt,.xlsx,.xls,text/csv,text/plain" className="hidden" onChange={(e) => { void handleFile(e.target.files?.[0]); e.target.value = '' }} />
                     <button
                       type="button"
                       onClick={() => fileRef.current?.click()}
                       className="inline-flex items-center gap-2 rounded-xl border border-white/[0.08] bg-transparent px-4 py-3 text-[13px] font-semibold tracking-[0.06em] text-platinum-300 transition-all hover:border-white/20 hover:text-white active:translate-y-px cursor-pointer"
                     >
-                      <Upload size={15} strokeWidth={2.5} /> Load CSV / TXT
+                      <Upload size={15} strokeWidth={2.5} /> CSV / Excel
                     </button>
                     <button
                       type="button"
-                      onClick={start}
-                      disabled={!parsed || parsed.valid.length === 0}
+                      onClick={() => void start()}
+                      disabled={!text.trim()}
                       className="inline-flex items-center gap-2 rounded-xl bg-red-500 px-6 py-3 text-[13px] font-semibold tracking-[0.06em] text-white transition-all hover:bg-red-400 active:translate-y-px shadow-glow-red disabled:opacity-40 disabled:hover:bg-red-500 cursor-pointer"
                     >
-                      <Bug size={15} strokeWidth={2.5} /> Scan {parsed && parsed.valid.length > 0 ? `${parsed.valid.length.toLocaleString()}` : ''}
+                      <Bug size={15} strokeWidth={2.5} /> Scan pasted list
                     </button>
-                    {parsed && (parsed.invalid.length > 0 || parsed.truncated) && (
-                      <span className="text-xs font-medium text-slate-500">
-                        {parsed.invalid.length > 0 && `${parsed.invalid.length} invalid row${parsed.invalid.length === 1 ? '' : 's'} will be skipped`}
-                        {parsed.invalid.length > 0 && parsed.truncated && ' · '}
-                        {parsed.truncated && `over ${BULK_MAX_ROWS.toLocaleString()} rows will be cut`}
-                      </span>
-                    )}
                   </div>
                 </motion.div>
               )}
 
               {phase === 'running' && (
-                <motion.div key="running" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: EASE_EXPO }} className="py-8">
+                <motion.div key="running" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: EASE_EXPO }}>
                   <div className="flex items-baseline justify-between mb-3">
                     <span className="text-sm font-semibold text-slate-300" role="status">
                       Scanning {progress.done.toLocaleString()} / {progress.total.toLocaleString()}…
@@ -172,55 +207,70 @@ export default function BulkScanner({ feedVersion, statsData, addToast, onClose 
                       Stop
                     </button>
                   </div>
-                  <div className="h-2.5 w-full rounded-full bg-white/[0.06] overflow-hidden">
+                  <div className="h-2.5 w-full rounded-full bg-white/[0.06] overflow-hidden mb-6">
                     <div className="h-full rounded-full bg-red-500 transition-all duration-300" style={{ width: `${pct}%` }} role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} />
                   </div>
-                  <p className="mt-3 text-xs text-slate-500">The first row downloads the live feed (~50 MB, once per session); after that rows resolve almost instantly.</p>
-                </motion.div>
-              )}
-
-              {phase === 'done' && (
-                <motion.div key="done" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease: EASE_EXPO }}>
-                  <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mb-5 text-xs font-semibold uppercase tracking-[0.14em] tabular-nums">
-                    <span className="flex items-center gap-1.5 text-red-400"><span className="h-2 w-2 rounded-full bg-red-400" />{counts.malicious} threats</span>
-                    {counts.disputed > 0 && <span className="flex items-center gap-1.5 text-amber-400"><span className="h-2 w-2 rounded-full bg-amber-400" />{counts.disputed} disputed</span>}
-                    <span className="flex items-center gap-1.5 text-emerald-400"><span className="h-2 w-2 rounded-full bg-emerald-400" />{counts.clean} clean</span>
-                    {counts.error > 0 && <span className="flex items-center gap-1.5 text-slate-400"><span className="h-2 w-2 rounded-full bg-slate-500" />{counts.error} errors</span>}
-                    <button
-                      type="button"
-                      onClick={downloadCsv}
-                      className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-white/[0.08] px-3 py-1.5 font-mono text-[11px] font-bold tracking-wide text-platinum-200 normal-case transition-colors hover:border-white/20 hover:text-white cursor-pointer"
-                    >
-                      <Download size={13} /> Download CSV
-                    </button>
-                  </div>
-
-                  <ul className="divide-y divide-white/[0.05] max-h-[520px] overflow-y-auto">
-                    {visible.map((r) => {
+                  <p className="mb-4 text-xs text-slate-500">The first row downloads the live feed (once per session); after that rows resolve almost instantly. Verdicts appear as they land — Stop keeps what is already scanned.</p>
+                  <ul className="divide-y divide-white/[0.05] max-h-[320px] overflow-y-auto">
+                    {results.slice(0, 50).map((r) => {
                       const s = STATUS_META[r.status]
-                      const flagged = r.status === 'malicious' ? labelSources(r.sources).slice(0, 3) : []
                       return (
-                        <li key={r.value} className="flex items-center gap-3 py-2.5">
+                        <li key={r.value} className="flex items-center gap-3 py-2">
                           <span className={`h-2 w-2 shrink-0 rounded-full ${s.dot}`} aria-hidden="true" />
                           <span className="min-w-0 flex-1 truncate font-mono text-sm text-slate-200" title={r.error || r.value}>{r.value}</span>
-                          {flagged.length > 0 && (
-                            <span className="hidden md:inline shrink-0 text-[10px] font-medium text-platinum-500 truncate max-w-[14rem]" title={labelSources(r.sources).join(', ')}>
-                              {flagged.join(', ')}{r.sources.length > 3 ? ` +${labelSources(r.sources).length - 3}` : ''}
-                            </span>
-                          )}
                           <span className={`shrink-0 text-[10px] font-bold uppercase tracking-wider ${s.cls}`}>{s.label}</span>
                         </li>
                       )
                     })}
                   </ul>
-                  {ranked.length > PREVIEW_ROWS && (
+                </motion.div>
+              )}
+
+              {phase === 'done' && (
+                <motion.div key="done" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, ease: EASE_EXPO }}>
+                  <div className="flex flex-wrap items-center gap-2 mb-5">
+                    {FILTERS.map(filterChip)}
                     <button
                       type="button"
-                      onClick={() => setShowAll((v) => !v)}
+                      onClick={downloadCsv}
+                      className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-white/[0.08] px-3 py-1.5 font-mono text-[11px] font-bold tracking-wide text-platinum-200 transition-colors hover:border-white/20 hover:text-white cursor-pointer"
+                    >
+                      <Download size={13} /> Download CSV
+                    </button>
+                  </div>
+
+                  <ul className="divide-y divide-white/[0.05] max-h-[560px] overflow-y-auto">
+                    {visible.map((r) => {
+                      const s = STATUS_META[r.status]
+                      const flagged = r.status === 'malicious' ? labelSources(r.sources) : []
+                      return (
+                        <li key={r.value} className="flex items-center gap-3 py-2.5">
+                          <span className={`h-2 w-2 shrink-0 rounded-full ${s.dot}`} aria-hidden="true" />
+                          <span className="min-w-0 flex-1 truncate font-mono text-sm text-slate-200" title={r.error || r.value}>{r.value}</span>
+                          {r.type !== 'IP Address' && <span className="hidden lg:inline shrink-0 font-mono text-[10px] uppercase tracking-wider text-slate-600">{r.type}</span>}
+                          {r.status === 'malicious' && (
+                            <span className="hidden md:inline shrink-0 text-[10px] font-medium text-platinum-500 truncate max-w-[16rem]" title={flagged.join(', ')}>
+                              {flagged.slice(0, 3).join(', ')}{flagged.length > 3 ? ` +${flagged.length - 3}` : ''}
+                            </span>
+                          )}
+                          {r.matchedCidr && <span className="hidden xl:inline shrink-0 font-mono text-[10px] text-rose-300/80" title={`Inside listed subnet ${r.matchedCidr}`}>{r.matchedCidr}</span>}
+                          {r.status === 'disputed' && r.disputeCount >= 3 && <span className="shrink-0 text-[10px] font-medium text-amber-400/80 tabular-nums">{r.disputeCount} disputes</span>}
+                          <span className={`shrink-0 text-[10px] font-bold uppercase tracking-wider ${s.cls}`}>{s.label}</span>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                  {shown.length > limit && (
+                    <button
+                      type="button"
+                      onClick={() => setLimit((v) => v + PAGE_ROWS)}
                       className="mt-3 text-xs font-bold uppercase tracking-wider text-platinum-300 hover:text-white transition-colors cursor-pointer"
                     >
-                      {showAll ? 'Show less' : `Show all ${ranked.length.toLocaleString()} rows`}
+                      Show {Math.min(PAGE_ROWS, shown.length - limit).toLocaleString()} more ({(shown.length - limit).toLocaleString()} hidden)
                     </button>
+                  )}
+                  {shown.length === 0 && (
+                    <p className="py-6 text-center text-sm text-slate-500">No {filter === 'all' ? 'results' : STATUS_META[filter].label.toLowerCase()} rows.</p>
                   )}
                   <div className="mt-6 pt-5 border-t border-white/[0.06] flex gap-3">
                     <button

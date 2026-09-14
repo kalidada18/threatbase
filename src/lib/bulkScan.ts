@@ -10,9 +10,9 @@ import supabaseClient from '../supabaseClient'
  * own "sequential on purpose" comment (functions/api/v1/scan.ts).
  */
 
-// Rows past this are rejected up front: one CSV should not turn the tab into a
-// minutes-long loop with nothing but a counter to show for it.
-export const BULK_MAX_ROWS = 2000
+// Rows past this are rejected up front: one file should not turn the tab into
+// a minutes-long loop with nothing but a counter to show for it.
+export const BULK_MAX_ROWS = 10000
 
 // Supabase GETs go through a URL; keep each .in() list well under proxy limits.
 const DISPUTE_CHUNK = 200
@@ -26,45 +26,79 @@ export type BulkRow = {
   feedCount: number | string
   tags: string[]
   sources: string[]
+  matchedCidr: string | null
+  relatedMatch: { indicator: string; reason: string } | null
   disputeCount: number
   error?: string
 }
 
-export type ParsedBulk = { valid: string[]; invalid: string[]; truncated: boolean }
+export type ParsedBulk = { valid: string[]; invalid: { row: number; text: string }[]; truncated: boolean }
 
 /**
- * Turn pasted/uploaded text into indicators: one record per line, first
- * comma/tab/space-separated field that classifies wins (tolerates `ip,extra`
- * columns and a stray header row). Deduped, capped at BULK_MAX_ROWS.
- * ponytail: naive split like the feed parser (no quoted-comma support);
- * upgrade to a real CSV parser only if quoted user files start failing.
+ * Collect indicators from already-parsed rows (one array per source row —
+ * one cell for plain text, one per Excel column for spreadsheets). A row is
+ * valid if ANY cell classifies as an indicator (tolerates header columns and
+ * `ip,reported_at` shapes); the first classifiable cell wins, in normalized
+ * refanged form (`1.2.3[.]4` → `1.2.3.4`) so dedupe and export stay honest.
+ * Pure sync core so it is testable without the xlsx loader.
  */
-export function parseBulkInput(text: string): ParsedBulk {
+export function collectBulkRows(rows: unknown[][]): ParsedBulk {
   const seen = new Set<string>()
   const valid: string[] = []
-  const invalid: string[] = []
+  const invalid: ParsedBulk['invalid'] = []
   let truncated = false
 
-  const lines = text.split(/\r?\n/)
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim()
-    if (!line) continue
-    const fields = line.split(/[,\t ]+/)
+  for (let i = 0; i < rows.length; i++) {
+    const cells = rows[i]
+    const preview = cells.map((c) => String(c ?? '').trim()).filter(Boolean)
+    if (preview.length === 0) continue
     let hit: string | null = null
-    for (const f of fields) {
-      if (!f) continue
-      const c = classifyIndicator(f)
-      // c.ip is the refanged/normalized form — store it so dedupe and the
-      // export CSV carry `1.2.3.4`, never `1.2.3[.]4`.
-      if (c.type !== 'invalid') { hit = c.ip; break }
+    for (const cell of preview) {
+      // A cell can hold several space-separated indicators; try the whole
+      // cell first (URLs contain no spaces), then its whitespace tokens.
+      const candidates = cell.includes(' ') ? [cell, ...cell.split(/\s+/)] : [cell]
+      for (const cand of candidates) {
+        const c = classifyIndicator(cand)
+        if (c.type !== 'invalid') { hit = c.ip; break }
+      }
+      if (hit) break
     }
-    if (!hit) { invalid.push(line.length > 60 ? line.slice(0, 57) + '…' : line); continue }
+    if (!hit) {
+      const line = preview.join(', ')
+      invalid.push({ row: i + 1, text: line.length > 60 ? line.slice(0, 57) + '…' : line })
+      continue
+    }
     if (seen.has(hit)) continue
     seen.add(hit)
     if (valid.length >= BULK_MAX_ROWS) { truncated = true; break }
     valid.push(hit)
   }
   return { valid, invalid, truncated }
+}
+
+/**
+ * Parse pasted text or CSV/TXT source with the real SheetJS CSV reader —
+ * quoted commas, embedded newlines, and BOM all handled. Lazy import so the
+ * ~450 kB parser never touches visitors who don't open Bulk hunt.
+ */
+export async function parseBulkText(text: string): Promise<ParsedBulk> {
+  const XLSX = await import('@e965/xlsx')
+  const wb = XLSX.read(text, { type: 'string', raw: false })
+  const sheet = wb.Sheets[wb.SheetNames[0]]
+  if (!sheet) return { valid: [], invalid: [], truncated: false }
+  return collectBulkRows(XLSX.utils.sheet_to_json<any[]>(sheet, { header: 1, raw: true, defval: '' }))
+}
+
+/** Parse an uploaded file: .xlsx/.xls as a workbook, anything else as CSV/TXT. */
+export async function parseBulkFile(file: File): Promise<ParsedBulk> {
+  if (/\.(xlsx|xls)$/i.test(file.name)) {
+    const XLSX = await import('@e965/xlsx')
+    const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' })
+    const sheet = wb.Sheets[wb.SheetNames[0]]
+    if (!sheet) return { valid: [], invalid: [], truncated: false }
+    return collectBulkRows(XLSX.utils.sheet_to_json<any[]>(sheet, { header: 1, raw: true, defval: '' }))
+  }
+  return parseBulkText(await file.text())
 }
 
 /**
@@ -79,6 +113,7 @@ export async function runBulkScan(
   statsData?: any,
   onProgress?: (done: number, total: number) => void,
   shouldAbort?: () => boolean,
+  onRow?: (row: BulkRow) => void,
 ): Promise<BulkRow[]> {
   const results: BulkRow[] = []
   for (const value of rows) {
@@ -94,12 +129,21 @@ export async function runBulkScan(
         feedCount: r.feedCount,
         tags: r.tags ?? [],
         sources: r.sources ?? [],
+        matchedCidr: r.matchedCidr ?? null,
+        relatedMatch: r.relatedMatch ?? null,
         disputeCount: 0,
       })
     } catch (err: any) {
-      results.push({ value, type: 'unknown', isMalicious: false, status: 'error', riskScore: 'Low', feedCount: 1, tags: [], sources: [], disputeCount: 0, error: err?.message || 'Scan failed' })
+      results.push({ value, type: 'unknown', isMalicious: false, status: 'error', riskScore: 'Low', feedCount: 1, tags: [], sources: [], matchedCidr: null, relatedMatch: null, disputeCount: 0, error: err?.message || 'Scan failed' })
     }
-    onProgress?.(results.length, rows.length)
+    const last = results[results.length - 1]
+    // Streaming: hand the row to the caller as it lands so the UI can show
+    // verdicts mid-run. onProgress is the batched tick (every 25 rows);
+    // onRow fires for every row but is cheap (a buffer push in the UI).
+    onRow?.(last)
+    if (results.length % 25 === 0 || results.length === rows.length) {
+      onProgress?.(results.length, rows.length)
+    }
   }
 
   // Batched dispute pass: flip dirty→disputed at >=3 like the single scanner,
@@ -114,6 +158,7 @@ export async function runBulkScan(
           supabaseClient.from('disputes').select('ip').in('ip', chunk)
         )
         for (const row of (data ?? []) as any[]) counts[row.ip] = (counts[row.ip] || 0) + 1
+        onProgress?.(results.length, rows.length)
       }
       for (const r of dirty) {
         const n = counts[r.value] || 0
@@ -129,12 +174,12 @@ export async function runBulkScan(
   return results
 }
 
-/** Verdict rows back out as CSV — same shape as the threatbase feed format. */
+/** Verdict rows back out as CSV — feed-line shape plus the range/pivot detail. */
 export function bulkToCsv(results: BulkRow[]): string {
   const esc = (s: string) => /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
-  const head = 'indicator,type,status,risk_score,tags,sources,dispute_count'
+  const head = 'indicator,type,status,risk_score,feeds,tags,sources,dispute_count,matched_cidr,related_indicator'
   const lines = results.map((r) =>
-    [esc(r.value), esc(r.type), r.status, esc(r.riskScore), esc(r.tags.join('|')), esc(r.sources.join('|')), String(r.disputeCount)].join(',')
+    [esc(r.value), esc(r.type), r.status, esc(r.riskScore), String(r.feedCount), esc(r.tags.join('|')), esc(r.sources.join('|')), String(r.disputeCount), esc(r.matchedCidr ?? ''), esc(r.relatedMatch?.indicator ?? '')].join(',')
   )
   return [head, ...lines].join('\n')
 }
