@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom'
 import supabaseClient from '../supabaseClient'
 import { timeAgo, categoryTier, TIER_CHIP, TIER_ACCENT, countryFlag } from '../utils'
 import { useAuth } from '../AuthContext'
-import { VerifyGhost } from './ui/verify-ghost'
+import ScanPulse from './ui/scan-pulse'
 import { getMalwareDescription } from '../malwareDictionary'
 
 // Derive a credible 0–100 confidence-of-abuse score from real signals
@@ -669,7 +669,7 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
               exit={{ opacity: 0, scale: 0.98 }}
               transition={{ duration: 0.3 }}
             >
-              <VerifyGhost state="verifying" />
+              <ScanPulse ip={ip} />
             </motion.div>
           ) : scanResult ? (
             <motion.div

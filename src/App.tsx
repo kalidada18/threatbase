@@ -114,11 +114,24 @@ export default function App() {
   const [showReport, setShowReport] = useState(false)
   const prevPathRef = useRef<string>(location.pathname)
 
-  // Initial verification
-  const [isHumanVerified, setIsHumanVerified] = useState(() => {
+  // Sign-in verification: the Cloudflare-style interstitial guards AUTH
+  // attempts only — browsing and IOC searches never see it. Verified once per
+  // tab (sessionStorage) or locally; each sign-in attempt awaits the gate.
+  const [verified, setVerified] = useState(() => {
     const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     return isLocal || sessionStorage.getItem('human_verified') === 'true'
   })
+  const [pendingVerify, setPendingVerify] = useState<(() => void) | null>(null)
+  const ensureVerified = useCallback((): Promise<void> => {
+    if (verified) return Promise.resolve()
+    return new Promise<void>((resolve) => setPendingVerify(() => resolve))
+  }, [verified])
+  const completeVerify = () => {
+    sessionStorage.setItem('human_verified', 'true')
+    setVerified(true)
+    pendingVerify?.()
+    setPendingVerify(null)
+  }
 
   // Toast state
   const [toasts, setToasts] = useState<any[]>([])
@@ -221,21 +234,21 @@ export default function App() {
     }
   }, [loadStats])
 
-  // Auto-scan from ?search= / ?q=. Runs whenever the query, the route, or the
-  // verification gate changes — not just on first mount — so Hall-of-Shame and
-  // other deep links work both on fresh page loads and in-app navigation.
-  // performScan is called directly instead of faking a scan-btn click, since
-  // the button may not be mounted yet when this fires.
+  // Auto-scan from ?search= / ?q=. Runs whenever the query or the route
+  // changes — not just on first mount — so Hall-of-Shame and other deep links
+  // work both on fresh page loads and in-app navigation. No verification gate:
+  // searching is public. performScan is called directly instead of faking a
+  // scan-btn click, since the button may not be mounted yet when this fires.
   const lastAutoScan = useRef<string | null>(null)
   useEffect(() => {
-    if (!isHumanVerified || location.pathname !== '/') return
+    if (location.pathname !== '/') return
     const urlParams = new URLSearchParams(location.search)
     const searchParam = urlParams.get('search') || urlParams.get('q')
     if (!searchParam || searchParam === lastAutoScan.current) return
     lastAutoScan.current = searchParam
     setScanInput(searchParam)
     performScan(searchParam)
-  }, [location, isHumanVerified, performScan])
+  }, [location, performScan])
 
   // Scroll to hash on page load or navigation. Routes are lazy chunks behind
   // AnimatePresence transitions, so the target element usually does NOT exist
@@ -264,16 +277,11 @@ export default function App() {
     }
   }, [location])
 
-  if (!isHumanVerified) {
-    return <InitialVerification onSuccess={() => {
-      sessionStorage.setItem('human_verified', 'true')
-      setIsHumanVerified(true)
-    }} />
-  }
-
   return (
     <MotionConfig reducedMotion="user">
-    <AuthProvider>
+    <AuthProvider ensureVerified={ensureVerified}>
+      {/* Sign-in gate: overlays the live site, never blocks browsing/search. */}
+      {pendingVerify && <InitialVerification onSuccess={completeVerify} />}
       <Navbar />
 
       <AnimatePresence mode="wait" initial={false}>

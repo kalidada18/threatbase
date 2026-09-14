@@ -22,7 +22,15 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export function AuthProvider({
+  children,
+  ensureVerified = () => Promise.resolve(),
+}: {
+  children: React.ReactNode
+  /** Resolves once the Cloudflare-style sign-in gate has been cleared (shows
+   *  it if needed). Every sign-in path awaits this before hitting Supabase. */
+  ensureVerified?: () => Promise<void>
+}) {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [profile, setProfile] = useState<any | null>(null)
@@ -153,6 +161,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithGoogle = async () => {
     if (!supabaseClient) return
+    await ensureVerified()
     const redirectTo = window.location.origin + import.meta.env.BASE_URL
     const { error } = await supabaseClient.auth.signInWithOAuth({
       provider: 'google',
@@ -165,6 +174,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithGithub = async () => {
     if (!supabaseClient) return
+    await ensureVerified()
     const redirectTo = window.location.origin + import.meta.env.BASE_URL
     const { error } = await supabaseClient.auth.signInWithOAuth({
       provider: 'github',
@@ -178,6 +188,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithEmail = async (email: string, password: string) => {
     if (!supabaseClient) return
+    await ensureVerified()
     const { error } = await supabaseClient.auth.signInWithPassword({
       email,
       password,
@@ -187,6 +198,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUpWithEmail = async (email: string, password: string) => {
     if (!supabaseClient) return
+    await ensureVerified()
     const { error } = await supabaseClient.auth.signUp({
       email,
       password,
