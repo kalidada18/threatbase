@@ -1,14 +1,13 @@
 import React from 'react'
-import ScanPulse from './ui/scan-pulse'
 
 interface InitialVerificationProps {
   onSuccess: (token: string) => void
 }
 
-/** Cloudflare "Performing security verification" interstitial (the abuseipdb
- *  one), recreated with our own branding: black page, logo + hostname
- *  headline, the radar ghost loader in place of the challenge widget, Ray-ID
- *  footer. Visual gate only — it resolves itself once the sweep completes. */
+/** Cloudflare "Performing security verification" interstitial — the abuseipdb
+ *  look, rebuilt 1:1 with Threatbase branding: no-entry spot swapped for the
+ *  logo, hostname headline, ghost Turnstile checkbox (click → Verifying… →
+ *  green check → site opens), Ray-ID footer. Visual gate only. */
 export default function InitialVerification({ onSuccess }: InitialVerificationProps) {
   // Stable Ray ID for the lifetime of the page (Cloudflare's are 16 hex chars).
   const rayId = React.useMemo(
@@ -17,59 +16,132 @@ export default function InitialVerification({ onSuccess }: InitialVerificationPr
   )
   const host = window.location.hostname || 'threatbase.qzz.io'
 
-  // Hand control back after the sweep has run through a few phases. Ref keeps
-  // the timer alive across parent re-renders (onSuccess is an inline arrow).
-  const onSuccessRef = React.useRef(onSuccess)
-  onSuccessRef.current = onSuccess
+  // Widget lifecycle: idle checkbox → verifying spinner → success check → open.
+  const [state, setState] = React.useState<'idle' | 'verifying' | 'done'>('idle')
+  const verify = () => {
+    if (state !== 'idle') return
+    setState('verifying')
+    setTimeout(() => setState('done'), 1700)
+  }
   React.useEffect(() => {
-    const t = setTimeout(() => onSuccessRef.current('interstitial'), 3400)
+    if (state !== 'done') return
+    const t = setTimeout(() => onSuccess('interstitial'), 900)
     return () => clearTimeout(t)
-  }, [])
+  }, [state, onSuccess])
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center bg-black font-sans text-white">
-      <div className="flex w-full max-w-2xl flex-1 flex-col items-start justify-center px-6 md:px-12">
-        {/* Site identity, like the blocked-domain headline on the real page. */}
-        <div className="mb-3 flex items-center gap-3">
+      <div className="flex w-full max-w-[600px] flex-1 flex-col items-start justify-center px-6">
+        {/* Site identity, where the real page shows its blocked-domain headline. */}
+        <div className="mb-4 flex items-center gap-4">
           <img
             src={`${import.meta.env.BASE_URL}img/logo.png`}
             alt=""
             aria-hidden="true"
-            className="h-9 w-9 shrink-0 rounded-full object-contain md:h-10 md:w-10"
+            className="h-10 w-10 shrink-0 rounded-full object-contain"
           />
-          <h1 className="text-3xl font-bold tracking-tight md:text-4xl">{host}</h1>
+          <h1 className="text-4xl font-bold tracking-tight md:text-[2.6rem]">{host}</h1>
         </div>
 
-        <h2 className="mb-3 text-xl font-bold md:text-2xl">Performing security verification</h2>
+        <h2 className="mb-3 text-2xl font-bold">Performing security verification</h2>
 
-        <p className="mb-10 max-w-xl text-[15px] leading-relaxed text-gray-300 md:text-base">
+        <p className="mb-10 text-[15px] leading-7 text-[#a3a3a3]">
           This website uses a security service to protect against malicious bots. This page is
           displayed while the website verifies you are not a bot.
         </p>
 
-        <ScanPulse ip={host} />
+        {/* Ghost challenge widget — Turnstile's exact box: checkbox + label on
+            the left, provider mark on the right; states mirror the real one. */}
+        <button
+          type="button"
+          onClick={verify}
+          aria-label={state === 'idle' ? 'Verify you are human' : 'Verifying'}
+          className="flex h-[65px] w-[300px] cursor-pointer select-none items-center justify-between rounded-md border border-[#525252] bg-[#262626] px-4 text-left"
+        >
+          <span className="flex items-center gap-3">
+            {state === 'idle' && (
+              <span className="h-[26px] w-[26px] rounded-[3px] border-2 border-[#d4d4d4] bg-black/40" />
+            )}
+            {state === 'verifying' && <SpinnerDots />}
+            {state === 'done' && (
+              <span className="flex h-[26px] w-[26px] items-center justify-center rounded-[3px] bg-[#3ecf8e]">
+                <svg viewBox="0 0 16 16" className="h-4 w-4" aria-hidden="true">
+                  <path d="M3 8.5 6.5 12 13 4.5" fill="none" stroke="#0b0b0b" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </span>
+            )}
+            <span className="text-sm text-[#ededed]">
+              {state === 'idle' && 'Verify you are human'}
+              {state === 'verifying' && 'Verifying…'}
+              {state === 'done' && 'Success!'}
+            </span>
+          </span>
+
+          <span className="flex flex-col items-center gap-[3px]">
+            <CloudMark />
+            <span className="text-[8px] font-bold tracking-[0.14em] text-[#d4d4d4]">CLOUDFLARE</span>
+            <span className="flex items-center gap-1 text-[8px] text-[#7aa2f7]">
+              <span className="underline">Privacy</span>
+              <span className="text-[#a3a3a3]">•</span>
+              <span className="underline">Help</span>
+            </span>
+          </span>
+        </button>
       </div>
 
-      {/* Ray ID footer, same three lines as the real page. */}
-      <div className="w-full max-w-2xl border-t border-[#3a3a3a] px-6 pb-8 pt-5 text-center text-[13px] text-gray-300 md:px-12">
-        <p className="mb-1">Ray ID: <span className="font-mono">{rayId}</span></p>
+      {/* Ray ID footer, same lines as the real page. */}
+      <div className="w-full max-w-[1100px] border-t border-[#3a3a3a] px-6 pb-8 pt-5 text-center text-[13px] leading-6 text-[#d4d4d4]">
+        <p>
+          Ray ID: <span className="font-mono">{rayId}</span>
+        </p>
         <p>
           Performance and Security by{' '}
           <a
             href="https://www.cloudflare.com?utm_source=challenge&utm_campaign=m"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[#6bb0ff] underline underline-offset-2"
+            className="text-[#7aa2f7] underline underline-offset-2"
           >Cloudflare</a>{' '}
           {'| '}
           <a
             href="https://www.cloudflare.com/privacypolicy/"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[#6bb0ff] underline underline-offset-2"
+            className="text-[#7aa2f7] underline underline-offset-2"
           >Privacy</a>
         </p>
       </div>
     </div>
+  )
+}
+
+/** Turnstile's loading mark: eight green dots on a circle, chasing highlight. */
+function SpinnerDots() {
+  return (
+    <svg viewBox="0 0 20 20" className="h-5 w-5 animate-spin" aria-hidden="true">
+      {Array.from({ length: 8 }, (_, i) => {
+        const a = (i * Math.PI) / 4
+        return (
+          <circle
+            key={i}
+            cx={10 + 7 * Math.cos(a)}
+            cy={10 + 7 * Math.sin(a)}
+            r="1.5"
+            fill="#3ecf8e"
+            opacity={0.25 + (0.75 * i) / 7}
+          />
+        )
+      })}
+    </svg>
+  )
+}
+
+/** Cloudflare's orange twin-cloud mark. */
+function CloudMark() {
+  return (
+    <svg viewBox="0 0 24 16" className="h-[15px] w-6" aria-hidden="true">
+      <path d="M6.8 12.6a3.4 3.4 0 0 1-.35-6.78A5 5 0 0 1 15.9 6.9a3 3 0 0 1 .4 5.68z" fill="#f6821f" />
+      <path d="M2.7 14.6a2.3 2.3 0 0 1-.15-4.55A3.7 3.7 0 0 1 9.6 8.9a2.4 2.4 0 0 1 .45 4.7z" fill="#fbad41" />
+    </svg>
   )
 }
