@@ -6,8 +6,9 @@
  *  single-use token at Cloudflare's siteverify. The browser never talks to
  *  siteverify and never sees the secret key.
  *
- *  Managed mode means most visitors flash through it without lifting a finger;
- *  only suspicious traffic sees the checkbox. Tokens are single-use, so every
+ *  Managed mode with appearance:'interaction-only' means most visitors flash
+ *  through it without lifting a finger; only suspicious traffic sees a visible
+ *  checkbox, which they can actually click. Tokens are single-use, so every
  *  attempt re-mints one via turnstile.reset(). */
 
 import { TURNSTILE_SITE_KEY } from './turnstile'
@@ -35,15 +36,18 @@ function loadTurnstile(): Promise<any> {
   return scriptPromise
 }
 
-// One off-screen container reused across attempts.
+// One screen-edge container reused across attempts. With
+// appearance:'interaction-only' it stays blank for easy traffic and shows a
+// real, clickable checkbox bottom-right exactly when Cloudflare escalates —
+// an off-screen widget would make that escalation an uncompletable deadlock.
 let mountId = 0
 function mountEl(): HTMLElement {
   let el = document.getElementById('tb-turnstile-mount')
   if (!el) {
     el = document.createElement('div')
     el.id = 'tb-turnstile-mount'
-    // Not display:none — Turnstile skips invisible widgets; clip it instead.
-    el.style.cssText = 'position:fixed;left:-1px;top:0;width:280px;opacity:0;z-index:-1;pointer-events:none'
+    // Not display:none — Turnstile skips invisible widgets.
+    el.style.cssText = 'position:fixed;right:12px;bottom:12px;z-index:2147483647'
     document.body.appendChild(el)
   }
   return el
@@ -52,26 +56,36 @@ function mountEl(): HTMLElement {
 let pending: Promise<void> | null = null
 let pendingResolve: (() => void) | null = null
 let widgetId: string | null = null
+// Generation counter: every callback captures the seq of its own attempt and
+// bails if a newer one superseded it, so stale fetch continuations or expired
+// iframes can never null out (or resolve) the current attempt's state.
+let seq = 0
 
 /** Resolves when the visitor has passed the managed challenge for a login
  *  attempt. Throws on failure — the sign-in path treats that as "not human". */
 export function ensureTurnstileLogin(): Promise<void> {
   if (pending) return pending
+  const my = ++seq
   pending = new Promise<void>((resolve, reject) => {
     pendingResolve = resolve
     const fail = (msg: string) => {
+      if (my !== seq) return
       pending = null
       pendingResolve = null
       reject(new Error(msg))
     }
     loadTurnstile()
       .then((turnstile) => {
+        if (my !== seq) return
         const el = mountEl()
+        // Turnstile requires remove() before destroying a widget's DOM,
+        // otherwise the old iframe keeps firing callbacks at stale state.
+        if (widgetId != null) turnstile.remove(widgetId)
         el.innerHTML = ''
         widgetId = turnstile.render(el, {
           sitekey: TURNSTILE_SITE_KEY,
           action: LOGIN_ACTION,
-          appearance: 'always',
+          appearance: 'interaction-only',
           callback: async (token: string) => {
             // Redeem server-side; anything but 200 = fail closed.
             try {
@@ -81,12 +95,13 @@ export function ensureTurnstileLogin(): Promise<void> {
                 body: JSON.stringify({ turnstileToken: token }),
               })
               if (!res.ok) throw new Error()
+              if (my !== seq) return
               pendingResolve?.()
               pending = null
               pendingResolve = null
             } catch {
               // Expired/used tokens must never linger: re-mint on the next attempt.
-              if (widgetId != null) (window as any).turnstile?.reset(widgetId)
+              if (my === seq && widgetId != null) (window as any).turnstile?.reset(widgetId)
               fail('Security check failed. Please try again.')
             }
           },
@@ -99,6 +114,7 @@ export function ensureTurnstileLogin(): Promise<void> {
   return pending
 }
 
-// ponytail: no timeout on the challenge — if a visitor abandons it, the sign-in
-// promise stays pending, which callers already surface as "loading". Add a
+// ponytail: no timeout on the challenge — with interaction-only the escalated
+// checkbox is visible and clickable, so a pending promise means the visitor
+// abandoned the widget, which callers already surface as "loading". Add a
 // 60s bail if abandoned attempts ever cause a visible stuck state.
