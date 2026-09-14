@@ -1,5 +1,6 @@
 import React from 'react'
-import { Menu, X, Github, LogOut, User as UserIcon, ChevronDown, Heart } from 'lucide-react'
+import { Menu, X, LogOut, User as UserIcon, ChevronDown, Heart } from 'lucide-react'
+import { GithubIcon as Github } from './ui/github-icon'
 import { useScroll, motion, AnimatePresence, useMotionValueEvent, type Variants } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
