@@ -31,6 +31,26 @@ import { json, corsHeaders } from '../api/_common'
  *  conversation; 300 covers heavy use while a scraper still can't mine the
  *  whole corpus. Batch scan is charged at ceil(items/20) units. */
 const MCP_DAILY_LIMIT = 300
+
+/**
+ * src/scanner.ts fetches feeds with RELATIVE urls (`/ioc/...`) — fine in the
+ * browser, but inside a Pages Function relative fetch() fails to resolve, so
+ * every scan would silently see empty feeds and return "clean". Absolutise
+ * same-origin relative paths against the canonical host once per isolate;
+ * pages.dev previews read the same public feeds, so the constant is safe.
+ */
+const SITE_ORIGIN = 'https://threatbase.qzz.io'
+let fetchAbsolutised = false
+function ensureAbsoluteFetch() {
+  if (fetchAbsolutised) return
+  const real = globalThis.fetch.bind(globalThis)
+  const patched = ((input: RequestInfo | URL, init?: RequestInit) => {
+    if (typeof input === 'string' && input.startsWith('/')) input = SITE_ORIGIN + input
+    return real(input as any, init)
+  }) as typeof fetch
+  globalThis.fetch = patched
+  fetchAbsolutised = true
+}
 const BATCH_MAX = 100
 const RAW_BASE = 'https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/'
 
@@ -194,6 +214,10 @@ export const onRequest = async (context: any) => {
       headers: { Allow: 'GET, POST, OPTIONS', 'Access-Control-Allow-Origin': '*' },
     })
   }
+
+  // Relative feed fetches inside scanIndicatorLogic need an origin — see
+  // ensureAbsoluteFetch above. Must run before the first scan on this isolate.
+  ensureAbsoluteFetch()
 
   // Per-IP budget (KV is eventually consistent — coarse gate, same
   // read-modify-write tradeoff as the v1 middleware).
