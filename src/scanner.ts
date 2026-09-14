@@ -369,8 +369,16 @@ export function parseIpFeedLine(line: string) {
  * the chunk layout of the large feeds can be resolved.
  *
  * Returns { type, isMalicious, riskScore, feedCount }
+ *
+ * opts.skipDisputeCheck: bulk mode tallies disputes for the whole dirty set in
+ * one batched query instead of paying a Supabase round-trip per hit.
  */
-export async function scanIndicatorLogic(rawInput: string, feedVersion: string | number, statsData?: any) {
+export async function scanIndicatorLogic(
+  rawInput: string,
+  feedVersion: string | number,
+  statsData?: any,
+  opts?: { skipDisputeCheck?: boolean },
+) {
   const { ip, type, isIP, isIPv6, isCIDR, isHash, isURL, isDomain } = classifyIndicator(rawInput)
 
   if (type === 'invalid') {
@@ -495,7 +503,7 @@ export async function scanIndicatorLogic(rawInput: string, feedVersion: string |
         tags = [...tags, 'Related Infrastructure']
       }
 
-      if (supabaseClient) {
+      if (supabaseClient && !opts?.skipDisputeCheck) {
         try {
           const { count } = await supabaseClient
             .from('disputes')

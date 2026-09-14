@@ -27,6 +27,8 @@ const TopAptPage = lazy(() => import('./components/TopAptPage'))
 const ApiDocsPage = lazy(() => import('./components/ApiDocsPage'))
 const PricingPage = lazy(() => import('./components/PricingPage'))
 const ThreatFeedPage = lazy(() => import('./components/ThreatFeedPage'))
+// Bulk CSV hunt — lazy: only visitors who open it download the bulk code.
+const BulkScanner = lazy(() => import('./components/BulkScanner'))
 // Home's below-the-fold band (feed destinations, Pro). Split out so the hero
 // console is not held up by it.
 const HomeSections = lazy(() => import('./components/blocks/LandingSections'))
@@ -112,6 +114,9 @@ export default function App() {
   const [scanResult, setScanResult] = useState<any>(null)
   const [isScanning, setIsScanning] = useState(false)
   const [showReport, setShowReport] = useState(false)
+  // Bulk hunt lives in its own state: results NEVER flow through scanResult,
+  // which drives the single-result card, the arrival pulse, and ReportScanner.
+  const [bulkOpen, setBulkOpen] = useState(false)
   const prevPathRef = useRef<string>(location.pathname)
 
   // Boot verification: the Cloudflare-style interstitial guards initial site
@@ -243,6 +248,20 @@ export default function App() {
     performScan(searchParam)
   }, [location, performScan])
 
+  // Bring the bulk panel into view when opened. It is a lazy chunk, so the
+  // section usually isn't mounted yet on the toggle click — retry like the
+  // hash-scroll effect below rather than silently no-oping.
+  useEffect(() => {
+    if (!bulkOpen) return
+    const deadline = Date.now() + 3000
+    const timer = setInterval(() => {
+      if (Date.now() > deadline) return clearInterval(timer)
+      const el = document.getElementById('bulk-section')
+      if (el) { clearInterval(timer); smoothScrollTo(el) }
+    }, 100)
+    return () => clearInterval(timer)
+  }, [bulkOpen])
+
   // Scroll to hash on page load or navigation. Routes are lazy chunks behind
   // AnimatePresence transitions, so the target element usually does NOT exist
   // yet when location changes (e.g. /threatfeed#feeds from the hero). Retry
@@ -285,7 +304,7 @@ export default function App() {
           <PageTransition>
           <main id="main-content">
             <HomeSeo />
-            <HeroSection scanInput={scanInput} setScanInput={setScanInput} handleScan={handleScan} isScanning={isScanning} scanResult={scanResult} />
+            <HeroSection scanInput={scanInput} setScanInput={setScanInput} handleScan={handleScan} isScanning={isScanning} scanResult={scanResult} openBulk={() => setBulkOpen(true)} />
 
             <ReportScanner
               isScanning={isScanning}
@@ -294,6 +313,17 @@ export default function App() {
               scanResult={scanResult}
               addToast={addToast}
             />
+
+            {bulkOpen && (
+              <Suspense fallback={null}>
+                <BulkScanner
+                  feedVersion={feedVersion}
+                  statsData={statsData}
+                  addToast={addToast}
+                  onClose={() => setBulkOpen(false)}
+                />
+              </Suspense>
+            )}
 
             {/* Below the console: feed destinations, then Pro. Stat counters
                 stay on /threatfeed, the explainer loop on /about. */}

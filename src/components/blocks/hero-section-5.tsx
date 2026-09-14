@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence, useScroll, useTransform, useReducedMotion } from 'framer-motion'
-import { Search } from 'lucide-react'
+import { Search, ListChecks } from 'lucide-react'
 import { EASE_EXPO } from '../motion/primitives'
 import { classifyIndicator, refangIndicator } from '../../scanner'
 
@@ -59,7 +59,7 @@ const BADGE_LABEL: Record<string, string> = {
  * The result template (ReportScanner) renders directly below and is scrolled
  * into view by App's performScan.
  */
-export function HeroSection({ scanInput, setScanInput, handleScan, isScanning, scanResult }: any) {
+export function HeroSection({ scanInput, setScanInput, handleScan, isScanning, scanResult, openBulk }: any) {
   // Scroll-linked parallax: the console drifts up and away as the report
   // scrolls in over it: depth instead of a hard section cut.
   const heroRef = useRef<HTMLDivElement>(null)
@@ -331,6 +331,17 @@ export function HeroSection({ scanInput, setScanInput, handleScan, isScanning, s
                   {ex.label}
                 </button>
               ))}
+              {/* Bulk CSV hunt — same chip idiom, pushed right so the examples
+                  stay the primary reading order. */}
+              {openBulk && (
+                <button
+                  type="button"
+                  onClick={openBulk}
+                  className="ml-auto inline-flex min-h-11 items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-4 font-mono text-xs text-slate-300 transition-colors duration-200 hover:bg-white/[0.08] hover:text-white cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/30"
+                >
+                  <ListChecks size={13} /> Bulk / CSV hunt
+                </button>
+              )}
             </motion.div>
           </motion.div>
         </div>
