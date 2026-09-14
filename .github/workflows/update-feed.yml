@@ -114,6 +114,23 @@ jobs:
             echo "  ✓ ${base}: restored $(wc -l < "$dir/${base}.txt") lines from the release"
           done
 
+      # ── 5b. Community reports & disputes → feed inputs ────────────────────────
+      #
+      # Was silently missing from this workflow since the file was written, which is
+      # why ioc/data/community_reports.json and false_positives.txt froze in June and
+      # community reports fed neither the free nor the paid feed. Order matters: this
+      # runs after the chunk restore (so the aggregator seeds from real history) and
+      # before it (so custom_iocs.txt / false_positives.txt are read this run).
+      # Dispute IPs pass the shared public-IPv4 gate, and the DB CHECK on disputes.ip
+      # (db/dispute_ip_constraint.sql) plus the /8 floor in update_feed.py's
+      # FalsePositivesSet.add_item make a feed-wipe entry impossible end to end.
+      - name: Sync community reports & disputes
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          PYTHONUNBUFFERED: '1'
+        run: python pipeline/sync_community_reports.py
+
       # ── 6. Run the aggregator ────────────────────────────────────────────────
       #
       # PRO_ENABLED gates generation of the paid tier (ioc/ip/categories/ and

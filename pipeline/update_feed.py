@@ -578,6 +578,14 @@ class FalsePositivesSet(set):
         if "/" in item:
             try:
                 net = ipaddress.ip_network(item, strict=False)
+                # Guard against feed-wipe input: community-sourced FP entries
+                # are untrusted, and one broad CIDR (e.g. 0.0.0.0/0) would
+                # remove the entire blocklist and the re-seed would persist it.
+                # Manual pipeline/whitelist.txt lines are subject to the same
+                # bound — /8 or wider is never a legitimate single false positive.
+                if net.prefixlen < 8:
+                    log.error(f"  Rejecting over-broad false-positive CIDR: {item}")
+                    return
                 self.cidrs.append((int(net.network_address), int(net.broadcast_address)))
             except ValueError:
                 pass

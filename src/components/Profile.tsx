@@ -455,16 +455,19 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
       const hashArray = Array.from(new Uint8Array(hashBuffer));
       const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
-      // 3. Insert into Supabase
+      // 3. Mint via the SECURITY DEFINER RPC — the active-key cap and the MFA
+      //    check are enforced server-side in the same transaction as the
+      //    INSERT. The direct client INSERT policy was dropped (db/mint_api_key_rpc.sql).
       const { data: newKeyData, error } = await supabaseClient
-        .from('api_keys')
-        .insert([{ user_id: user.id, key_hash: hashHex, prefix: plainKey.substring(0, 15) }])
-        .select()
+        .rpc('mint_api_key', { p_key_hash: hashHex, p_prefix: plainKey.substring(0, 15) })
         .single()
 
       if (error) {
-        if (error.message?.includes('row-level security policy') || error.message?.includes('Enforce MFA')) {
+        if (error.message?.includes('MFA') || error.message?.includes('row-level security policy') || error.code === '42501') {
           throw new Error('You must enable Two-Factor Authentication before generating API keys.')
+        }
+        if (error.message?.includes('Key limit reached')) {
+          throw new Error('Key limit reached (max 3 active keys).')
         }
         throw error
       }

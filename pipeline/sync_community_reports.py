@@ -44,19 +44,173 @@ HEADERS = {
     "Prefer": "return=minimal",
 }
 
+PAGE_SIZE = 1000  # PostgREST row cap — fetch bigger tables in a loop, never truncate.
+
+PIPELINE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# Same public-IPv4 gate main() applies to reports — now shared with the dispute
+# path, which previously wrote any >=3-times-disputed string (including CIDRs
+# like 0.0.0.0/0) straight into false_positives.txt, where update_feed.py
+# parses "/"-bearing lines as networks. A CIDR can never survive this filter.
+_WHITELIST_CIDRS = [
+    # DNS resolvers
+    "1.0.0.0/24",       # Cloudflare DNS
+    "1.1.1.0/24",       # Cloudflare DNS
+    "8.8.8.0/24",       # Google DNS
+    "8.8.4.0/24",       # Google DNS
+    "9.9.9.0/24",       # Quad9
+    "9.9.9.10/32",      # Quad9 ECS
+    "149.112.112.0/24", # Quad9
+    "208.67.222.0/24",  # OpenDNS
+    "208.67.220.0/24",  # OpenDNS
+    "4.4.4.4/32",       # Level3 DNS
+    "4.2.2.0/24",       # Level3 DNS
+    "94.140.14.0/24",   # AdGuard DNS
+    "94.140.15.0/24",   # AdGuard DNS
+    # Cloudflare CDN
+    "104.16.0.0/13",
+    "104.24.0.0/14",
+    "172.64.0.0/13",
+    "162.158.0.0/15",
+    "198.41.128.0/17",
+    "197.234.240.0/22",
+    "190.93.240.0/20",
+    "188.114.96.0/20",
+    "185.221.0.0/22",
+    # Fastly CDN
+    "23.235.32.0/20",
+    "43.249.72.0/22",
+    "103.244.50.0/24",
+    "103.245.222.0/23",
+    "103.245.224.0/24",
+    "104.156.80.0/20",
+    "140.248.64.0/18",
+    "140.248.128.0/17",
+    "150.101.128.0/17",
+    "151.101.0.0/16",
+    "157.52.64.0/18",
+    "167.82.0.0/17",
+    "167.82.128.0/20",
+    "167.82.160.0/20",
+    "167.82.224.0/20",
+    "172.111.64.0/18",
+    "185.31.16.0/22",
+    "199.27.72.0/21",
+    "199.232.0.0/16",
+    # AWS CloudFront
+    "13.32.0.0/15",
+    "13.35.0.0/16",
+    "52.46.0.0/18",
+    "52.84.0.0/15",
+    "54.182.0.0/16",
+    "54.192.0.0/16",
+    "54.230.0.0/16",
+    "54.239.128.0/18",
+    "54.239.192.0/19",
+    "64.252.64.0/18",
+    "64.252.128.0/18",
+    "70.132.0.0/18",
+    "71.152.0.0/17",
+    "99.84.0.0/16",
+    "204.246.164.0/22",
+    "204.246.168.0/22",
+    "204.246.174.0/23",
+    "204.246.176.0/20",
+    "205.251.192.0/19",
+    "205.251.249.0/24",
+    "205.251.250.0/23",
+    "205.251.252.0/23",
+    "205.251.254.0/24",
+    "216.137.32.0/19",
+    # Azure (main ranges — full list at aka.ms/azureipranges)
+    "13.64.0.0/11",
+    "13.96.0.0/13",
+    "13.104.0.0/14",
+    "20.36.0.0/14",
+    "20.40.0.0/13",
+    "20.48.0.0/12",
+    "40.64.0.0/10",
+    "40.74.0.0/15",
+    "40.76.0.0/14",
+    "40.80.0.0/12",
+    "40.96.0.0/12",
+    "40.112.0.0/13",
+    "40.120.0.0/14",
+    "40.124.0.0/16",
+    "40.125.0.0/17",
+    # GCP
+    "34.0.0.0/9",
+    "34.128.0.0/10",
+    "35.184.0.0/13",
+    "35.192.0.0/14",
+    "35.196.0.0/15",
+    "35.198.0.0/16",
+    "35.199.0.0/17",
+    "35.199.128.0/18",
+    "35.200.0.0/13",
+    "35.208.0.0/12",
+    "35.224.0.0/12",
+    "35.240.0.0/13",
+    # Akamai
+    "23.32.0.0/11",
+    "23.64.0.0/14",
+    "23.72.0.0/13",
+    "104.64.0.0/10",
+    "184.24.0.0/13",
+    "184.50.0.0/15",
+    "184.84.0.0/14",
+    # User manual FP
+    "192.195.233.204/32",
+]
+
+_PARSED_WHITELIST = [ipaddress.ip_network(cidr) for cidr in _WHITELIST_CIDRS]
+
+
+def is_valid_public_ip(ip_str: str) -> bool:
+    parts = ip_str.split(".")
+    if len(parts) != 4:
+        return False
+    try:
+        ip_obj = ipaddress.IPv4Address(ip_str)
+        if (ip_obj.is_private or
+            ip_obj.is_multicast or
+            ip_obj.is_loopback or
+            ip_obj.is_link_local or
+            ip_obj.is_reserved or
+            ip_obj.is_unspecified):
+            return False
+        for net in _PARSED_WHITELIST:
+            if ip_obj in net:
+                return False
+        return True
+    except Exception:
+        return False
+
+
+def fetch_paginated(table, params):
+    """Loop over Range pages so neither table is silently truncated at the
+    PostgREST 1000-row cap."""
+    url = f"{SUPABASE_URL}/rest/v1/{table}"
+    rows = []
+    start = 0
+    while True:
+        headers = {**HEADERS, "Prefer": "", "Range": f"{start}-{start + PAGE_SIZE - 1}", "Range-Unit": "items"}
+        r = requests.get(url, headers=headers, params=params, timeout=30)
+        r.raise_for_status()
+        page = r.json()
+        rows.extend(page)
+        if len(page) < PAGE_SIZE:
+            return rows
+        start += PAGE_SIZE
+
 
 def fetch_unprocessed_reports():
     """Fetch all reports where processed_at IS NULL (new reports)."""
-    url = f"{SUPABASE_URL}/rest/v1/reported_ips"
-    params = {
+    return fetch_paginated("reported_ips", {
         "select": "id,ip,category,comment,created_at",
         "processed_at": "is.null",
         "order": "created_at.asc",
-    }
-
-    r = requests.get(url, headers={**HEADERS, "Prefer": ""}, params=params, timeout=30)
-    r.raise_for_status()
-    return r.json()
+    })
 
 
 def mark_as_processed(report_ids):
@@ -77,11 +231,11 @@ def mark_as_processed(report_ids):
 
 
 def append_to_custom_iocs(ips):
-    """Append new IPs to custom_iocs.txt (read by update_feed.py)."""
+    """Append new IPs to custom_iocs.txt (read by update_feed.py from PIPELINE_DIR)."""
     if not ips:
         return
 
-    filename = "custom_iocs.txt"
+    filename = os.path.join(PIPELINE_DIR, "custom_iocs.txt")
 
     # Load existing to avoid duplicates
     existing = set()
@@ -136,22 +290,19 @@ def backup_to_json(reports):
 def fetch_false_positives():
     """Fetch all disputes, tally by IP, and save false positives (>= 3 disputes)."""
     log.info("Fetching disputes from Supabase to generate false positives list...")
-    url = f"{SUPABASE_URL}/rest/v1/disputes"
-    params = {
-        "select": "ip"
-    }
     try:
-        r = requests.get(url, headers={**HEADERS, "Prefer": ""}, params=params, timeout=30)
-        r.raise_for_status()
-        disputes = r.json()
-        
+        disputes = fetch_paginated("disputes", {"select": "ip"})
+
         counts = {}
         for d in disputes:
             ip = d.get("ip", "")
             if ip:
                 counts[ip] = counts.get(ip, 0) + 1
-                
-        false_positives = [ip for ip, count in counts.items() if count >= 3]
+
+        # Same public-IPv4 + whitelist gate as the report path: anything that is
+        # not a plain public IPv4 (CIDRs included) can never reach the file that
+        # update_feed.py parses as removal ranges.
+        false_positives = [ip for ip, count in counts.items() if count >= 3 and is_valid_public_ip(ip)]
         
         os.makedirs("ioc/data", exist_ok=True)
         with open("ioc/data/false_positives.txt", "w", encoding="utf-8") as f:
@@ -175,144 +326,15 @@ def main():
     reports = fetch_unprocessed_reports()
     log.info(f"  Found {len(reports)} new reports")
 
+    # Disputes move independently of reports — regenerate the FP list every run,
+    # not only when there are new reports (early return below would starve it).
+    fetch_false_positives()
+
     if not reports:
         log.info("No new community reports. Done!")
         return
 
-    # 2. Extract valid IPs
-    _WHITELIST_CIDRS = [
-        # DNS resolvers
-        "1.0.0.0/24",       # Cloudflare DNS
-        "1.1.1.0/24",       # Cloudflare DNS
-        "8.8.8.0/24",       # Google DNS
-        "8.8.4.0/24",       # Google DNS
-        "9.9.9.0/24",       # Quad9
-        "9.9.9.10/32",      # Quad9 ECS
-        "149.112.112.0/24", # Quad9
-        "208.67.222.0/24",  # OpenDNS
-        "208.67.220.0/24",  # OpenDNS
-        "4.4.4.4/32",       # Level3 DNS
-        "4.2.2.0/24",       # Level3 DNS
-        "94.140.14.0/24",   # AdGuard DNS
-        "94.140.15.0/24",   # AdGuard DNS
-        # Cloudflare CDN
-        "104.16.0.0/13",
-        "104.24.0.0/14",
-        "172.64.0.0/13",
-        "162.158.0.0/15",
-        "198.41.128.0/17",
-        "197.234.240.0/22",
-        "190.93.240.0/20",
-        "188.114.96.0/20",
-        "185.221.0.0/22",
-        # Fastly CDN
-        "23.235.32.0/20",
-        "43.249.72.0/22",
-        "103.244.50.0/24",
-        "103.245.222.0/23",
-        "103.245.224.0/24",
-        "104.156.80.0/20",
-        "140.248.64.0/18",
-        "140.248.128.0/17",
-        "150.101.128.0/17",
-        "151.101.0.0/16",
-        "157.52.64.0/18",
-        "167.82.0.0/17",
-        "167.82.128.0/20",
-        "167.82.160.0/20",
-        "167.82.224.0/20",
-        "172.111.64.0/18",
-        "185.31.16.0/22",
-        "199.27.72.0/21",
-        "199.232.0.0/16",
-        # AWS CloudFront
-        "13.32.0.0/15",
-        "13.35.0.0/16",
-        "52.46.0.0/18",
-        "52.84.0.0/15",
-        "54.182.0.0/16",
-        "54.192.0.0/16",
-        "54.230.0.0/16",
-        "54.239.128.0/18",
-        "54.239.192.0/19",
-        "64.252.64.0/18",
-        "64.252.128.0/18",
-        "70.132.0.0/18",
-        "71.152.0.0/17",
-        "99.84.0.0/16",
-        "204.246.164.0/22",
-        "204.246.168.0/22",
-        "204.246.174.0/23",
-        "204.246.176.0/20",
-        "205.251.192.0/19",
-        "205.251.249.0/24",
-        "205.251.250.0/23",
-        "205.251.252.0/23",
-        "205.251.254.0/24",
-        "216.137.32.0/19",
-        # Azure (main ranges — full list at aka.ms/azureipranges)
-        "13.64.0.0/11",
-        "13.96.0.0/13",
-        "13.104.0.0/14",
-        "20.36.0.0/14",
-        "20.40.0.0/13",
-        "20.48.0.0/12",
-        "40.64.0.0/10",
-        "40.74.0.0/15",
-        "40.76.0.0/14",
-        "40.80.0.0/12",
-        "40.96.0.0/12",
-        "40.112.0.0/13",
-        "40.120.0.0/14",
-        "40.124.0.0/16",
-        "40.125.0.0/17",
-        # GCP
-        "34.0.0.0/9",
-        "34.128.0.0/10",
-        "35.184.0.0/13",
-        "35.192.0.0/14",
-        "35.196.0.0/15",
-        "35.198.0.0/16",
-        "35.199.0.0/17",
-        "35.199.128.0/18",
-        "35.200.0.0/13",
-        "35.208.0.0/12",
-        "35.224.0.0/12",
-        "35.240.0.0/13",
-        # Akamai
-        "23.32.0.0/11",
-        "23.64.0.0/14",
-        "23.72.0.0/13",
-        "104.64.0.0/10",
-        "184.24.0.0/13",
-        "184.50.0.0/15",
-        "184.84.0.0/14",
-        # User manual FP
-        "192.195.233.204/32",
-    ]
-
-    parsed_whitelist = [ipaddress.ip_network(cidr) for cidr in _WHITELIST_CIDRS]
-
-    def is_valid_public_ip(ip_str: str) -> bool:
-        parts = ip_str.split('.')
-        if len(parts) != 4:
-            return False
-        try:
-            ip_obj = ipaddress.IPv4Address(ip_str)
-            if (ip_obj.is_private or 
-                ip_obj.is_multicast or 
-                ip_obj.is_loopback or 
-                ip_obj.is_link_local or 
-                ip_obj.is_reserved or 
-                ip_obj.is_unspecified):
-                return False
-            for net in parsed_whitelist:
-                if ip_obj in net:
-                    return False
-            return True
-        except Exception:
-            return False
-
+    # 2. Extract valid IPs (shared module-level gate, same rules for disputes)
     valid_ips = []
     for report in reports:
         ip = report.get("ip", "").strip()
@@ -331,13 +353,12 @@ def main():
     log.info("Backing up reports to ioc/data/community_reports.json...")
     backup_to_json(reports)
 
-    # 5. Mark as processed in Supabase
+    # 5. Mark as processed in Supabase (chunked — an in.() filter with 1000s of
+    #    ids blows past the URL length limit)
     log.info("Marking reports as processed in Supabase...")
     report_ids = [r["id"] for r in reports]
-    mark_as_processed(report_ids)
-
-    # 6. Fetch disputes and generate false positives list
-    fetch_false_positives()
+    for i in range(0, len(report_ids), 500):
+        mark_as_processed(report_ids[i:i + 500])
 
     log.info(f"✓ Done! {len(valid_ips)} community IPs will be merged in next feed update.")
 

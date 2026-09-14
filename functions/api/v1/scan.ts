@@ -13,7 +13,7 @@ const MAX_BATCH_SIZE = 100
  * validation failures come back as status:"error" entries so callers still get
  * one result per submitted indicator.
  */
-async function handleBatchScan(request: Request) {
+async function handleBatchScan(request: Request, env: any, ctx: any) {
   let body: any
   try {
     body = await request.json()
@@ -27,6 +27,21 @@ async function handleBatchScan(request: Request) {
   }
   if (indicators.length > MAX_BATCH_SIZE) {
     return json({ error: `Too many indicators (max ${MAX_BATCH_SIZE} per request)` }, 400)
+  }
+
+  // Charge the batch per item, not per request: the middleware already billed
+  // 1 unit against context.data.rlKey, so top the bucket up by items-1. Without
+  // this, 100 sequential DB-touching lookups cost the same as 1 single-IP GET.
+  const rlKey: string | undefined = ctx?.data?.rlKey
+  if (rlKey && env.IOC_CACHE && indicators.length > 1) {
+    try {
+      const kv = env.IOC_CACHE
+      const cur = await kv.get(rlKey)
+      const count = cur ? parseInt(cur, 10) : 1
+      await kv.put(rlKey, (count + indicators.length - 1).toString(), { expirationTtl: 86400 })
+    } catch (err) {
+      console.error('batch rate top-up failed:', err)
+    }
   }
 
   const results: any[] = []
@@ -77,7 +92,7 @@ export const onRequest = async (context: any) => {
 
   if (request.method === 'POST') {
     try {
-      return await handleBatchScan(request)
+      return await handleBatchScan(request, context.env, context)
     } catch (err: any) {
       console.error('POST /api/v1/scan failed:', err?.message || err);
       return json({ error: 'Failed to process request' }, 500)
