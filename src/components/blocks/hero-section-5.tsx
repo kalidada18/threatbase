@@ -69,7 +69,7 @@ export function HeroSection({ scanInput, setScanInput, handleScan, isScanning, s
   const contentOpacity = useTransform(scrollYProgress, [0, 0.75], [1, 0])
   const reducedMotion = useReducedMotion()
 
-  // Sonar arrival beat: ScanPulse draws the rings going OUT while scanning;
+  // Sonar arrival beat: the scan's ghost widget draws the "going OUT" side;
   // this is the echo coming BACK — one shot off the Hunt button the moment a
   // verdict lands, tinted by the verdict itself. No scan, no ping: every
   // pulse on this page corresponds to a real event.
