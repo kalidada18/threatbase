@@ -114,23 +114,16 @@ export default function App() {
   const [showReport, setShowReport] = useState(false)
   const prevPathRef = useRef<string>(location.pathname)
 
-  // Sign-in verification: the Cloudflare-style interstitial guards AUTH
-  // attempts only — browsing and IOC searches never see it. Verified once per
-  // tab (sessionStorage) or locally; each sign-in attempt awaits the gate.
+  // Boot verification: the Cloudflare-style interstitial guards initial site
+  // load once per tab (sessionStorage) or locally; it was live before cbb7d29
+  // demoted it to sign-in-only, and is restored here.
   const [verified, setVerified] = useState(() => {
     const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     return isLocal || sessionStorage.getItem('human_verified') === 'true'
   })
-  const [pendingVerify, setPendingVerify] = useState<(() => void) | null>(null)
-  const ensureVerified = useCallback((): Promise<void> => {
-    if (verified) return Promise.resolve()
-    return new Promise<void>((resolve) => setPendingVerify(() => resolve))
-  }, [verified])
   const completeVerify = () => {
     sessionStorage.setItem('human_verified', 'true')
     setVerified(true)
-    pendingVerify?.()
-    setPendingVerify(null)
   }
 
   // Toast state
@@ -277,11 +270,13 @@ export default function App() {
     }
   }, [location])
 
+  // Boot gate: nothing renders until the interstitial clears. Sign-in is
+  // therefore covered too — the auth UI only exists behind verification.
+  if (!verified) return <InitialVerification onSuccess={completeVerify} />
+
   return (
     <MotionConfig reducedMotion="user">
-    <AuthProvider ensureVerified={ensureVerified}>
-      {/* Sign-in gate: overlays the live site, never blocks browsing/search. */}
-      {pendingVerify && <InitialVerification onSuccess={completeVerify} />}
+    <AuthProvider>
       <Navbar />
 
       <AnimatePresence mode="wait" initial={false}>
