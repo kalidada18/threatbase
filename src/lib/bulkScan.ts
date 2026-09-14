@@ -143,6 +143,11 @@ export async function runBulkScan(
     onRow?.(last)
     if (results.length % 25 === 0 || results.length === rows.length) {
       onProgress?.(results.length, rows.length)
+      // Once the feed is cached each scan is pure CPU behind a resolved
+      // await, which stays in the microtask queue and starves painting.
+      // A real macrotask yield every 25 rows lets the ledger actually
+      // stream and Stop stay responsive.
+      await new Promise((r) => setTimeout(r, 0))
     }
   }
 
