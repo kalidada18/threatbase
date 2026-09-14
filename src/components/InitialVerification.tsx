@@ -1,14 +1,18 @@
 import React from 'react'
-import { VerifyGhost } from './ui/verify-ghost'
+import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile'
+import { TURNSTILE_SITE_KEY } from '@/lib/turnstile'
 
 interface InitialVerificationProps {
-  onSuccess: (token: string) => void
+  onSuccess: () => void
 }
 
-/** Cloudflare "Performing security verification" interstitial — the abuseipdb
- *  look, rebuilt 1:1 with Threatbase branding: no-entry spot swapped for the
- *  logo, hostname headline, ghost Turnstile checkbox (click → Verifying… →
- *  green check → site opens), Ray-ID footer. Visual gate only. */
+/** Cloudflare "Performing security verification" interstitial — real Turnstile.
+ *
+ *  A managed widget solves silently for humans and blocks scripted clients;
+ *  on solve we redeem the single-use token at /api/turnstile-verify (same
+ *  action the login gate binds to, same server-side siteverify check), and
+ *  only then does the parent open the site. An expired or rejected token is
+ *  reset and re-minted — the gate can't be walked around. */
 export default function InitialVerification({ onSuccess }: InitialVerificationProps) {
   // Stable Ray ID for the lifetime of the page (Cloudflare's are 16 hex chars).
   const rayId = React.useMemo(
@@ -17,25 +21,29 @@ export default function InitialVerification({ onSuccess }: InitialVerificationPr
   )
   const host = window.location.hostname || 'threatbase.qzz.io'
 
-  // Widget lifecycle: idle checkbox → verifying spinner → success check →
-  // "waiting for host to respond" → open. The waiting beat is what sells it:
-  // real Cloudflare interstitials pause there while the origin answers.
-  const [state, setState] = React.useState<'idle' | 'verifying' | 'done' | 'waiting'>('idle')
-  const verify = () => {
-    if (state !== 'idle') return
-    setState('verifying')
-    setTimeout(() => setState('done'), 1700)
-  }
-  React.useEffect(() => {
-    if (state === 'done') {
-      const t = setTimeout(() => setState('waiting'), 900)
-      return () => clearTimeout(t)
+  const widgetRef = React.useRef<TurnstileInstance>(null)
+  const redeeming = React.useRef(false)
+  const [error, setError] = React.useState('')
+
+  const redeem = async (token: string) => {
+    if (redeeming.current) return
+    redeeming.current = true
+    setError('')
+    try {
+      const res = await fetch(`${import.meta.env.BASE_URL}api/turnstile-verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ turnstileToken: token }),
+      })
+      if (!res.ok) throw new Error()
+      onSuccess()
+    } catch {
+      // Tokens are single-use and server-side checks fail closed: re-mint.
+      redeeming.current = false
+      setError('Security check failed. Please try again.')
+      widgetRef.current?.reset()
     }
-    if (state !== 'waiting') return
-    // 2.4s of "origin is responding" before the site opens.
-    const t = setTimeout(() => onSuccess('interstitial'), 2400)
-    return () => clearTimeout(t)
-  }, [state, onSuccess])
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center bg-black font-sans text-white">
@@ -51,24 +59,26 @@ export default function InitialVerification({ onSuccess }: InitialVerificationPr
           <h1 className="text-4xl font-bold tracking-tight md:text-[2.6rem]">{host}</h1>
         </div>
 
-        <h2 className="mb-3 text-2xl font-bold">
-          {state === 'waiting' ? `Waiting for ${host} to respond…` : 'Performing security verification'}
-        </h2>
+        <h2 className="mb-3 text-2xl font-bold">Performing security verification</h2>
 
         <p className="mb-10 text-[15px] leading-7 text-[#a3a3a3]">
-          {state === 'waiting' ? (
-            'The security check passed. This page is displayed while the website loads.'
-          ) : (
-            <>
-              This website uses a security service to protect against malicious bots. This page is
-              displayed while the website verifies you are not a bot.
-            </>
-          )}
+          This website uses a security service to protect against malicious bots. This page is
+          displayed while the website verifies you are not a bot.
         </p>
 
-        {/* Ghost challenge widget — click it and the real challenge's state
-            sequence plays out, then the site opens. */}
-        <VerifyGhost state={state === 'waiting' ? 'done' : state} onVerify={verify} />
+        {/* Real managed widget: auto-passes humans, stops scripts. */}
+        <Turnstile
+          ref={widgetRef}
+          siteKey={TURNSTILE_SITE_KEY}
+          options={{ theme: 'dark', action: 'login' }}
+          onSuccess={redeem}
+          onExpire={() => widgetRef.current?.reset()}
+          onError={() => {
+            setError('Security check failed. Please try again.')
+            widgetRef.current?.reset()
+          }}
+        />
+        {error && <p className="mt-3 text-[13px] font-medium text-red-400">{error}</p>}
       </div>
 
       {/* Ray ID footer, same lines as the real page. */}

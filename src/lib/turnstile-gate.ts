@@ -14,8 +14,11 @@
 import { TURNSTILE_SITE_KEY } from './turnstile'
 
 const SCRIPT_SRC = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'
-// action strings are 1-32 chars of [A-Za-z0-9_-].
-const LOGIN_ACTION = 'login'
+// action strings are 1-32 chars of [A-Za-z0-9_-]. The verify endpoint binds
+// to this exact string; the boot interstitial reuses it (both mean "browser
+// passed a challenge on our surface" — the label exists to keep /report
+// tokens from being redeemable here).
+export const LOGIN_ACTION = 'login'
 
 let scriptPromise: Promise<any> | null = null
 
