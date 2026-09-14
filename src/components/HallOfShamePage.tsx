@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, useReducedMotion } from 'framer-motion'
 import IsoPageShell from './layout/IsoPageShell'
-import { IocLink } from './investigate/IocLink'
 import { useSEO } from '@/useSEO'
 import { getBaseUrl, fmt, feedPath } from '@/utils'
 
@@ -151,7 +150,6 @@ export default function HallOfShamePage() {
                     {isStale(e) && <span className="hidden md:inline font-mono text-[10px] uppercase text-slate-600 border border-white/10 rounded-full px-2 py-0.5 shrink-0">stale</span>}
                     <span className="font-mono text-xs text-red-400/90 tabular-nums shrink-0">{e.feeds}<span className="text-slate-600 lowercase font-sans"> feeds</span></span>
                   </Link>
-                  <IocLink type="ipv4" value={e.ip} className="shrink-0 pr-1 opacity-0 focus:opacity-100 group-hover:opacity-100 transition-opacity">→ investigate</IocLink>
                 </li>
               ))}
             </ol>

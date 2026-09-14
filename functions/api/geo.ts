@@ -9,8 +9,7 @@
  * Server-side we can ask a provider with better city coverage first and fall
  * back to GeoJS when it declines, then hand the client one flat shape either
  * way. A day of edge cache means a popular IP costs one upstream call, not one
- * per visitor. The provider chain itself lives in `_net.ts` (geoLookup) so
- * /api/investigate can reuse it without a self-subrequest.
+ * per visitor. The provider chain itself lives in `_net.ts` (geoLookup).
  *
  * GET /api/geo?ip=<ipv4|ipv6>  ->  { ip, country, country_code, city, region,
  *                                    isp, asn, source }

@@ -7,8 +7,7 @@
  * CSP applies to redirect targets too, and that set is unbounded for domains,
  * so no allowlist can cover it. Server-side there is no CSP and no CORS, and
  * the edge cache means repeat scans of the same indicator cost nothing. The
- * fetch itself lives in `_net.ts` (rdapLookup) so /api/investigate can reuse
- * it without a self-subrequest.
+ * fetch itself lives in `_net.ts` (rdapLookup).
  *
  * GET /api/rdap?q=<ip|domain>[&kind=domain]
  * 404 means "not in the registry" (or an upstream error), which the UI renders

@@ -1,7 +1,7 @@
 /**
  * Shared upstream helpers for Pages Functions.
  *
- * Lifted out of geo.ts / rdap.ts so /api/investigate can call them directly —
+ * Lifted out of geo.ts / rdap.ts so both can call them directly —
  * a Pages Function cannot subrequest its own routes (Workers blocks the
  * self-loop), and the alternative was duplicating the provider chains.
  * `_`-prefixed => un-routed. Behavior identical to the inline versions.

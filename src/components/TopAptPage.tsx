@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import IsoPageShell from './layout/IsoPageShell'
-import { IocLink } from './investigate/IocLink'
-import { formatAgo } from './investigate/formatRelative'
 import { useSEO } from '@/useSEO'
 import { getBaseUrl, feedPath } from '@/utils'
 
@@ -22,8 +20,18 @@ type Actor = {
   campaigns: Campaign[]
 }
 
-/** "2026-09-02T14:05:00" -> "2d ago" — shared clamp lives in investigate/formatRelative. */
-const ago = formatAgo
+/** "2026-09-02T14:05:00" -> "2d ago". Never shows a future date as "0m ago";
+ *  clamps to "just now". '' on bad/missing input. */
+function ago(iso: string | null | undefined): string {
+  if (!iso) return ''
+  const then = new Date(iso).getTime()
+  if (Number.isNaN(then)) return ''
+  const mins = Math.floor((Date.now() - then) / 60000)
+  if (mins <= 0) return 'just now'
+  if (mins < 60) return `${mins}m ago`
+  if (mins < 24 * 60) return `${Math.floor(mins / 60)}h ago`
+  return `${Math.floor(mins / (24 * 60))}d ago`
+}
 
 const Chip = ({ children, tone = 'neutral' }: { children: ReactNode; tone?: 'neutral' | 'red' }) => (
   <span
@@ -68,9 +76,8 @@ function SectionLabel({ children }: { children: ReactNode }) {
   return <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-2">{children}</div>
 }
 
-/** Click-to-copy list of IOC values (IPs/domains/hashes). Value text pivots
- *  into Deep Investigation; the copy glyph is a sibling button (button-in-link
- *  is invalid HTML). Native clipboard, no deps. */
+/** Click-to-copy list of IOC values (IPs/domains/hashes). The copy glyph is a
+ *  sibling button (button-in-span is invalid HTML). Native clipboard, no deps. */
 function IocList({ label, values }: { label: string; values: string[] }) {
   const [copied, setCopied] = useState<string | null>(null)
   if (!values.length) return null
@@ -80,7 +87,7 @@ function IocList({ label, values }: { label: string; values: string[] }) {
       <ul className="space-y-1 list-none">
         {values.map((v) => (
           <li key={v} className="flex items-baseline gap-2 min-w-0">
-            <IocLink value={v} className="min-w-0 truncate" />
+            <span className="font-mono text-[11px] text-slate-400 min-w-0 truncate">{v}</span>
             <button
               onClick={() => {
                 navigator.clipboard?.writeText(v)
