@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-09-14T10:20:36+00:00",
+ "generated_at": "2026-09-14T18:21:43+00:00",
  "source": "AlienVault OTX pulse search",
  "note": "Activity = threat-intel pulses (campaign reports) mentioning the group in the window. Vendor/community reporting \u2014 follow each link to its source. IOCs are community-reported pulse indicators, not Threatbase attribution. TTPs from MITRE ATT&CK. Per-group summaries are AI-generated from the pulse reports.",
  "actors": [
@@ -129,7 +129,103 @@
      "db491181ece3f319de6567ab6f6daa90c6879911cd890155e6b7d8cc7a1a8c8e"
     ]
    },
-   "summary": "The user wants a 2-3 sentence summary of Sandworm's activity based ONLY on the provided reports.\nThe reports mention:\n1. Cisco FMC CVE exploitation by three threat clusters (UAT-11988, UAT-11823, UAT-12197) - but the report doesn't explicitly attribute these clusters to Sandworm in the text provided, though the prompt says \"Threat group: Sandworm\". The first report mentions \"Qilin & Cyclops Blink Exploitation\". Cyclops Blink is historically associated with Sandworm. The report says \"Cisco Talos reports three threat clusters... actively exploiting...\". It doesn't explicitly name Sandworm in the description text provided, but the prompt context says \"Threat group: Sandworm\".\n2. Second report: "
+   "summary": "One report describes Sandworm using fake job interviews to deliver a trojanized WireGuard VPN installer targeting IT professionals, per Ukrainian CERT indicators. Separate Cisco Talos reporting notes active exploitation of two critical Cisco Secure Firewall Management Center vulnerabilities (CVE-2026-20079 and CVE-2026-20316) by tracked threat clusters, with one report title referencing Cyclops Blink malware historically tied to this group. No specific malware families or targeted countries are detailed for Sandworm in the provided summaries beyond the WireGuard trojan and the Cisco FMC flaws."
+  },
+  {
+   "name": "Gamaredon",
+   "aka": [
+    "Primitive Bear",
+    "ShallowBurrow"
+   ],
+   "sponsor": "Russia (GRU)",
+   "pulses_24h": 1,
+   "pulses_7d": 2,
+   "malware": [],
+   "targets": [],
+   "campaigns": [
+    {
+     "title": "Gamaredon",
+     "url": "https://otx.alienvault.com/pulse/6aa7cebb0e2a0c3b46af74a9",
+     "modified": "2026-09-14T10:38:51.042000",
+     "last_24h": true
+    },
+    {
+     "title": "Gamaredon",
+     "url": "https://otx.alienvault.com/pulse/6aa29d804176b9cd1fc5a768",
+     "modified": "2026-09-10T12:07:28.542000",
+     "last_24h": false
+    }
+   ],
+   "ttps": [
+    "Acquire Infrastructure",
+    "Application Layer Protocol",
+    "Automated Collection",
+    "Automated Exfiltration",
+    "Boot or Logon Autostart Execution",
+    "Command and Scripting Interpreter",
+    "Data Obfuscation",
+    "Data from Local System",
+    "Data from Network Shared Drive",
+    "Data from Removable Media",
+    "Defacement",
+    "Deobfuscate/Decode Files or Information",
+    "Develop Capabilities",
+    "Disable or Modify Tools",
+    "Disk Wipe",
+    "Dynamic Resolution",
+    "Execution Guardrails",
+    "Exfiltration Over C2 Channel",
+    "File and Directory Discovery",
+    "Hide Artifacts",
+    "Indicator Removal",
+    "Ingress Tool Transfer",
+    "Inter-Process Communication",
+    "Internal Spearphishing",
+    "Masquerading",
+    "Modify Registry",
+    "Native API",
+    "Non-Application Layer Protocol",
+    "Non-Standard Port",
+    "Obfuscated Files or Information",
+    "Obtain Capabilities",
+    "Office Application Startup",
+    "Peripheral Device Discovery",
+    "Phishing",
+    "Process Discovery",
+    "Process Injection",
+    "Proxy",
+    "Query Registry",
+    "Reflective Code Loading",
+    "Remote Services",
+    "Replication Through Removable Media",
+    "Scheduled Task/Job",
+    "Screen Capture",
+    "Software Discovery",
+    "Stage Capabilities",
+    "System Binary Proxy Execution",
+    "System Information Discovery",
+    "System Network Configuration Discovery",
+    "System Owner/User Discovery",
+    "Taint Shared Content",
+    "Template Injection",
+    "User Execution",
+    "Virtualization/Sandbox Evasion",
+    "Web Service",
+    "Windows Management Instrumentation"
+   ],
+   "iocs": {
+    "ips": [
+     "64.176.67.139",
+     "172.86.83.183"
+    ],
+    "domains": [
+     "bloodywolves.ddns.net",
+     "domains.servehttp.com",
+     "worker.3utilities.com"
+    ],
+    "hashes": []
+   },
+   "summary": "Reporting indicates that Gamaredon indicators were identified through pivoting on referenced pulses, though no specific malware families, targeted countries, or campaign details were disclosed in the available summaries. The activity appears limited to the sharing of technical indicators derived from previous intelligence."
   },
   {
    "name": "Mustang Panda",
@@ -232,7 +328,7 @@
      "cd303043270578434a269ba13a60032b"
     ]
    },
-   "summary": "No specific campaigns, malware families, or targeted countries were reported for Mustang Panda in the last seven days. The only entry listed is the group's name without an accompanying description or details. Consequently, no observable activity can be summarized from the provided reports."
+   "summary": "Over the last seven days, the only entry for Mustang Panda is a report title with no accompanying description, and no malware families or targeted countries were reported. This indicates a lack of detailed, public campaign intelligence for the group during this specific weekly window."
   },
   {
    "name": "Kimsuky",
@@ -243,7 +339,7 @@
    ],
    "sponsor": "North Korea",
    "pulses_24h": 0,
-   "pulses_7d": 6,
+   "pulses_7d": 5,
    "malware": [],
    "targets": [],
    "campaigns": [
@@ -275,12 +371,6 @@
      "title": "Kimsuky Uses the AI Agent 'opencode' to Create Decoys as Its GitHub PAT-Based LNK Attacks Evolve",
      "url": "https://otx.alienvault.com/pulse/6a9ff5d14ec39add3c2490d4",
      "modified": "2026-09-08T11:47:29.229000",
-     "last_24h": false
-    },
-    {
-     "title": "Kimsuky Uses the AI Agent 'opencode' to Create Decoys as Its GitHub PAT-Based LNK Attacks Evolve",
-     "url": "https://otx.alienvault.com/pulse/6a9e70fd7eb74853a795cc57",
-     "modified": "2026-09-07T15:41:31.543000",
      "last_24h": false
     }
    ],
@@ -395,7 +485,7 @@
      "30d5f17d5e3f85be18220a7cab0b9fff"
     ]
    },
-   "summary": "Kimsuky has been integrating artificial intelligence into its operations, reportedly running local large language models such as Ollama, GPT4All, and Msty and using the AI agent \"opencode\" to generate decoy documents. The group continues GitHub-centric campaigns \u2014 dubbed Operation GitPower \u2014 that deliver malicious LNK files disguised as financial or business documents and use GitHub Personal Access Tokens for command-and-control, with AsyncRAT observed as a final payload. Thirteen LNK variants were collected in mid-August 2026, indicating ongoing refinement of this technique."
+   "summary": "Recent reporting indicates Kimsuky is integrating artificial intelligence into its operations, including the use of local large language models such as Ollama, GPT4All, and Msty to generate lure documents and decoys. The group\u2019s GitHub and GitLab-based activity has evolved to incorporate GitHub Personal Access Tokens for command-and-control in LNK attacks and to deploy AsyncRAT. Analysts assess this as an ongoing evolution of existing tactics rather than a new campaign."
   },
   {
    "name": "Lazarus Group",
@@ -533,7 +623,7 @@
      "2b4987c07a3d9a9a5d1a9bf4efa3d1903e775090b611710edafdc92874265ca8"
     ]
    },
-   "summary": "Lazarus Group has been observed exploiting a Windows AFD.sys zero-day vulnerability to achieve SYSTEM-level privileges and deploy the FudModule rootkit. Concurrent reporting details an ongoing infiltration operation where the group places IT workers into target organizations via a fake DeFi startup, utilizing forged documentation, shipped hardware, and AI-assisted deception. These activities indicate parallel tracks of high-value vulnerability exploitation and long-term social engineering campaigns."
+   "summary": "Lazarus Group has been observed exploiting a Windows AFD.sys zero-day vulnerability to achieve SYSTEM-level access and deploy the FudModule rootkit. Separate reporting details an ongoing infiltration operation where the group places IT workers into jobs at Western companies through a fake DeFi startup, involving forged documents and AI-assisted deception."
   },
   {
    "name": "Transparent Tribe",
@@ -604,96 +694,7 @@
      "74d347785dc47f8cda3876826cdd3fb3935ac55dc8e9e0c0f96d5ef4e00089a2"
     ]
    },
-   "summary": "Recent reporting describes a previously undocumented backdoor dubbed PATCHCORD targeting Afghan telecom providers and South Asian critical infrastructure, delivered via fake VPN installers. Separate analysis of Transparent Tribe (APT-C-56) details two related attack chains using shared infrastructure, where victims opened disguised image or archive files containing LNK shortcuts that executed hidden BAT scripts to load a final payload."
-  },
-  {
-   "name": "Gamaredon",
-   "aka": [
-    "Primitive Bear",
-    "ShallowBurrow"
-   ],
-   "sponsor": "Russia (GRU)",
-   "pulses_24h": 0,
-   "pulses_7d": 1,
-   "malware": [],
-   "targets": [],
-   "campaigns": [
-    {
-     "title": "Gamaredon",
-     "url": "https://otx.alienvault.com/pulse/6aa29d804176b9cd1fc5a768",
-     "modified": "2026-09-10T12:07:28.542000",
-     "last_24h": false
-    }
-   ],
-   "ttps": [
-    "Acquire Infrastructure",
-    "Application Layer Protocol",
-    "Automated Collection",
-    "Automated Exfiltration",
-    "Boot or Logon Autostart Execution",
-    "Command and Scripting Interpreter",
-    "Data Obfuscation",
-    "Data from Local System",
-    "Data from Network Shared Drive",
-    "Data from Removable Media",
-    "Defacement",
-    "Deobfuscate/Decode Files or Information",
-    "Develop Capabilities",
-    "Disable or Modify Tools",
-    "Disk Wipe",
-    "Dynamic Resolution",
-    "Execution Guardrails",
-    "Exfiltration Over C2 Channel",
-    "File and Directory Discovery",
-    "Hide Artifacts",
-    "Indicator Removal",
-    "Ingress Tool Transfer",
-    "Inter-Process Communication",
-    "Internal Spearphishing",
-    "Masquerading",
-    "Modify Registry",
-    "Native API",
-    "Non-Application Layer Protocol",
-    "Non-Standard Port",
-    "Obfuscated Files or Information",
-    "Obtain Capabilities",
-    "Office Application Startup",
-    "Peripheral Device Discovery",
-    "Phishing",
-    "Process Discovery",
-    "Process Injection",
-    "Proxy",
-    "Query Registry",
-    "Reflective Code Loading",
-    "Remote Services",
-    "Replication Through Removable Media",
-    "Scheduled Task/Job",
-    "Screen Capture",
-    "Software Discovery",
-    "Stage Capabilities",
-    "System Binary Proxy Execution",
-    "System Information Discovery",
-    "System Network Configuration Discovery",
-    "System Owner/User Discovery",
-    "Taint Shared Content",
-    "Template Injection",
-    "User Execution",
-    "Virtualization/Sandbox Evasion",
-    "Web Service",
-    "Windows Management Instrumentation"
-   ],
-   "iocs": {
-    "ips": [
-     "172.86.83.183"
-    ],
-    "domains": [
-     "bloodywolves.ddns.net",
-     "domains.servehttp.com",
-     "worker.3utilities.com"
-    ],
-    "hashes": []
-   },
-   "summary": "Reporting indicates that Gamaredon indicators were identified this week through pivoting on a referenced pulse. No specific malware families, targeted countries, or campaign details were reported in the provided intelligence."
+   "summary": "Reports indicate Transparent Tribe deployed a new custom backdoor dubbed PATCHCORD against Afghan telecom providers and South Asian critical infrastructure, delivered through fake VPN installers. In related activity, the group executed multistage attacks using LNK shortcuts hidden in disguised images or archives to drop BAT scripts that load final payloads. Both campaigns reportedly leverage shared infrastructure and sector-specific social engineering lures."
   },
   {
    "name": "APT41",
@@ -822,7 +823,7 @@
     ],
     "hashes": []
    },
-   "summary": "No new malware families or targeted countries were reported for APT41 this week. The sole campaign report indicates that indicators associated with the group were identified by pivoting on a referenced pulse. No specific intrusion activity, victims, or tooling details are described in the current reporting."
+   "summary": "Reporting this week consists of a single entry noting that APT41 indicators were identified by pivoting on a referenced pulse. No specific malware families, targeted countries, or campaign details are described in the provided reports. The activity appears limited to indicator sharing or historical analysis rather than a new intrusion campaign."
   }
  ]
 }
