@@ -6,6 +6,7 @@ import {
 import { Link } from 'react-router-dom'
 import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile'
 import { AuthComponent } from '@/components/ui/sign-up'
+import { TURNSTILE_SITE_KEY } from '@/lib/turnstile'
 import supabaseClient from '../supabaseClient'
 import { fmt, timeAgo, DEFAULT_AVATAR, categoryTier, TIER_CHIP } from '../utils'
 import { useAuth } from '../AuthContext'
@@ -20,7 +21,6 @@ import { Label } from "@/components/ui/label"
 
 const REPORT_PAGE_SIZE = 10
 const SUBMIT_COOLDOWN = 15000
-const TURNSTILE_SITE_KEY = '0x4AAAAAADj2T6kY9_5dXRhs'
 
 const THREAT_TAGS = [
   'DNS Compromise',
@@ -506,7 +506,7 @@ export default function ReportIP({ addToast }: any) {
                     onSuccess={(t) => { setTurnstileToken(t); setFieldErrors(p => ({ ...p, turnstile: undefined })) }}
                     onExpire={() => setTurnstileToken('')}
                     onError={() => setTurnstileToken('')}
-                    options={{ theme: 'dark', size: 'flexible' }}
+                    options={{ theme: 'dark', size: 'flexible', action: 'report' }}
                   />
                   {fieldErrors.turnstile && (
                     <p id="turnstile-error" className="mt-2 text-[11px] font-medium tracking-wider text-red-400">{fieldErrors.turnstile}</p>

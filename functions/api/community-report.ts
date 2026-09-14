@@ -2,7 +2,7 @@ import supabaseClient from '../../src/supabaseClient'
 import { createClient } from '@supabase/supabase-js'
 import { SUPABASE_URL } from '../../src/lib/supabaseConfig'
 import { isValidPublicIp, isValidCategory, MAX_COMMENT_LENGTH } from '../../src/lib/apiValidation'
-import { corsHeaders, stripHtml, json } from './_common'
+import { corsHeaders, stripHtml, json, verifyTurnstile, TURNSTILE_HOSTNAMES_DEFAULT } from './_common'
 
 // Web (browser) report endpoint. Unlike /api/v1/report (programmatic, API-key
 // auth), this path is for the website's report form. It enforces three things
@@ -16,24 +16,6 @@ import { corsHeaders, stripHtml, json } from './_common'
 
 export const onRequestOptions = async (context: any) => {
   return new Response(null, { status: 204, headers: corsHeaders(context.request) })
-}
-
-/** Verify a Turnstile token against Cloudflare's siteverify endpoint. */
-async function verifyTurnstile(token: string, ip: string, secret: string): Promise<boolean> {
-  const form = new FormData()
-  form.append('secret', secret)
-  form.append('response', token)
-  if (ip) form.append('remoteip', ip)
-  try {
-    const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-      method: 'POST',
-      body: form,
-    })
-    const data: any = await res.json()
-    return data?.success === true
-  } catch {
-    return false
-  }
 }
 
 const WEB_REPORT_DAILY_LIMIT = 50
@@ -62,11 +44,14 @@ export const onRequestPost = async (context: any) => {
   const { ip, category, comment, turnstileToken } = body ?? {}
 
   // 1. Human verification (server-side). A forged/empty/replayed token fails here.
-  if (typeof turnstileToken !== 'string' || !turnstileToken) {
-    return json({ error: 'Missing human-verification token.' }, 400, request)
-  }
-  const isHuman = await verifyTurnstile(turnstileToken, clientIp, secret)
-  if (!isHuman) {
+  const human = await verifyTurnstile(
+    turnstileToken,
+    clientIp,
+    secret,
+    'report', // the action we render on the widget — rejects off-surface tokens
+    env.TURNSTILE_HOSTNAMES || TURNSTILE_HOSTNAMES_DEFAULT,
+  )
+  if (!human.ok) {
     return json({ error: 'Human verification failed. Please complete the check again.' }, 403, request)
   }
 

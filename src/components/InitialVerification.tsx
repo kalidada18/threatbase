@@ -17,16 +17,23 @@ export default function InitialVerification({ onSuccess }: InitialVerificationPr
   )
   const host = window.location.hostname || 'threatbase.qzz.io'
 
-  // Widget lifecycle: idle checkbox → verifying spinner → success check → open.
-  const [state, setState] = React.useState<'idle' | 'verifying' | 'done'>('idle')
+  // Widget lifecycle: idle checkbox → verifying spinner → success check →
+  // "waiting for host to respond" → open. The waiting beat is what sells it:
+  // real Cloudflare interstitials pause there while the origin answers.
+  const [state, setState] = React.useState<'idle' | 'verifying' | 'done' | 'waiting'>('idle')
   const verify = () => {
     if (state !== 'idle') return
     setState('verifying')
     setTimeout(() => setState('done'), 1700)
   }
   React.useEffect(() => {
-    if (state !== 'done') return
-    const t = setTimeout(() => onSuccess('interstitial'), 900)
+    if (state === 'done') {
+      const t = setTimeout(() => setState('waiting'), 900)
+      return () => clearTimeout(t)
+    }
+    if (state !== 'waiting') return
+    // 2.4s of "origin is responding" before the site opens.
+    const t = setTimeout(() => onSuccess('interstitial'), 2400)
     return () => clearTimeout(t)
   }, [state, onSuccess])
 
@@ -44,16 +51,24 @@ export default function InitialVerification({ onSuccess }: InitialVerificationPr
           <h1 className="text-4xl font-bold tracking-tight md:text-[2.6rem]">{host}</h1>
         </div>
 
-        <h2 className="mb-3 text-2xl font-bold">Performing security verification</h2>
+        <h2 className="mb-3 text-2xl font-bold">
+          {state === 'waiting' ? `Waiting for ${host} to respond…` : 'Performing security verification'}
+        </h2>
 
         <p className="mb-10 text-[15px] leading-7 text-[#a3a3a3]">
-          This website uses a security service to protect against malicious bots. This page is
-          displayed while the website verifies you are not a bot.
+          {state === 'waiting' ? (
+            'The security check passed. This page is displayed while the website loads.'
+          ) : (
+            <>
+              This website uses a security service to protect against malicious bots. This page is
+              displayed while the website verifies you are not a bot.
+            </>
+          )}
         </p>
 
         {/* Ghost challenge widget — click it and the real challenge's state
             sequence plays out, then the site opens. */}
-        <VerifyGhost state={state} onVerify={verify} />
+        <VerifyGhost state={state === 'waiting' ? 'done' : state} onVerify={verify} />
       </div>
 
       {/* Ray ID footer, same lines as the real page. */}

@@ -55,3 +55,56 @@ export const json = (
         : { 'Access-Control-Allow-Origin': ALLOWED_ORIGIN }),
     },
   })
+
+/** Hostnames allowed to mint Turnstile tokens, e.g. 'threatbase.qzz.io'.
+ *  Configure on the Pages project: TURNSTILE_HOSTNAMES (comma-separated).
+ *  Production values must exclude localhost/127.0.0.1 — add them only in .env
+ *  for local `wrangler pages dev`. */
+export const TURNSTILE_HOSTNAMES_DEFAULT = 'threatbase.qzz.io'
+
+/**
+ * Verify a Turnstile token against Cloudflare's siteverify API. The siteverify
+ * call must originate from the backend, never the browser. Tokens are
+ * single-use: a replayed or expired token fails here with invalid-codes
+ * ['timeout-or-duplicate'].
+ *
+ * Pass `expectedAction` (the widget's data-action, e.g. 'login') and an
+ * `allowedHostnames` string (comma-separated) to bind the token to the surface
+ * and site it was minted on; pass '' to skip the respective check.
+ * Secret lives ONLY in env: TURNSTILE_SECRET (set via `wrangler pages secret
+ * put TURNSTILE_SECRET`). Never hardcode or forward it to the client.
+ */
+export async function verifyTurnstile(
+  token: unknown,
+  ip: string,
+  secret: string | undefined,
+  expectedAction = '',
+  allowedHostnames = '',
+): Promise<{ ok: boolean; reason?: string }> {
+  if (!secret) return { ok: false, reason: 'not-configured' }
+  if (typeof token !== 'string' || !token || token.length > 2048) {
+    return { ok: false, reason: 'missing' }
+  }
+  const form = new FormData()
+  form.append('secret', secret)
+  form.append('response', token)
+  if (ip) form.append('remoteip', ip)
+  let data: any
+  try {
+    const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+      method: 'POST',
+      body: form,
+      signal: AbortSignal.timeout(10_000),
+    })
+    data = await res.json()
+  } catch {
+    return { ok: false, reason: 'siteverify-unreachable' }
+  }
+  if (data?.success !== true) return { ok: false, reason: 'invalid' }
+  if (expectedAction && data.action !== expectedAction) return { ok: false, reason: 'wrong-action' }
+  if (allowedHostnames) {
+    const hosts = allowedHostnames.split(',').map((s) => s.trim()).filter(Boolean)
+    if (hosts.length && !hosts.includes(data.hostname)) return { ok: false, reason: 'wrong-hostname' }
+  }
+  return { ok: true }
+}

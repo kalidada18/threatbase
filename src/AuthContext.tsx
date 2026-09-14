@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import supabaseClient from './supabaseClient'
+import { ensureTurnstileLogin } from './lib/turnstile-gate'
 import MfaChallengeModal from './components/MfaChallengeModal'
 
 
@@ -24,12 +25,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({
   children,
-  ensureVerified = () => Promise.resolve(),
 }: {
   children: React.ReactNode
-  /** Resolves once the Cloudflare-style sign-in gate has been cleared (shows
-   *  it if needed). Every sign-in path awaits this before hitting Supabase. */
-  ensureVerified?: () => Promise<void>
 }) {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
@@ -161,7 +158,7 @@ export function AuthProvider({
 
   const signInWithGoogle = async () => {
     if (!supabaseClient) return
-    await ensureVerified()
+    await ensureTurnstileLogin()
     const redirectTo = window.location.origin + import.meta.env.BASE_URL
     const { error } = await supabaseClient.auth.signInWithOAuth({
       provider: 'google',
@@ -174,7 +171,7 @@ export function AuthProvider({
 
   const signInWithGithub = async () => {
     if (!supabaseClient) return
-    await ensureVerified()
+    await ensureTurnstileLogin()
     const redirectTo = window.location.origin + import.meta.env.BASE_URL
     const { error } = await supabaseClient.auth.signInWithOAuth({
       provider: 'github',
@@ -188,7 +185,7 @@ export function AuthProvider({
 
   const signInWithEmail = async (email: string, password: string) => {
     if (!supabaseClient) return
-    await ensureVerified()
+    await ensureTurnstileLogin()
     const { error } = await supabaseClient.auth.signInWithPassword({
       email,
       password,
@@ -198,7 +195,7 @@ export function AuthProvider({
 
   const signUpWithEmail = async (email: string, password: string) => {
     if (!supabaseClient) return
-    await ensureVerified()
+    await ensureTurnstileLogin()
     const { error } = await supabaseClient.auth.signUp({
       email,
       password,
