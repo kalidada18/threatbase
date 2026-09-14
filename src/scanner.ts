@@ -12,7 +12,7 @@ import { IPV4_RE, ipv4ToLong, isStrictIpv6 } from './lib/ipValidation'
 
 type CompareFn = (query: string, line: string) => number
 
-const feedCache: Record<string, { text: string }> = {}
+const feedCache: Record<string, { text: string } | Promise<{ text: string }>> = {}
 const statsCache: Record<string, any> = {}
 
 /**
@@ -42,29 +42,40 @@ async function fetchAndCacheFeedText(
   feedVersion: string | number,
 ): Promise<{ text: string }> {
   const cacheKey = `${filename}?v=${feedVersion}`
-  if (feedCache[cacheKey]) return feedCache[cacheKey]
+  const hit = feedCache[cacheKey]
+  if (hit) return hit
 
-  let text = ''
+  // The cache stores the in-flight promise, not just the settled result: the
+  // pre-fix fill-after-await meant two concurrent first-lookups (bulk mode's
+  // per-chunk domain fetches, or any interleaving) each paid for the whole
+  // ~56 MB feed. The worker below settles — never rejects — because it catches
+  // fetch errors and returns empty text, same as before.
+  const pending = (async (): Promise<{ text: string }> => {
+    let text = ''
 
-  try {
-    const url = filename === 'threatbase-domain.txt'
-      ? `${getDomainUrl()}?v=${feedVersion}`
-      : filename === 'threatbase-hash.txt'
-      ? `${getHashUrl()}?v=${feedVersion}`
-      : `${baseUrl}${feedPath(filename)}?v=${feedVersion}`
-    const r = await fetch(url)
+    try {
+      const url = filename === 'threatbase-domain.txt'
+        ? `${getDomainUrl()}?v=${feedVersion}`
+        : filename === 'threatbase-hash.txt'
+        ? `${getHashUrl()}?v=${feedVersion}`
+        : `${baseUrl}${feedPath(filename)}?v=${feedVersion}`
+      const r = await fetch(url)
 
-    if (r.ok) {
-      text = await r.text()
-    } else {
-      throw new Error(`GitHub Raw fetch error: ${r.status}`)
+      if (r.ok) {
+        text = await r.text()
+      } else {
+        throw new Error(`GitHub Raw fetch error: ${r.status}`)
+      }
+    } catch (e) {
+      console.error(`GitHub Raw fetch failed for ${filename}:`, e)
     }
-  } catch (e) {
-    console.error(`GitHub Raw fetch failed for ${filename}:`, e)
-  }
 
-  feedCache[cacheKey] = { text }
-  return feedCache[cacheKey]
+    const entry = { text }
+    feedCache[cacheKey] = entry
+    return entry
+  })()
+  feedCache[cacheKey] = pending
+  return pending
 }
 
 /**

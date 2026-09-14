@@ -1,4 +1,5 @@
 import { scanIndicatorLogic, classifyIndicator } from '../scanner'
+import { isStrictIpv6 } from './ipValidation'
 import supabaseClient from '../supabaseClient'
 
 /**
@@ -35,11 +36,31 @@ export type BulkRow = {
 export type ParsedBulk = { valid: string[]; invalid: { row: number; text: string }[]; truncated: boolean }
 
 /**
+ * Classify one candidate cell/token as an indicator, or null. Stricter than
+ * classifyIndicator alone, for bulk precision:
+ *  - rejects values containing whitespace (an indicator never has a space;
+ *    this kills prose that URL-regexes as `http://evil.com/path ← note`)
+ *  - requires strict IPv6 (classifyIndicator's loose check turns a timestamp
+ *    cell like `12:34:56` into a bogus "IPv6 Address")
+ *  - rejects leading-zero IPv4 octets (`08.8.8.8`): feeds never list those,
+ *    and they're the ambiguous octal-vs-decimal form
+ */
+function bulkIndicator(raw: string): string | null {
+  const c = classifyIndicator(raw)
+  if (c.type === 'invalid') return null
+  if (/\s/.test(c.ip)) return null
+  if (c.type === 'IPv6 Address' && !isStrictIpv6(c.ip)) return null
+  if (c.type === 'IP Address' && /(^|\.)(0\d|00\d)\./.test(c.ip + '.')) return null
+  return c.ip
+}
+
+/**
  * Collect indicators from already-parsed rows (one array per source row —
- * one cell for plain text, one per Excel column for spreadsheets). A row is
- * valid if ANY cell classifies as an indicator (tolerates header columns and
- * `ip,reported_at` shapes); the first classifiable cell wins, in normalized
- * refanged form (`1.2.3[.]4` → `1.2.3.4`) so dedupe and export stay honest.
+ * one cell for plain text, one per Excel column for spreadsheets). EVERY
+ * classifiable cell/token in a row is taken, so `src_ip,dst_ip` pairs and
+ * prose notes carrying several IOCs are extracted fully; header and date
+ * columns simply don't classify. Values are normalized and refanged
+ * (`1.2.3[.]4` → `1.2.3.4`) so dedupe and export stay honest.
  * Pure sync core so it is testable without the xlsx loader.
  */
 export function collectBulkRows(rows: unknown[][]): ParsedBulk {
@@ -48,30 +69,31 @@ export function collectBulkRows(rows: unknown[][]): ParsedBulk {
   const invalid: ParsedBulk['invalid'] = []
   let truncated = false
 
+  const add = (hit: string) => {
+    if (seen.has(hit)) return
+    seen.add(hit)
+    if (valid.length >= BULK_MAX_ROWS) { truncated = true; return }
+    valid.push(hit)
+  }
+
   for (let i = 0; i < rows.length; i++) {
     const cells = rows[i]
     const preview = cells.map((c) => String(c ?? '').trim()).filter(Boolean)
     if (preview.length === 0) continue
-    let hit: string | null = null
+    let found = false
     for (const cell of preview) {
-      // A cell can hold several space-separated indicators; try the whole
-      // cell first (URLs contain no spaces), then its whitespace tokens.
-      const candidates = cell.includes(' ') ? [cell, ...cell.split(/\s+/)] : [cell]
-      for (const cand of candidates) {
-        const c = classifyIndicator(cand)
-        if (c.type !== 'invalid') { hit = c.ip; break }
+      // Whole cell first; if it doesn't yield, its whitespace-separated
+      // tokens each get a chance (one cell may carry several IOCs).
+      const hits = [bulkIndicator(cell), ...(bulkIndicator(cell) ? [] : cell.split(/\s+/).map(bulkIndicator))]
+      for (const h of hits) {
+        if (h) { add(h); found = true }
       }
-      if (hit) break
     }
-    if (!hit) {
+    if (!found) {
       const line = preview.join(', ')
       invalid.push({ row: i + 1, text: line.length > 60 ? line.slice(0, 57) + '…' : line })
-      continue
     }
-    if (seen.has(hit)) continue
-    seen.add(hit)
-    if (valid.length >= BULK_MAX_ROWS) { truncated = true; break }
-    valid.push(hit)
+    if (truncated) break
   }
   return { valid, invalid, truncated }
 }

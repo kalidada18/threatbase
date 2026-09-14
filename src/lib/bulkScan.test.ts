@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { collectBulkRows, parseBulkText, bulkToCsv, BULK_MAX_ROWS, type BulkRow } from './bulkScan'
 
 describe('collectBulkRows', () => {
-  it('takes the first classifiable cell of each row and keeps row numbers for junk', () => {
+  it('takes classifiable cells and keeps row numbers for junk', () => {
     const p = collectBulkRows([['45.9.148.102'], ['malicious.example.com', '2026-09-01'], ['not', 'a', 'row']])
     expect(p.valid).toEqual(['45.9.148.102', 'malicious.example.com'])
     expect(p.invalid).toEqual([{ row: 3, text: 'not, a, row' }])
@@ -20,14 +20,39 @@ describe('collectBulkRows', () => {
     expect(p.valid).toEqual(['1.2.3.4', 'http://evil.com/x'])
   })
 
-  it('finds an indicator among several space-separated tokens in one cell', () => {
-    const p = collectBulkRows([['seen: 45.9.148.102 on 2026-09-01']])
-    expect(p.valid).toEqual(['45.9.148.102'])
+  it('takes EVERY classifiable cell/token in a row, not just the first', () => {
+    const p = collectBulkRows([['45.9.148.102', '8.8.8.8']])
+    expect(p.valid).toEqual(['45.9.148.102', '8.8.8.8'])
+  })
+
+  it('finds indicators among several space-separated tokens in one cell', () => {
+    const p = collectBulkRows([['seen: 45.9.148.102 and 8.8.8.8 on 2026-09-01']])
+    expect(p.valid).toEqual(['45.9.148.102', '8.8.8.8'])
   })
 
   it('a URL cell wins over its own tokens (no splitting a valid whole cell)', () => {
     const p = collectBulkRows([['http://evil.example.com/payload']])
     expect(p.valid).toEqual(['http://evil.example.com/payload'])
+  })
+
+  it('prose-wrapped URL yields the real URL token only, never a bare host', () => {
+    // The whole cell fails bulkIndicator (whitespace prose), so it falls to
+    // tokens: the URL itself is a genuine IOC and is kept, but 'evil.com' is
+    // never resurrected as a separate (wrongly-typed domain) hit.
+    const p = collectBulkRows([['visited http://evil.com/x ← note']])
+    expect(p.valid).toEqual(['http://evil.com/x'])
+    expect(p.invalid).toEqual([])
+  })
+
+  it('rejects clock times that a loose IPv6 check would swallow', () => {
+    const p = collectBulkRows([['12:34:56']])
+    expect(p.valid).toEqual([])
+    expect(p.invalid).toEqual([{ row: 1, text: '12:34:56' }])
+  })
+
+  it('rejects ambiguous leading-zero IPv4 octets', () => {
+    const p = collectBulkRows([['08.8.8.8']])
+    expect(p.valid).toEqual([])
   })
 
   it('caps at BULK_MAX_ROWS and flags truncation', () => {
