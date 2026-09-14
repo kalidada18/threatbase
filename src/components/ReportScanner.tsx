@@ -5,7 +5,6 @@ import { Link } from 'react-router-dom'
 import supabaseClient from '../supabaseClient'
 import { timeAgo, categoryTier, TIER_CHIP, TIER_ACCENT, countryFlag } from '../utils'
 import { useAuth } from '../AuthContext'
-import { VerifyGhost } from './ui/verify-ghost'
 import { getMalwareDescription } from '../malwareDictionary'
 
 // Derive a credible 0–100 confidence-of-abuse score from real signals
@@ -452,6 +451,52 @@ function MalwareDescriptionBlock({ tag }: { tag: string }) {
   )
 }
 
+/** Loading state for a scan — a ghost (skeleton) in the shape of the result
+ *  card it becomes: verdict band (icon, title, chips), confidence meter, and
+ *  detail rows. Deliberately NOT the Cloudflare-verification look: a lookup
+ *  is not a bot check, and a fake "Verify you are human" box on top of a
+ *  real one (boot gate) reads as a broken double-verification. */
+function ScanSkeleton() {
+  return (
+    <div
+      aria-hidden="true"
+      className="w-full max-w-4xl mx-auto overflow-hidden rounded-2xl border border-white/[0.08] bg-gradient-to-b from-slate-900/70 to-slate-950/80 font-sans shadow-glass-lux animate-pulse"
+    >
+      {/* Verdict band */}
+      <div className="p-6 md:p-8 border-b border-white/[0.06]">
+        <div className="flex items-start gap-4 md:gap-5">
+          <div className="h-12 w-12 shrink-0 rounded-2xl bg-white/[0.06]" />
+          <div className="min-w-0 flex-1 space-y-3">
+            <div className="h-2.5 w-24 rounded bg-white/[0.06]" />
+            <div className="h-5 w-64 max-w-full rounded bg-white/[0.08]" />
+            <div className="flex flex-wrap items-center gap-3 pt-1">
+              <div className="h-11 w-56 max-w-full rounded-xl bg-white/[0.05]" />
+              <div className="h-11 w-28 rounded-xl bg-white/[0.05]" />
+            </div>
+          </div>
+        </div>
+      </div>
+      {/* Confidence meter */}
+      <div className="p-6 md:p-8 border-b border-white/[0.06] space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="h-2.5 w-36 rounded bg-white/[0.06]" />
+          <div className="h-4 w-10 rounded bg-white/[0.06]" />
+        </div>
+        <div className="h-2 w-full rounded-full bg-white/[0.05]" />
+      </div>
+      {/* Detail tiles */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-6 md:p-8">
+        {Array.from({ length: 4 }, (_, i) => (
+          <div key={i} className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-4 space-y-2.5">
+            <div className="h-2.5 w-16 rounded bg-white/[0.06]" />
+            <div className="h-4 w-12 rounded bg-white/[0.08]" />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default function ReportScanner({ scanResult, isScanning, showReport, scanInput, addToast }: any) {
   const [reports, setReports] = useState<any[]>([])
   const [loadingReports, setLoadingReports] = useState(false)
@@ -669,7 +714,10 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
               exit={{ opacity: 0, scale: 0.98 }}
               transition={{ duration: 0.3 }}
             >
-              <VerifyGhost state="verifying" />
+              {/* Ghost loader in the shape of the result card it becomes —
+                  a scan is a lookup, not a bot check, so nothing here may
+                  read as "Cloudflare verification". */}
+              <ScanSkeleton />
             </motion.div>
           ) : scanResult ? (
             <motion.div
