@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Globe, Copy, Check, ArrowLeft, Loader2, Key, Trash2, AlertTriangle } from 'lucide-react'
+import { Globe, Copy, Check, ArrowLeft, Loader2, Key, Trash2, AlertTriangle, Crown } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../AuthContext'
 import supabaseClient from '../supabaseClient'
@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { fmt, timeAgo, categoryTier, TIER_TEXT } from '../utils'
 import { useSEO } from '../useSEO'
 import MfaSetup from './MfaSetup'
+import ProAdminPanel from './ProAdminPanel'
 import NotFound from './ui/not-found'
 
 /**
@@ -474,7 +475,7 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
 
       setApiKeys([newKeyData, ...apiKeys])
       setNewlyGeneratedKey(plainKey)
-      setNewKeyIsPro(!!newKeyData?.is_pro)
+      setNewKeyIsPro(!!(newKeyData as any)?.is_pro)
       addToast('API Key generated successfully!', 'success')
     } catch (err: any) {
       addToast(err.message || 'Failed to generate API Key', 'error')
@@ -1045,6 +1046,26 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
                 </p>
               )}
             </div>
+          </motion.div>
+        )}
+
+        {/* Superadmin: Pro entitlement management (server-guarded via /api/admin/pro) */}
+        {isOwnProfile && authProfile?.role === 'superadmin' && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="glass-card p-6 md:p-8"
+          >
+            <div className="mb-6">
+              <h3 className="text-sm font-semibold text-white flex items-center gap-2 tracking-tight">
+                <span className="icon-chip h-7 w-7"><Crown size={14} /></span> Pro Management
+              </h3>
+              <p className="text-xs text-slate-400 mt-1 max-w-lg">
+                Superadmin tools: grant or revoke Threatbase Pro for any account.
+              </p>
+            </div>
+            <ProAdminPanel />
           </motion.div>
         )}
 

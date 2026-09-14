@@ -1,9 +1,11 @@
 import { useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ShieldCheck, Bug, Upload, Download, X } from 'lucide-react'
+import { ShieldCheck, Bug, Upload, Download, X, Lock } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { EASE_EXPO } from './motion/primitives'
 import { parseBulkText, parseBulkFile, runBulkScan, bulkToCsv, BULK_MAX_ROWS, type BulkRow, type ParsedBulk } from '../lib/bulkScan'
 import { labelSources } from './sourceLabels'
+import { usePro } from '../usePro'
 
 /**
  * Bulk IOC hunt: paste, load a CSV/TXT, or drop an Excel workbook — every
@@ -27,6 +29,7 @@ const PREVIEW_ROWS = 200
 const PAGE_ROWS = 1000
 
 export default function BulkScanner({ feedVersion, statsData, addToast, onClose }: any) {
+  const { status: proStatus, refetch } = usePro()
   const [text, setText] = useState('')
   const [phase, setPhase] = useState<'input' | 'running' | 'done'>('input')
   const [progress, setProgress] = useState({ done: 0, total: 0 })
@@ -35,6 +38,49 @@ export default function BulkScanner({ feedVersion, statsData, addToast, onClose 
   const [limit, setLimit] = useState(PREVIEW_ROWS)
   const abortRef = useRef(false)
   const fileRef = useRef<HTMLInputElement>(null)
+
+  // Pro gate: bulk hunt rides the same entitlement as the Pro feed URLs
+  // (GET /api/me/pro). superadmin bypasses server-side inside that check.
+  if (proStatus !== 'pro') {
+    return (
+      <section id="bulk-section" className="py-12 scroll-mt-24">
+        <div className="mx-auto max-w-5xl px-6 lg:px-12">
+          <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-gradient-to-b from-slate-900/70 to-slate-950/80 backdrop-blur-2xl shadow-glass-lux p-10 text-center">
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-red-500/80 to-transparent" />
+            <span className="icon-chip mx-auto h-10 w-10"><Lock size={18} /></span>
+            <h3 className="mt-4 text-lg font-bold text-white">Bulk hunt is a Pro feature</h3>
+            <p className="mt-2 text-sm text-slate-400 max-w-md mx-auto leading-relaxed">
+              {proStatus === 'signed-out'
+                ? 'Sign in with an account that has Threatbase Pro to scan CSV / Excel files up to 10,000 indicators at once.'
+                : proStatus === 'checking'
+                ? 'Checking your Pro status…'
+                : 'Your account is not on Pro yet. Ask us and we will enable it — Pro includes the private feed URLs and Bulk / CSV hunt.'}
+            </p>
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+              {proStatus === 'signed-out' ? (
+                <Link to="/profile" className="inline-flex items-center gap-2 rounded-xl bg-red-500 px-5 py-2.5 text-[13px] font-semibold tracking-[0.06em] text-white transition-all hover:bg-red-400 active:translate-y-px shadow-glow-red cursor-pointer">
+                  Sign in
+                </Link>
+              ) : (
+                <>
+                  <Link to="/pricing" className="inline-flex items-center gap-2 rounded-xl bg-red-500 px-5 py-2.5 text-[13px] font-semibold tracking-[0.06em] text-white transition-all hover:bg-red-400 active:translate-y-px shadow-glow-red cursor-pointer">
+                    See Pro
+                  </Link>
+                  <button type="button" onClick={refetch} className="rounded-xl border border-white/[0.08] px-5 py-2.5 text-[13px] font-semibold text-platinum-300 transition-all hover:border-white/20 hover:text-white cursor-pointer">
+                    Retry
+                  </button>
+                </>
+              )}
+              <button type="button" onClick={onClose} className="text-xs font-bold uppercase tracking-wider text-slate-500 hover:text-slate-300 transition-colors cursor-pointer">
+                Close
+              </button>
+            </div>
+            {proStatus === 'unavailable' && <p className="mt-3 text-xs text-slate-600">Status check failed — this is a connectivity issue, not your account.</p>}
+          </div>
+        </div>
+      </section>
+    )
+  }
 
   const scanRows = async (p: ParsedBulk, sourceName?: string) => {
     if (p.valid.length === 0) { addToast(`No valid indicators found${sourceName ? ` in ${sourceName}` : ''}.`, 'error'); return }
