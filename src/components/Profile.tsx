@@ -42,6 +42,19 @@ const TIER = {
 const getUserBadges = (profile: any, reportsCount: number, joinIndex: number | null) => {
   const badges = [];
 
+  // 0. Superadmin — server-controlled profiles.role only (column grants make it
+  //    un-writable by authenticated; see pro_and_rls_fixes §2). Shown first so
+  //    the operator badge always leads the row.
+  if (profile?.role === 'superadmin') {
+    badges.push({
+      id: 'superadmin',
+      name: 'Superadmin',
+      desc: 'Threatbase operator',
+      style: TIER.ruby,
+      icon: <Crown className="h-3.5 w-3.5" />,
+    });
+  }
+
   // 1. Join Order Badges (First, Second, Third Blood)
   if (joinIndex === 0) {
     badges.push({
@@ -263,6 +276,12 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
   const [reportsCount, setReportsCount] = useState(0)
   const [loadingReports, setLoadingReports] = useState(true)
   const [copiedIp, setCopiedIp] = useState<string | null>(null)
+
+  // Submissions log pagination (20/page, "page / total" chip in the header).
+  const [logPage, setLogPage] = useState(1)
+  const LOG_PAGE_SIZE = 20
+  const logPages = Math.max(1, Math.ceil(reports.length / LOG_PAGE_SIZE))
+  const pageReports = reports.slice((logPage - 1) * LOG_PAGE_SIZE, logPage * LOG_PAGE_SIZE)
   
   // Join index for badges
   const [joinIndex, setJoinIndex] = useState<number | null>(null)
@@ -869,7 +888,7 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
             </h3>
             {!loadingReports && reports.length > 0 && (
               <span className="font-mono text-[11px] text-platinum-300 tabular-nums rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-1">
-                {fmt(reportsCount)}
+                {logPage}/{logPages} · {fmt(reportsCount)}
               </span>
             )}
           </div>
@@ -885,6 +904,7 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
                 <p className="text-sm text-slate-400">No submissions found for this user.</p>
               </div>
             ) : (
+              <>
               <table className="w-full text-xs text-left">
                 <thead className="hidden md:table-header-group text-[10px] uppercase text-slate-500 font-semibold border-b border-white/[0.05]">
                   <tr>
@@ -895,7 +915,7 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/[0.04] md:divide-white/[0.02]">
-                  {reports.map((row) => (
+                  {pageReports.map((row) => (
                     <tr
                       key={row.id || row.created_at}
                       className="block md:table-row px-4 py-3 md:p-0 hover:bg-white/[0.02] transition-colors group"
@@ -931,8 +951,33 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
                   ))}
                 </tbody>
               </table>
+              </>
             )}
           </div>
+
+          {!loadingReports && logPages > 1 && (
+            <div className="flex items-center justify-center gap-4 border-t border-white/[0.06] px-6 py-4">
+              <button
+                type="button"
+                onClick={() => setLogPage((p) => Math.max(1, p - 1))}
+                disabled={logPage === 1}
+                className="h-8 rounded-lg border border-white/10 px-4 text-xs font-semibold text-platinum-300 hover:text-white hover:border-white/20 disabled:opacity-30 disabled:pointer-events-none transition-colors"
+              >
+                Newer
+              </button>
+              <span className="font-mono text-[11px] text-slate-500 tabular-nums">
+                {logPage} / {logPages}
+              </span>
+              <button
+                type="button"
+                onClick={() => setLogPage((p) => Math.min(logPages, p + 1))}
+                disabled={logPage === logPages}
+                className="h-8 rounded-lg border border-white/10 px-4 text-xs font-semibold text-platinum-300 hover:text-white hover:border-white/20 disabled:opacity-30 disabled:pointer-events-none transition-colors"
+              >
+                Older
+              </button>
+            </div>
+          )}
         </motion.div>
 
         {/* Security Settings */}

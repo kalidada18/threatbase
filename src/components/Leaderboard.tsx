@@ -70,7 +70,9 @@ function RowScore({ count, active }: { count: number; active: boolean }) {
 function Row({ leader, index, max }: { leader: any; index: number; max: number }) {
   const rank = getRankInfo(leader.reports_count)
   // Use data-driven role check instead of hardcoded usernames.
-  // The top_contributors view should expose an is_admin/role column.
+  // The top_contributors view exposes is_admin / is_superadmin (server-side
+  // profiles.role — un-writable by authenticated users, so trustworthy).
+  const isSuperadmin = leader.is_superadmin === true || leader.role === 'superadmin'
   const isAdmin = leader.is_admin === true || leader.role === 'admin'
   const share = max > 0 ? Math.max(2, Math.round((leader.reports_count / max) * 100)) : 0
 
@@ -96,7 +98,12 @@ function Row({ leader, index, max }: { leader: any; index: number; max: number }
             <h4 className="truncate text-[15px] font-semibold leading-none tracking-tight text-white/85 transition-colors duration-200 group-hover:text-white">
               @{leader.reporter_alias}
             </h4>
-            {isAdmin && (
+            {isSuperadmin && (
+              <span className="flex-shrink-0 rounded-md border border-red-500/30 bg-red-500/[0.08] px-1.5 py-0.5 text-[9px] font-bold uppercase leading-none tracking-wider text-red-400">
+                Superadmin
+              </span>
+            )}
+            {isAdmin && !isSuperadmin && (
               <span className="flex flex-shrink-0 items-center gap-1">
                 <img src={`${import.meta.env.BASE_URL}img/admin.png`} title="Admin" alt="Admin" className="h-5 w-5 object-contain" />
                 <img src={`${import.meta.env.BASE_URL}img/hunter.png`} title="Hunter" alt="Hunter" className="h-5 w-5 object-contain" />
