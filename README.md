@@ -41,7 +41,11 @@
 
   <br/>
 
-  <em>Built to democratize access to high-quality threat intelligence — one indicator at a time.</em>
+  <em>Threatbase is a project dedicated to aggregating, deduplicating, and distributing
+  open-source threat intelligence at scale. Our mission is to democratize access to
+  high-quality IOC data — so defenders everywhere can block what attackers already know.</em>
+
+  <p><strong>Built for defenders who can't afford to miss. Built by Curiosity.</strong></p>
 
 </div>
 

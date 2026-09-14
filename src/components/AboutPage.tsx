@@ -64,15 +64,21 @@ export default function AboutPage() {
             </span>
           </h1>
 
-          <p className="text-lg md:text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed mb-8">
-            IOCs, threat actors, and vulnerabilities, verified by the community and free to consume.
+          <p className="text-lg md:text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed mb-4">
+            Threatbase aggregates, deduplicates, and distributes open-source threat
+            intelligence at scale.
+          </p>
+
+          <p className="text-base md:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed mb-8">
+            Our mission is to democratize access to high-quality IOC data — so defenders
+            everywhere can block what attackers already know.
           </p>
 
           <div className="inline-block p-[1px] rounded-2xl bg-gradient-to-r from-red-500/40 to-red-800/40 mb-10 shadow-glow-ruby">
             <div className="px-8 py-4 rounded-2xl bg-slate-950/80 backdrop-blur-xl">
               <span className="font-mono text-lg text-metal tracking-wide">
                 <span className="text-red-500">&gt;</span>{' '}
-                <Typewriter text="Open data, community verified." speed={42} startDelay={700} />
+                <Typewriter text="Built for defenders who can't afford to miss." speed={42} startDelay={700} />
               </span>
             </div>
           </div>
