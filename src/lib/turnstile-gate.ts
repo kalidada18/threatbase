@@ -77,6 +77,12 @@ export function ensureTurnstileLogin(): Promise<void> {
       pendingResolve = null
       reject(new Error(msg))
     }
+    // 60s bail: a managed challenge that renders but silently stalls (network
+    // hiccup mid-challenge) would hold `pending` forever, freezing the sign-in
+    // modal on "loading" — and line 70 would hand that dead promise to every
+    // later click. fail() clears state; the seq guard makes this a no-op on
+    // settled or superseded attempts.
+    setTimeout(() => fail('Security check timed out. Please try again.'), 60_000)
     loadTurnstile()
       .then((turnstile) => {
         if (my !== seq) return
@@ -117,7 +123,6 @@ export function ensureTurnstileLogin(): Promise<void> {
   return pending
 }
 
-// ponytail: no timeout on the challenge — with interaction-only the escalated
-// checkbox is visible and clickable, so a pending promise means the visitor
-// abandoned the widget, which callers already surface as "loading". Add a
-// 60s bail if abandoned attempts ever cause a visible stuck state.
+// ponytail: interaction-only means a pending promise usually just means the
+// visitor walked away — but a silently-stalling challenge used to freeze the
+// modal forever, hence the 60s bail above.
