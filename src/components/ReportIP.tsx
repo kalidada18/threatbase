@@ -4,9 +4,7 @@ import {
   AlertTriangle, Copy, Check, ChevronLeft, ChevronRight, Users, ShieldCheck
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile'
 import { AuthComponent } from '@/components/ui/sign-up'
-import { TURNSTILE_SITE_KEY } from '@/lib/turnstile'
 import supabaseClient from '../supabaseClient'
 import { fmt, timeAgo, DEFAULT_AVATAR, categoryTier, TIER_CHIP } from '../utils'
 import { useAuth } from '../AuthContext'
@@ -91,8 +89,6 @@ export default function ReportIP({ addToast }: any) {
   const [submitting, setSubmitting] = useState(false)
   const [submitSuccess, setSubmitSuccess] = useState(false)
   const [showPolicyModal, setShowPolicyModal] = useState(false)
-  const [turnstileToken, setTurnstileToken] = useState('')
-  const turnstileRef = useRef<TurnstileInstance>(null)
   const lastSubmitRef = useRef(0)
 
   // Reported IPs table state
@@ -114,7 +110,7 @@ export default function ReportIP({ addToast }: any) {
   const [ipStatus, setIpStatus] = useState<{ type: 'empty' | 'valid_v4' | 'valid_v6' | 'private' | 'whitelisted' | 'invalid', msg: string }>({ type: 'empty', msg: '' })
 
   // Inline per-field validation errors (toasts stay for transient infra/cooldown messages)
-  const [fieldErrors, setFieldErrors] = useState<{ ip?: string; tags?: string; comment?: string; turnstile?: string }>({})
+  const [fieldErrors, setFieldErrors] = useState<{ ip?: string; tags?: string; comment?: string }>({})
 
   useEffect(() => {
     if (!showPolicyModal) return
@@ -244,7 +240,6 @@ export default function ReportIP({ addToast }: any) {
     else if (!canSubmit) errors.ip = ipStatus.msg || 'Valid IPv4 or IPv6 required.'
     if (!tags.length) errors.tags = 'Select at least one threat tag.'
     if (!rawComment) errors.comment = 'A description is required.'
-    if (!turnstileToken) errors.turnstile = 'Complete the human verification first.'
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors)
       return
@@ -272,7 +267,6 @@ export default function ReportIP({ addToast }: any) {
           ip: raw,
           category: tags.join(', '),
           comment: safeComment,
-          turnstileToken,
         }),
       })
 
@@ -295,8 +289,6 @@ export default function ReportIP({ addToast }: any) {
     } catch (err: any) {
       addToast('Submission failed: ' + (err.message || 'Unknown error'), 'error')
     } finally {
-      turnstileRef.current?.reset()
-      setTurnstileToken('')
       setSubmitting(false)
     }
   }
@@ -499,24 +491,10 @@ export default function ReportIP({ addToast }: any) {
                   </p>
                 </div>
 
-                <div className="pt-2">
-                  <Turnstile
-                    ref={turnstileRef}
-                    siteKey={TURNSTILE_SITE_KEY}
-                    onSuccess={(t) => { setTurnstileToken(t); setFieldErrors(p => ({ ...p, turnstile: undefined })) }}
-                    onExpire={() => setTurnstileToken('')}
-                    onError={() => setTurnstileToken('')}
-                    options={{ theme: 'dark', size: 'flexible', action: 'report' }}
-                  />
-                  {fieldErrors.turnstile && (
-                    <p id="turnstile-error" className="mt-2 text-[11px] font-medium tracking-wider text-red-400">{fieldErrors.turnstile}</p>
-                  )}
-                </div>
-
                 <div className="pt-6">
                   <Button
                     type="submit"
-                    disabled={!isFormValid() || submitting || !turnstileToken}
+                    disabled={!isFormValid() || submitting}
                     className="h-14 w-full rounded-xl bg-red-600 text-sm font-bold text-white shadow-glow-ruby transition-all hover:bg-red-500 active:scale-[0.98] disabled:scale-100 disabled:shadow-none"
                   >
                     {submitting ? (

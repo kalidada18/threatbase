@@ -2,16 +2,16 @@ import supabaseClient from '../../src/supabaseClient'
 import { createClient } from '@supabase/supabase-js'
 import { SUPABASE_URL } from '../../src/lib/supabaseConfig'
 import { isValidPublicIp, isValidCategory, MAX_COMMENT_LENGTH } from '../../src/lib/apiValidation'
-import { corsHeaders, stripHtml, json, verifyTurnstile, TURNSTILE_HOSTNAMES_DEFAULT } from './_common'
+import { corsHeaders, stripHtml, json } from './_common'
 
 // Web (browser) report endpoint. Unlike /api/v1/report (programmatic, API-key
-// auth), this path is for the website's report form. It enforces three things
-// the old browser->Supabase-direct insert could not:
-//   1. Cloudflare Turnstile is verified SERVER-SIDE (token actually checked).
-//   2. The reporter is an authenticated Supabase user (JWT verified here).
-//   3. Per-IP daily rate limiting via KV.
-// Because verification and the privileged write happen in the same request,
-// none of the client-side bypasses apply.
+// auth), this path is for the website's report form. Bot protection moved to
+// Cloudflare's managed challenge at the zone edge (browser surface), so this
+// endpoint enforces what remains server-side:
+//   1. The reporter is an authenticated Supabase user (JWT verified here).
+//   2. Per-IP daily rate limiting via KV.
+// Bulk abuse is still strangled upstream: every account behind a report had to
+// pass the login Turnstile at sign-in.
 
 
 export const onRequestOptions = async (context: any) => {
@@ -25,13 +25,6 @@ export const onRequestPost = async (context: any) => {
 
   if (!supabaseClient) return json({ error: 'Service temporarily unavailable.' }, 503, request)
 
-  // Fail closed: the entire purpose of this endpoint is server-side verification.
-  const secret = env.TURNSTILE_SECRET
-  if (!secret) {
-    console.error('TURNSTILE_SECRET is not configured — rejecting report.')
-    return json({ error: 'Verification is not configured on the server.' }, 500, request)
-  }
-
   const clientIp = request.headers.get('CF-Connecting-IP') || ''
 
   let body: any
@@ -41,21 +34,9 @@ export const onRequestPost = async (context: any) => {
     return json({ error: 'Invalid JSON body.' }, 400, request)
   }
 
-  const { ip, category, comment, turnstileToken } = body ?? {}
+  const { ip, category, comment } = body ?? {}
 
-  // 1. Human verification (server-side). A forged/empty/replayed token fails here.
-  const human = await verifyTurnstile(
-    turnstileToken,
-    clientIp,
-    secret,
-    'report', // the action we render on the widget — rejects off-surface tokens
-    env.TURNSTILE_HOSTNAMES || TURNSTILE_HOSTNAMES_DEFAULT,
-  )
-  if (!human.ok) {
-    return json({ error: 'Human verification failed. Please complete the check again.' }, 403, request)
-  }
-
-  // 2. Authenticate the reporter via their Supabase access token.
+  // 1. Authenticate the reporter via their Supabase access token.
   const authHeader = request.headers.get('Authorization') || ''
   const accessToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : ''
   if (!accessToken) {
@@ -67,7 +48,7 @@ export const onRequestPost = async (context: any) => {
     return json({ error: 'Your session has expired. Please sign in again.' }, 401, request)
   }
 
-  // 3. Per-IP daily rate limiting (independent of the per-API-key limit).
+  // 2. Per-IP daily rate limiting (independent of the per-API-key limit).
   const kv = env.IOC_CACHE
   if (kv && clientIp) {
     const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD
@@ -80,7 +61,7 @@ export const onRequestPost = async (context: any) => {
     await kv.put(rlKey, (count + 1).toString(), { expirationTtl: 86400 })
   }
 
-  // 4. Validate inputs (same rules as the public API).
+  // 3. Validate inputs (same rules as the public API).
   const cleanIp = String(ip ?? '').trim()
   const cleanCategory = String(category ?? '').trim()
   const cleanComment = String(comment ?? '').trim()
@@ -98,7 +79,7 @@ export const onRequestPost = async (context: any) => {
     return json({ error: `Comment is too long (max ${MAX_COMMENT_LENGTH} characters).` }, 400, request)
   }
 
-  // 5. Resolve the alias from the authenticated user's profile (can't be spoofed
+  // 4. Resolve the alias from the authenticated user's profile (can't be spoofed
   //    by the client — the browser no longer chooses its own reporter name).
   let reporterAlias = 'Anonymous'
   const { data: profile } = await supabaseClient
@@ -114,7 +95,7 @@ export const onRequestPost = async (context: any) => {
     if (fallbackAlias) reporterAlias = fallbackAlias
   }
 
-  // 6. Reject duplicates from the same reporter.
+  // 5. Reject duplicates from the same reporter.
   const { data: existing } = await supabaseClient
     .from('reported_ips')
     .select('id')
@@ -125,7 +106,7 @@ export const onRequestPost = async (context: any) => {
     return json({ error: 'You have already reported this IP. Edit your existing report instead.' }, 409, request)
   }
 
-  // 7. Insert via SECURITY DEFINER RPC using the server-only service_role key.
+  // 6. Insert via SECURITY DEFINER RPC using the server-only service_role key.
   //    All checks (Turnstile, auth, rate limit, validation) have already passed
   //    above, so the privileged write happens server-side and the RPC is
   //    REVOKEd from anon/authenticated (see db/lock_down_api_insert_report.sql)
