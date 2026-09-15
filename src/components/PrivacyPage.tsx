@@ -2,12 +2,67 @@ import React from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { useSEO } from '@/useSEO'
 
+// Legal text is data, not prose in JSX: drafted for operator protection and
+// adversarially reviewed (draft + hostile-attack replacements, 2026-09-15).
+// Editing a clause = editing this array. Escaped ASCII (\u2014 etc.) by design.
+type Clause = { heading: string; body: string }
+const CLAUSES: Clause[] = [
+  {
+    "body": "This Privacy Policy states the complete and exclusive data practices of the independent individual developer operating threatbase.qzz.io (\"the Operator,\" \"we,\" \"us\") for the website, search console, user accounts, and threat-intelligence feeds offered through threatbase.qzz.io (collectively, \"the Service\"; the published indicator lists, \"the Feeds\"; any person or automated client accessing the Service, whether or not holding an account, \"you\" or \"the User\"). \"Personal Data\" means information that identifies you or is reasonably linkable to you, and \"Account\" means your optional registered profile on the Service.\n\nTerms governing your use of the Service and the Feeds \u2014 including acceptable use, the license and attribution terms for reuse of the Feeds, the prohibition on reselling, republishing, or presenting the Feeds or Reports as your own or as verified, disclaimers of warranty, limitation of liability, user indemnification of the Operator including the Operator's reasonable costs of defense and attorneys' fees, suspension, termination, and key revocation, and dispute resolution \u2014 are set out in the Terms of Service, which prevail over this Policy in the event of conflict as to any matter other than the handling of Personal Data. This Policy governs only the handling of Personal Data and creates no rights for any third party.",
+    "heading": "1. Scope, Definitions, and the Operator"
+  },
+  {
+    "body": "We collect Personal Data only in the four categories below, and no others.\n\nAccount data. If you create an Account, we collect the email address you supply or that your chosen identity provider (Google or GitHub) transmits to us; a unique username, which is public; an avatar image URL provided by the identity provider; and the optional profile fields you choose to complete (display name, bio, website). Passwords are retained solely as cryptographic hashes. When you enable TOTP multi-factor authentication, the shared secret is stored server-side. API keys are stored as salted, one-way hashes; the Operator retains only the key prefix, creation time, and usage metadata needed for rate limiting and revocation.\n\nReport data. When you submit a threat report or a dispute, we store the indicator reported, its category, your comment, your reporter alias, and creation/update timestamps, together with the IP address used to submit the report solely for enforcing per-IP daily submission limits and abuse prevention.\n\nServer logs. For every request, our hosting provider Cloudflare records standard edge logs, which may include IP address, user agent string, referring page, and timestamp.\n\nExclusions. Apart from the categories above we collect nothing: no names, phone numbers, physical addresses, payment data, precise geolocation, or search content beyond the indicator you query, and no analytics, tracking, fingerprinting, or advertising data. We do not sell or rent Personal Data for any purpose.",
+    "heading": "2. Information We Collect"
+  },
+  {
+    "body": "We state below each purpose of processing and the legal basis we rely on, using GDPR terminology as our uniform reference standard for all users regardless of location. No automated decision-making producing legal or similarly significant effects, and no marketing profiling, occurs on the Service.\n\nProvision of Accounts, sign-in, API keys, and Pro entitlement management: basis, performance of the contract formed by your acceptance of the Terms of Service. Publication and enforcement of Reports and reporter attribution, and enforcement of submission limits: basis, the legitimate interests of the Operator and of the public in open, accountable threat intelligence, plus performance of the contract. Operation, security, and debugging of the Service, including Cloudflare bot challenges, Turnstile verification, rate limiting, and the restriction, blocking, suspension, or termination of any Account, API key, Pro entitlement, or access at the Operator's sole discretion, with or without cause and with or without notice: basis, the legitimate interest of the Operator in the security, integrity, and availability of the Service. Communication with you regarding your Account, entitlements, disputes, or legal claims, and response to lawful demands: basis, legitimate interest and, where applicable, legal obligation. Consent-based processing: the Operator stores only strictly-necessary local-storage items and security cookies, none of which require consent under prevailing enforcement practice; where a jurisdiction nonetheless requires consent, providing or retaining the relevant feature constitutes that consent, which you may withdraw by using the feature's own controls or by closing your Account.\n\nNo legal basis stated in this Policy creates or implies any entitlement to continued or uninterrupted access to the Service, to publication or retention of any entry or Report, or to any outcome of the dispute process, and the exercise of the Operator's discretion under this clause is not a breach of this Policy.",
+    "heading": "3. How We Use Personal Data and Our Legal Bases"
+  },
+  {
+    "body": "The Service stores in your browser exactly the items listed here and nothing else; all are first-party and strictly necessary for the features described.\n\nlocalStorage key tb:recent: your last five lookups, used to redisplay them in the console. Never transmitted to the Operator. Cleared at any time by you.\n\nsessionStorage key tb:ip_prefill: a one-use hint suggesting your own address in the scanner. Exists only for the current tab and is never transmitted beyond the page.\n\nlocalStorage keys prefixed sb-*-auth-token: your Supabase authentication session, written only after you sign in. Sessions are scoped globally by our provider, meaning a session may persist on a device until you sign out on that device, even if you sign out elsewhere; you are responsible for signing out on devices you do not control.\n\nCookies cf_clearance and __cf_bm: security cookies set by Cloudflare when its managed challenge or the Turnstile check runs, used only to distinguish humans from automated clients.\n\nThe Service sets no tracking, analytics, or advertising cookies, and therefore operates no consent banner. We assume no responsibility for cookies set by third-party sites to which the Service links.",
+    "heading": "4. What the Service Stores on Your Device"
+  },
+  {
+    "body": "You acknowledge and agree that the following are public by design, are outside any confidentiality obligation of the Operator, and are not subject to deletion or correction through the rights channel in clause 11: every submitted Report, including the indicator, category, comment, and reporter alias, as rendered publicly at /reported, in exports, and in the Feeds; your username and completed public profile fields wherever the Service displays them; and the Feeds themselves, which consist of indicators (IP addresses, CIDR ranges, domains, URLs, and file hashes) believed to reflect publicly observable malicious activity. An indicator can in principle identify a device associated with a natural person. Entries derived from community submissions or from third-party upstream feeds are ingested without independent verification; the Operator is not responsible for the accuracy, currency, legality, or provenance of upstream or community data and makes no representation that any indicator is accurate, verified, or current. The Operator does not treat the Feeds as Personal Data.\n\nChallenges to feed content proceed through the dispute process on the Service, which requires a signed-in Account, and not under this Policy. The dispute process is offered as a voluntary courtesy only: it creates no duty or undertaking on the part of the Operator to investigate, respond to, correct, remove, or preserve any entry, imposes no standard of care, and confers no right to any particular outcome; the Operator may leave a challenged entry published, or remove any entry without dispute, in each case at its sole discretion.\n\nReuse of the Feeds is governed exclusively by the license and attribution terms of the Terms of Service. Publishing or mirroring the Feeds \u2014 including on GitHub or in upstream projects \u2014 grants no rights beyond those terms: no reseller or passing-off right, no perpetual right, and no license to present the Feeds as verified or as your own. The Operator may revoke any consumer's access and may discontinue or alter the Feeds at any time without notice and without liability.",
+    "heading": "5. Information That Is Public by Design"
+  },
+  {
+    "body": "We disclose Personal Data only to the processors listed below, each of which operates under its own published privacy policy, and to no other recipient except as clause 7 permits. The Operator has no other subprocessors and will not engage a payment processor or new subprocessor without first amending this Policy.\n\nCloudflare, Inc.: hosting, edge logging, managed bot challenge, and Turnstile CAPTCHA verification. Supabase, Inc.: authentication and the database storing Accounts, Reports, profile fields, and API-key metadata including key hashes. GitHub, Inc.: source-code hosting and public mirroring of the Feeds. Supabase session tokens are additionally held by your browser as described in clause 4.",
+    "heading": "6. Service Providers and Subprocessors"
+  },
+  {
+    "body": "In addition to the disclosures in clauses 5 and 6, we may disclose Personal Data: where you authorize or direct the disclosure; and, without notice to you where notice is prohibited or impracticable, in response to valid legal process, or where the Operator in good faith believes disclosure is reasonably necessary to comply with applicable law, to protect the Service, its Operator, or other users, to enforce the Terms of Service, or to respond to claims that content published through the Service is unlawful. The Operator is an individual without legal budget; responding to demands is subject to practical limits, and you agree that the Operator's handling of such demands is performed on an as-available basis and is not itself a breach of this Policy.",
+    "heading": "7. Disclosure, Legal Process, and Enforcement"
+  },
+  {
+    "body": "The Operator is located in Nepal. The processors named in clause 6 and the infrastructure of the Service are located principally in the United States. By using the Service you acknowledge that your Personal Data is transferred to, processed, and stored in jurisdictions whose data-protection laws differ from those of Nepal and of your country of residence, and you consent to that transfer. Nepal and the hosting jurisdictions impose no general cross-border mechanism that the Operator could enforce against its own infrastructure, and the Operator makes no representation that safeguards equivalent to EU Standard Contractual Clauses, the UK IDTA, or any adequacy framework apply to the Service.",
+    "heading": "8. International Transfers"
+  },
+  {
+    "body": "Report submissions and their associated submission IP addresses are retained only for the purposes stated in clause 2 \u2014 enforcement of per-IP daily submission limits and abuse prevention \u2014 and the Operator purges stale per-IP submission records on a rolling basis rather than retaining them indefinitely. Once a Report is published, the Report content and its public alias are retained as public-by-design content under clause 5 for as long as the Report remains in effect; the Operator does not store any Personal Data of a reporter beyond what clause 2 lists.\n\nRetention is category-specific, practical, and not indefinite. Accounts and profile data are retained until you close the Account or until we receive and verify a deletion request under clause 11, and are deleted within 30 days of such verification; backup rotation at our processor may extend complete erasure by up to a further 30 days. API keys and their metadata are deleted upon revocation or Account closure. Cloudflare edge logs are retained only for the short period published by Cloudflare, ordinarily fewer than 30 days. Items in your browser (clause 4) persist until you clear them. Once a Report is published it is ingested into the Feeds and distributed to mirrors, upstream projects that consume the Feeds by default, and third-party blocklist consumers; Account deletion removes the link between the Report and your login email but does not remove the public alias, and the Operator cannot recall content from downstream copies and does not undertake to do so.",
+    "heading": "9. Retention"
+  },
+  {
+    "body": "We maintain the security measures inherent to the stack described in clauses 4 and 6 and no more: HTTPS throughout, hashed passwords, salted one-way hashes of API keys so that a database compromise yields no usable keys, optional TOTP multi-factor authentication, Cloudflare managed challenge and Turnstile verification, and per-IP rate limits. You acknowledge that the Service is a zero-revenue hobby system operated by one person; that no method of transmission or storage is guaranteed secure; and that we do not warrant the security or confidentiality of any data, including your Account email and the indicators you query, which are themselves public by design under clause 5. If the Operator becomes aware of a confirmed compromise of Personal Data within its direct control, the Operator will, where lawful and practicable, notify affected Account holders by email or site notice without undue delay, and will state in that notice only what is then known. Good-faith, non-destructive security findings may be reported to threatbasepro@gmail.com; the Operator requests that findings remain undisclosed for 30 days pending remediation, and offers no bug bounty.",
+    "heading": "10. Security and Breach Response"
+  },
+  {
+    "body": "Where applicable law grants you rights of access, correction, deletion, restriction, or portability with respect to your Personal Data, you may exercise them by email to threatbasepro@gmail.com from the address associated with your Account or by otherwise demonstrating control of that address. Because the Operator is a solo hobby operator, that email channel is the only channel the Operator can reliably process: requests received through other channels may not be acted upon, and the Operator assumes no statutory response deadline. The Operator may refuse unverifiable or manifestly excessive requests and will respond within 30 days or within such longer period as its capacity as a solo hobby operator reasonably requires. As the Personal Data held for a typical Account is limited to an email address and profile fields, access responses will reflect that scope, and deletion operates as qualified in clause 9. No sale of Personal Data occurs, so no \"Do Not Sell\" mechanism is offered; no rights are recognized with respect to public Feeds content except through the dispute process in clause 5. The Operator is not established in the EU, EEA, or United Kingdom, has not appointed a representative in any of those jurisdictions, and makes no representation about the availability or necessity of any supervisory-authority or officer channel; nothing in this Policy extends or restricts any right you may hold under the law of your country of residence. The Service is not directed at persons under 16 years of age; minors under 16 must not create Accounts or submit Reports, and a parent or guardian may request deletion of a minor's Account data through the contact above.",
+    "heading": "11. Your Rights, Requests, and Children"
+  },
+  {
+    "body": "The Operator may amend this Policy at any time by posting the revised text at /privacy on threatbase.qzz.io; the amended Policy takes effect immediately upon posting, and continued access to or use of the Service after posting constitutes acceptance. The Operator may, but is not obligated to, note material changes. No amendment applies retroactively to excuse processing that was permitted under the Policy then in effect. Notice to you is effective upon posting at /privacy or upon the Operator's first attempt to send email to the address associated with your Account; the Operator is not responsible for failed delivery, spam filtering, or messages you do not read.\n\nGoverning law and forum: this Policy, and every claim arising out of or relating to it or to the data practices it describes \u2014 including claims concerning the collection, publication, retention, disclosure, or restriction of data, and claims concerning the accuracy of the Service or of the Feeds \u2014 are governed by the laws of Nepal without regard to conflict-of-laws rules, and are subject to the exclusive jurisdiction of the courts located in Nepal, regardless of the form of action, whether in contract, tort, statute, or otherwise.\n\nSeverability: if any provision of this Policy is held invalid or unenforceable, that provision shall be reformed to the minimum extent necessary to render it enforceable, and every remaining provision shall survive independently.\n\nTHE FEEDS ARE UNVERIFIED, MACHINE-GENERATED DATA. THE FEEDS CONSIST OF INDICATORS AGGREGATED FROM THIRD-PARTY OPEN SOURCES, AUTOMATED SENSORS, AND COMMUNITY SUBMISSIONS WITHOUT INDEPENDENT VERIFICATION BY THE OPERATOR, AND MAY CONTAIN ERRORS, OMISSIONS, AND STALE ENTRIES. THE FEEDS ARE NOT ADVICE AND MUST NOT BE RELIED UPON FOR ACCESS-CONTROL, BLOCKING, SECURITY, OR LEGAL DECISIONS.\n\nEXCEPT AS EXPRESSLY STATED IN THIS POLICY, THE SERVICE, THE FEEDS, AND ALL INFORMATION PROCESSED OR DISPLAYED THROUGH THEM ARE PROVIDED \"AS IS\" AND \"AS AVAILABLE,\" WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, ACCURACY, COMPLETENESS, CURRENCY, NON-INFRINGEMENT, TITLE, AND THE ABSENCE OF VIRUSES OR OTHER HARMFUL COMPONENTS, AND WITHOUT ANY WARRANTY THAT PERSONAL DATA WILL REMAIN SECURE, CONFIDENTIAL, OR UNDISCLOSED, OR THAT ACCESS TO THE SERVICE WILL BE CONTINUOUS OR UNRESTRICTED.\n\nTO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL THE OPERATOR BE LIABLE FOR ANY DAMAGES WHATSOEVER, DIRECT, INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, EXEMPLARY, OR PUNITIVE, ARISING OUT OF OR RELATING TO THIS POLICY, THE SERVICE, OR THE FEEDS \u2014 INCLUDING WITHOUT LIMITATION DAMAGES CAUSED BY OR ALLEGED TO BE CAUSED BY ANY ACTION TAKEN OR OMITTED IN RELIANCE ON THE FEEDS OR ANY CONTENT DISPLAYED OR PUBLISHED THROUGH THEM, SUCH AS BLOCKING, FILTERING, THROTTLING, BLACKLISTING, OR DENIAL OF ACCESS TO ANY NETWORK, HOST, DOMAIN, ADDRESS, SERVICE, OR PERSON BY THE OPERATOR OR BY ANY THIRD-PARTY CONSUMER OF THE FEEDS, AND INCLUDING DAMAGES ARISING FROM THE COLLECTION, USE, DISCLOSURE, ACCURACY, RETENTION, OR SECURITY OF DATA AND FROM ANY SUSPENSION OR TERMINATION OF AN ACCOUNT, REVOCATION OF API KEYS OR ENTITLEMENTS, OR INTERRUPTION OR UNAVAILABILITY OF THE SERVICE \u2014 WHETHER IN CONTRACT, TORT (INCLUDING NEGLIGENCE), STRICT LIABILITY, STATUTE, OR OTHERWISE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES. WHERE APPLICABLE LAW DOES NOT PERMIT THE FULL EXCLUSION OF LIABILITY, THE OPERATOR'S TOTAL AGGREGATE LIABILITY FOR ALL CLAIMS ARISING OUT OF OR RELATING TO THE SERVICE AND THE FEEDS SHALL NOT EXCEED THE GREATER OF US$100 (OR ITS NEPALESE-RUPEE EQUIVALENT) OR THE SUM, IF ANY, YOU HAVE PAID TO THE OPERATOR FOR THE SERVICE IN THE TWELVE MONTHS PRECEDING THE FIRST EVENT GIVING RISE TO LIABILITY. WHERE APPLICABLE LAW DOES NOT PERMIT THE EXCLUSION OF IMPLIED WARRANTIES OR THE LIMITATION OF LIABILITY, THE EXCLUDED OR LIMITED PROVISIONS SHALL BE READ DOWN AND ENFORCED TO THE GREATEST EXTENT PERMITTED.",
+    "heading": "12. Changes, Governing Law, Severability, and Disclaimer of Warranties"
+  }
+]
+
 export default function PrivacyPage() {
   const prefersReducedMotion = useReducedMotion()
 
   useSEO({
     title: 'Privacy Policy | Threatbase',
-    description: 'How Threatbase handles your data: optional accounts for reporting, what the browser stores, security cookies, and why the IP feeds contain only public threat intelligence.',
+    description: 'How Threatbase handles personal data: exact collection, legal bases, device storage, subprocessors, retention, transfers, breach response, and rights requests.',
     path: '/privacy',
   })
 
@@ -22,108 +77,28 @@ export default function PrivacyPage() {
           <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-red-500/20 bg-red-500/5 px-3 py-1 text-[10px] font-bold tracking-widest text-red-400 uppercase">
             Legal Information
           </div>
-          
+
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter text-white leading-[0.95] mb-6">
             Privacy Policy.
           </h1>
           <p className="text-sm font-mono text-slate-500 mb-16 border-b border-white/5 pb-8">
-            Effective Date: June 12, 2026
+            Effective Date: September 15, 2026 &middot; supersedes all prior versions
           </p>
 
-          <div className="space-y-16 text-slate-400 leading-relaxed text-base md:text-lg max-w-[65ch]">
-            
-            <section>
-              <h3 className="text-2xl font-bold text-white mb-4 tracking-tight">
-                1. Introduction
-              </h3>
-              <p>This Privacy Policy explains how we collect, use, and protect information when you visit Threatbase.</p>
-            </section>
-
-            <section>
-              <h3 className="text-2xl font-bold text-white mb-4 tracking-tight">
-                2. Information We Collect
-              </h3>
-              <ul className="space-y-4">
-                <li className="flex gap-4">
-                  <span className="mt-2.5 h-px w-3 shrink-0 bg-red-500" aria-hidden="true" />
-                  <span><strong className="text-white font-semibold">Automatically Collected Data</strong>: We (or our hosting provider) may collect standard server logs such as IP address, browser type, operating system, access times, and referring pages.</span>
-                </li>
-                <li className="flex gap-4">
-                  <span className="mt-2.5 h-px w-3 shrink-0 bg-red-500" aria-hidden="true" />
-                  <span><strong className="text-white font-semibold">Optional Accounts</strong>: Browsing the feeds and the scanner requires no account. An optional account (email, or Google/GitHub sign-in, with multi-factor support) exists only for submitting reports and appearing on the leaderboard. Your auth session token is stored in this browser's local storage; account details are processed by our backend provider, Supabase.</span>
-                </li>
-                <li className="flex gap-4">
-                  <span className="mt-2.5 h-px w-3 shrink-0 bg-red-500" aria-hidden="true" />
-                  <span><strong className="text-white font-semibold">Threat Data</strong>: Feeds and IOCs are publicly available security indicators and generally do not contain personal information.</span>
-                </li>
-              </ul>
-              <p className="mt-6 text-slate-500">Apart from the optional account email above, we do not collect personal data such as names or private contact details.</p>
-            </section>
-
-            <section>
-              <h3 className="text-2xl font-bold text-white mb-4 tracking-tight">
-                3. How We Use Information
-              </h3>
-              <ul className="space-y-4">
-                <li className="flex items-center gap-4">
-                  <div className="h-1 w-1 bg-red-500 rounded-full shrink-0" />
-                  <span>To operate, maintain, and improve the Service.</span>
-                </li>
-                <li className="flex items-center gap-4">
-                  <div className="h-1 w-1 bg-red-500 rounded-full shrink-0" />
-                  <span>To protect the Service against abuse (bot verification and rate limiting).</span>
-                </li>
-                <li className="flex items-center gap-4">
-                  <div className="h-1 w-1 bg-red-500 rounded-full shrink-0" />
-                  <span>We do not sell or rent personal data to third parties.</span>
-                </li>
-              </ul>
-            </section>
-
-            <section>
-              <h3 className="text-2xl font-bold text-white mb-4 tracking-tight">
-                4. Storage and Cookies
-              </h3>
-              <p className="mb-4">The following is what this site actually stores in your browser and device. All of it is first-party and strictly necessary for the features described:</p>
-              <ul className="space-y-3 list-disc pl-6 text-base md:text-lg">
-                <li><strong className="text-white font-semibold">Recent hunts</strong> (localStorage key <code className="font-mono text-sm">tb:recent</code>) — your last 5 lookups, so the console can show them back to you. Cleared anytime.</li>
-                <li><strong className="text-white font-semibold">IP prefill</strong> (sessionStorage key <code className="font-mono text-sm">tb:ip_prefill</code>) — a one-shot hint used to suggest your own IP in the scanner; never sent anywhere but this page.</li>
-                <li><strong className="text-white font-semibold">Login session</strong> (localStorage, <code className="font-mono text-sm">sb-*-auth-token</code>) — written only when you sign in, by our backend provider Supabase.</li>
-                <li><strong className="text-white font-semibold">Security cookies</strong> — Cloudflare sets <code className="font-mono text-sm">cf_clearance</code>/<code className="font-mono text-sm">__cf_bm</code> when the Turnstile check runs, to distinguish humans from bots.</li>
-              </ul>
-              <p className="mt-6">We do not use tracking, analytics, or advertising cookies, so no consent banner is required.</p>
-            </section>
-
-            <section>
-              <h3 className="text-2xl font-bold text-white mb-4 tracking-tight">
-                5. Data Sharing
-              </h3>
-              <ul className="space-y-4">
-                <li className="flex items-center gap-4">
-                  <div className="h-1 w-1 bg-red-500 rounded-full shrink-0" />
-                  <span>Data may be disclosed if required by law or to protect the Service.</span>
-                </li>
-                <li className="flex items-center gap-4">
-                  <div className="h-1 w-1 bg-red-500 rounded-full shrink-0" />
-                  <span>Threat intelligence data is publicly accessible as part of the feed.</span>
-                </li>
-              </ul>
-            </section>
-
-            <section>
-              <h3 className="text-2xl font-bold text-white mb-4 tracking-tight">
-                6. Third-Party Services
-              </h3>
-              <p>The Site relies on a small number of processors: Cloudflare (website hosting, edge logs, and Turnstile bot verification), Supabase (authentication and community report storage for the optional account), and GitHub (source code and the public feed mirrors). Their privacy practices are governed by their own policies.</p>
-            </section>
-
-            <section>
-              <h3 className="text-2xl font-bold text-white mb-4 tracking-tight">
-                7. Your Rights &amp; Contact
-              </h3>
-              <p>Threatbase is operated by the Threatbase project team. You may request access to, correction of, or deletion of any personal data we hold about you — in practice, that means the email tied to an optional account — by contacting <a href="mailto:threatbasepro@gmail.com" className="text-red-400 hover:text-red-300 underline underline-offset-4">threatbasepro@gmail.com</a>. We retain account data only as long as your account exists; Cloudflare edge logs follow its standard short retention. As stated above, we do not sell or share personal data for advertising, so no “Do Not Sell” mechanism applies.</p>
-            </section>
-
+          <div className="space-y-14 text-slate-400 leading-relaxed text-base md:text-lg max-w-[68ch]">
+            {CLAUSES.map((c) => (
+              <section key={c.heading}>
+                <h3 className="text-2xl font-bold text-white mb-4 tracking-tight">{c.heading}</h3>
+                {c.body.split('\n\n').map((para, i) =>
+                  // ALL-CAPS paragraphs are the operative disclaimers; set them apart.
+                  /^[^\p{Ll}]+$/u.test(para) ? (
+                    <p key={i} className="my-5 font-semibold leading-relaxed text-white">{para}</p>
+                  ) : (
+                    <p key={i} className="my-4">{para}</p>
+                  )
+                )}
+              </section>
+            ))}
           </div>
         </motion.div>
       </div>

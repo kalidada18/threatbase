@@ -2,12 +2,75 @@ import React from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { useSEO } from '@/useSEO'
 
+// Legal text is data, not prose in JSX: drafted for operator protection and
+// adversarially reviewed (draft + hostile-attack replacements, 2026-09-15).
+// Editing a clause = editing this array. Escaped ASCII (\u2014 etc.) by design.
+type Clause = { heading: string; body: string }
+const CLAUSES: Clause[] = [
+  {
+    "body": "These Terms and Conditions (\"Terms\") form a binding legal agreement between you and the independent developer operating Threatbase at threatbase.qzz.io (\"the Operator\", \"we\", \"us\"), a natural person resident in Nepal, and no other entity. By accessing or using the website, the data feeds, the reporting tools, the API, or any other feature (collectively, \"the Service\"), or by creating an account or an API key, you accept these Terms in full. If you do not accept them, you must immediately cease all access and use. \"The Feeds\" means the indicator-of-compromise lists (IPv4, IPv6, CIDR, domain, URL and file-hash entries) published or mirrored by the Service, together with their metadata and the publicly readable report data at /reported. You represent that you are at least eighteen (18) years old and legally capable of entering this agreement. If you use the Service on behalf of an organization, you represent that you are authorized to bind that organization, which in that case is jointly and severally bound with you. The Service is not directed to persons under eighteen (18) years of age, the Operator does not knowingly collect their personal data, and any account or submission identified as belonging to a person under eighteen may be terminated and removed under Section 8 without notice or liability. The Operator is a solo, unincorporated individual: nothing in these Terms creates, and you shall not assert, any employment, agency, partnership, or joint-venture relationship, and no entity other than the Operator personally stands behind the Service.",
+    "heading": "1. Acceptance; Contract Formation; Definitions"
+  },
+  {
+    "body": "The Service is a free, hobby-grade threat-intelligence platform. The Feeds are aggregated from public and open-source intelligence feeds, the Operator's own honeypot telemetry, and community submissions, and are distributed partly through third-party channels, including upstream projects such as MISP. The Feeds are offered for defensive security research and reference only. The Operator does not individually investigate, verify, or validate any indicator, report, or entity named in the Service, and publishes no assurance that any listed indicator is malicious, that any unlisted resource is benign, or that any entry is current, complete, or accurate. Indicator data is inherently time-sensitive, contextual, and error-prone; false positives (innocent hosts or domains listed as malicious) and false negatives are an expected and unavoidable property of the Service. Your sole remedy for dissatisfaction with the accuracy or availability of the Service is to stop using it.",
+    "heading": "2. Nature of the Service; No Verification"
+  },
+  {
+    "heading": "2.1 Automated Machine Data; No Assertions; No Duty to Non-Users; Correction Requests",
+    "body": "The Feeds are machine-generated data. Entries are produced by automated aggregation of upstream sources, the Operator's honeypot telemetry, and unreviewed community submissions, and are published as raw indicators only: no entry, listing, category, or report constitutes or implies any assertion, opinion, allegation, or representation by the Operator that any listed address, domain, hash, organization, or person is malicious, unlawful, or culpable, and no entry is the content of any human editor. To the fullest extent permitted by law, the Operator owes no duty of care to, and assumes no responsibility toward, any network operator, registrant, hosting provider, or other person or entity named in, affected by, or blocked on account of the Feeds or any third party's reliance on them, whether or not that person has ever used the Service, accessed /terms, or could have done so; no such person is a third-party beneficiary of these Terms, and any loss arising from another party's blocking, filtering, flagging, or enforcement must be pursued against that other party alone. A party that believes an entry affecting it is inaccurate may submit a correction request through the dispute tool on the Service, or by email to threatbasepro@gmail.com identifying the entry and supporting evidence. Correction requests are reviewed at the Operator's sole discretion: the Operator is under no obligation to review, to act, to act within any period, or to accept or reject any entry, and any review, delisting, relisting, inaction, or response creates no duty, admission, precedent, or liability of any kind and does not modify the disclaimers in Sections 9 and 10."
+  },
+  {
+    "body": "Accounts are optional and provided for convenience. You are solely responsible for the accuracy of your registration data, for maintaining the confidentiality of your password, TOTP secret, and every API key issued to you, and for all activity conducted under your account or keys, whether or not authorized by you; activity under a key is conclusively attributable to you. API keys are limited to three (3) active keys per user, are subject to per-key rate limits, and may be revoked by the Operator at any time for any reason without notice or liability. You may not sell, transfer, share, or otherwise let any third party use your account or keys. You must notify the Operator promptly at threatbasepro@gmail.com of any suspected credential compromise; the Operator has no duty to monitor for misuse and no liability for losses arising from compromised credentials. Access is granted revocably, non-exclusively, and for no consideration unless a paid tier is expressly offered by separate written terms. You are solely responsible for the security of every device, browser profile, and network you use to access the Service. The Service keeps you signed in on a device until you sign out or your session expires, and stores state durably on that device (authentication token, preferences, and recent lookups in browser storage); sessions are not ended automatically, may survive across devices through your identity provider's session scope, and are not remotely revocable by any setting other than signing out, changing your password, or asking the Operator to revoke your keys. On any shared or family computer you must sign out explicitly at the end of each session and clear locally stored session data; the Operator is not liable for any exposure, activity, or consequence arising from your failure to do so, and such exposure is covered by your responsibility for credentials under this Section and by your indemnity obligations under Section 11.",
+    "heading": "3. Accounts, API Keys, and Credential Responsibility"
+  },
+  {
+    "body": "You agree not to: (a) submit indicators, reports, or disputes you know or reasonably should suspect to be false, misleading, or fabricated, or engage in \"feed poisoning\" \u2014 the systematic injection of malicious indicators to manipulate, taint, or weaponize the Feeds against innocent parties, or the suppression of genuinely malicious ones; (b) report an indicator in bad faith, for retaliation, competitively, or to coerce a listed party; (c) scrape, bulk-download, mirror, or harvest the Service or the Feeds by automated means beyond reasonable individual consumption, circumvent or test the bypass of rate limits, the Cloudflare managed challenge, Turnstile, or any access control, or overload or disrupt the Service; (d) resell, sublicense, syndicate as a competing feed, or otherwise commercially exploit the Feeds or /reported data except as expressly licensed in Section 5; (e) present Feeds data, or any output derived from it, as verified, authoritative, or independently corroborated by the Operator, or misrepresent any affiliation with the Operator or endorsement by it; (f) use the Service or the Feeds to identify, target, attack, extort, or otherwise harm systems or persons, or to probe the Service's own infrastructure; (g) upload malware, attempt unauthorized access, or violate any applicable law, including export-control and computer-crime laws; (h) interfere with the Service's operation, security, or availability. The Operator unilaterally interprets and enforces this Section. Violation is grounds for immediate suspension, key revocation, and permanent ban, without notice, refund, or liability.",
+    "heading": "4. Acceptable Use"
+  },
+  {
+    "body": "The Operator grants you a revocable, non-exclusive, non-transferable, royalty-free license to access and use the Feeds solely for lawful defensive security purposes \u2014 including detection, blocking, research, and internal risk analysis. You may incorporate Feeds data into firewalls, blocklists, SIEM content, and reports only on these conditions: (a) you accept that the Feeds contain automated and unverified data and that any automated blocking you perform is your own decision, made entirely at your own risk, and you are solely responsible for false-positive consequences, including any outage, denial of service, or business loss suffered by any third party that you block on the basis of Feeds data; (b) you give attribution to \"Threatbase\" (threatbase.qzz.io) in any public product or documentation that materially relies on the Feeds; (c) you comply with the license terms of the upstream open-source feeds aggregated into the Feeds, which the Operator does not own and cannot relicense; (d) you do not remove, obscure, or alter provenance metadata. The Feeds may be redistributed only in machine-readable form and only into defensive security tooling, research outputs, and upstream open-intelligence projects such as MISP, and every copy or derivative must preserve, unaltered and unobscured: (i) the attribution 'Threatbase \u2014 threatbase.qzz.io'; (ii) a statement that the data is automated, unverified, and not an assertion of fact by any publisher; and (iii) the license terms of this Section and of the applicable upstream feeds. This permission is not a permission to sell: you may not (x) resell, sublicense, or paywall the Feeds or substantial portions of them, (y) operate the Feeds or data derived from them as a competing feed, product, or commercial service, or (z) rebrand, white-label, or present the Feeds as your own or as independently verified. The license granted by this Section terminates automatically, without notice, upon any breach of Sections 4 or 5; any continued use, redistribution, or display after termination is unlicensed, constitutes infringement and breach, and is expressly not 'fair use' of the Operator's expression, compilation, and honeypot-derived datasets. All rights not expressly granted are reserved.",
+    "heading": "5. Feed Licensing, Attribution, and Allocation of Wrongful-Blocking Risk"
+  },
+  {
+    "body": "You may submit reports, disputes, comments, and profile content (\"User Content\"). User Content is public by design: report records \u2014 IP address, category, comment, your reporter alias, and timestamps \u2014 are readable by anyone without authentication, and you assert no expectation of privacy, confidentiality, or deletion in what you submit. You retain ownership of User Content but grant the Operator a worldwide, perpetual, irrevocable, royalty-free, sublicensable license to host, reproduce, publish, display, edit, translate, aggregate, and create derivative works from it, including incorporation into the Feeds and redistribution through third-party channels. You represent and warrant that you hold all rights needed for this grant and that User Content is truthful to the best of your knowledge and does not infringe third-party rights or contain fabricated intelligence. The Operator may moderate, edit, or delete any User Content at sole discretion, has no duty to do so, and gives no guarantee of any listing, delisting, dispute outcome, or response time. Dispute and report submissions are requests for review, not entitlements.",
+    "heading": "6. User Content; Public by Design; License Grant"
+  },
+  {
+    "body": "As between you and the Operator, all right, title, and interest in the Service's original expression \u2014 the website, its name, marks, \"Threatbase\" branding, layout, original documentation, and the Operator's own honeypot-derived datasets \u2014 belong to the Operator or its licensors. Aggregated upstream data remains subject to its original owners and licenses. Nothing transfers to you except the limited licenses in Sections 3 and 5. You may not copy, imitate, or adopt confusingly similar names or marks, and you acquire no goodwill interest in the Service. Reproduction of website text for personal, non-commercial reference is tolerated; everything else requires the Operator's prior written consent.",
+    "heading": "7. Intellectual Property"
+  },
+  {
+    "body": "The Operator may, at any time, without notice and for any or no reason: restrict, throttle, suspend, or terminate your access to the Service; disable or revoke any or all API keys; delete or quarantine User Content; delist or relist indicators; and alter, interrupt, degrade, or discontinue the Service or any part of it, permanently or temporarily, including as abuse countermeasures or following compromise of the Operator's upstream providers. You waive all claims against the Operator arising from any such action or inaction, including claims for lost data, lost productivity, lost revenue, or reliance on previously available access. Upon termination, your license ends, your keys are void, and Sections 5 through 12 survive. No notice or cure period is owed to you.",
+    "heading": "8. Suspension, Termination, and Revocation"
+  },
+  {
+    "body": "THE SERVICE, THE FEEDS, AND ALL DATA AND OUTPUT ARE PROVIDED \"AS IS\" AND \"AS AVAILABLE,\" WITH ALL FAULTS, TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW. TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THE OPERATOR EXPRESSLY DISCLAIMS ALL WARRANTIES OF ANY KIND, WHETHER EXPRESS, IMPLIED, STATUTORY, OR OTHERWISE, INCLUDING WITHOUT LIMITATION THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, SATISFACTORY QUALITY, ACCURACY, TITLE, AND NON-INFRINGEMENT, AND ANY WARRANTIES ARISING FROM COURSE OF DEALING OR USAGE OF TRADE. WITHOUT LIMITING THE FOREGOING, THE OPERATOR DOES NOT WARRANT THAT: (A) THE FEEDS ARE ACCURATE, COMPLETE, TIMELY, ERROR-FREE, OR FREE OF FALSE POSITIVES OR FALSE NEGATIVES; (B) ANY INDICATOR, REPORT, OR LISTING HAS BEEN VERIFIED OR INDEPENDENTLY INVESTIGATED; (C) THE SERVICE WILL BE UNINTERRUPTED, SECURE, AVAILABLE, OR FREE OF HARMFUL COMPONENTS; (D) ANY DISPUTE, REPORT, OR KEY REQUEST WILL BE ANSWERED, RESOLVED, OR RESOLVED IN YOUR FAVOR; OR (E) DATA ASSOCIATED WITH A SUSPENDED OR DELETED ACCOUNT WILL BE PRESERVED. YOU ASSUME FULL RESPONSIBILITY FOR YOUR USE OF THE SERVICE AND FOR ANY CONSEQUENCES OF RELYING ON FEEDS DATA, INCLUDING AUTOMATED BLOCKING DECISIONS.",
+    "heading": "9. Disclaimers of Warranties"
+  },
+  {
+    "body": "TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL THE OPERATOR BE LIABLE FOR ANY DAMAGES AT ALL \u2014 WHETHER IN CONTRACT, TORT (INCLUDING NEGLIGENCE), STRICT LIABILITY, STATUTE, OR ANY OTHER LEGAL THEORY \u2014 ARISING OUT OF OR RELATING TO THE SERVICE, THE FEEDS, OR YOUR OR ANY THIRD PARTY'S USE OF OR INABILITY TO USE THEM, INCLUDING ANY LOSS OF DATA, REPUTATION, OR AVAILABILITY; ANY ERRORS, OMISSIONS, OR FALSE POSITIVES IN INDICATOR DATA; ANY BLOCKING, OUTAGE, DENIAL OF SERVICE, OR BUSINESS INTERRUPTION SUFFERED BY YOU OR ANY PERSON RESULTING FROM RELIANCE ON THE FEEDS; ANY UNAUTHORIZED ACCESS TO CREDENTIALS OR ACCOUNTS; ANY USER CONTENT; OR ANY SERVICE INTERRUPTION, RESTRICTION, OR TERMINATION \u2014 EVEN IF THE OPERATOR HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES. THE OPERATOR'S TOTAL AGGREGATE LIABILITY FOR ALL CLAIMS ARISING FROM THE SERVICE IS LIMITED, AT THE OPERATOR'S ELECTION, TO ZERO, AND IN NO EVENT TO MORE THAN THE AMOUNTS, IF ANY, THAT YOU HAVE PAID THE OPERATOR FOR THE SERVICE IN THE TWELVE (12) MONTHS PRECEDING THE CLAIM. THESE LIMITATIONS APPLY TO THE FULLEST EXTENT PERMITTED BY LAW EVEN IF ANY REMEDY FAILS OF ITS ESSENTIAL PURPOSE. YOU MUST BRING ANY CLAIM WITHIN ONE (1) YEAR AFTER THE CLAIM ARISES; CLAIMS BROUGHT LATER ARE PERMANENTLY WAIVED.",
+    "heading": "10. Limitation of Liability"
+  },
+  {
+    "body": "You shall defend, indemnify, and hold harmless the Operator, personally, from and against any and all claims, damages, liabilities, losses, costs, and expenses (including reasonable attorneys' fees) arising out of or relating to: (a) your use of the Service or the Feeds, including any blocking, enforcement, or business decision you or your organization makes on the basis of Feeds data that causes any third party to suffer loss; (b) any report, submission, or User Content you provide, including any claim by an affected or listed party against the Operator arising from it; (c) your violation of these Terms or of any applicable law; (d) any use of your account, keys, or credentials by any person, authorized or not; or (e) your breach of any representation or warranty herein. The Operator may control the defense of any indemnified claim at your expense, and these obligations survive termination and the expiration of any limitations period. Nothing in this Section limits the Operator's other rights or remedies.",
+    "heading": "11. Indemnification"
+  },
+  {
+    "heading": "11.1 Data Protection; Processing; Subprocessors; Cross-Border Transfer",
+    "body": "Data Protection. The Privacy Policy at /privacy governs the Operator's processing of personal data and is incorporated into these Terms by reference; in case of conflict on personal-data matters the Privacy Policy controls between the Operator and its account holders. The Operator is a natural person resident in Nepal with no entity, employees, or offices elsewhere. Account, session, report, and dispute data is hosted and processed principally in the United States by the Operator's infrastructure providers, which are its only authorized subprocessors: Supabase Inc. (authentication, database, and session persistence), Cloudflare Inc. (website hosting, managed bot challenge, Turnstile), GitHub (source-code repository and public feed mirrors), and Google LLC (optional OAuth sign-in). By using the Service you are expressly informed that, and to the extent consent is the applicable lawful basis you consent to, the transfer, storage, and processing of your personal data in Nepal, the United States, and wherever these providers or their subprocessors operate, including under the legal regimes of those countries; the Operator maintains no adequacy decision, standard contractual clauses, or other transfer mechanism of its own and relies solely on each provider's arrangements, and nothing here is a warranty of any specific certification by any provider. The Operator has appointed no data protection officer or representative. Requests to exercise rights recognized by applicable law may be sent to threatbasepro@gmail.com from the email address registered to the account, are handled manually by the Operator alone, are honored only to the extent required by applicable law and technically feasible across the stack described above (including caches and upstream mirrors the Operator does not control), and carry no guaranteed acknowledgment or response time. No clause of these Terms is a promise of deletion, portability, retention limits, or confidentiality beyond what applicable law independently requires."
+  },
+  {
+    "body": "Third parties. The Service links to and depends on third-party resources \u2014 MISP, GitHub, Cloudflare (hosting, managed challenge, Turnstile), Supabase (authentication and database), Google (OAuth sign-in), and upstream feed and abuse sources. The Operator does not control and is not responsible for their content, policies, availability, or data practices, and your use of them is subject to their own terms. The Operator may be reached at threatbasepro@gmail.com; email is the only contractual channel and no response time is guaranteed. Changes. Changes. The Operator may revise these Terms at any time by posting the updated text at /terms without separate notice to you; revised Terms take effect immediately upon posting, and your continued use of the Service after posting constitutes acceptance of the revised Terms. General. These Terms, together with the Privacy Policy, are the entire agreement between you and the Operator and supersede all prior or collateral understandings. If any provision is held unenforceable, it shall be modified to the minimum extent necessary to make it enforceable and the remainder stays in full force; the unenforceability of one clause shall not affect any other. Failure to enforce is not a waiver. You may not assign these Terms; the Operator may. Disputes. These Terms are governed by the laws of Nepal, without regard to conflict-of-law rules. You and the Operator irrevocably submit to the exclusive jurisdiction and venue of the competent courts of Kathmandu, Nepal for any dispute arising from or relating to the Service or these Terms, waive any objection based on inconvenient forum, and agree that all claims shall be brought in an individual capacity only and not as a class or consolidated proceeding. The Operator may nonetheless seek injunctive or other equitable relief in any jurisdiction to prevent feed poisoning, unauthorized access, or breach of Sections 4 through 7.",
+    "heading": "12. Third Parties; Changes; General; Governing Law and Venue"
+  }
+]
+
 export default function TermsPage() {
   const prefersReducedMotion = useReducedMotion()
 
   useSEO({
     title: 'Terms and Conditions | Threatbase',
-    description: 'Terms and Conditions governing use of Threatbase: acceptable use of the free IOC feeds and scanner, community reporting rules, liability, and termination.',
+    description: 'Terms and Conditions governing Threatbase: acceptable use, feed licensing and attribution, wrongful-blocking risk allocation, disclaimers, liability cap, indemnity, and Nepal governing law.',
     path: '/terms',
   })
 
@@ -22,92 +85,28 @@ export default function TermsPage() {
           <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-red-500/20 bg-red-500/5 px-3 py-1 text-[10px] font-bold tracking-widest text-red-400 uppercase">
             Legal Information
           </div>
-          
+
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter text-white leading-[0.95] mb-6">
-            Terms & Conditions.
+            Terms &amp; Conditions.
           </h1>
           <p className="text-sm font-mono text-slate-500 mb-16 border-b border-white/5 pb-8">
-            Effective Date: June 12, 2026
+            Effective Date: September 15, 2026 &middot; supersedes all prior versions
           </p>
 
-          <div className="space-y-16 text-slate-400 leading-relaxed text-base md:text-lg max-w-[65ch]">
-            
-            <section>
-              <h3 className="text-2xl font-bold text-white mb-4 tracking-tight">
-                1. Acceptance of Terms
-              </h3>
-              <p>By accessing or using Threatbase, you agree to be bound by these Terms and Conditions. If you do not agree, you must not use the Service.</p>
-            </section>
-
-            <section>
-              <h3 className="text-2xl font-bold text-white mb-4 tracking-tight">
-                2. Description of Service
-              </h3>
-              <p>Threatbase is a free threat intelligence platform providing access to threat feeds, indicators of compromise (IOCs), and related security data. The Service is provided "as is" for informational, research, and defensive security purposes only.</p>
-            </section>
-
-            <section>
-              <h3 className="text-2xl font-bold text-white mb-4 tracking-tight">
-                3. User Responsibilities
-              </h3>
-              <ul className="space-y-4">
-                <li className="flex gap-4">
-                  <span className="mt-2.5 h-px w-3 shrink-0 bg-red-500" aria-hidden="true" />
-                  <span>You must comply with all applicable laws and regulations.</span>
-                </li>
-                <li className="flex gap-4">
-                  <span className="mt-2.5 h-px w-3 shrink-0 bg-red-500" aria-hidden="true" />
-                  <span>You may not use the Service for malicious purposes, to distribute malware, or to conduct unauthorized attacks.</span>
-                </li>
-                <li className="flex gap-4">
-                  <span className="mt-2.5 h-px w-3 shrink-0 bg-red-500" aria-hidden="true" />
-                  <span>You agree not to excessively scrape data, overload the Service, or attempt to reverse-engineer it.</span>
-                </li>
-                <li className="flex gap-4">
-                  <span className="mt-2.5 h-px w-3 shrink-0 bg-red-500" aria-hidden="true" />
-                  <span>Any contact information you provide must be accurate.</span>
-                </li>
-              </ul>
-            </section>
-
-            <section>
-              <h3 className="text-2xl font-bold text-white mb-4 tracking-tight">
-                4. Intellectual Property
-              </h3>
-              <p>All content on the Site, unless otherwise noted, belongs to or is licensed to the operator of Threatbase. You may use the data feeds for personal, research, or internal security purposes, provided you give appropriate attribution where required and respect any source-specific licenses.</p>
-            </section>
-
-            <section>
-              <h3 className="text-2xl font-bold text-white mb-4 tracking-tight">
-                5. Disclaimers & Liability
-              </h3>
-              <ul className="space-y-4">
-                <li className="flex items-center gap-4">
-                  <div className="h-1 w-1 bg-red-500 rounded-full shrink-0" />
-                  <span>The Service is provided <strong className="text-white">"AS IS"</strong> without any warranties.</span>
-                </li>
-                <li className="flex items-center gap-4">
-                  <div className="h-1 w-1 bg-red-500 rounded-full shrink-0" />
-                  <span>Threat intelligence data may contain inaccuracies or delays. You use the Service entirely at your own risk.</span>
-                </li>
-                <li className="flex items-center gap-4">
-                  <div className="h-1 w-1 bg-red-500 rounded-full shrink-0" />
-                  <span>In no event shall the operator be liable for any damages arising from your use of the Service.</span>
-                </li>
-                <li className="flex items-center gap-4">
-                  <div className="h-1 w-1 bg-red-500 rounded-full shrink-0" />
-                  <span>The Site may contain links to third-party websites; we are not responsible for their content or practices.</span>
-                </li>
-              </ul>
-            </section>
-
-            <section>
-              <h3 className="text-2xl font-bold text-white mb-4 tracking-tight">
-                6. Termination
-              </h3>
-              <p>We reserve the right to restrict or block access to the Service at any time, without notice, for any reason.</p>
-            </section>
-
+          <div className="space-y-14 text-slate-400 leading-relaxed text-base md:text-lg max-w-[68ch]">
+            {CLAUSES.map((c) => (
+              <section key={c.heading}>
+                <h3 className="text-2xl font-bold text-white mb-4 tracking-tight">{c.heading}</h3>
+                {c.body.split('\n\n').map((para, i) =>
+                  // ALL-CAPS paragraphs are the operative disclaimers; set them apart.
+                  /^[^\p{Ll}]+$/u.test(para) ? (
+                    <p key={i} className="my-5 font-semibold leading-relaxed text-white">{para}</p>
+                  ) : (
+                    <p key={i} className="my-4">{para}</p>
+                  )
+                )}
+              </section>
+            ))}
           </div>
         </motion.div>
       </div>
