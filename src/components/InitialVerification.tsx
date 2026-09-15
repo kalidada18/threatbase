@@ -1,4 +1,5 @@
 import React from 'react'
+import { motion } from 'framer-motion'
 import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile'
 import { TURNSTILE_SITE_KEY } from '@/lib/turnstile'
 
@@ -57,16 +58,20 @@ export default function InitialVerification({ onSuccess }: InitialVerificationPr
   }
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col bg-black font-sans text-white">
+    <motion.div
+      className="fixed inset-0 z-[100] flex flex-col bg-black font-sans text-white"
+      initial={{ opacity: 1 }}
+      exit={{ opacity: 0, transition: { duration: 0.45, ease: 'easeInOut' } }}
+    >
       <div className="mx-auto flex w-full max-w-[700px] flex-1 flex-col items-center justify-center px-6 text-center md:px-8">
-        {/* Site identity: red ban mark + hostname, as on the real page. */}
+        {/* Site identity: Threatbase logo + hostname headline. */}
         <div className="mb-4 flex items-center justify-center gap-4">
-          <span
-            aria-hidden
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-[3px] border-red-600"
-          >
-            <span className="block h-[3px] w-7 -rotate-45 rounded-full bg-red-600" />
-          </span>
+          <img
+            src={`${import.meta.env.BASE_URL}img/logo.png`}
+            alt=""
+            aria-hidden="true"
+            className="h-11 w-11 shrink-0 rounded-full border-[3px] border-red-600 object-contain"
+          />
           <h1 className="text-4xl font-bold tracking-tight md:text-[2.6rem]">{host}</h1>
         </div>
 
@@ -134,6 +139,6 @@ export default function InitialVerification({ onSuccess }: InitialVerificationPr
           >Privacy</a>
         </p>
       </div>
-    </div>
+    </motion.div>
   )
 }

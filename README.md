@@ -72,9 +72,9 @@ Threatbase is a **fully-automated threat-intelligence pipeline**. It ingests, va
 |:--|:--|:--|
 | **Intelligence Engine** | Python 3.11 · `ThreadPoolExecutor` | Concurrent ingestion, dedup, validation, classification |
 | **Automation** | GitHub Actions | Scheduled & on-demand pipeline runs |
-| **Web Console** | React 19 · Tailwind · Framer Motion · Cloudflare Pages | IOC hunt, verdict cards, RDAP whois, community comments |
-| **API & Community** | Cloudflare Functions · Supabase · KV rate limiting | Scan/report endpoints, auth-gated reporting, Turnstile |
-| **Delivery** | GitHub Raw | Zero-infra, always-on blocklist serving |
+| **Web Console** | React 19 · Tailwind · Framer Motion · Cloudflare Pages | IOC hunt, verdict cards, Bulk / CSV hunt (Pro), RDAP whois, community comments |
+| **API & Community** | Cloudflare Functions · Supabase · KV rate limiting | Scan/report endpoints, MCP server (`/mcp`), Pro feed delivery (`/feed/<key>`), Turnstile-gated auth |
+| **Delivery** | GitHub Raw · edge mirror | Zero-infra blocklist serving; same-origin `https://threatbase.qzz.io/ioc/…` mirrors every file with edge caching |
 | **Archives** | GitHub Releases | Daily ZIP snapshots for retrospective hunting |
 | **Large-feed mirrors** | Git chunks + Release assets | Domain/hash feeds ship as ~31 MiB chunks in `ioc/domain/` + `ioc/hash/` and unsplit as release assets |
 
@@ -89,10 +89,11 @@ threatbase/
 │   ├── domain/  domain feed chunks
 │   ├── hash/    hash feed chunks
 │   ├── url/     URL feed
-│   ├── firewall/ deploy-ready formats (EDL, ipset, Suricata, NDJSON.gz)
-│   └── data/    stats, manifest, history, geo, feed_health, community data
+│   ├── misp/    MISP free-text exports (IP · domain · URL · hash)
+│   └── data/    stats, manifest, history, geo, feed_health, top_apt, community data
 ├── src/         Web console (Cloudflare Pages)
-├── functions/   API endpoints: /api/v1/* scan, report, community (Cloudflare)
+├── functions/   API endpoints: /api/v1/* scan, report, community; /ioc/* edge
+│                mirror; /feed/<key>/* Pro delivery; /mcp MCP server (Cloudflare)
 ├── db/          Supabase SQL: schema, RLS, RPCs (apply manually, see db/README)
 ├── public/      Static assets, _redirects/_headers, robots, sitemap
 └── .github/     update-feed.yml workflow (triggered via workflow_dispatch)
@@ -147,7 +148,10 @@ Threatbase curates and deduplicates from authoritative providers, including:
 
 ## 📥 Using the Feeds
 
-Every feed is committed to this repo and served continuously via **GitHub Raw** — drop them straight into your tooling. No auth. No rate limits.
+Every feed is committed to this repo and served via **GitHub Raw** — drop them
+straight into your tooling. No auth. No rate limits.
+`https://threatbase.qzz.io/ioc/…` is a same-origin edge-cached mirror of every
+public file, which is friendlier for tools that blocklist GitHub Raw.
 
 > Feeds now live in type folders — `ioc/ip/`, `ioc/domain/`, `ioc/hash/`,
 > `ioc/url/`, `ioc/data/`. The old flat `ioc/<file>` raw URLs are retired; update
@@ -168,7 +172,7 @@ https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/ip/threatbase-c
 
 | Feed | File | Format |
 |:--|:--|:--|
-| IPv4 Blocklist | `threatbase-ip.txt` | `IP,FeedCount,RiskScore,Tags` |
+| IPv4 Blocklist | `threatbase-ip.txt` | `IP,FeedCount,RiskScore,Tags,FirstSeen,LastSeen,Sources` |
 | IPv6 Blocklist | `threatbase-ipv6.txt` | One IP per line |
 | CIDR Blocklist | `threatbase-cidr.txt` | CIDR notation |
 
@@ -176,7 +180,8 @@ https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/ip/threatbase-c
 
 > Apply different policies per threat type — hard-block C2, just alert on Tor.
 
-Per-category IPv4 blocklists (same `IP,FeedCount,RiskScore,Tags` format) are a
+Per-category IPv4 blocklists (same
+`IP,FeedCount,RiskScore,Tags,FirstSeen,LastSeen,Sources` format) are a
 [**Threatbase Pro**](https://threatbase.qzz.io/pricing) feed. Generate an API key on your
 [Profile](https://threatbase.qzz.io/profile) page and fetch them under your own token:
 
@@ -261,6 +266,26 @@ https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/hash/threatbase
   it fetches only the one chunk that can contain the query.
 
 </details>
+
+### 🧬 MISP Free-Text Exports
+
+> Paste straight into a MISP attribute import — one indicator per line, no CSV.
+
+```text
+https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/misp/threatbase-ip.txt
+https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/misp/threatbase-domain.txt
+https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/misp/threatbase-url.txt
+https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/misp/threatbase-hash.txt
+```
+
+---
+
+## 🤖 MCP Server
+
+Point your agent tooling at **`https://threatbase.qzz.io/mcp`** (Streamable HTTP)
+and it gets three tools: `scan_ioc` (single-indicator verdict), `batch_scan`
+(up to 100 per call), and `feed_stats` (live coverage counts). No key, same
+fair-use rate limits as the REST API.
 
 ---
 

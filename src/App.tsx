@@ -298,7 +298,10 @@ export default function App() {
   return (
     <MotionConfig reducedMotion="user">
     <AuthProvider>
-      {!verified && <InitialVerification onSuccess={completeVerify} />}
+      {/* Exit-fade curtain: the already-painted site is revealed underneath. */}
+      <AnimatePresence>
+        {!verified && <InitialVerification onSuccess={completeVerify} />}
+      </AnimatePresence>
 
       <Navbar />
 
