@@ -18,7 +18,7 @@ const FAQS: { q: string; a: string }[] = [
   },
   {
     q: 'Where does the data come from?',
-    a: 'Authoritative open sources including Abuse.ch (FeodoTracker, URLhaus, MalwareBazaar), Spamhaus DROP/EDROP, FireHOL, DShield, PhishTank, OpenPhish, Emerging Threats, Hagezi, Blocklist.de and GreenSnow. Full attribution with links to every upstream is on the Credits page.',
+    a: 'Authoritative open intelligence sources aggregated, validated and republished under the Threatbase brand, plus community reports. The pipeline ingests 54 curated public feeds and deduplicates them before publishing.',
   },
   {
     q: 'How often are the feeds updated?',

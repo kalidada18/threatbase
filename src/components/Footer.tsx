@@ -21,7 +21,7 @@ export default function Footer() {
           alt: "Threatbase Logo",
           title: "Threatbase",
         }}
-        description="Advanced threat intelligence platform. Special thanks to all open-source intelligence contributors including Spamhaus, FireHOL, AbuseIPDB, Emerging Threats, and the wider infosec community."
+        description="Advanced threat intelligence platform. Special thanks to all open-source intelligence contributors and the wider infosec community."
         sections={[
           {
             title: "Product",

@@ -1,30 +1,9 @@
 import { useState, useEffect } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
-import { ExternalLink, Trophy, ArrowRight } from 'lucide-react'
+import { Trophy, ArrowRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useSEO } from '@/useSEO'
 import supabaseClient from '@/supabaseClient'
-
-type Source = { name: string; desc: string; url: string }
-
-const SOURCES: Source[] = [
-  { name: 'Spamhaus', desc: 'DROP / EDROP hijacked & malicious netblocks', url: 'https://www.spamhaus.org/' },
-  { name: 'FireHOL', desc: 'Curated IP blocklist aggregation (levels 1 to 3)', url: 'https://iplists.firehol.org/' },
-  { name: 'Abuse.ch', desc: 'Feodo Tracker, ThreatFox, URLhaus & SSLBL', url: 'https://abuse.ch/' },
-  { name: 'AbuseIPDB', desc: 'Community-reported IP abuse confidence scores', url: 'https://www.abuseipdb.com/' },
-  { name: 'Emerging Threats', desc: 'Compromised hosts & firewall block rules', url: 'https://rules.emergingthreats.net/' },
-  { name: 'SANS DShield', desc: 'Internet Storm Center attack sensor feed', url: 'https://www.dshield.org/' },
-  { name: 'Blocklist.de', desc: 'Fail2ban-sourced brute-force & abuse reports', url: 'https://www.blocklist.de/' },
-  { name: 'CINS Army', desc: 'CI Army low-noise malicious IP scoring', url: 'https://cinsscore.com/' },
-  { name: 'IPsum', desc: 'Aggregated threat intelligence by source count', url: 'https://github.com/stamparm/ipsum' },
-  { name: 'Binary Defense', desc: 'Community banlist of hostile systems', url: 'https://www.binarydefense.com/' },
-  { name: 'GreenSnow', desc: 'Attackers detected probing servers worldwide', url: 'https://greensnow.co/' },
-  { name: 'Tor Project', desc: 'Authoritative Tor exit-node lists', url: 'https://www.torproject.org/' },
-  { name: 'OpenPhish', desc: 'Real-time phishing URL intelligence', url: 'https://openphish.com/' },
-  { name: 'MalwareBazaar', desc: 'Malware sample hash sharing (abuse.ch)', url: 'https://bazaar.abuse.ch/' },
-  { name: 'StevenBlack Hosts', desc: 'Unified malware & ad host blocklists', url: 'https://github.com/StevenBlack/hosts' },
-  { name: 'DataPlane.org', desc: 'SSH, SIP & VNC abuse telemetry', url: 'https://dataplane.org/' },
-]
 
 export default function ThanksPage() {
   const [topReporter, setTopReporter] = useState<string | null>(null)
@@ -49,8 +28,8 @@ export default function ThanksPage() {
   }, [])
 
   useSEO({
-    title: 'Intel Sources & Credits | Threatbase',
-    description: 'Threatbase is powered by the global infosec community: Spamhaus, FireHOL, Emerging Threats, Abuse.ch, SANS DShield, and 15+ open-source threat intelligence providers.',
+    title: 'Community & Contributors | Threatbase',
+    description: 'Threatbase is powered by the global infosec community: aggregated, validated and maintained open-source threat intelligence, plus community reports.',
     path: '/thanks',
   })
 
@@ -81,42 +60,12 @@ export default function ThanksPage() {
           className="text-center flex flex-col items-center"
         >
           <h1 className="text-5xl sm:text-6xl md:text-8xl lg:text-[10rem] font-black tracking-tighter text-white leading-[0.9]">
-            Intel<br /><span className="text-metal">Sources.</span>
+            Community<br /><span className="text-metal">Powered.</span>
           </h1>
 
           <p className="mt-8 text-slate-400 text-lg md:text-xl max-w-xl mx-auto leading-relaxed">
-            Threatbase is powered by the security community. We credit the maintainers who share open intelligence.
+            Threatbase aggregates, validates and maintains open threat intelligence, enriched by community reports.
           </p>
-        </motion.div>
-
-        {/* Film-credit style marquee */}
-        <motion.div
-          initial={prefersReducedMotion ? false : { opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 0.3 }}
-          className="relative mt-20"
-        >
-          {/* Track is duplicated because marqueeScroll translates -50%; the mask
-              replaces the old layered-blur edge fade, and .animate-marquee already
-              carries hover-pause + prefers-reduced-motion (see index.css). */}
-          <div className="relative flex h-[80px] w-full items-center overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]">
-            <div className="animate-marquee flex w-max shrink-0 items-center gap-16">
-              {[...SOURCES, ...SOURCES].map((s, i) => (
-                <span
-                  key={`${s.name}-${i}`}
-                  aria-hidden={i >= SOURCES.length}
-                  className="whitespace-nowrap font-mono text-sm md:text-base font-medium tracking-[0.1em] text-slate-400 uppercase transition-colors hover:text-white"
-                >
-                  {s.name}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          <div className="relative -mt-4 h-24 w-full overflow-hidden [mask-image:radial-gradient(ellipse_at_center,white,transparent)]">
-            <div className="absolute inset-0 before:absolute before:inset-0 before:bg-[radial-gradient(circle_at_bottom_center,var(--gradient-color),transparent_60%)] before:opacity-20" />
-            <div className="absolute -left-1/2 top-1/2 z-10 aspect-[1/0.5] w-[200%] rounded-[100%] border-t border-red-500/10 bg-[#080b12]" />
-          </div>
         </motion.div>
 
         {/* Top contributor highlight */}
@@ -141,40 +90,6 @@ export default function ThanksPage() {
             </div>
           </motion.div>
         )}
-
-        {/* Editorial Source List */}
-        <motion.div
-          initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-100px' }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="mt-20 max-w-4xl mx-auto"
-        >
-          <div className="divider-metal mx-auto mb-14 w-40" />
-          <div className="grid border-t border-white/5 lg:grid-cols-2 lg:gap-x-16">
-            {SOURCES.map((s) => (
-              <a
-                key={s.name}
-                href={s.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group flex flex-col md:flex-row md:items-center justify-between border-b border-white/5 py-8 px-4 transition-colors hover:bg-white/[0.015]"
-              >
-                <div className="flex flex-col md:flex-row md:items-baseline gap-2 md:gap-8 lg:gap-16">
-                  <h3 className="text-xl md:text-2xl font-bold tracking-tight text-white transition-colors group-hover:text-red-400 md:w-56 shrink-0">
-                    {s.name}
-                  </h3>
-                  <p className="text-sm md:text-base text-slate-400">
-                    {s.desc}
-                  </p>
-                </div>
-                <div className="hidden md:flex shrink-0 ml-4 items-center justify-center w-10 h-10 rounded-full border border-white/5 opacity-0 -translate-x-4 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0 group-hover:bg-red-500/10 group-hover:border-red-500/20 group-hover:text-red-400">
-                  <ExternalLink className="h-4 w-4" />
-                </div>
-              </a>
-            ))}
-          </div>
-        </motion.div>
 
         {/* Footer note + CTA */}
         <motion.div

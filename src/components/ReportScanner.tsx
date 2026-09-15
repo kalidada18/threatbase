@@ -850,7 +850,7 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
                       <p className="text-sm text-slate-300 leading-relaxed">
                         Listed via malicious subnet{' '}
                         <span className="font-mono font-bold text-rose-300 break-all">{scanResult.matchedCidr}</span>.
-                        This address falls inside a range flagged by threat-intelligence feeds (e.g. Spamhaus, FireHOL).
+                        This address falls inside a range flagged by Threatbase threat-intelligence feeds.
                       </p>
                     </div>
                   )}
