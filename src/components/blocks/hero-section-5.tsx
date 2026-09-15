@@ -189,7 +189,7 @@ export function HeroSection({ scanInput, setScanInput, handleScan, isScanning, s
                 type="text"
                 aria-label="Hunt an IP, domain, URL, or hash"
                 placeholder={hintIp ? `Your IP: ${hintIp}` : 'Enter IP, domain, URL, or hash…'}
-                className={`hero-scan-input relative h-14 md:h-16 w-full rounded-full border bg-slate-950/70 backdrop-blur-xl pl-12 md:pl-14 pr-[11rem] sm:pr-[14.5rem] md:pr-[15.5rem] text-base text-white placeholder:text-slate-500 focus-visible:outline-none transition-all shadow-[0_8px_30px_-12px_rgba(0,0,0,0.8)] ${
+                className={`hero-scan-input relative h-14 md:h-16 w-full rounded-full border bg-slate-950/70 backdrop-blur-xl pl-12 md:pl-14 pr-[11.5rem] sm:pr-[21rem] lg:pr-[27.5rem] text-base text-white placeholder:text-slate-500 focus-visible:outline-none transition-all shadow-[0_8px_30px_-12px_rgba(0,0,0,0.8)] ${
                   invalid
                     ? 'border-red-500/60 focus-visible:border-red-500/60 focus-visible:ring-2 focus-visible:ring-red-500/30'
                     : 'border-white/10 focus-visible:border-red-500/50 focus-visible:ring-2 focus-visible:ring-red-500/30'
@@ -207,7 +207,7 @@ export function HeroSection({ scanInput, setScanInput, handleScan, isScanning, s
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -6, scale: 0.96 }}
                     transition={{ duration: 0.2, ease: EASE_EXPO }}
-                    className={`absolute right-[5.5rem] sm:right-[8.75rem] md:right-[9.75rem] z-10 font-mono text-[10px] font-bold tracking-[0.18em] uppercase px-2 py-0.5 rounded-md border pointer-events-none whitespace-nowrap ${
+                    className={`hidden lg:inline-flex absolute right-[22rem] z-10 font-mono text-[10px] font-bold tracking-[0.18em] uppercase px-2 py-0.5 rounded-md border pointer-events-none whitespace-nowrap ${
                       invalid ? 'text-red-400 border-red-500/30 bg-red-500/10'
                         : defanged ? 'text-amber-400 border-amber-500/30 bg-amber-500/10'
                         : 'text-slate-300 border-white/10 bg-white/[0.05]'
@@ -278,6 +278,17 @@ export function HeroSection({ scanInput, setScanInput, handleScan, isScanning, s
                   </span>
                 )}
               </button>
+              {/* Bulk hunt rides the control cluster: same pill slot, left of
+                  Hunt, ruby-tinted so it reads as a sibling of the primary action. */}
+              {openBulk && (
+                <button
+                  type="button"
+                  onClick={openBulk}
+                  className="absolute z-10 right-[6.75rem] sm:right-[10rem] top-2 bottom-2 inline-flex items-center justify-center gap-1.5 rounded-full border border-red-500/40 bg-red-500/[0.12] px-3 sm:px-5 text-sm font-semibold text-red-300 transition-all duration-200 hover:bg-red-500/20 hover:text-white hover:border-red-400/50 active:scale-[0.97] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/50"
+                >
+                  <ListChecks size={14} /> <span className="hidden sm:inline">Bulk / CSV hunt</span><span className="sm:hidden">Bulk</span>
+                </button>
+              )}
             </div>
 
             {recent.length > 0 && (
@@ -331,17 +342,6 @@ export function HeroSection({ scanInput, setScanInput, handleScan, isScanning, s
                   {ex.label}
                 </button>
               ))}
-              {/* Bulk CSV hunt — same chip idiom, pushed right so the examples
-                  stay the primary reading order. */}
-              {openBulk && (
-                <button
-                  type="button"
-                  onClick={openBulk}
-                  className="ml-auto inline-flex min-h-11 items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-4 font-mono text-xs text-slate-300 transition-colors duration-200 hover:bg-white/[0.08] hover:text-white cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/30"
-                >
-                  <ListChecks size={13} /> Bulk / CSV hunt
-                </button>
-              )}
             </motion.div>
           </motion.div>
         </div>

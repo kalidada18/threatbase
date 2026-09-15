@@ -312,17 +312,19 @@ export default function TopAptPage() {
             {/* #2 / #3 */}
             <div className="md:col-span-5 grid grid-rows-2 gap-4">
               {show.slice(1, 3).map((a, i) => (
-                <div key={a.name} className="relative overflow-hidden rounded-2xl glass-card p-6 flex flex-col justify-between min-h-[150px]">
+                <div key={a.name} className="relative overflow-hidden rounded-2xl glass-card p-6 flex flex-col min-h-[150px]">
                   <div className="flex items-baseline justify-between">
                     <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-slate-500">Rank {i === 0 ? '02' : '03'}</span>
                     <span className="font-mono text-xs text-red-400 tabular-nums">{a[activeKey]} reports</span>
                   </div>
-                  <div>
+                  <div className="mt-4">
                     <div className="font-mono text-xl text-white font-semibold tracking-tight mb-1">{a.name}</div>
                     <div className="font-mono text-[11px] uppercase text-slate-500 mb-3">{a.sponsor}</div>
                     {a.summary && (
-                      <p className="text-xs text-slate-400 leading-snug line-clamp-2 mb-3" title={a.summary}>{a.summary}</p>
+                      <p className="text-xs text-slate-400 leading-snug line-clamp-4 mb-3" title={a.summary}>{a.summary}</p>
                     )}
+                  </div>
+                  <div className="mt-auto pt-2">
                     <ActivityBar pct={(count(a) / max) * 100} />
                   </div>
                 </div>
