@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ShieldCheck, Bug, Upload, Download, X, Lock } from 'lucide-react'
 import { Link } from 'react-router-dom'
@@ -39,9 +39,28 @@ export default function BulkScanner({ feedVersion, statsData, addToast, onClose 
   const abortRef = useRef(false)
   const fileRef = useRef<HTMLInputElement>(null)
   const [dragging, setDragging] = useState(false)
+  // Closing the panel mid-run must stop the scan: runBulkScan checks
+  // abortRef every 25 rows, and only the Stop button used to set it.
+  useEffect(() => () => { abortRef.current = true }, [])
 
   // Pro gate: bulk hunt rides the same entitlement as the Pro feed URLs
   // (GET /api/me/pro). superadmin bypasses server-side inside that check.
+  // 'checking' gets a neutral shell, not the paywall card — pre-fix paid
+  // members saw "Bulk hunt is a Pro feature" flash on every open while the
+  // /api/me/pro round-trip resolved (LandingSections ProBand uses the same
+  // checking-gate idiom).
+  if (proStatus === 'checking') {
+    return (
+      <section id="bulk-section" className="py-12 scroll-mt-24">
+        <div className="mx-auto max-w-5xl px-6 lg:px-12">
+          <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-gradient-to-b from-slate-900/70 to-slate-950/80 backdrop-blur-2xl shadow-glass-lux p-10 text-center">
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-red-500/80 to-transparent" />
+            <p role="status" className="text-sm text-slate-400">Checking your Pro status…</p>
+          </div>
+        </div>
+      </section>
+    )
+  }
   if (proStatus !== 'pro') {
     return (
       <section id="bulk-section" className="py-12 scroll-mt-24">
@@ -53,8 +72,6 @@ export default function BulkScanner({ feedVersion, statsData, addToast, onClose 
             <p className="mt-2 text-sm text-slate-400 max-w-md mx-auto leading-relaxed">
               {proStatus === 'signed-out'
                 ? 'Sign in with an account that has Threatbase Pro to scan CSV / Excel files up to 10,000 indicators at once.'
-                : proStatus === 'checking'
-                ? 'Checking your Pro status…'
                 : 'Your account is not on Pro yet. Ask us and we will enable it — Pro includes the private feed URLs and Bulk / CSV hunt.'}
             </p>
             <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
@@ -85,7 +102,7 @@ export default function BulkScanner({ feedVersion, statsData, addToast, onClose 
 
   const scanRows = async (p: ParsedBulk, sourceName?: string) => {
     if (p.valid.length === 0) { addToast(`No valid indicators found${sourceName ? ` in ${sourceName}` : ''}.`, 'error'); return }
-    if (p.invalid.length > 0) addToast(`${p.invalid.length} unparseable row${p.invalid.length === 1 ? '' : 's'} skipped${sourceName ? ` (${sourceName})` : ''}.`, 'success')
+    if (p.invalid.length > 0) addToast(`${p.invalid.length} unparseable row${p.invalid.length === 1 ? '' : 's'} skipped${sourceName ? ` (${sourceName})` : ''}.`, 'error')
     if (p.truncated) addToast(`Capped at ${BULK_MAX_ROWS.toLocaleString()} rows. Split larger files into multiple runs.`, 'error')
     abortRef.current = false
     setPhase('running')
@@ -261,7 +278,7 @@ export default function BulkScanner({ feedVersion, statsData, addToast, onClose 
               {phase === 'running' && (
                 <motion.div key="running" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: EASE_EXPO }}>
                   <div className="flex items-baseline justify-between mb-3">
-                    <span className="text-sm font-semibold text-slate-300" role="status">
+                    <span className="text-sm font-semibold text-slate-300">
                       Scanning {progress.done.toLocaleString()} / {progress.total.toLocaleString()}…
                     </span>
                     <button

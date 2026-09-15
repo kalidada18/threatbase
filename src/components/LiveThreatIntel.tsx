@@ -286,7 +286,7 @@ export default function LiveThreatIntel() {
                   )}
                   <circle cx={geom.pts[geom.pts.length - 1][0]} cy={geom.pts[geom.pts.length - 1][1]} r="2" fill="#f0768c" />
                 </svg>
-                <span className="mt-0.5 block pr-1 text-right text-[7.5px] font-medium uppercase tracking-[0.2em] text-slate-600">
+                <span className="mt-0.5 block pr-1 text-right text-[7.5px] font-medium uppercase tracking-[0.2em] text-slate-500">
                   {trend!.dates[0] ? `${shortDate(trend!.dates[0])} · ${shortDate(trend!.dates[trend!.dates.length - 1])}` : '14-day trend'}
                 </span>
               </div>
@@ -313,7 +313,7 @@ export default function LiveThreatIntel() {
                 </div>
                 <div aria-hidden className="pointer-events-none absolute inset-0 rounded-[3px] bg-gradient-to-b from-white/[0.06] to-transparent [mask-image:linear-gradient(180deg,#000_15%,transparent_60%)]" />
               </div>
-              <div className="mt-1 flex justify-between font-mono text-[7.5px] tabular-nums text-slate-600">
+              <div className="mt-1 flex justify-between font-mono text-[7.5px] tabular-nums text-slate-500">
                 <span>0</span><span>25</span><span>50</span><span>75</span><span>100%</span>
               </div>
               <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1">
@@ -325,7 +325,7 @@ export default function LiveThreatIntel() {
                   </span>
                 ))}
                 {breakdown.entries.length > 3 && (
-                  <span className="font-mono text-[9px] text-slate-600">+{breakdown.entries.length - 3} more</span>
+                  <span className="font-mono text-[9px] text-slate-500">+{breakdown.entries.length - 3} more</span>
                 )}
               </div>
             </>

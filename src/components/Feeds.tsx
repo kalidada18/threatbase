@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import Section from './layout/Section'
 import { SectionHeading } from './motion/SectionHeading'
-import { fmt, getDomainUrl, getHashUrl, INDICATOR_ACCENT, feedPath } from '../utils'
+import { fmt, getBaseUrl, getDomainUrl, getHashUrl, INDICATOR_ACCENT, feedPath } from '../utils'
 
 /**
  * One row per published list, in download order. `statKey` is the stats.json
@@ -107,10 +107,14 @@ function FeedRow({ f, chunks, count }: { f: Feed; chunks: string[]; count: numbe
   // are committed to the repo as ~31 MiB chunks (too large for one file in git),
   // but the unsplit build is published as a GitHub Release asset, so the download
   // stays one click rather than sending people to browse a folder.
+  // Everything else goes through the same-origin /ioc/ mirror: cross-origin
+  // raw.githubusercontent.com serves text/plain with no Content-Disposition,
+  // so the browser renders 60 MB inline instead of saving it. Same-origin +
+  // `download` (below) makes the browser save the file.
   const href =
     f.file === 'threatbase-domain.txt' ? getDomainUrl()
     : f.file === 'threatbase-hash.txt' ? getHashUrl()
-    : `https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/${feedPath(f.file)}`
+    : `${getBaseUrl()}${feedPath(f.file)}`
 
   const split = chunks.length > 1
   // The whole row is the link, so the chunk note and the size ride along in its
@@ -124,7 +128,7 @@ function FeedRow({ f, chunks, count }: { f: Feed; chunks: string[]; count: numbe
   return (
     <a
       href={href}
-      target="_blank"
+      download
       rel="noopener noreferrer"
       aria-label={label}
       className="group grid grid-cols-[3px_minmax(0,1fr)_auto_1rem] items-center gap-x-4 px-5 py-4 transition-colors hover:bg-white/[0.03] focus-visible:outline-none focus-visible:bg-white/[0.04] md:grid-cols-[3px_minmax(0,1.5fr)_minmax(0,1fr)_auto_1rem] md:gap-x-6 md:px-7 md:py-5"

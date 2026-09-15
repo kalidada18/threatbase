@@ -316,7 +316,7 @@ export function HeroSection({ scanInput, setScanInput, handleScan, isScanning, s
                         try { localStorage.setItem('tb:recent', JSON.stringify(readRecent().filter((x) => x.value !== r.value))) } catch {}
                         window.dispatchEvent(new Event(RECENT_EVENT))
                       }}
-                      className="pr-2.5 text-slate-600 hover:text-slate-300 cursor-pointer focus-visible:outline-none"
+                      className="pr-2.5 text-slate-600 hover:text-slate-300 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/30 rounded-full"
                     >
                       ×
                     </button>

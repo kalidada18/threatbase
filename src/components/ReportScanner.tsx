@@ -974,7 +974,7 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
                           Get feeds to block this
                         </Link>
                       )}
-                      {type === 'safe' && !scanResult?.isHash && !showReport && (
+                      {type === 'safe' && !scanResult?.isHash && (
                         <Link
                           to="/report"
                           className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl border border-white/[0.08] bg-transparent px-4 py-3.5 text-[13px] font-semibold tracking-[0.06em] text-platinum-300 transition-all hover:border-white/20 hover:text-white active:translate-y-px"

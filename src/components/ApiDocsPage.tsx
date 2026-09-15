@@ -165,7 +165,7 @@ function CodeBlock({ code, language = 'text', filename }: CodeBlockProps) {
               language === 'json' ? highlightJson(line) : tokenizeLine(line, language)
             return (
               <div key={idx} className="flex px-4 hover:bg-white/[0.015]">
-                <span className="select-none pr-4 text-right text-slate-600 w-8 shrink-0">
+                <span className="select-none pr-4 text-right text-slate-500 w-8 shrink-0">
                   {idx + 1}
                 </span>
                 <code className="whitespace-pre">

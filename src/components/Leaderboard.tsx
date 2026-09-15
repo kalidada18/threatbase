@@ -83,7 +83,7 @@ function Row({ leader, index, max }: { leader: any; index: number; max: number }
     >
       <div className="grid grid-cols-[1.75rem_2.25rem_1fr_auto] sm:grid-cols-[2.25rem_2.5rem_1fr_auto] items-center gap-3 sm:gap-4 px-2 sm:px-4 py-4 transition-colors duration-200 hover:bg-white/[0.02]">
         {/* Rank: quiet mono digits, leader promoted to white */}
-        <span className={`font-mono text-xs font-medium tabular-nums ${index === 0 ? 'text-white' : 'text-slate-600'}`}>
+        <span className={`font-mono text-xs font-medium tabular-nums ${index === 0 ? 'text-white' : 'text-slate-500'}`}>
           {String(index + 1).padStart(2, '0')}
         </span>
 

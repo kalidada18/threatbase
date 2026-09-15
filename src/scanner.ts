@@ -48,31 +48,32 @@ async function fetchAndCacheFeedText(
   // The cache stores the in-flight promise, not just the settled result: the
   // pre-fix fill-after-await meant two concurrent first-lookups (bulk mode's
   // per-chunk domain fetches, or any interleaving) each paid for the whole
-  // ~56 MB feed. The worker below settles — never rejects — because it catches
-  // fetch errors and returns empty text, same as before.
+  // ~56 MB feed.
+  // A failed fetch is NEVER cached: pre-fix, the catch stored `{ text: '' }`
+  // under the session-stable cache key, so one transient network blip made
+  // every later scan of that feed answer "clean" (false negative). The
+  // pending entry is likewise dropped on failure so the next scan retries.
+  // The whole fetch+read is aborted after 45 s: a stalled multi-MB download
+  // used to hold the promise (and the UI's "Hunting…") forever.
   const pending = (async (): Promise<{ text: string }> => {
-    let text = ''
-
+    const ctrl = new AbortController()
+    const timer = setTimeout(() => ctrl.abort(), 45_000)
     try {
       const url = filename === 'threatbase-domain.txt'
         ? `${getDomainUrl()}?v=${feedVersion}`
         : filename === 'threatbase-hash.txt'
         ? `${getHashUrl()}?v=${feedVersion}`
         : `${baseUrl}${feedPath(filename)}?v=${feedVersion}`
-      const r = await fetch(url)
-
-      if (r.ok) {
-        text = await r.text()
-      } else {
-        throw new Error(`GitHub Raw fetch error: ${r.status}`)
-      }
+      const r = await fetch(url, { signal: ctrl.signal })
+      if (!r.ok) throw new Error(`GitHub Raw fetch error: ${r.status}`)
+      return { text: await r.text() }
     } catch (e) {
       console.error(`GitHub Raw fetch failed for ${filename}:`, e)
+      delete feedCache[cacheKey]
+      return { text: '' }
+    } finally {
+      clearTimeout(timer)
     }
-
-    const entry = { text }
-    feedCache[cacheKey] = entry
-    return entry
   })()
   feedCache[cacheKey] = pending
   return pending

@@ -80,7 +80,7 @@ export default function ReportIP({ addToast }: any) {
   const prefersReducedMotion = useReducedMotion()
   useSEO({
     title: 'Report a Malicious IP | Threatbase Community Intel',
-    description: 'Report a malicious IP, domain, URL, or hash to the Threatbase community feed and help defenders worldwide block malware, phishing, and brute-force infrastructure.',
+    description: 'Report a malicious IPv4 or IPv6 address to the Threatbase community feed and help defenders worldwide block malware, phishing, and brute-force infrastructure.',
     path: '/report',
   })
   

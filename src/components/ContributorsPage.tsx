@@ -42,7 +42,7 @@ export default function ContributorsPage() {
             transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
             className="rounded-2xl border border-white/[0.06] bg-[#0a0e17]/60"
           >
-            <div className="grid grid-cols-[1.75rem_2.25rem_1fr_auto] sm:grid-cols-[2.25rem_2.5rem_1fr_auto] gap-3 sm:gap-4 border-b border-white/[0.06] px-2 sm:px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-600">
+            <div className="grid grid-cols-[1.75rem_2.25rem_1fr_auto] sm:grid-cols-[2.25rem_2.5rem_1fr_auto] gap-3 sm:gap-4 border-b border-white/[0.06] px-2 sm:px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
               <span>#</span>
               <span aria-hidden />
               <span>Contributor</span>

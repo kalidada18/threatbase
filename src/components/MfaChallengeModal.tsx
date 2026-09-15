@@ -152,7 +152,7 @@ export default function MfaChallengeModal() {
             </div>
             
             {error && (
-              <div className="w-full flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-red-400 text-sm text-left">
+              <div id="mfa-error" role="alert" className="w-full flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-red-400 text-sm text-left">
                 <AlertCircle size={16} className="shrink-0" />
                 <span>{error}</span>
               </div>
@@ -167,6 +167,7 @@ export default function MfaChallengeModal() {
                 onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ''))}
                 placeholder="000000"
                 aria-label="6-digit authenticator code"
+                aria-describedby={error ? 'mfa-error' : undefined}
                 autoComplete="one-time-code"
                 inputMode="numeric"
                 className="w-full h-14 rounded-xl border border-white/10 bg-black/50 px-4 text-center text-2xl tracking-[0.5em] text-white placeholder:text-slate-500 focus:outline-none focus:border-red-500/50 focus:bg-white/5 transition-all font-mono"

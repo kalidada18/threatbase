@@ -141,14 +141,14 @@ export default function HallOfShamePage() {
                     to={`/?search=${e.ip}`}
                     className="flex items-center gap-4 flex-1 min-w-0 py-3"
                   >
-                    <span className="font-mono text-xs text-slate-600 w-7 shrink-0 tabular-nums">{i + 4}</span>
+                    <span className="font-mono text-xs text-slate-500 w-7 shrink-0 tabular-nums">{i + 4}</span>
                     <span className="font-mono text-sm text-slate-200 group-hover:text-red-200 transition-colors tracking-tight w-[135px] shrink-0">{e.ip}</span>
                     <span className="hidden sm:block font-mono text-[11px] text-slate-500 w-7 shrink-0">{e.country || '--'}</span>
                     <span className="flex-1 min-w-0 truncate text-[11px] uppercase tracking-wider text-slate-500">
                       {cleanTags(e).slice(0, 2).join(' / ') || 'Mixed'}
                     </span>
-                    {isStale(e) && <span className="hidden md:inline font-mono text-[10px] uppercase text-slate-600 border border-white/10 rounded-full px-2 py-0.5 shrink-0">stale</span>}
-                    <span className="font-mono text-xs text-red-400/90 tabular-nums shrink-0">{e.feeds}<span className="text-slate-600 lowercase font-sans"> feeds</span></span>
+                    {isStale(e) && <span className="hidden md:inline font-mono text-[10px] uppercase text-slate-500 border border-white/10 rounded-full px-2 py-0.5 shrink-0">stale</span>}
+                    <span className="font-mono text-xs text-red-400/90 tabular-nums shrink-0">{e.feeds}<span className="text-slate-500 lowercase font-sans"> feeds</span></span>
                   </Link>
                 </li>
               ))}

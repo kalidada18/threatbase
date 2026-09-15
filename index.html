@@ -23,6 +23,9 @@
   <!-- Canonical URL -->
   <link rel="canonical" href="https://threatbase.qzz.io/">
 
+  <!-- Warm the Turnstile challenge origin before the interstitial script is injected (App.tsx gates first paint on it) -->
+  <link rel="preconnect" href="https://challenges.cloudflare.com">
+
   <!-- Favicon -->
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
