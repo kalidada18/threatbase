@@ -1,232 +1,8 @@
 {
- "generated_at": "2026-09-15T03:00:57+00:00",
+ "generated_at": "2026-09-15T10:21:50+00:00",
  "source": "AlienVault OTX pulse search",
  "note": "Activity = threat-intel pulses (campaign reports) mentioning the group in the window. Vendor/community reporting \u2014 follow each link to its source. IOCs are community-reported pulse indicators, not Threatbase attribution. TTPs from MITRE ATT&CK. Per-group summaries are AI-generated from the pulse reports.",
  "actors": [
-  {
-   "name": "Sandworm",
-   "aka": [
-    "Voodoo Bear",
-    "IRON VAULT",
-    "BLACKENERGY"
-   ],
-   "sponsor": "Russia (GRU)",
-   "pulses_24h": 1,
-   "pulses_7d": 3,
-   "malware": [],
-   "targets": [],
-   "campaigns": [
-    {
-     "title": "Cisco FMC CVE-2026-20079/20316 \u2014 Qilin & Cyclops Blink Exploitation",
-     "url": "https://otx.alienvault.com/pulse/6aa78e6366f7a7aa509943b7",
-     "modified": "2026-09-14T06:04:19.022000",
-     "last_24h": true
-    },
-    {
-     "title": "Sandworm Fake Job Interviews Push Trojanized WireGuard VPN to Infect IT Professionals",
-     "url": "https://otx.alienvault.com/pulse/6a7c433680aefab88821c968",
-     "modified": "2026-09-11T09:04:00.021000",
-     "last_24h": false
-    },
-    {
-     "title": "Active exploitation of Cisco Secure Firewall Management Center vulnerabilities",
-     "url": "https://otx.alienvault.com/pulse/6aa1c2281252d98a241ae632",
-     "modified": "2026-09-10T05:39:54.959000",
-     "last_24h": false
-    }
-   ],
-   "ttps": [
-    "Account Discovery",
-    "Account Manipulation",
-    "Acquire Infrastructure",
-    "Active Scanning",
-    "Application Layer Protocol",
-    "Brute Force",
-    "Command and Scripting Interpreter",
-    "Compromise Accounts",
-    "Compromise Host Software Binary",
-    "Compromise Infrastructure",
-    "Create Account",
-    "Create or Modify System Process",
-    "Credentials from Password Stores",
-    "Data Destruction",
-    "Data Encoding",
-    "Data Encrypted for Impact",
-    "Data from Information Repositories",
-    "Data from Local System",
-    "Defacement",
-    "Deobfuscate/Decode Files or Information",
-    "Develop Capabilities",
-    "Disable or Modify Tools",
-    "Disk Wipe",
-    "Domain or Tenant Policy Modification",
-    "Endpoint Denial of Service",
-    "Establish Accounts",
-    "Exfiltration Over C2 Channel",
-    "Exploit Public-Facing Application",
-    "Exploitation for Client Execution",
-    "External Remote Services",
-    "File and Directory Discovery",
-    "Gather Victim Host Information",
-    "Gather Victim Identity Information",
-    "Gather Victim Network Information",
-    "Gather Victim Org Information",
-    "Indicator Removal",
-    "Ingress Tool Transfer",
-    "Inhibit System Recovery",
-    "Input Capture",
-    "Lateral Tool Transfer",
-    "Masquerading",
-    "Modify Registry",
-    "Native API",
-    "Network Sniffing",
-    "Non-Application Layer Protocol",
-    "Non-Standard Port",
-    "OS Credential Dumping",
-    "Obfuscated Files or Information",
-    "Obtain Capabilities",
-    "Phishing",
-    "Phishing for Information",
-    "Process Injection",
-    "Protocol Tunneling",
-    "Proxy",
-    "Remote Access Tools",
-    "Remote Services",
-    "Remote System Discovery",
-    "Scheduled Task/Job",
-    "Search Open Websites/Domains",
-    "Search Victim-Owned Websites",
-    "Server Software Component",
-    "Service Stop",
-    "Software Deployment Tools",
-    "Stage Capabilities",
-    "Steal Web Session Cookie",
-    "Supply Chain Compromise",
-    "System Binary Proxy Execution",
-    "System Information Discovery",
-    "System Network Connections Discovery",
-    "System Owner/User Discovery",
-    "Trusted Relationship",
-    "User Execution",
-    "Valid Accounts",
-    "Web Service",
-    "Windows Management Instrumentation"
-   ],
-   "iocs": {
-    "ips": [
-     "208.123.119.215",
-     "91.214.78.118"
-    ],
-    "domains": [
-     "douncloud.site",
-     "atlasgroup-ua.com",
-     "soprasteria-bg.com",
-     "soprasteriabg.com"
-    ],
-    "hashes": [
-     "6f98add5d1a7729192b6ad8491d85c505c64836f7881742d6b93bd8e3d2fe461",
-     "b037f45e02a289325a1a5eb0d4db6a9fce9954fd0fdfd07162cb4eb2acbef77d",
-     "db491181ece3f319de6567ab6f6daa90c6879911cd890155e6b7d8cc7a1a8c8e"
-    ]
-   },
-   "summary": "Cisco Talos reports that three threat clusters are actively exploiting critical Cisco Secure Firewall Management Center vulnerabilities (CVE-2026-20079 and CVE-2026-20316), with post-exploitation activity involving Qilin ransomware and a Cyclops Blink variant attributed with high confidence to Sandworm-overlapping APT activity. Separately, CERT-UA indicates Sandworm is conducting fake job interview campaigns to deliver trojanized WireGuard VPN installers targeting IT professionals. The observed malware families in these operations include Cyclops Blink and Qilin ransomware."
-  },
-  {
-   "name": "Gamaredon",
-   "aka": [
-    "Primitive Bear",
-    "ShallowBurrow"
-   ],
-   "sponsor": "Russia (GRU)",
-   "pulses_24h": 1,
-   "pulses_7d": 2,
-   "malware": [],
-   "targets": [],
-   "campaigns": [
-    {
-     "title": "Gamaredon",
-     "url": "https://otx.alienvault.com/pulse/6aa7cebb0e2a0c3b46af74a9",
-     "modified": "2026-09-14T10:38:51.042000",
-     "last_24h": true
-    },
-    {
-     "title": "Gamaredon",
-     "url": "https://otx.alienvault.com/pulse/6aa29d804176b9cd1fc5a768",
-     "modified": "2026-09-10T12:07:28.542000",
-     "last_24h": false
-    }
-   ],
-   "ttps": [
-    "Acquire Infrastructure",
-    "Application Layer Protocol",
-    "Automated Collection",
-    "Automated Exfiltration",
-    "Boot or Logon Autostart Execution",
-    "Command and Scripting Interpreter",
-    "Data Obfuscation",
-    "Data from Local System",
-    "Data from Network Shared Drive",
-    "Data from Removable Media",
-    "Defacement",
-    "Deobfuscate/Decode Files or Information",
-    "Develop Capabilities",
-    "Disable or Modify Tools",
-    "Disk Wipe",
-    "Dynamic Resolution",
-    "Execution Guardrails",
-    "Exfiltration Over C2 Channel",
-    "File and Directory Discovery",
-    "Hide Artifacts",
-    "Indicator Removal",
-    "Ingress Tool Transfer",
-    "Inter-Process Communication",
-    "Internal Spearphishing",
-    "Masquerading",
-    "Modify Registry",
-    "Native API",
-    "Non-Application Layer Protocol",
-    "Non-Standard Port",
-    "Obfuscated Files or Information",
-    "Obtain Capabilities",
-    "Office Application Startup",
-    "Peripheral Device Discovery",
-    "Phishing",
-    "Process Discovery",
-    "Process Injection",
-    "Proxy",
-    "Query Registry",
-    "Reflective Code Loading",
-    "Remote Services",
-    "Replication Through Removable Media",
-    "Scheduled Task/Job",
-    "Screen Capture",
-    "Software Discovery",
-    "Stage Capabilities",
-    "System Binary Proxy Execution",
-    "System Information Discovery",
-    "System Network Configuration Discovery",
-    "System Owner/User Discovery",
-    "Taint Shared Content",
-    "Template Injection",
-    "User Execution",
-    "Virtualization/Sandbox Evasion",
-    "Web Service",
-    "Windows Management Instrumentation"
-   ],
-   "iocs": {
-    "ips": [
-     "64.176.67.139",
-     "172.86.83.183"
-    ],
-    "domains": [
-     "bloodywolves.ddns.net",
-     "domains.servehttp.com",
-     "worker.3utilities.com"
-    ],
-    "hashes": []
-   },
-   "summary": "Recent reporting consists solely of two entries noting that Gamaredon indicators were identified by pivoting on a referenced pulse, without describing specific campaigns, malware usage, or targeting activity. No malware families, targeted countries, industries, or victim details were reported in the provided data. The entries appear to indicate indicator sharing or enrichment activity rather than new intrusion reporting."
-  },
   {
    "name": "Kimsuky",
    "aka": [
@@ -235,11 +11,17 @@
     "Velvet Chollima"
    ],
    "sponsor": "North Korea",
-   "pulses_24h": 0,
-   "pulses_7d": 5,
+   "pulses_24h": 1,
+   "pulses_7d": 6,
    "malware": [],
    "targets": [],
    "campaigns": [
+    {
+     "title": "Kimsuky Uses the AI Agent 'opencode' to Create Decoys as Its GitHub PAT-Based LNK Attacks Evolve",
+     "url": "https://otx.alienvault.com/pulse/6aa8f771c68a48adcc551965",
+     "modified": "2026-09-15T07:44:49.472000",
+     "last_24h": true
+    },
     {
      "title": "Kimsuky incorporates AI into its attack framework, from creating lure documents to building a local LLM.",
      "url": "https://otx.alienvault.com/pulse/6a7c1cea12a9a8902a41a980",
@@ -370,19 +152,243 @@
      "toks.great-site.net"
     ],
     "hashes": [
-     "02ebc2356f9f700bbdac444cdefa0da2",
-     "0d8ceb7dea7d471afa2f8e753b13d2d6",
-     "1f378c0efc13669dada1fe340c6837bd",
-     "2669731cb5ff664dfb5fbfc37637876d",
-     "2ab3df4762fbde5d86e99a1ad147850e",
-     "2e76d5316663a3dc472398b1c01cb9a8",
-     "2eb77109cce1e8afca6245c2963e52a6",
-     "302725413076d1aeaee2d7f2b3692646",
-     "30792a0c0dfad55fb2b19d3e30e9a7d4",
-     "30d5f17d5e3f85be18220a7cab0b9fff"
+     "10780939962b54addc9d31f57d80edfc",
+     "1523a2fcc901965ab4568d9fe829e4af",
+     "500e0bc0d7579fb338912770964076fe",
+     "685bfc6b2c29fbc16cfad908894add55",
+     "7a53089053b1381742856a5cf2b95f8b",
+     "8db2f20b719dcb7029d6296505622093",
+     "900e832c10d851bbdef3fb191a15db0e",
+     "a2015665a3e18bf0ef86e3931245c7e6",
+     "bb88940e915b11f6330b7446f6037f5b",
+     "ce5932b88f879f26006df81f2fa7667e"
     ]
    },
-   "summary": "Kimsuky is integrating artificial intelligence into its attack framework, utilizing local large language models such as Ollama, GPT4All, and Msty alongside the AI agent 'opencode' to generate decoy documents and analyze targets. Reporting indicates this evolution supports ongoing GitHub and GitLab-based operations\u2014dubbed \"Operation GitPower\" and linked to the previous \"FlowerPower\" campaign\u2014deploying AsyncRAT against government, defense, finance, and diplomatic sectors. The group's tactics now include AI-generated lures and GitHub PAT-based LNK attacks to facilitate compromise."
+   "summary": "Kimsuky is integrating artificial intelligence into its attack framework, using local LLMs such as Ollama, GPT4All, and Msty along with the AI agent \u201copencode\u201d to generate decoy documents and enhance phishing lures. The group continues to evolve its GitHub PAT-based LNK attack chain to deploy AsyncRAT, with recent activity linked to the ongoing \u201cOperation GitPower\u201d and \u201cFlowerPower\u201d operations targeting government, defense, and finance sectors."
+  },
+  {
+   "name": "Gamaredon",
+   "aka": [
+    "Primitive Bear",
+    "ShallowBurrow"
+   ],
+   "sponsor": "Russia (GRU)",
+   "pulses_24h": 1,
+   "pulses_7d": 2,
+   "malware": [],
+   "targets": [],
+   "campaigns": [
+    {
+     "title": "Gamaredon",
+     "url": "https://otx.alienvault.com/pulse/6aa7cebb0e2a0c3b46af74a9",
+     "modified": "2026-09-14T10:38:51.042000",
+     "last_24h": true
+    },
+    {
+     "title": "Gamaredon",
+     "url": "https://otx.alienvault.com/pulse/6aa29d804176b9cd1fc5a768",
+     "modified": "2026-09-10T12:07:28.542000",
+     "last_24h": false
+    }
+   ],
+   "ttps": [
+    "Acquire Infrastructure",
+    "Application Layer Protocol",
+    "Automated Collection",
+    "Automated Exfiltration",
+    "Boot or Logon Autostart Execution",
+    "Command and Scripting Interpreter",
+    "Data Obfuscation",
+    "Data from Local System",
+    "Data from Network Shared Drive",
+    "Data from Removable Media",
+    "Defacement",
+    "Deobfuscate/Decode Files or Information",
+    "Develop Capabilities",
+    "Disable or Modify Tools",
+    "Disk Wipe",
+    "Dynamic Resolution",
+    "Execution Guardrails",
+    "Exfiltration Over C2 Channel",
+    "File and Directory Discovery",
+    "Hide Artifacts",
+    "Indicator Removal",
+    "Ingress Tool Transfer",
+    "Inter-Process Communication",
+    "Internal Spearphishing",
+    "Masquerading",
+    "Modify Registry",
+    "Native API",
+    "Non-Application Layer Protocol",
+    "Non-Standard Port",
+    "Obfuscated Files or Information",
+    "Obtain Capabilities",
+    "Office Application Startup",
+    "Peripheral Device Discovery",
+    "Phishing",
+    "Process Discovery",
+    "Process Injection",
+    "Proxy",
+    "Query Registry",
+    "Reflective Code Loading",
+    "Remote Services",
+    "Replication Through Removable Media",
+    "Scheduled Task/Job",
+    "Screen Capture",
+    "Software Discovery",
+    "Stage Capabilities",
+    "System Binary Proxy Execution",
+    "System Information Discovery",
+    "System Network Configuration Discovery",
+    "System Owner/User Discovery",
+    "Taint Shared Content",
+    "Template Injection",
+    "User Execution",
+    "Virtualization/Sandbox Evasion",
+    "Web Service",
+    "Windows Management Instrumentation"
+   ],
+   "iocs": {
+    "ips": [
+     "64.176.67.139",
+     "172.86.83.183"
+    ],
+    "domains": [
+     "bloodywolves.ddns.net",
+     "domains.servehttp.com",
+     "worker.3utilities.com"
+    ],
+    "hashes": []
+   },
+   "summary": "Recent reporting consists solely of two entries noting that Gamaredon indicators were identified by pivoting on a referenced pulse, without describing specific campaigns, malware, targets, or industries. No new malware families or targeted countries were reported in the provided summaries. The available information is limited to the existence of these indicator-sharing pulses."
+  },
+  {
+   "name": "Sandworm",
+   "aka": [
+    "Voodoo Bear",
+    "IRON VAULT",
+    "BLACKENERGY"
+   ],
+   "sponsor": "Russia (GRU)",
+   "pulses_24h": 0,
+   "pulses_7d": 3,
+   "malware": [],
+   "targets": [],
+   "campaigns": [
+    {
+     "title": "Cisco FMC CVE-2026-20079/20316 \u2014 Qilin & Cyclops Blink Exploitation",
+     "url": "https://otx.alienvault.com/pulse/6aa78e6366f7a7aa509943b7",
+     "modified": "2026-09-14T06:04:19.022000",
+     "last_24h": false
+    },
+    {
+     "title": "Sandworm Fake Job Interviews Push Trojanized WireGuard VPN to Infect IT Professionals",
+     "url": "https://otx.alienvault.com/pulse/6a7c433680aefab88821c968",
+     "modified": "2026-09-11T09:04:00.021000",
+     "last_24h": false
+    },
+    {
+     "title": "Active exploitation of Cisco Secure Firewall Management Center vulnerabilities",
+     "url": "https://otx.alienvault.com/pulse/6aa1c2281252d98a241ae632",
+     "modified": "2026-09-10T05:39:54.959000",
+     "last_24h": false
+    }
+   ],
+   "ttps": [
+    "Account Discovery",
+    "Account Manipulation",
+    "Acquire Infrastructure",
+    "Active Scanning",
+    "Application Layer Protocol",
+    "Brute Force",
+    "Command and Scripting Interpreter",
+    "Compromise Accounts",
+    "Compromise Host Software Binary",
+    "Compromise Infrastructure",
+    "Create Account",
+    "Create or Modify System Process",
+    "Credentials from Password Stores",
+    "Data Destruction",
+    "Data Encoding",
+    "Data Encrypted for Impact",
+    "Data from Information Repositories",
+    "Data from Local System",
+    "Defacement",
+    "Deobfuscate/Decode Files or Information",
+    "Develop Capabilities",
+    "Disable or Modify Tools",
+    "Disk Wipe",
+    "Domain or Tenant Policy Modification",
+    "Endpoint Denial of Service",
+    "Establish Accounts",
+    "Exfiltration Over C2 Channel",
+    "Exploit Public-Facing Application",
+    "Exploitation for Client Execution",
+    "External Remote Services",
+    "File and Directory Discovery",
+    "Gather Victim Host Information",
+    "Gather Victim Identity Information",
+    "Gather Victim Network Information",
+    "Gather Victim Org Information",
+    "Indicator Removal",
+    "Ingress Tool Transfer",
+    "Inhibit System Recovery",
+    "Input Capture",
+    "Lateral Tool Transfer",
+    "Masquerading",
+    "Modify Registry",
+    "Native API",
+    "Network Sniffing",
+    "Non-Application Layer Protocol",
+    "Non-Standard Port",
+    "OS Credential Dumping",
+    "Obfuscated Files or Information",
+    "Obtain Capabilities",
+    "Phishing",
+    "Phishing for Information",
+    "Process Injection",
+    "Protocol Tunneling",
+    "Proxy",
+    "Remote Access Tools",
+    "Remote Services",
+    "Remote System Discovery",
+    "Scheduled Task/Job",
+    "Search Open Websites/Domains",
+    "Search Victim-Owned Websites",
+    "Server Software Component",
+    "Service Stop",
+    "Software Deployment Tools",
+    "Stage Capabilities",
+    "Steal Web Session Cookie",
+    "Supply Chain Compromise",
+    "System Binary Proxy Execution",
+    "System Information Discovery",
+    "System Network Connections Discovery",
+    "System Owner/User Discovery",
+    "Trusted Relationship",
+    "User Execution",
+    "Valid Accounts",
+    "Web Service",
+    "Windows Management Instrumentation"
+   ],
+   "iocs": {
+    "ips": [
+     "208.123.119.215",
+     "91.214.78.118"
+    ],
+    "domains": [
+     "douncloud.site",
+     "atlasgroup-ua.com",
+     "soprasteria-bg.com",
+     "soprasteriabg.com"
+    ],
+    "hashes": [
+     "6f98add5d1a7729192b6ad8491d85c505c64836f7881742d6b93bd8e3d2fe461",
+     "b037f45e02a289325a1a5eb0d4db6a9fce9954fd0fdfd07162cb4eb2acbef77d",
+     "db491181ece3f319de6567ab6f6daa90c6879911cd890155e6b7d8cc7a1a8c8e"
+    ]
+   },
+   "summary": "Cisco Talos reports that three threat clusters are actively exploiting two critical Cisco Secure Firewall Management Center vulnerabilities (CVE-2026-20079 and CVE-2026-20316), with post-compromise activity including a Cyclops Blink variant attributed with high confidence to Sandworm-overlapping APT activity alongside Qilin ransomware deployment. Separately, CERT-UA indicates Sandworm is conducting fake job interview campaigns to deliver trojanized WireGuard VPN installers targeting IT professionals. No specific targeted countries were identified in the reporting this week."
   },
   {
    "name": "Lazarus Group",
@@ -520,7 +526,7 @@
      "2b4987c07a3d9a9a5d1a9bf4efa3d1903e775090b611710edafdc92874265ca8"
     ]
    },
-   "summary": "Lazarus Group has been observed exploiting a Windows AFD.sys zero-day vulnerability to gain SYSTEM privileges and deploy the FudModule rootkit, according to Check Point research. Separate reporting details an ongoing infiltration operation where the group places IT workers into Western companies through a fake DeFi startup, using forged documents, shipped laptops, and AI-assisted interviews to facilitate the deception. These activities indicate parallel tracks of high-value vulnerability exploitation and long-term human intelligence operations."
+   "summary": "Reports indicate Lazarus Group is actively exploiting a Windows AFD.sys zero-day vulnerability to gain SYSTEM privileges and deploy the FudModule rootkit. Separately, the group continues its \"Chollima\" infiltration campaign, using a fake DeFi startup to recruit IT workers at Western companies through forged documents, shipped hardware, and AI-assisted interview deception."
   },
   {
    "name": "Transparent Tribe",
@@ -591,7 +597,7 @@
      "74d347785dc47f8cda3876826cdd3fb3935ac55dc8e9e0c0f96d5ef4e00089a2"
     ]
    },
-   "summary": "Transparent Tribe has been observed deploying a new custom backdoor called PATCHCORD against Afghan telecommunications providers and South Asian critical infrastructure, delivered through fake VPN installers and telecom management tools. Associated infrastructure includes SHEETCORD, a Go-based implant using Google Sheets for command-and-control, alongside other malware families such as HACKERAI C2 Agent, SHEETCREEP, ValleyRAT, and GateSentinel. The group also conducted multistage attacks using disguised image or archive files with LNK shortcuts that execute hidden BAT scripts to load payloads, aiming to establish persistent access."
+   "summary": "Transparent Tribe has been observed deploying a new custom backdoor named PATCHCORD against Afghan telecommunications providers and South Asian critical infrastructure entities, delivered through fake VPN installers and telecom management tools. Infrastructure analysis linked this activity to additional implants including SHEETCORD, a Go-based malware using Google Sheets for command-and-control, alongside several other malware families. Separately, the group conducted multistage attacks using disguised image or archive files containing malicious LNK shortcuts that execute hidden batch scripts to load final payloads, leveraging shared infrastructure across two related intrusion chains."
   },
   {
    "name": "APT41",
