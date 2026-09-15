@@ -6,8 +6,8 @@ import supabaseClient from '../supabaseClient'
 import { timeAgo, categoryTier, TIER_CHIP, TIER_ACCENT, countryFlag } from '../utils'
 import { useAuth } from '../AuthContext'
 import { getMalwareDescription } from '../malwareDictionary'
-// Feed keys → human vendor names, shared with BulkScanner (sourceLabels.ts).
-import { labelSources } from './sourceLabels'
+
+
 
 // Derive a credible 0–100 confidence-of-abuse score from real signals
 // (severity, number of feeds listing it, subnet matches, community reports)
@@ -653,7 +653,9 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
   }, [scanResult, confidence, reduce, confidenceMv])
 
   const scannedAt = useMemo(() => new Date(), [scanResult])
-  const flaggedBy = type === 'danger' && scanResult?.sources?.length > 0 ? labelSources(scanResult.sources) : []
+  // Raw upstream key count — labelSources collapses to one branded label, so
+  // never derive feed counts from it.
+  const feedCount = type === 'danger' ? (scanResult?.sources?.length ?? 0) : 0
   const filledSegments = Math.max(confidence > 0 ? 1 : 0, Math.round((confidence / 100) * METER_SEGMENTS))
 
   if (!showReport) return null;
@@ -755,24 +757,19 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
                         <span className="text-xs font-medium text-platinum-500">
                           Scanned {scannedAt.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
                           {' '}&#183;{' '}{type === 'danger'
-                            ? `${flaggedBy.length} flagging feed${flaggedBy.length === 1 ? '' : 's'}`
+                            ? `${feedCount} flagging feed${feedCount === 1 ? '' : 's'}`
                             : `${reports.length} community report${reports.length === 1 ? '' : 's'}`}
                         </span>
                       </div>
-                      {/* Which intel sources actually list this indicator. Neutral
-                          platinum pills: a vendor name is provenance, not severity,
-                          so it must not borrow the threat color scale. */}
-                      {type === 'danger' && scanResult?.sources?.length > 0 && (
+                      {/* How many intel sources list this indicator. Upstream names
+                          are deliberately not surfaced (see sourceLabels.ts); the
+                          count is the signal, not the vendor list. */}
+                      {type === 'danger' && feedCount > 0 && (
                         <div className="mt-3 flex flex-wrap items-center gap-1.5">
                           <span className="mr-0.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-platinum-500">Flagged by</span>
-                          {flaggedBy.map((name) => (
-                            <span
-                              key={name}
-                              className="inline-flex cursor-default items-center rounded-full border border-platinum-400/25 bg-platinum-400/[0.06] px-2.5 py-0.5 text-[11px] font-semibold tracking-wide text-platinum-200 transition-colors hover:border-white/25 hover:text-white"
-                            >
-                              {name}
-                            </span>
-                          ))}
+                          <span className="inline-flex cursor-default items-center rounded-full border border-platinum-400/25 bg-platinum-400/[0.06] px-2.5 py-0.5 text-[11px] font-semibold tracking-wide text-platinum-200">
+                            {feedCount} feed{feedCount === 1 ? '' : 's'}
+                          </span>
                         </div>
                       )}
                     </div>
