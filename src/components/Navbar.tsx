@@ -13,7 +13,6 @@ const menuItems = [
     { name: 'Threat Feeds', href: '/threatfeed#feeds' },
     { name: 'Hall of Shame', href: '/hall-of-shame' },
     { name: 'Top APT', href: '/top-apt' },
-    { name: 'Improvements', href: '/improvements' },
     { name: 'API Docs', href: '/api' },
     { name: 'Top Contributors', href: '/contributors' }
 ]
