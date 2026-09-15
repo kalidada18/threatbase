@@ -99,7 +99,7 @@ FEEDS: Dict[str, str] = {
     "firehol_level3": "https://raw.githubusercontent.com/firehol/blocklist-ipsets/master/firehol_level3.netset",
     "blocklist_net_bots": "https://lists.blocklist.de/lists/bots.txt",
     "blocklist_net_strongips": "https://lists.blocklist.de/lists/strongips.txt",
-    "snort_ip_filter": "https://snort.org/downloads/ip-block-list",
+    "snort_ip_filter": "https://snort-org-site.s3.amazonaws.com/production/document_files/files/000/047/319/original/ip-filter.blf",
     "dataplane_sipinv": "https://dataplane.org/sipinvitation.txt",
     "dataplane_sshclient": "https://dataplane.org/sshclient.txt",
     "dataplane_sshpwauth": "https://dataplane.org/sshpwauth.txt",
@@ -824,6 +824,79 @@ def load_previous_list_chunked_with_meta(path: str) -> tuple:
     if items:
         log.info(f"  Reassembled {len(items):,} items (with meta) from chunks of {os.path.basename(path)}")
     return items, meta
+
+
+# ── MISP default-feed export ───────────────────────────────────────────────
+# Files under ioc/misp/ exist for MISP feed ingestion in "freetext" format.
+# Verified against MISP source (app/Lib/Tools/ComplexTypeTool.php):
+# parseFreetext() splits the WHOLE file on newline, comma, WHITESPACE, < > ;
+# and then type-resolves every token independently, silently dropping what it
+# can't resolve. Consequences, all enforced here:
+#   - one indicator per line, nothing else — metadata columns would either be
+#     dropped or (worse) a resolvable fragment in a comment column imports as
+#     a standalone IOC with no context: the IOC-injection pattern
+#   - header lines may contain NO resolvable tokens — no URLs, no dotted
+#     domains (a bare "https://..." in a # comment still imports as a link)
+#   - excluderegex ^#.* is configured in the feed entry for the leading '#'
+# Caps bound what an admin's instance imports; ordering puts the most
+# trustworthy first (multi-feed agreement, HIGH risk), then newest — so even
+# a capped pull is the best slice of the corpus.
+MISP_CAP_IP = 20000
+MISP_CAP_DOMAIN = 20000
+MISP_CAP_HASH = 20000
+MISP_CAP_URL = 10000
+
+
+def write_misp_feeds(filtered_ip_info, sorted_ips, all_domains, all_hashes, all_urls,
+                     domain_meta, hash_meta, url_meta, today_str, timestamp):
+    """Emit capped one-indicator-per-line MISP feeds under ioc/misp/. Returns
+    per-file line counts. Cheap: pure in-memory selection over structures the
+    writer path already built, then sequential writes."""
+    os.makedirs("ioc/misp", exist_ok=True)
+    counts = {}
+    # Token-safe header: every word must be unresolvable to MISP's type
+    # detector, or it becomes a feed attribute. Provenance lives in the
+    # registry entry (url + provider fields), not in the data file.
+    hdr = "# Threatbase MISP feed data follows\n"
+
+    def rank_key(ip):
+        info = filtered_ip_info[ip]
+        tier = {"HIGH": 2, "MEDIUM": 1}.get(info["score"], 0)
+        return (info["count"], tier, info["last_seen"])
+
+    picked = sorted(sorted_ips, key=rank_key, reverse=True)[:MISP_CAP_IP]
+    with open("ioc/misp/threatbase-ip.txt", "w", encoding="utf-8", buffering=1 << 16) as f:
+        f.write(hdr)
+        for ip in picked:
+            f.write(f"{filtered_ip_info[ip]['ip']}\n")
+        counts["ip"] = len(picked)
+
+    def by_meta(keys, meta, n):
+        srt = sorted(keys, key=lambda k: meta.get(k) or "", reverse=True)
+        return srt[:n]
+
+    with open("ioc/misp/threatbase-domain.txt", "w", encoding="utf-8", buffering=1 << 16) as f:
+        f.write(hdr)
+        sel = by_meta(all_domains, domain_meta, MISP_CAP_DOMAIN)
+        for d in sel:
+            f.write(f"{d}\n")
+        counts["domain"] = len(sel)
+
+    with open("ioc/misp/threatbase-hash.txt", "w", encoding="utf-8", buffering=1 << 16) as f:
+        f.write(hdr)
+        sel = by_meta(all_hashes, hash_meta, MISP_CAP_HASH)
+        for h in sel:
+            f.write(f"{h}\n")
+        counts["hash"] = len(sel)
+
+    with open("ioc/misp/threatbase-url.txt", "w", encoding="utf-8", buffering=1 << 16) as f:
+        f.write(hdr)
+        sel = by_meta(all_urls, url_meta, MISP_CAP_URL)
+        for u in sel:
+            f.write(f"{u}\n")
+        counts["url"] = len(sel)
+
+    return counts
 
 
 def write_chunked_feed(path: str, items: list, false_positives=None, metadata: dict = None, today: str = None) -> list:
@@ -1985,6 +2058,21 @@ async def run_async_collector():
             if cidr in false_positives: continue
             when = cidr_meta.get(cidr) or today_str
             f.write(f"{cidr},{when}\n")
+
+    # ── MISP-registry feeds (public) ───────────────────────────────────────
+    # Column-compact, capped subsets formatted for MISP's "freetext" parser
+    # (value,category[,type,comment,tags,date] — positional). The master feeds
+    # carry our own CSV layout, which MISP would misparse column-by-column;
+    # these files exist so Threatbase can be listed in MISP default feeds
+    # without admins hand-configuring field maps. Caps keep the import size
+    # sane for a LAMP-stack instance — high-confidence first, newest first.
+    try:
+        misp_counts = write_misp_feeds(
+            filtered_ip_info, sorted_ips, all_domains, all_hashes, all_urls,
+            domain_meta, hash_meta, url_meta, today_str, timestamp)
+        log.info("Writing MISP feeds... " + ", ".join(f"{k}={v:,}" for k, v in misp_counts.items()))
+    except OSError as e:
+        log.warning(f"  MISP export failed (publishing without ioc/misp/): {e}")
 
     # ── STIX 2.1 bundles (paid) ────────────────────────────────────────────
     # The TAXII/SIEM delivery format. Every IOC type becomes a collection, one
