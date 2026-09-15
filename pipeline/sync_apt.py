@@ -432,6 +432,14 @@ def actor_digest_facts(actor: dict) -> str:
     return "\n".join(lines)
 
 
+# Summaries that say "there is nothing to say". Rejected at the generator and
+# filtered again in the UI (published snapshots predate this guard).
+CONTENT_FREE_SUMMARY = re.compile(
+    r"consists solely|consists of (?:a |one )?single|solely of (?:one|two|a)|"
+    r"no (?:new|significant|notable|substantive) (?:activity|reporting|campaign|intelligence)|"
+    r"only (?:note|noting|mention|reported)", re.I)
+
+
 def summarize_group(actor: dict, deadline: float = float("inf")) -> str | None:
     """One OpenRouter call: 2-3 sentence digest of the group's recent activity.
     Fed pulse descriptions + per-pulse malware/targets/industries (from the
@@ -473,10 +481,13 @@ def summarize_group(actor: dict, deadline: float = float("inf")) -> str | None:
             if r.status_code == 200:
                 text = r.json()["choices"][0]["message"]["content"].strip()
                 # Free-tier models occasionally stream a few tokens then stop
-                # early ("Recent") — a stub that short isn't a summary.
-                if len(text) >= 40:
+                # early ("Recent") — a stub that short isn't a summary. A full-
+                # length summary that only narrates its own emptiness ("recent
+                # reporting consists solely of…") is worse: it reads as broken
+                # automation on the leaderboard. Drop both.
+                if len(text) >= 40 and not CONTENT_FREE_SUMMARY.search(text):
                     return text[:700] or None
-                log.warning("  OpenRouter stub (%d chars) for %s (attempt %d)", len(text), actor["name"], attempt + 1)
+                log.warning("  OpenRouter stub/empty (%d chars) for %s (attempt %d)", len(text), actor["name"], attempt + 1)
             log.warning("  OpenRouter %s for %s (attempt %d)", r.status_code, actor["name"], attempt + 1)
         except (requests.RequestException, ValueError, KeyError, IndexError):
             log.warning("  OpenRouter error for %s (attempt %d)", actor["name"], attempt + 1)

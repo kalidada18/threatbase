@@ -121,13 +121,21 @@ export default function TopAptPage() {
   const [window_, setWindow] = useState<'24h' | '7d'>('24h')
   const [open, setOpen] = useState<string | null>(null)
 
+  // LLM digests that narrate their own emptiness ("reporting consists solely of
+  // two entries noting…") read as broken automation on a leaderboard. The
+  // generator rejects them now (pipeline/sync_apt.py CONTENT_FREE_SUMMARY);
+  // this catches published snapshots that predate the guard. Keep in sync.
+  const CONTENT_FREE_SUMMARY = /consists solely|consists of (?:a |one )?single|solely of (?:one|two|a)|no (?:new|significant|notable|substantive) (?:activity|reporting|campaign|intelligence)|only (?:note|noting|mention|reported)/i
+
   useEffect(() => {
     let cancelled = false
     fetch(getBaseUrl() + feedPath('top_apt.json') + '?_=' + Date.now())
       .then((r) => r.json())
       .then((d) => {
         if (cancelled) return
-        setActors(d?.actors ?? [])
+        const actors: Actor[] = (d?.actors ?? []).map((a: Actor) =>
+          a.summary && CONTENT_FREE_SUMMARY.test(a.summary) ? { ...a, summary: undefined } : a)
+        setActors(actors)
         setUpdated(d?.generated_at ?? '')
       })
       .catch(() => !cancelled && setFailed(true))
