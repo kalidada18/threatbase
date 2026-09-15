@@ -34,6 +34,7 @@ export default function InitialVerification({ onSuccess }: InitialVerificationPr
     redeeming.current = true
     setError('')
     setPhase('success')
+    const started = Date.now()
     try {
       const res = await fetch(`${import.meta.env.BASE_URL}api/turnstile-verify`, {
         method: 'POST',
@@ -41,6 +42,10 @@ export default function InitialVerification({ onSuccess }: InitialVerificationPr
         body: JSON.stringify({ turnstileToken: token }),
       })
       if (!res.ok) throw new Error()
+      // Hold the "Waiting for <host> to respond" beat for ~5 s total — the
+      // site is already painted behind the overlay, so this is theatre, not
+      // load time, and it mirrors how long a real CF challenge lingers.
+      await new Promise((r) => setTimeout(r, Math.max(0, 5000 - (Date.now() - started))))
       onSuccess()
     } catch {
       // Tokens are single-use and server-side checks fail closed: re-mint.
@@ -53,9 +58,9 @@ export default function InitialVerification({ onSuccess }: InitialVerificationPr
 
   return (
     <div className="fixed inset-0 z-[100] flex flex-col bg-black font-sans text-white">
-      <div className="flex w-full max-w-[700px] flex-1 flex-col items-start justify-center px-6 md:px-8">
+      <div className="mx-auto flex w-full max-w-[700px] flex-1 flex-col items-center justify-center px-6 text-center md:px-8">
         {/* Site identity: red ban mark + hostname, as on the real page. */}
-        <div className="mb-4 flex items-center gap-4">
+        <div className="mb-4 flex items-center justify-center gap-4">
           <span
             aria-hidden
             className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-[3px] border-red-600"
