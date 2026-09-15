@@ -67,14 +67,14 @@ jobs:
       # ── 5. Restore the accumulative feed database ─────────────────────────────
       #
       # update_feed.py is accumulative: it seeds each run from the PREVIOUS contents
-      # of ioc/**/*.txt (see load_previous_list). Steady state is that the committed
+      # of ioc/**/*.txt (see load_previous_list_with_meta). Steady state is that the committed
       # threatbase-domain-NN.txt chunks are already in the checkout and
       # load_previous_list_chunked() reassembles them with no download at all.
       #
       # The release download below is the migration path and the safety net: until
       # the first post-chunking run has committed a set of chunks, there is nothing
       # in the checkout to seed from. This matters a great deal, because
-      # load_previous_list() returns an empty set for a missing file WITHOUT raising —
+      # load_previous_list_with_meta() returns an empty set for a missing file WITHOUT raising —
       # so seeding from nothing would not fail the build, it would silently republish
       # a feed shrunk to only today's source hits and then overwrite the `latest`
       # release with it. Failing loudly is deliberate.

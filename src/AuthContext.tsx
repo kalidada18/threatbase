@@ -12,7 +12,6 @@ interface AuthContextType {
   loading: boolean
   requiresMfa: boolean
   mfaVerified: () => void
-  checkMfaLevel: () => Promise<void>
   signInWithGoogle: () => Promise<void>
   signInWithGithub: () => Promise<void>
   signInWithEmail: (email: string, password: string) => Promise<void>
@@ -219,7 +218,6 @@ export function AuthProvider({
         loading,
         requiresMfa,
         mfaVerified,
-        checkMfaLevel,
         signInWithGoogle,
         signInWithGithub,
         signInWithEmail,

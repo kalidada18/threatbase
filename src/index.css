@@ -198,34 +198,13 @@
     background-repeat: repeat;
   }
 
-  /* Opt out of the global 10px scrollbar. For scroll-snap strips that already
-     signal their overflow with edge fade masks. */
-  .scrollbar-none {
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }
-  .scrollbar-none::-webkit-scrollbar {
-    width: 0;
-    height: 0;
-  }
-
   /* Dark app surface — use this instead of hardcoding the hex */
   .bg-app {
     background-color: var(--app-bg);
   }
 
-  /* Display / mono helpers still referenced by components */
-  .retro {
-    font-family: theme('fontFamily.mono') !important;
-  }
-  .pixelated {
-    image-rendering: pixelated;
-  }
   .font-elegant {
     font-family: theme('fontFamily.sans') !important;
-  }
-  .font-space {
-    font-family: theme('fontFamily.display') !important;
   }
 
   .text-liquid-red {
@@ -244,23 +223,6 @@
     background-clip: text;
     -webkit-text-fill-color: transparent;
   }
-
-  /* Thin metallic hairline rule — a centred platinum fade. */
-  .divider-metal {
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(199, 204, 214, 0.28), transparent);
-  }
-
-  /* Loader dots */
-  .dot-1 {
-    animation: dot-1-move 2s ease-in-out infinite;
-  }
-  .dot-2 {
-    animation: dot-2-move 2s ease-in-out infinite;
-  }
-  .dot-3 {
-    animation: dot-3-move 2s ease-in-out infinite;
-  }
 }
 
 @keyframes liquidGradient {
@@ -269,44 +231,9 @@
   100% { background-position: 0% 50%; }
 }
 
-@keyframes dot-3-move {
-  20% { transform: scale(1); }
-  45% { transform: translateY(-18px) scale(0.45); }
-  60% { transform: translateY(-90px) scale(0.45); }
-  80% { transform: translateY(-90px) scale(0.45); }
-  100% { transform: translateY(0px) scale(1); }
-}
 
-@keyframes dot-2-move {
-  20% { transform: scale(1); }
-  45% { transform: translate(-16px, 12px) scale(0.45); }
-  60% { transform: translate(-80px, 60px) scale(0.45); }
-  80% { transform: translate(-80px, 60px) scale(0.45); }
-  100% { transform: translateY(0px) scale(1); }
-}
 
-@keyframes dot-1-move {
-  20% { transform: scale(1); }
-  45% { transform: translate(16px, 12px) scale(0.45); }
-  60% { transform: translate(80px, 60px) scale(0.45); }
-  80% { transform: translate(80px, 60px) scale(0.45); }
-  100% { transform: translateY(0px) scale(1); }
-}
 
-@keyframes rotate-move {
-  55% { transform: rotate(0deg); }
-  80% { transform: rotate(360deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* New entry slide/fade for the live attack ticker */
-@keyframes tickerIn {
-  0% { opacity: 0; transform: translateY(-6px); }
-  100% { opacity: 1; transform: translateY(0); }
-}
-.ticker-in {
-  animation: tickerIn 0.35s ease-out;
-}
 
 /* Hero search input scan-line effect — transform (not `top`) so the sweep
    doesn't force layout every frame. --scan-h tracks the input height. */
@@ -324,35 +251,10 @@
   .scan-line { --scan-h: 64px; } /* md:h-16 */
 }
 
-/* Marquee scroll animation for trusted-sources */
-@keyframes marqueeScroll {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
-}
-.animate-marquee {
-  animation: marqueeScroll 30s linear infinite;
-}
-.animate-marquee:hover {
-  animation-play-state: paused;
-}
-
-/* Live-threat-intel card sweep — one slow transform-only scan down the
-   instrument panel (transform, never top/height, so no layout thrash). */
-@keyframes hudSweep {
-  0% { transform: translateY(-120%); opacity: 0; }
-  8% { opacity: 1; }
-  92% { opacity: 1; }
-  100% { transform: translateY(520%); opacity: 0; }
-}
-
 /* ── Comprehensive prefers-reduced-motion (tasteskill §6.B) ── */
 @media (prefers-reduced-motion: reduce) {
-  .ticker-in,
   .text-liquid-red,
-  .scan-line,
-  .animate-marquee,
-  
-  .dot-1, .dot-2, .dot-3 {
+  .scan-line {
     animation: none !important;
   }
 
@@ -361,7 +263,6 @@
   .animate-ping,
   .animate-spin,
   .animate-bounce,
-  .animate-shimmer,
   .animate-pulse-ring {
     animation: none !important;
   }

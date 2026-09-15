@@ -2,7 +2,7 @@
 // Coordinates are approximate country/capital centroids, sufficient for
 // plotting attack origins on the threat map. Codes match iptoasn.com output.
 
-export interface CountryGeo {
+interface CountryGeo {
   name: string
   coords: [number, number] // [lon, lat]
 }

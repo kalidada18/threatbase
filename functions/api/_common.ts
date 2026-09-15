@@ -6,14 +6,14 @@
  * functions/api/v1/report.ts.
  */
 
-export const ALLOWED_ORIGIN = 'https://threatbase.qzz.io'
+const ALLOWED_ORIGIN = 'https://threatbase.qzz.io'
 
 /**
  * Strict dev-origin check: exact host + optional port only.
  * A prefix match (startsWith) would also accept suffix tricks like
  * `http://localhost.attacker.com`, which this regex rejects.
  */
-export function isDevOrigin(origin: string): boolean {
+function isDevOrigin(origin: string): boolean {
   return /^http:\/\/(localhost|127\.0\.0\.1)(:\d{1,5})?$/.test(origin)
 }
 

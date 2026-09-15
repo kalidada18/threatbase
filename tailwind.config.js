@@ -24,66 +24,13 @@ export default {
         'glow-ruby': '0 0 0 1px rgba(207,23,51,0.22), 0 16px 50px -16px rgba(207,23,51,0.45)',
       },
       animation: {
-        first: "moveVertical 30s ease infinite",
-        second: "moveInCircle 20s reverse infinite",
-        third: "moveInCircle 40s linear infinite",
-        fourth: "moveHorizontal 40s ease infinite",
-        fifth: "moveInCircle 20s ease infinite",
-        shimmer: "shimmer 2s linear infinite",
         "pulse-ring": "pulseRing 2.4s cubic-bezier(0.4,0,0.6,1) infinite",
-        "loader-fill": "loaderFill 4s ease-out infinite",
         "blink": "blink 1.5s infinite",
       },
       keyframes: {
         pulseRing: {
           "0%": { transform: "scale(0.9)", opacity: "0.5" },
           "70%, 100%": { transform: "scale(1.8)", opacity: "0" },
-        },
-        moveHorizontal: {
-          "0%": {
-            transform: "translateX(-50%) translateY(-10%)",
-          },
-          "50%": {
-            transform: "translateX(50%) translateY(10%)",
-          },
-          "100%": {
-            transform: "translateX(-50%) translateY(-10%)",
-          },
-        },
-        moveInCircle: {
-          "0%": {
-            transform: "rotate(0deg)",
-          },
-          "50%": {
-            transform: "rotate(180deg)",
-          },
-          "100%": {
-            transform: "rotate(360deg)",
-          },
-        },
-        moveVertical: {
-          "0%": {
-            transform: "translateY(-50%)",
-          },
-          "50%": {
-            transform: "translateY(50%)",
-          },
-          "100%": {
-            transform: "translateY(-50%)",
-          },
-        },
-        shimmer: {
-          from: {
-            transform: "translateX(-100%)",
-          },
-          to: {
-            transform: "translateX(100%)",
-          },
-        },
-        loaderFill: {
-          "0%": { width: "0" },
-          "80%": { width: "100%" },
-          "100%": { width: "100%" },
         },
         blink: {
           "0%, 100%": { opacity: "0" },

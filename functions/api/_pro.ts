@@ -12,7 +12,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { SUPABASE_URL } from '../../src/lib/supabaseConfig'
 
-export type ProState = 'pro' | 'not-pro' | 'no-auth' | 'no-config'
+type ProState = 'pro' | 'not-pro' | 'no-auth' | 'no-config'
 
 /** Build the service-role client from env. Null when the key is missing. */
 export function adminClient(env: any) {

@@ -23,7 +23,6 @@ import { geoLookup, type Geo } from './_net'
 // the caller inside the path segment it owns (no scheme, no slashes, no query).
 const IP = /^(?:(?:\d{1,3}\.){3}\d{1,3}|[0-9a-f:]{2,45})$/
 
-export type { Geo }
 
 export const onRequestGet = async (context: any) => {
   const ip = (new URL(context.request.url).searchParams.get('ip') || '').trim().toLowerCase()

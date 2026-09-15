@@ -52,7 +52,6 @@ PIPELINE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 import aiohttp
 import ipaddress
-from datetime import date, datetime, timedelta, timezone
 
 logging.basicConfig(
     level=logging.INFO,
@@ -708,27 +707,8 @@ def load_previous_ips_with_meta(path: str) -> tuple:
                         meta[ip_int] = m
     return ips, meta
 
-def load_previous_list(path: str) -> Set[str]:
-    items = set()
-    if os.path.exists(path):
-        with open(path, "r", encoding="utf-8") as f:
-            for line in f:
-                if line.startswith("#"): continue
-                item = line.strip()
-                if not item: continue
-                # Skip Git LFS pointer artifacts. During the LFS era one CI run
-                # seeded the accumulative set from an LFS pointer checkout, so
-                # 'version https://git-lfs…', 'oid sha256:…' and 'size …' became
-                # permanent members of the domain/hash feeds (they sort cleanly
-                # into the list, so nothing downstream ever flagged them).
-                if item.startswith("version https://git-lfs") or item.startswith("oid sha256:") \
-                   or (item.startswith("size ") and item[5:].isdigit()):
-                    continue
-                items.add(item)
-    return items
-
 def load_previous_list_with_meta(path: str) -> tuple:
-    """Like load_previous_list, but also returns {indicator: last_seen_date_str}.
+    """Returns {indicator: last_seen_date_str}.
 
     Domains/hashes/urls/ipv6/cidrs are one-per-line feeds; the new format
     appends a date as the only comma-separated field (`evil.com,2026-08-31`).

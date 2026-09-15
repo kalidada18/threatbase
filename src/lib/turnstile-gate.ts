@@ -18,7 +18,7 @@ const SCRIPT_SRC = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render
 // to this exact string; the boot interstitial reuses it (both mean "browser
 // passed a challenge on our surface" — the label exists to keep /report
 // tokens from being redeemable here).
-export const LOGIN_ACTION = 'login'
+const LOGIN_ACTION = 'login'
 
 let scriptPromise: Promise<any> | null = null
 

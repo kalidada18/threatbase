@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from './AuthContext'
 
-export type ProStatus = 'checking' | 'pro' | 'not-pro' | 'signed-out' | 'unavailable'
+type ProStatus = 'checking' | 'pro' | 'not-pro' | 'signed-out' | 'unavailable'
 
 /** Resolves the viewer's Pro status from GET /api/me/pro (JWT in Bearer header).
  *  'checking' while auth or the request is in flight; network/503 → 'unavailable'
