@@ -344,9 +344,6 @@
   92% { opacity: 1; }
   100% { transform: translateY(520%); opacity: 0; }
 }
-.hud-sweep {
-  animation: hudSweep 7s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
 
 /* ── Comprehensive prefers-reduced-motion (tasteskill §6.B) ── */
 @media (prefers-reduced-motion: reduce) {
@@ -354,7 +351,7 @@
   .text-liquid-red,
   .scan-line,
   .animate-marquee,
-  .hud-sweep,
+  
   .dot-1, .dot-2, .dot-3 {
     animation: none !important;
   }
