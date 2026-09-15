@@ -215,7 +215,7 @@ export default function BulkScanner({ feedVersion, statsData, addToast, onClose 
                     onChange={(e) => setText(e.target.value)}
                     rows={8}
                     spellCheck={false}
-                    placeholder={'45.9.148.102\n185.220.101.1\nhxxp://evil[.]com/path  ← defanged forms are refanged too\nmalicious-domain.xyz,2026-09-01\n\n…or load a .csv / .xlsx — every cell of the first sheet is scanned'}
+                    placeholder={'Paste indicators to hunt…'}
                     className="w-full bg-slate-950/50 border border-slate-700 rounded-xl p-4 font-mono text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-slate-500 focus:ring-1 focus:ring-slate-500 resize-y shadow-inner"
                   />
                   <div className="mt-4 flex flex-wrap items-center gap-3">
