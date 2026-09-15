@@ -289,13 +289,17 @@ export default function App() {
     }
   }, [location])
 
-  // Boot gate: nothing renders until the interstitial clears. Sign-in is
-  // therefore covered too — the auth UI only exists behind verification.
-  if (!verified) return <InitialVerification onSuccess={completeVerify} />
-
+  // Boot gate: the interstitial is a full-screen overlay, not a tree
+  // replacement. The site mounts and paints behind it during the challenge,
+  // so clearing the gate reveals an already-loaded page instead of a 4-5 s
+  // cold boot after redeem. Inert to bots is the widget's job (scripted
+  // clients never solve the managed challenge); the login path keeps its own
+  // ensureTurnstileLogin gate regardless of what renders underneath.
   return (
     <MotionConfig reducedMotion="user">
     <AuthProvider>
+      {!verified && <InitialVerification onSuccess={completeVerify} />}
+
       <Navbar />
 
       <AnimatePresence mode="wait" initial={false}>
