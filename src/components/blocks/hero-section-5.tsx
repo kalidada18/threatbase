@@ -135,10 +135,10 @@ export function HeroSection({ scanInput, setScanInput, handleScan, isScanning, s
   const badge = invalid ? 'INVALID' : defanged ? 'DEFANGED' : (cls && (BADGE_LABEL[cls.type] || cls.type.toUpperCase()))
 
   return (
-    <div ref={heroRef} className="relative overflow-hidden w-full bg-app flex items-center justify-center">
+    <div ref={heroRef} className="relative overflow-hidden w-full min-h-[100svh] bg-app flex items-center justify-center">
       <motion.section
         style={{ y: contentY, opacity: contentOpacity }}
-        className="relative z-10 w-full pt-24 pb-10 lg:pb-14"
+        className="relative z-10 w-full pt-24 pb-16 lg:pb-20"
       >
         <div className="relative mx-auto flex max-w-4xl flex-col items-center px-6 text-center">
           {/* Trust badge: the headline fact — we are a default feed in MISP now.
