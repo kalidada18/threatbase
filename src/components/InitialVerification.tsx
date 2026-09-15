@@ -46,7 +46,7 @@ export default function InitialVerification({ onSuccess }: InitialVerificationPr
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center bg-black font-sans text-white">
+    <div className="fixed inset-0 z-[100] flex flex-col items-center bg-black font-sans text-white">
       <div className="flex w-full max-w-[600px] flex-1 flex-col items-start justify-center px-6">
         {/* Site identity, where the real page shows its blocked-domain headline. */}
         <div className="mb-4 flex items-center gap-4">
