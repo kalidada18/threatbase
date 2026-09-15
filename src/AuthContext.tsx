@@ -158,7 +158,6 @@ export function AuthProvider({
 
   const signInWithGoogle = async () => {
     if (!supabaseClient) return
-    await ensureTurnstileLogin()
     const redirectTo = window.location.origin + import.meta.env.BASE_URL
     const { error } = await supabaseClient.auth.signInWithOAuth({
       provider: 'google',
@@ -171,7 +170,6 @@ export function AuthProvider({
 
   const signInWithGithub = async () => {
     if (!supabaseClient) return
-    await ensureTurnstileLogin()
     const redirectTo = window.location.origin + import.meta.env.BASE_URL
     const { error } = await supabaseClient.auth.signInWithOAuth({
       provider: 'github',
