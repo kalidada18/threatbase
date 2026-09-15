@@ -114,6 +114,19 @@ function RepoPulse() {
  */
 const IMPROVEMENTS: { date: string; title: string; items: string[] }[] = [
   {
+    date: '2026-09-15',
+    title: 'Scan Reliability & Report Polish',
+    items: [
+      'A failed feed download no longer poisons the session: previously one network hiccup could make every later hunt answer "clean". Failed fetches now retry, and a stalled download gives up after 45 seconds instead of hanging the scanner.',
+      'Clean verdicts show the "Report it" next step again — the link was there in code but never rendered.',
+      'Feed downloads save as files instead of opening tens of megabytes of text in a browser tab.',
+      'Bulk hunt: closing the panel mid-run stops the scan; skipped rows are flagged as an error, not a success; Pro members no longer see a paywall flash while their status resolves; drag-and-drop files.',
+      'The live threat-intel panel was rebuilt as an ops-room instrument: gradient frame, sparkline well, segmented composition strip.',
+      'Low-contrast micro-text bumped to readable levels across the leaderboard, contributors, and stats panels; keyboard focus and screen-reader announcements restored on the MFA prompt and hero controls.',
+      'A crash after an app update now offers a one-click reload instead of a dead stack dump.',
+    ],
+  },
+  {
     date: '2026-09-07',
     title: 'Scan Report, Feed Manifest & Geo Lookup',
     items: [
