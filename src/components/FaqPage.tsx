@@ -10,7 +10,7 @@ import IsoPageShell from './layout/IsoPageShell'
 const FAQS: { q: string; a: string }[] = [
   {
     q: 'What is Threatbase?',
-    a: 'Threatbase is an open-source, fully-automated threat-intelligence pipeline. It ingests, validates and deduplicates malicious indicators from 54 public OSINT feeds plus community reports, then publishes them as ready-to-use blocklists and serves them through an IOC-hunting console.',
+    a: 'Threatbase is an open-source, fully-automated threat-intelligence pipeline. It ingests, validates and deduplicates malicious indicators from 55 public OSINT feeds plus community reports, then publishes them as ready-to-use blocklists and serves them through an IOC-hunting console.',
   },
   {
     q: 'Is Threatbase free?',
@@ -18,7 +18,7 @@ const FAQS: { q: string; a: string }[] = [
   },
   {
     q: 'Where does the data come from?',
-    a: 'Authoritative open intelligence sources aggregated, validated and republished under the Threatbase brand, plus community reports. The pipeline ingests 54 curated public feeds and deduplicates them before publishing.',
+    a: 'Authoritative open intelligence sources aggregated, validated and republished under the Threatbase brand, plus community reports. The pipeline ingests 55 curated public feeds and deduplicates them before publishing.',
   },
   {
     q: 'How often are the feeds updated?',
@@ -55,7 +55,7 @@ const faqJsonLd = JSON.stringify({
 export default function FaqPage() {
   useSEO({
     title: 'FAQ | Threatbase',
-    description: 'Answers about Threatbase: free MIT-licensed IOC blocklists, daily feed updates from 54 OSINT sources, supported indicator types, and how community reporting works.',
+    description: 'Answers about Threatbase: free MIT-licensed IOC blocklists, daily feed updates from 55 OSINT sources, supported indicator types, and how community reporting works.',
     path: '/faq',
     keywords: 'threat intelligence FAQ, IOC feed questions, blocklist update frequency, free threat intel, how to use threat feeds',
   })

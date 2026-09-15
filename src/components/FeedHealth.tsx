@@ -85,7 +85,7 @@ export default function FeedHealth() {
     <Section id="health" containerClassName="relative z-10">
       <SectionHeading
         title="Source health"
-        subtitle={`The ${total || 'upstream'} feeds we ingest from, and whether each one still produces novel IOCs. Measured on every pipeline run.`}
+        subtitle={`The ${total || 'upstream'} feeds reporting to the 55 upstreams we ingest from, and whether each one still produces novel IOCs. Measured on every pipeline run.`}
         className="mb-14"
       />
 

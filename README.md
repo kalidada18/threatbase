@@ -9,7 +9,7 @@
   <p>
     <a href="https://github.com/kalidada18/threatbase/actions/workflows/update-feed.yml"><img src="https://github.com/kalidada18/threatbase/actions/workflows/update-feed.yml/badge.svg" alt="Feed Pipeline"></a>
     <img src="https://img.shields.io/badge/IOCs-Millions-ef4444" alt="IOCs">
-    <img src="https://img.shields.io/badge/Feeds-54-f59e0b" alt="Feeds">
+    <img src="https://img.shields.io/badge/Feeds-55-f59e0b" alt="Feeds">
     <img src="https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white" alt="Python">
     <img src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black" alt="React">
     <img src="https://img.shields.io/badge/License-MIT-22c55e" alt="MIT License">
@@ -55,12 +55,12 @@
 
 ## 🧩 What is Threatbase?
 
-Threatbase is a **fully-automated threat-intelligence pipeline**. It ingests, validates, and deduplicates malicious indicators from **54 industry OSINT feeds**, then publishes them as ready-to-use blocklists and serves them through a fast IOC-hunting console.
+Threatbase is a **fully-automated threat-intelligence pipeline**. It ingests, validates, and deduplicates malicious indicators from **55 industry OSINT feeds**, then publishes them as ready-to-use blocklists and serves them through a fast IOC-hunting console.
 
 > **Millions** of unique indicators · refreshed continuously · no auth, no rate limits.
 
 ```text
-  54 OSINT Feeds ──▶ Python Aggregator ──▶ GitHub Actions ─┬─▶ Raw Blocklists
+  55 OSINT Feeds ──▶ Python Aggregator ──▶ GitHub Actions ─┬─▶ Raw Blocklists
                      (fetch · dedup ·                       ├─▶ Hunt Console
                       validate · classify)                  ├─▶ Daily ZIP Archive
                                                             └─▶ Chunked Git Mirrors
@@ -396,7 +396,7 @@ on without hand-checking it first.
 Accuracy claims are cheap, so here is the actual mechanism behind each one:
 
 - **Our own sensors, landing at launch.** Pro is backed by first-party collection —
-  Threatbase honeypots and telemetry we run ourselves — on top of the 54 upstreams. A hit
+  Threatbase honeypots and telemetry we run ourselves — on top of the 55 upstreams. A hit
   our own sensors observed does not wait for a public list to catch up, which is exactly
   where a feed that only re-publishes OSINT is always a step behind.
 - **Our own aggregation.** Correlation, de-duplication, scoring and classification run

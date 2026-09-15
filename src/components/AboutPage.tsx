@@ -10,7 +10,7 @@ import { Typewriter } from './motion/Typewriter'
 export default function AboutPage() {
   useSEO({
     title: 'About Threatbase | Community-Driven Threat Intelligence',
-    description: 'Learn how Threatbase works: an automated pipeline turning 54 OSINT feeds and community reports into free IOC blocklists and a real-time hunting console.',
+    description: 'Learn how Threatbase works: an automated pipeline turning 55 OSINT feeds and community reports into free IOC blocklists and a real-time hunting console.',
     path: '/about',
   })
 
