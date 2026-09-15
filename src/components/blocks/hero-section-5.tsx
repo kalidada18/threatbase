@@ -176,7 +176,10 @@ export function HeroSection({ scanInput, setScanInput, handleScan, isScanning, s
             transition={{ duration: 0.7, delay: 0.7, ease: EASE_EXPO }}
             className="mt-10 w-full max-w-3xl"
           >
-            <div className="relative w-full flex items-center group/search">
+            {/* Search bar + Bulk sit on one row: Bulk is a full-height pill to
+                the right of the bar, not inside its control cluster. */}
+            <div className="flex items-stretch gap-3">
+            <div className="relative min-w-0 flex-1 flex items-center group/search">
               {/* Ruby glow behind the bar on focus */}
               <div className="absolute -inset-3 rounded-[2rem] bg-red-500/10 blur-2xl opacity-0 group-focus-within/search:opacity-100 transition-opacity duration-300 pointer-events-none" />
               <Search className="absolute left-5 md:left-6 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-10" size={20} />
@@ -189,7 +192,7 @@ export function HeroSection({ scanInput, setScanInput, handleScan, isScanning, s
                 type="text"
                 aria-label="Hunt an IP, domain, URL, or hash"
                 placeholder={hintIp ? `Your IP: ${hintIp}` : 'Enter IP, domain, URL, or hash…'}
-                className={`hero-scan-input relative h-14 md:h-16 w-full rounded-full border bg-slate-950/70 backdrop-blur-xl pl-12 md:pl-14 pr-[11.5rem] sm:pr-[21rem] lg:pr-[27.5rem] text-base text-white placeholder:text-slate-500 focus-visible:outline-none transition-all shadow-[0_8px_30px_-12px_rgba(0,0,0,0.8)] ${
+                className={`hero-scan-input relative h-14 md:h-16 w-full rounded-full border bg-slate-950/70 backdrop-blur-xl pl-12 md:pl-14 pr-[11rem] sm:pr-[14.5rem] md:pr-[15.5rem] text-base text-white placeholder:text-slate-500 focus-visible:outline-none transition-all shadow-[0_8px_30px_-12px_rgba(0,0,0,0.8)] ${
                   invalid
                     ? 'border-red-500/60 focus-visible:border-red-500/60 focus-visible:ring-2 focus-visible:ring-red-500/30'
                     : 'border-white/10 focus-visible:border-red-500/50 focus-visible:ring-2 focus-visible:ring-red-500/30'
@@ -207,7 +210,7 @@ export function HeroSection({ scanInput, setScanInput, handleScan, isScanning, s
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -6, scale: 0.96 }}
                     transition={{ duration: 0.2, ease: EASE_EXPO }}
-                    className={`hidden lg:inline-flex absolute right-[22rem] z-10 font-mono text-[10px] font-bold tracking-[0.18em] uppercase px-2 py-0.5 rounded-md border pointer-events-none whitespace-nowrap ${
+                    className={`absolute right-[5.5rem] sm:right-[8.75rem] md:right-[9.75rem] z-10 font-mono text-[10px] font-bold tracking-[0.18em] uppercase px-2 py-0.5 rounded-md border pointer-events-none whitespace-nowrap ${
                       invalid ? 'text-red-400 border-red-500/30 bg-red-500/10'
                         : defanged ? 'text-amber-400 border-amber-500/30 bg-amber-500/10'
                         : 'text-slate-300 border-white/10 bg-white/[0.05]'
@@ -278,13 +281,14 @@ export function HeroSection({ scanInput, setScanInput, handleScan, isScanning, s
                   </span>
                 )}
               </button>
-              {/* Bulk hunt rides the control cluster: same pill slot, left of
-                  Hunt, ruby-tinted so it reads as a sibling of the primary action. */}
+            </div>
+              {/* Bulk hunt sits to the right of the search bar, full-height so
+                  the two read as one control row. */}
               {openBulk && (
                 <button
                   type="button"
                   onClick={openBulk}
-                  className="absolute z-10 right-[6.75rem] sm:right-[10rem] top-2 bottom-2 inline-flex items-center justify-center gap-1.5 rounded-full border border-red-500/40 bg-red-500/[0.12] px-3 sm:px-5 text-sm font-semibold text-red-300 transition-all duration-200 hover:bg-red-500/20 hover:text-white hover:border-red-400/50 active:scale-[0.97] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/50"
+                  className="shrink-0 inline-flex items-center justify-center gap-1.5 rounded-full border border-red-500/40 bg-red-500/[0.12] px-4 sm:px-6 text-sm font-semibold text-red-300 transition-all duration-200 hover:bg-red-500/20 hover:text-white hover:border-red-400/50 active:scale-[0.97] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/50"
                 >
                   <ListChecks size={14} /> <span className="hidden sm:inline">Bulk / CSV hunt</span><span className="sm:hidden">Bulk</span>
                 </button>
