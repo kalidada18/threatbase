@@ -336,12 +336,25 @@
   animation-play-state: paused;
 }
 
+/* Live-threat-intel card sweep — one slow transform-only scan down the
+   instrument panel (transform, never top/height, so no layout thrash). */
+@keyframes hudSweep {
+  0% { transform: translateY(-120%); opacity: 0; }
+  8% { opacity: 1; }
+  92% { opacity: 1; }
+  100% { transform: translateY(520%); opacity: 0; }
+}
+.hud-sweep {
+  animation: hudSweep 7s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
 /* ── Comprehensive prefers-reduced-motion (tasteskill §6.B) ── */
 @media (prefers-reduced-motion: reduce) {
   .ticker-in,
   .text-liquid-red,
   .scan-line,
   .animate-marquee,
+  .hud-sweep,
   .dot-1, .dot-2, .dot-3 {
     animation: none !important;
   }

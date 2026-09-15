@@ -20,6 +20,12 @@ const STATUS = {
 
 const statusOf = (e: Entry) => (e.consecutive_empty === 0 ? STATUS.fresh : e.consecutive_empty < 3 ? STATUS.quiet : STATUS.stale)
 
+// UI is Threatbase-branded (see sourceLabels.ts): upstream feed keys never
+// surface here. Each key gets a stable neutral alias so ledger/chart rows keep
+// identity across renders. Raw keys stay untouched in feed_health.json (data layer).
+const feedAlias = (k: string) =>
+  'Feed ' + ((([...k].reduce((h, c) => (h * 31 + c.charCodeAt(0)) | 0, 7) >>> 0).toString(36).padStart(4, '0').slice(-4)).toUpperCase())
+
 // Chart lives in its own lazy chunk so recharts stays out of the eager route
 // bundle (Suspense boundary at the usage site, height-matched fallback).
 const FeedHealthChart = lazy(() => import('./blocks/feed-health-chart'))
@@ -60,7 +66,7 @@ export default function FeedHealth() {
     // by definition, so the bars are the "who is pulling its weight" view.
     const top = [...rows].sort((a, b) => b.last_new_count - a.last_new_count).slice(0, 12)
     const chartData = top.map(r => ({
-      name: r.name.replace(/_/g, ' '),
+      name: feedAlias(r.name),
       value: r.last_new_count,
       color: statusOf(r).color,
     }))
@@ -132,8 +138,8 @@ export default function FeedHealth() {
                   return (
                     <li key={e.name} className="flex items-center gap-3 py-2">
                       <span className={`h-2 w-2 shrink-0 rounded-full ${s.dot}`} aria-hidden="true" />
-                      <span className="min-w-0 flex-1 truncate font-mono text-xs text-slate-300" title={e.name.replace(/_/g, ' ')}>
-                        {e.name.replace(/_/g, ' ')}
+                      <span className="min-w-0 flex-1 truncate font-mono text-xs text-slate-300" title={feedAlias(e.name)}>
+                        {feedAlias(e.name)}
                       </span>
                       <span className="shrink-0 text-right">
                         <span className={`block text-[10px] font-bold uppercase tracking-wider ${s.cls}`}>{s.label}</span>

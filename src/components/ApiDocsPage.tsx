@@ -363,7 +363,7 @@ const BATCH_SCAN_RESPONSE = `{
       "riskScore": "High",
       "feedCount": 6,
       "tags": ["Phishing", "C2"],
-      "sources": ["urlhaus", "phishtank"]
+      "sources": ["threatbase-01", "threatbase-02"]
     }
   ],
   "total": 2
