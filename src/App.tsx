@@ -36,7 +36,6 @@ import { AuthProvider } from './AuthContext'
 import { getBaseUrl, formatSyncTime, feedPath } from './utils'
 import { scanIndicatorLogic, classifyIndicator } from './scanner'
 import { useSEO } from './useSEO'
-import InitialVerification from './components/InitialVerification'
 
 /**
  * Programmatic smooth scroll that survives Lenis.
@@ -118,18 +117,6 @@ export default function App() {
   // which drives the single-result card, the arrival pulse, and ReportScanner.
   const [bulkOpen, setBulkOpen] = useState(false)
   const prevPathRef = useRef<string>(location.pathname)
-
-  // Boot verification: the Cloudflare-style interstitial guards initial site
-  // load once per tab (sessionStorage) or locally; it was live before cbb7d29
-  // demoted it to sign-in-only, and is restored here.
-  const [verified, setVerified] = useState(() => {
-    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    return isLocal || sessionStorage.getItem('human_verified') === 'true'
-  })
-  const completeVerify = () => {
-    sessionStorage.setItem('human_verified', 'true')
-    setVerified(true)
-  }
 
   // Toast state
   const [toasts, setToasts] = useState<any[]>([])
@@ -289,19 +276,12 @@ export default function App() {
     }
   }, [location])
 
-  // Boot gate: the interstitial is a full-screen overlay, not a tree
-  // replacement. The site mounts and paints behind it during the challenge,
-  // so clearing the gate reveals an already-loaded page instead of a 4-5 s
-  // cold boot after redeem. Inert to bots is the widget's job (scripted
-  // clients never solve the managed challenge); the login path keeps its own
-  // ensureTurnstileLogin gate regardless of what renders underneath.
+  // The fake CF interstitial is gone: bot protection is the real Turnstile
+  // widget on the login path (ensureTurnstileLogin, server-redeemed at
+  // /api/turnstile-verify) plus the zone's own Cloudflare challenge rules.
   return (
     <MotionConfig reducedMotion="user">
     <AuthProvider>
-      {/* Exit-fade curtain: the already-painted site is revealed underneath. */}
-      <AnimatePresence>
-        {!verified && <InitialVerification onSuccess={completeVerify} />}
-      </AnimatePresence>
 
       <Navbar />
 

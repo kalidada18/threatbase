@@ -87,7 +87,6 @@ export default function PrivacyPage() {
               <p className="mb-4">The following is what this site actually stores in your browser and device. All of it is first-party and strictly necessary for the features described:</p>
               <ul className="space-y-3 list-disc pl-6 text-base md:text-lg">
                 <li><strong className="text-white font-semibold">Recent hunts</strong> (localStorage key <code className="font-mono text-sm">tb:recent</code>) — your last 5 lookups, so the console can show them back to you. Cleared anytime.</li>
-                <li><strong className="text-white font-semibold">Human-verification flag</strong> (sessionStorage key <code className="font-mono text-sm">human_verified</code>) — remembers the bot check for the current tab only.</li>
                 <li><strong className="text-white font-semibold">IP prefill</strong> (sessionStorage key <code className="font-mono text-sm">tb:ip_prefill</code>) — a one-shot hint used to suggest your own IP in the scanner; never sent anywhere but this page.</li>
                 <li><strong className="text-white font-semibold">Login session</strong> (localStorage, <code className="font-mono text-sm">sb-*-auth-token</code>) — written only when you sign in, by our backend provider Supabase.</li>
                 <li><strong className="text-white font-semibold">Security cookies</strong> — Cloudflare sets <code className="font-mono text-sm">cf_clearance</code>/<code className="font-mono text-sm">__cf_bm</code> when the Turnstile check runs, to distinguish humans from bots.</li>
