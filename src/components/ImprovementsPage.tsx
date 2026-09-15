@@ -115,15 +115,19 @@ function RepoPulse() {
 const IMPROVEMENTS: { date: string; title: string; items: string[] }[] = [
   {
     date: '2026-09-15',
-    title: 'Scan Reliability & Report Polish',
+    title: 'Bulk Hunt, Pro & Scan Reliability',
     items: [
+      'Bulk / CSV hunt: paste or load a file (CSV, TXT, or an Excel workbook — every sheet’s cells) and scan up to 10,000 indicators at once. Verdicts stream in as they resolve, the ledger filters by threat/clean/disputed/error, and results export back as a detailed CSV. Precision extraction pulls indicators out of messy text; drag-and-drop files straight into the panel.',
+      'Bulk hunt is a Pro feature now, with a management dashboard for provisioning; superadmin badge and a paginated submissions log in the profile.',
       'A failed feed download no longer poisons the session: previously one network hiccup could make every later hunt answer "clean". Failed fetches now retry, and a stalled download gives up after 45 seconds instead of hanging the scanner.',
       'Clean verdicts show the "Report it" next step again — the link was there in code but never rendered.',
-      'Feed downloads save as files instead of opening tens of megabytes of text in a browser tab.',
-      'Bulk hunt: closing the panel mid-run stops the scan; skipped rows are flagged as an error, not a success; Pro members no longer see a paywall flash while their status resolves; drag-and-drop files.',
-      'The live threat-intel panel was rebuilt as an ops-room instrument: gradient frame, sparkline well, segmented composition strip.',
-      'Low-contrast micro-text bumped to readable levels across the leaderboard, contributors, and stats panels; keyboard focus and screen-reader announcements restored on the MFA prompt and hero controls.',
-      'A crash after an app update now offers a one-click reload instead of a dead stack dump.',
+      'Feed downloads save as files instead of opening tens of megabytes of text in a browser tab; the MISP free-text export joined the feed manifest.',
+      'Real Cloudflare Turnstile challenges now protect sign-in and community reports, replacing the cosmetic gate.',
+      'The live threat-intel panel was rebuilt as an ops-room instrument: gradient frame, sparkline well, segmented composition strip; "Flagged by N feeds" counts real independent sources again.',
+      'Top APT digests summarise real campaign detail — pulse descriptions, malware families, targets — not just titles. The #2/#3 cards show the full summary.',
+      'Skipped rows in bulk are flagged as an error, not a success; Pro members no longer see a paywall flash; low-contrast micro-text bumped to readable levels; MFA errors announced to screen readers; a crash after an update offers one-click reload instead of a dead stack dump.',
+      'Snort IP filter source repaired; a Streamable-HTTP MCP server (/mcp: scan_ioc, batch_scan, feed_stats) lets AI tooling query Threatbase directly.',
+      'The Deep Investigation dossier was removed; the whole UI is branded Threatbase, with upstream attribution kept in the data feeds and exports.',
     ],
   },
   {
