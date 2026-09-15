@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-09-14T18:21:43+00:00",
+ "generated_at": "2026-09-15T03:00:57+00:00",
  "source": "AlienVault OTX pulse search",
  "note": "Activity = threat-intel pulses (campaign reports) mentioning the group in the window. Vendor/community reporting \u2014 follow each link to its source. IOCs are community-reported pulse indicators, not Threatbase attribution. TTPs from MITRE ATT&CK. Per-group summaries are AI-generated from the pulse reports.",
  "actors": [
@@ -129,7 +129,7 @@
      "db491181ece3f319de6567ab6f6daa90c6879911cd890155e6b7d8cc7a1a8c8e"
     ]
    },
-   "summary": "One report describes Sandworm using fake job interviews to deliver a trojanized WireGuard VPN installer targeting IT professionals, per Ukrainian CERT indicators. Separate Cisco Talos reporting notes active exploitation of two critical Cisco Secure Firewall Management Center vulnerabilities (CVE-2026-20079 and CVE-2026-20316) by tracked threat clusters, with one report title referencing Cyclops Blink malware historically tied to this group. No specific malware families or targeted countries are detailed for Sandworm in the provided summaries beyond the WireGuard trojan and the Cisco FMC flaws."
+   "summary": "Cisco Talos reports that three threat clusters are actively exploiting critical Cisco Secure Firewall Management Center vulnerabilities (CVE-2026-20079 and CVE-2026-20316), with post-exploitation activity involving Qilin ransomware and a Cyclops Blink variant attributed with high confidence to Sandworm-overlapping APT activity. Separately, CERT-UA indicates Sandworm is conducting fake job interview campaigns to deliver trojanized WireGuard VPN installers targeting IT professionals. The observed malware families in these operations include Cyclops Blink and Qilin ransomware."
   },
   {
    "name": "Gamaredon",
@@ -225,110 +225,7 @@
     ],
     "hashes": []
    },
-   "summary": "Reporting indicates that Gamaredon indicators were identified through pivoting on referenced pulses, though no specific malware families, targeted countries, or campaign details were disclosed in the available summaries. The activity appears limited to the sharing of technical indicators derived from previous intelligence."
-  },
-  {
-   "name": "Mustang Panda",
-   "aka": [
-    "RedDelta",
-    "HELIOSCRM",
-    "TA400"
-   ],
-   "sponsor": "China (MSS)",
-   "pulses_24h": 1,
-   "pulses_7d": 1,
-   "malware": [],
-   "targets": [],
-   "campaigns": [
-    {
-     "title": "Mustang Panda",
-     "url": "https://otx.alienvault.com/pulse/6aa6eb8b13e252113a892ecf",
-     "modified": "2026-09-13T18:29:31.525000",
-     "last_24h": true
-    }
-   ],
-   "ttps": [
-    "Account Discovery",
-    "Acquire Infrastructure",
-    "Adversary-in-the-Middle",
-    "Application Layer Protocol",
-    "Archive Collected Data",
-    "Automated Collection",
-    "Boot or Logon Autostart Execution",
-    "Command and Scripting Interpreter",
-    "Compromise Accounts",
-    "Data Obfuscation",
-    "Data Staged",
-    "Debugger Evasion",
-    "Delay Execution",
-    "Deobfuscate/Decode Files or Information",
-    "Develop Capabilities",
-    "Encrypted Channel",
-    "Establish Accounts",
-    "Event Triggered Execution",
-    "Execution Guardrails",
-    "Exfiltration Over Alternative Protocol",
-    "Exfiltration Over C2 Channel",
-    "Exfiltration Over Physical Medium",
-    "Exfiltration Over Web Service",
-    "Exploitation for Client Execution",
-    "File and Directory Discovery",
-    "Hide Artifacts",
-    "Hijack Execution Flow",
-    "Indicator Removal",
-    "Ingress Tool Transfer",
-    "Log Enumeration",
-    "Masquerading",
-    "Native API",
-    "Network Service Discovery",
-    "Non-Application Layer Protocol",
-    "OS Credential Dumping",
-    "Obfuscated Files or Information",
-    "Obtain Capabilities",
-    "Permission Groups Discovery",
-    "Phishing",
-    "Phishing for Information",
-    "Process Discovery",
-    "Protocol Tunneling",
-    "Proxy",
-    "Remote Access Tools",
-    "Remote System Discovery",
-    "Replication Through Removable Media",
-    "Scheduled Task/Job",
-    "Search Open Websites/Domains",
-    "Server Software Component",
-    "Shared Modules",
-    "Software Deployment Tools",
-    "Software Discovery",
-    "Software Extensions",
-    "Stage Capabilities",
-    "Subvert Trust Controls",
-    "System Binary Proxy Execution",
-    "System Information Discovery",
-    "System Network Configuration Discovery",
-    "System Network Connections Discovery",
-    "Traffic Signaling",
-    "User Execution",
-    "Web Service",
-    "Windows Management Instrumentation"
-   ],
-   "iocs": {
-    "ips": [],
-    "domains": [],
-    "hashes": [
-     "08c8bcddc7e6ad5f426a028344785d38",
-     "18e2e29b7f077b62f65f3f6d1588c233",
-     "234c0961200263ca01b94ca32b4326b5",
-     "28c57c5c1899eb409b3a9c9be4edbd60",
-     "41f9450bba235c37d40cd0315c1013cf",
-     "43349dd33578dd9dc7388894670e0d07",
-     "77e676ef3c5a7a53e00b57a24d5ce182",
-     "9252f309722bf76de96f320274ce788b",
-     "b4d15ed76b325dc55113dceb76afe840",
-     "cd303043270578434a269ba13a60032b"
-    ]
-   },
-   "summary": "Over the last seven days, the only entry for Mustang Panda is a report title with no accompanying description, and no malware families or targeted countries were reported. This indicates a lack of detailed, public campaign intelligence for the group during this specific weekly window."
+   "summary": "Recent reporting consists solely of two entries noting that Gamaredon indicators were identified by pivoting on a referenced pulse, without describing specific campaigns, malware usage, or targeting activity. No malware families, targeted countries, industries, or victim details were reported in the provided data. The entries appear to indicate indicator sharing or enrichment activity rather than new intrusion reporting."
   },
   {
    "name": "Kimsuky",
@@ -485,7 +382,7 @@
      "30d5f17d5e3f85be18220a7cab0b9fff"
     ]
    },
-   "summary": "Recent reporting indicates Kimsuky is integrating artificial intelligence into its operations, including the use of local large language models such as Ollama, GPT4All, and Msty to generate lure documents and decoys. The group\u2019s GitHub and GitLab-based activity has evolved to incorporate GitHub Personal Access Tokens for command-and-control in LNK attacks and to deploy AsyncRAT. Analysts assess this as an ongoing evolution of existing tactics rather than a new campaign."
+   "summary": "Kimsuky is integrating artificial intelligence into its attack framework, utilizing local large language models such as Ollama, GPT4All, and Msty alongside the AI agent 'opencode' to generate decoy documents and analyze targets. Reporting indicates this evolution supports ongoing GitHub and GitLab-based operations\u2014dubbed \"Operation GitPower\" and linked to the previous \"FlowerPower\" campaign\u2014deploying AsyncRAT against government, defense, finance, and diplomatic sectors. The group's tactics now include AI-generated lures and GitHub PAT-based LNK attacks to facilitate compromise."
   },
   {
    "name": "Lazarus Group",
@@ -623,7 +520,7 @@
      "2b4987c07a3d9a9a5d1a9bf4efa3d1903e775090b611710edafdc92874265ca8"
     ]
    },
-   "summary": "Lazarus Group has been observed exploiting a Windows AFD.sys zero-day vulnerability to achieve SYSTEM-level access and deploy the FudModule rootkit. Separate reporting details an ongoing infiltration operation where the group places IT workers into jobs at Western companies through a fake DeFi startup, involving forged documents and AI-assisted deception."
+   "summary": "Lazarus Group has been observed exploiting a Windows AFD.sys zero-day vulnerability to gain SYSTEM privileges and deploy the FudModule rootkit, according to Check Point research. Separate reporting details an ongoing infiltration operation where the group places IT workers into Western companies through a fake DeFi startup, using forged documents, shipped laptops, and AI-assisted interviews to facilitate the deception. These activities indicate parallel tracks of high-value vulnerability exploitation and long-term human intelligence operations."
   },
   {
    "name": "Transparent Tribe",
@@ -694,7 +591,7 @@
      "74d347785dc47f8cda3876826cdd3fb3935ac55dc8e9e0c0f96d5ef4e00089a2"
     ]
    },
-   "summary": "Reports indicate Transparent Tribe deployed a new custom backdoor dubbed PATCHCORD against Afghan telecom providers and South Asian critical infrastructure, delivered through fake VPN installers. In related activity, the group executed multistage attacks using LNK shortcuts hidden in disguised images or archives to drop BAT scripts that load final payloads. Both campaigns reportedly leverage shared infrastructure and sector-specific social engineering lures."
+   "summary": "Transparent Tribe has been observed deploying a new custom backdoor called PATCHCORD against Afghan telecommunications providers and South Asian critical infrastructure, delivered through fake VPN installers and telecom management tools. Associated infrastructure includes SHEETCORD, a Go-based implant using Google Sheets for command-and-control, alongside other malware families such as HACKERAI C2 Agent, SHEETCREEP, ValleyRAT, and GateSentinel. The group also conducted multistage attacks using disguised image or archive files with LNK shortcuts that execute hidden BAT scripts to load payloads, aiming to establish persistent access."
   },
   {
    "name": "APT41",
@@ -823,7 +720,110 @@
     ],
     "hashes": []
    },
-   "summary": "Reporting this week consists of a single entry noting that APT41 indicators were identified by pivoting on a referenced pulse. No specific malware families, targeted countries, or campaign details are described in the provided reports. The activity appears limited to indicator sharing or historical analysis rather than a new intrusion campaign."
+   "summary": "Reporting this week consists of a single entry noting that APT41 indicators were identified by pivoting on a referenced pulse, without describing specific campaigns, malware families, targeted countries, or industries. No malicious activity, tooling, or victimology details are provided in the available reports. Observations are limited to the existence of this indicator-sharing entry."
+  },
+  {
+   "name": "Mustang Panda",
+   "aka": [
+    "RedDelta",
+    "HELIOSCRM",
+    "TA400"
+   ],
+   "sponsor": "China (MSS)",
+   "pulses_24h": 0,
+   "pulses_7d": 1,
+   "malware": [],
+   "targets": [],
+   "campaigns": [
+    {
+     "title": "Mustang Panda",
+     "url": "https://otx.alienvault.com/pulse/6aa6eb8b13e252113a892ecf",
+     "modified": "2026-09-13T18:29:31.525000",
+     "last_24h": false
+    }
+   ],
+   "ttps": [
+    "Account Discovery",
+    "Acquire Infrastructure",
+    "Adversary-in-the-Middle",
+    "Application Layer Protocol",
+    "Archive Collected Data",
+    "Automated Collection",
+    "Boot or Logon Autostart Execution",
+    "Command and Scripting Interpreter",
+    "Compromise Accounts",
+    "Data Obfuscation",
+    "Data Staged",
+    "Debugger Evasion",
+    "Delay Execution",
+    "Deobfuscate/Decode Files or Information",
+    "Develop Capabilities",
+    "Encrypted Channel",
+    "Establish Accounts",
+    "Event Triggered Execution",
+    "Execution Guardrails",
+    "Exfiltration Over Alternative Protocol",
+    "Exfiltration Over C2 Channel",
+    "Exfiltration Over Physical Medium",
+    "Exfiltration Over Web Service",
+    "Exploitation for Client Execution",
+    "File and Directory Discovery",
+    "Hide Artifacts",
+    "Hijack Execution Flow",
+    "Indicator Removal",
+    "Ingress Tool Transfer",
+    "Log Enumeration",
+    "Masquerading",
+    "Native API",
+    "Network Service Discovery",
+    "Non-Application Layer Protocol",
+    "OS Credential Dumping",
+    "Obfuscated Files or Information",
+    "Obtain Capabilities",
+    "Permission Groups Discovery",
+    "Phishing",
+    "Phishing for Information",
+    "Process Discovery",
+    "Protocol Tunneling",
+    "Proxy",
+    "Remote Access Tools",
+    "Remote System Discovery",
+    "Replication Through Removable Media",
+    "Scheduled Task/Job",
+    "Search Open Websites/Domains",
+    "Server Software Component",
+    "Shared Modules",
+    "Software Deployment Tools",
+    "Software Discovery",
+    "Software Extensions",
+    "Stage Capabilities",
+    "Subvert Trust Controls",
+    "System Binary Proxy Execution",
+    "System Information Discovery",
+    "System Network Configuration Discovery",
+    "System Network Connections Discovery",
+    "Traffic Signaling",
+    "User Execution",
+    "Web Service",
+    "Windows Management Instrumentation"
+   ],
+   "iocs": {
+    "ips": [],
+    "domains": [],
+    "hashes": [
+     "08c8bcddc7e6ad5f426a028344785d38",
+     "18e2e29b7f077b62f65f3f6d1588c233",
+     "234c0961200263ca01b94ca32b4326b5",
+     "28c57c5c1899eb409b3a9c9be4edbd60",
+     "41f9450bba235c37d40cd0315c1013cf",
+     "43349dd33578dd9dc7388894670e0d07",
+     "77e676ef3c5a7a53e00b57a24d5ce182",
+     "9252f309722bf76de96f320274ce788b",
+     "b4d15ed76b325dc55113dceb76afe840",
+     "cd303043270578434a269ba13a60032b"
+    ]
+   },
+   "summary": "Reports indicate Mustang Panda was associated with a campaign deploying a suite of malware including Korplug (PlugX), HTran, Babar, Floxif, and a Meterpreter reflective loader, though no specific targeted countries, industries, or victim details were disclosed in the current reporting. The observed toolset suggests capabilities for remote access, traffic proxying, and post-exploitation activity. No further operational details regarding targeting or intrusion methods were provided in the source material."
   }
  ]
 }
