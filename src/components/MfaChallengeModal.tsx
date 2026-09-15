@@ -188,7 +188,10 @@ export default function MfaChallengeModal() {
                 if (signingOut) return
                 setSigningOut(true)
                 try {
-                  await signOut()
+                  // Local only: dismissing the prompt must not revoke the
+                  // user's sessions on every other device (global was the
+                  // re-login loop).
+                  await signOut({ scope: 'local' })
                 } catch {
                   setSigningOut(false)
                 }

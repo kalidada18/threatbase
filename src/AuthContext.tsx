@@ -17,7 +17,7 @@ interface AuthContextType {
   signInWithGithub: () => Promise<void>
   signInWithEmail: (email: string, password: string) => Promise<void>
   signUpWithEmail: (email: string, password: string) => Promise<void>
-  signOut: () => Promise<void>
+  signOut: (opts?: { scope: 'global' | 'local' }) => Promise<void>
   refreshProfile: () => Promise<void>
 }
 
@@ -201,9 +201,12 @@ export function AuthProvider({
     if (error) throw error
   }
 
-  const signOut = async () => {
+  // scope:'local' (default global in auth-js v2 revokes EVERY session on
+  // every device — the MFA-dismiss button was wiping all logins, the
+  // "logged out again and again" loop). Deliberate sign-outs stay global.
+  const signOut = async (opts?: { scope: 'global' | 'local' }) => {
     if (!supabaseClient) return
-    const { error } = await supabaseClient.auth.signOut()
+    const { error } = await supabaseClient.auth.signOut(opts ?? { scope: 'global' })
     if (error) throw error
   }
 
