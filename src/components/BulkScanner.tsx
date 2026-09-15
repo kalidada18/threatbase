@@ -38,6 +38,7 @@ export default function BulkScanner({ feedVersion, statsData, addToast, onClose 
   const [limit, setLimit] = useState(PREVIEW_ROWS)
   const abortRef = useRef(false)
   const fileRef = useRef<HTMLInputElement>(null)
+  const [dragging, setDragging] = useState(false)
 
   // Pro gate: bulk hunt rides the same entitlement as the Pro feed URLs
   // (GET /api/me/pro). superadmin bypasses server-side inside that check.
@@ -208,16 +209,34 @@ export default function BulkScanner({ feedVersion, statsData, addToast, onClose 
             <AnimatePresence mode="wait" initial={false}>
               {phase === 'input' && (
                 <motion.div key="input" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2, ease: EASE_EXPO }}>
-                  <label htmlFor="bulk-paste" className="block mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-platinum-500">Paste indicators or load a file</label>
-                  <textarea
-                    id="bulk-paste"
-                    value={text}
-                    onChange={(e) => setText(e.target.value)}
-                    rows={8}
-                    spellCheck={false}
-                    placeholder={'Paste indicators to hunt…'}
-                    className="w-full bg-slate-950/50 border border-slate-700 rounded-xl p-4 font-mono text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-slate-500 focus:ring-1 focus:ring-slate-500 resize-y shadow-inner"
-                  />
+                  <label htmlFor="bulk-paste" className="block mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-platinum-500">Paste indicators, load a file or drag one in</label>
+                  {/* Drop zone wraps the textarea: dropping anywhere on it (or
+                      the paste area) feeds the same handleFile as the picker. */}
+                  <div
+                    onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
+                    onDragLeave={() => setDragging(false)}
+                    onDrop={(e) => {
+                      e.preventDefault()
+                      setDragging(false)
+                      void handleFile(e.dataTransfer.files?.[0])
+                    }}
+                    className={`relative rounded-xl transition-colors ${dragging ? 'ring-2 ring-red-500/70' : ''}`}
+                  >
+                    <textarea
+                      id="bulk-paste"
+                      value={text}
+                      onChange={(e) => setText(e.target.value)}
+                      rows={8}
+                      spellCheck={false}
+                      placeholder={'Paste indicators to hunt…'}
+                      className="w-full bg-slate-950/50 border border-slate-700 rounded-xl p-4 font-mono text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-slate-500 focus:ring-1 focus:ring-slate-500 resize-y shadow-inner"
+                    />
+                    {dragging && (
+                      <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-slate-950/80 text-sm font-semibold uppercase tracking-widest text-red-300">
+                        Drop CSV / Excel / TXT
+                      </div>
+                    )}
+                  </div>
                   <div className="mt-4 flex flex-wrap items-center gap-3">
                     <input ref={fileRef} type="file" accept=".csv,.txt,.xlsx,.xls,text/csv,text/plain" className="hidden" onChange={(e) => { void handleFile(e.target.files?.[0]); e.target.value = '' }} />
                     <button

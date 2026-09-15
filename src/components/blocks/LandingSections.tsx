@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { ArrowRight, Check, Crown } from 'lucide-react'
 import Section from '../layout/Section'
 import { PRO_LANDING_CLAIMS, PRO_PRICE } from '../../proFeatures'
+import { usePro } from '../../usePro'
 
 /**
  * Everything below the home console, in one lazy chunk so the hero (the only
@@ -17,9 +18,12 @@ export default function HomeSections() {
  * Pro band — the three claims the client-acquisition research ranked highest,
  * imported verbatim from proFeatures so /pricing stays the source of truth.
  * Two CTAs with different intents: keep using the free corpus, or get on the
- * waitlist.
+ * waitlist. Hidden for signed-in Pro users (and while their status resolves,
+ * so a paying member never sees the waitlist pitch flash).
  */
 export function ProBand() {
+  const { status } = usePro()
+  if (status === 'pro' || status === 'checking') return null
   return (
     <Section id="pro" spacing="md">
       <div className="glass-card relative overflow-hidden p-8 md:p-12">
