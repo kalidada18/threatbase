@@ -25,19 +25,6 @@ function RevealWords({ text, className = '', delay = 0 }: { text: string; classN
   )
 }
 
-// Chips are REAL feed indicators (top-coverage IPs from ioc/ip/top_ips.json,
-// one hash from ioc/hash) so a first click returns the red verdict — the
-// product's persuasive output, not its weakest one. 8.8.8.8 is deliberately
-// kept: one known-clean scan proves the engine discriminates, which is what
-// analysts check first. Staleness ceiling: these are baked; if the feed ever
-// prunes one the chip turns clean — refresh alongside the feed-count PR cycle.
-const EXAMPLES: { value: string; label: string }[] = [
-  { value: '103.78.2.252', label: '103.78.2.252' },
-  { value: '107.150.97.10', label: '107.150.97.10' },
-  { value: '00000077553a5b27a610ac98f29563bbd6e0decc020c2d49e4fa0d89197e7fd8', label: '00000077553a5b27' },
-  { value: '8.8.8.8', label: '8.8.8.8' },
-]
-
 // Recent hunts: console memory for the returning analyst. Written by App's
 // performScan to localStorage (tb:recent) and announced via this event.
 export const RECENT_EVENT = 'tb:recent'
@@ -308,59 +295,6 @@ export function HeroSection({ scanInput, setScanInput, handleScan, isScanning, s
                 </button>
               )}
             </div>
-
-            {recent.length > 0 && (
-              <div className="mt-3 flex flex-wrap items-center justify-start gap-2">
-                <span className="text-xs font-medium tracking-wide text-slate-500 mr-1">Recent:</span>
-                {recent.map((r) => (
-                  <span key={r.value} className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] transition-colors hover:bg-white/[0.08]">
-                    <button
-                      type="button"
-                      title={`${r.value} — ${r.malicious ? 'threat found' : 'clean'}`}
-                      onClick={() => { setScanInput(r.value); handleScan(r.value) }}
-                      className="inline-flex min-h-11 items-center gap-1.5 pl-3 pr-1 font-mono text-xs text-slate-300 hover:text-white cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/30 rounded-full"
-                    >
-                      <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${r.malicious ? 'bg-red-500' : 'bg-emerald-500'}`} aria-hidden />
-                      {r.value.length > 24 ? r.value.slice(0, 14) : r.value}
-                    </button>
-                    <button
-                      type="button"
-                      aria-label={`Forget ${r.value} from recent hunts`}
-                      onClick={() => {
-                        try { localStorage.setItem('tb:recent', JSON.stringify(readRecent().filter((x) => x.value !== r.value))) } catch {}
-                        window.dispatchEvent(new Event(RECENT_EVENT))
-                      }}
-                      className="pr-2.5 text-slate-600 hover:text-slate-300 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/30 rounded-full"
-                    >
-                      ×
-                    </button>
-                  </span>
-                ))}
-              </div>
-            )}
-
-            <motion.div
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.9, ease: EASE_EXPO }}
-              className="mt-3 flex flex-wrap items-center justify-start gap-2"
-            >
-              <span className="text-xs font-medium tracking-wide text-slate-400 mr-1">Try:</span>
-              {EXAMPLES.map((ex) => (
-                <button
-                  key={ex.value}
-                  type="button"
-                  title={ex.value}
-                  onClick={() => {
-                    setScanInput(ex.value)
-                    handleScan(ex.value)
-                  }}
-                  className="inline-flex min-h-11 items-center rounded-full border border-white/10 bg-white/[0.03] px-4 font-mono text-xs text-slate-300 transition-colors duration-200 hover:bg-white/[0.08] hover:text-white cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/30"
-                >
-                  {ex.label}
-                </button>
-              ))}
-            </motion.div>
           </motion.div>
         </div>
       </motion.section>
