@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
+import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Activity } from 'lucide-react'
+import { Activity, ShieldCheck } from 'lucide-react'
 import { fmt, INDICATOR_ACCENT, type IndicatorKey } from '../utils'
 import Section from './layout/Section'
 import { SectionHeading } from './motion/SectionHeading'
@@ -106,11 +107,22 @@ export default function Stats({ statsData }: any) {
               {total != null ? fmt(totalVal) : <ValueSkeleton className="w-[9ch]" />}
             </div>
           </div>
-          <div className="md:text-right">
-            <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Live sources</div>
-            <div className="mt-1.5 font-mono text-2xl font-bold leading-none tracking-tight text-white tabular-nums md:text-3xl">
-              {feeds != null ? fmt(feeds) : <ValueSkeleton className="w-[3ch]" />}
+          <div className="flex flex-wrap items-end gap-x-8 gap-y-4 md:flex-col md:items-end md:gap-0">
+            <div className="md:text-right">
+              <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">Live sources</div>
+              <div className="mt-1.5 font-mono text-2xl font-bold leading-none tracking-tight text-white tabular-nums md:text-3xl">
+                {feeds != null ? fmt(feeds) : <ValueSkeleton className="w-[3ch]" />}
+              </div>
             </div>
+            {/* The headline proof, riding next to the IOC count: the corpus is a
+                registered default feed in MISP. Links to the Use-in-MISP card. */}
+            <Link
+              to="/threatfeed#misp"
+              className="inline-flex items-center gap-1.5 rounded-full border border-red-500/25 bg-red-500/[0.08] px-3 py-1 text-[11px] font-semibold text-red-200 transition-colors hover:bg-red-500/[0.16] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/30"
+            >
+              <ShieldCheck size={12} className="text-red-400" aria-hidden />
+              <span className="uppercase tracking-wider">MISP default feed</span>
+            </Link>
           </div>
         </div>
 

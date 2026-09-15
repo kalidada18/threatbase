@@ -6,6 +6,7 @@ import Section from './layout/Section'
 import LiveThreatIntel from './LiveThreatIntel'
 import Stats from './Stats'
 import Feeds from './Feeds'
+import MispIntegration from './MispIntegration'
 import { ProBand } from './blocks/LandingSections'
 import { useSEO } from '@/useSEO'
 
@@ -58,6 +59,7 @@ export default function ThreatFeedPage({ statsData, feedVersion, statsFailed, on
 
         <Stats statsData={statsData} />
         <Feeds statsData={statsData} />
+        <MispIntegration />
         <Suspense fallback={chartSectionSkeleton}>
           <FeedHealth />
         </Suspense>

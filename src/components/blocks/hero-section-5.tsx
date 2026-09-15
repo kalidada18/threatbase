@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { motion, AnimatePresence, useScroll, useTransform, useReducedMotion } from 'framer-motion'
-import { Search, ListChecks } from 'lucide-react'
+import { Search, ListChecks, ShieldCheck } from 'lucide-react'
 import { EASE_EXPO } from '../motion/primitives'
 import { classifyIndicator, refangIndicator } from '../../scanner'
 
@@ -153,7 +154,20 @@ export function HeroSection({ scanInput, setScanInput, handleScan, isScanning, s
         className="relative z-10 w-full pt-24 pb-20 lg:pb-28"
       >
         <div className="relative mx-auto flex max-w-4xl flex-col items-center px-6 text-center">
-          <h1 className="text-balance font-display text-4xl leading-[1.06] sm:text-5xl md:text-6xl font-bold tracking-tight text-white">
+          {/* Trust badge: the headline fact — we are a default feed in MISP now.
+              Links to the Use-in-MISP card on /threatfeed, not a dead chip. */}
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.05, ease: EASE_EXPO }}>
+            <Link
+              to="/threatfeed#misp"
+              className="inline-flex items-center gap-2 rounded-full border border-red-500/25 bg-red-500/[0.08] px-4 py-1.5 text-xs font-semibold text-red-200 transition-colors hover:bg-red-500/[0.16] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/30"
+            >
+              <ShieldCheck size={14} className="text-red-400" aria-hidden />
+              Official default feed in MISP
+              <span className="hidden sm:inline text-red-300/60">· 4 feeds merged upstream</span>
+            </Link>
+          </motion.div>
+
+          <h1 className="mt-6 text-balance font-display text-4xl leading-[1.06] sm:text-5xl md:text-6xl font-bold tracking-tight text-white">
             <RevealWords text="Hunt" delay={0.15} />{' '}
             <span className="text-red-500">
               <RevealWords text="IOC." delay={0.3} />
