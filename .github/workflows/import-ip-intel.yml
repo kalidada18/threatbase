@@ -36,7 +36,7 @@ on:
         required: true
         default: "0"
       since:
-        description: "Only rows first seen on/after YYYY-MM-DD (empty = all) — daily delta"
+        description: "Only rows seen on/after YYYY-MM-DD; 'auto' = yesterday; empty = all"
         required: false
         default: ""
       resume:
@@ -83,6 +83,7 @@ jobs:
           LIMIT="${{ inputs.limit }}"
           if [ "$LIMIT" != "0" ]; then ARGS="$ARGS --limit $LIMIT"; fi
           SINCE="${{ inputs.since }}"
+          if [ "$SINCE" = "auto" ]; then SINCE=$(date -u -d yesterday +%F); fi
           if [ -n "$SINCE" ]; then ARGS="$ARGS --since $SINCE"; fi
           python pipeline/import_ip_intel.py "${{ inputs.file_path }}" $ARGS
 
