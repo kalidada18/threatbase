@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-09-15T18:21:35+00:00",
+ "generated_at": "2026-09-16T05:35:30+00:00",
  "source": "AlienVault OTX pulse search",
  "note": "Activity = threat-intel pulses (campaign reports) mentioning the group in the window. Vendor/community reporting \u2014 follow each link to its source. IOCs are community-reported pulse indicators, not Threatbase attribution. TTPs from MITRE ATT&CK. Per-group summaries are AI-generated from the pulse reports.",
  "actors": [
@@ -158,135 +158,7 @@
      "ce5932b88f879f26006df81f2fa7667e"
     ]
    },
-   "summary": "Reporting indicates Kimsuky is integrating artificial intelligence into its operations, utilizing local large language models such as Ollama, GPT4All, and Msty to generate decoy documents and analyze targets. The group continues to deploy AsyncRAT via evolving GitHub and GitLab-based LNK attacks, a campaign tracked as Operation GitPower and linked to the earlier FlowerPower activity. Observed targeting focuses on government, defense, and finance sectors, as well as foreign diplomatic missions."
-  },
-  {
-   "name": "Sandworm",
-   "aka": [
-    "Voodoo Bear",
-    "IRON VAULT",
-    "BLACKENERGY"
-   ],
-   "sponsor": "Russia (GRU)",
-   "pulses_24h": 0,
-   "pulses_7d": 3,
-   "malware": [],
-   "targets": [],
-   "campaigns": [
-    {
-     "title": "Cisco FMC CVE-2026-20079/20316 \u2014 Qilin & Cyclops Blink Exploitation",
-     "url": "https://otx.alienvault.com/pulse/6aa78e6366f7a7aa509943b7",
-     "modified": "2026-09-14T06:04:19.022000",
-     "last_24h": false
-    },
-    {
-     "title": "Sandworm Fake Job Interviews Push Trojanized WireGuard VPN to Infect IT Professionals",
-     "url": "https://otx.alienvault.com/pulse/6a7c433680aefab88821c968",
-     "modified": "2026-09-11T09:04:00.021000",
-     "last_24h": false
-    },
-    {
-     "title": "Active exploitation of Cisco Secure Firewall Management Center vulnerabilities",
-     "url": "https://otx.alienvault.com/pulse/6aa1c2281252d98a241ae632",
-     "modified": "2026-09-10T05:39:54.959000",
-     "last_24h": false
-    }
-   ],
-   "ttps": [
-    "Account Discovery",
-    "Account Manipulation",
-    "Acquire Infrastructure",
-    "Active Scanning",
-    "Application Layer Protocol",
-    "Brute Force",
-    "Command and Scripting Interpreter",
-    "Compromise Accounts",
-    "Compromise Host Software Binary",
-    "Compromise Infrastructure",
-    "Create Account",
-    "Create or Modify System Process",
-    "Credentials from Password Stores",
-    "Data Destruction",
-    "Data Encoding",
-    "Data Encrypted for Impact",
-    "Data from Information Repositories",
-    "Data from Local System",
-    "Defacement",
-    "Deobfuscate/Decode Files or Information",
-    "Develop Capabilities",
-    "Disable or Modify Tools",
-    "Disk Wipe",
-    "Domain or Tenant Policy Modification",
-    "Endpoint Denial of Service",
-    "Establish Accounts",
-    "Exfiltration Over C2 Channel",
-    "Exploit Public-Facing Application",
-    "Exploitation for Client Execution",
-    "External Remote Services",
-    "File and Directory Discovery",
-    "Gather Victim Host Information",
-    "Gather Victim Identity Information",
-    "Gather Victim Network Information",
-    "Gather Victim Org Information",
-    "Indicator Removal",
-    "Ingress Tool Transfer",
-    "Inhibit System Recovery",
-    "Input Capture",
-    "Lateral Tool Transfer",
-    "Masquerading",
-    "Modify Registry",
-    "Native API",
-    "Network Sniffing",
-    "Non-Application Layer Protocol",
-    "Non-Standard Port",
-    "OS Credential Dumping",
-    "Obfuscated Files or Information",
-    "Obtain Capabilities",
-    "Phishing",
-    "Phishing for Information",
-    "Process Injection",
-    "Protocol Tunneling",
-    "Proxy",
-    "Remote Access Tools",
-    "Remote Services",
-    "Remote System Discovery",
-    "Scheduled Task/Job",
-    "Search Open Websites/Domains",
-    "Search Victim-Owned Websites",
-    "Server Software Component",
-    "Service Stop",
-    "Software Deployment Tools",
-    "Stage Capabilities",
-    "Steal Web Session Cookie",
-    "Supply Chain Compromise",
-    "System Binary Proxy Execution",
-    "System Information Discovery",
-    "System Network Connections Discovery",
-    "System Owner/User Discovery",
-    "Trusted Relationship",
-    "User Execution",
-    "Valid Accounts",
-    "Web Service",
-    "Windows Management Instrumentation"
-   ],
-   "iocs": {
-    "ips": [
-     "208.123.119.215",
-     "91.214.78.118"
-    ],
-    "domains": [
-     "douncloud.site",
-     "atlasgroup-ua.com",
-     "soprasteria-bg.com",
-     "soprasteriabg.com"
-    ],
-    "hashes": [
-     "6f98add5d1a7729192b6ad8491d85c505c64836f7881742d6b93bd8e3d2fe461",
-     "b037f45e02a289325a1a5eb0d4db6a9fce9954fd0fdfd07162cb4eb2acbef77d",
-     "db491181ece3f319de6567ab6f6daa90c6879911cd890155e6b7d8cc7a1a8c8e"
-    ]
-   },
-   "summary": "Cisco Talos observed three threat clusters actively exploiting two critical Cisco Secure Firewall Management Center vulnerabilities (CVE-2026-20079 and CVE-2026-20316) to deploy web shells, reverse proxies, and steal credentials, with one cluster dropping Qilin ransomware and a Cyclops Blink variant attributed to Sandworm-overlapping APT activity. Separately, CERT-UA reported Sandworm targeting IT professionals through fake job interviews delivering trojanized WireGuard VPN installers. No specific victim countries or industries were identified in the current reporting."
+   "summary": "Kimsuky, a North Korean threat group, is integrating local large language models \u2014 including Ollama, GPT4All, and Msty \u2014 into its operations to generate decoy documents and improve phishing tactics. The activity, linked to the ongoing \"Operation GitPower\" and the earlier \"FlowerPower\" campaign, uses GitHub-based infrastructure and LNK files to deliver AsyncRAT malware. Reported targeting focuses on government, defense, finance, and foreign diplomatic missions."
   },
   {
    "name": "Lazarus Group",
@@ -424,7 +296,206 @@
      "2b4987c07a3d9a9a5d1a9bf4efa3d1903e775090b611710edafdc92874265ca8"
     ]
    },
-   "summary": "Reports indicate Lazarus Group exploited a Windows AFD.sys zero-day vulnerability to gain SYSTEM-level access and deploy the FudModule rootkit. Separate research details an IT worker infiltration operation, dubbed Chollima, where operatives use fake DeFi startups, forged documents, and AI-assisted interviews to gain employment at Western companies."
+   "summary": "Recent reporting indicates Lazarus Group is actively exploiting a Windows AFD.sys zero-day vulnerability to gain SYSTEM privileges and deploy the FudModule rootkit. Separately, researchers have documented the group\u2019s ongoing \u201cDream Job\u201d social engineering campaign, detailing how operatives infiltrate Western companies by forging documents, shipping hardware to facilitators, and using AI tools to pass technical interviews at a fake DeFi startup. No specific targeted countries or additional malware families were identified in these reports."
+  },
+  {
+   "name": "Sandworm",
+   "aka": [
+    "Voodoo Bear",
+    "IRON VAULT",
+    "BLACKENERGY"
+   ],
+   "sponsor": "Russia (GRU)",
+   "pulses_24h": 0,
+   "pulses_7d": 3,
+   "malware": [],
+   "targets": [],
+   "campaigns": [
+    {
+     "title": "Cisco FMC CVE-2026-20079/20316 \u2014 Qilin & Cyclops Blink Exploitation",
+     "url": "https://otx.alienvault.com/pulse/6aa78e6366f7a7aa509943b7",
+     "modified": "2026-09-14T06:04:19.022000",
+     "last_24h": false
+    },
+    {
+     "title": "Sandworm Fake Job Interviews Push Trojanized WireGuard VPN to Infect IT Professionals",
+     "url": "https://otx.alienvault.com/pulse/6a7c433680aefab88821c968",
+     "modified": "2026-09-11T09:04:00.021000",
+     "last_24h": false
+    },
+    {
+     "title": "Active exploitation of Cisco Secure Firewall Management Center vulnerabilities",
+     "url": "https://otx.alienvault.com/pulse/6aa1c2281252d98a241ae632",
+     "modified": "2026-09-10T05:39:54.959000",
+     "last_24h": false
+    }
+   ],
+   "ttps": [
+    "Account Discovery",
+    "Account Manipulation",
+    "Acquire Infrastructure",
+    "Active Scanning",
+    "Application Layer Protocol",
+    "Brute Force",
+    "Command and Scripting Interpreter",
+    "Compromise Accounts",
+    "Compromise Host Software Binary",
+    "Compromise Infrastructure",
+    "Create Account",
+    "Create or Modify System Process",
+    "Credentials from Password Stores",
+    "Data Destruction",
+    "Data Encoding",
+    "Data Encrypted for Impact",
+    "Data from Information Repositories",
+    "Data from Local System",
+    "Defacement",
+    "Deobfuscate/Decode Files or Information",
+    "Develop Capabilities",
+    "Disable or Modify Tools",
+    "Disk Wipe",
+    "Domain or Tenant Policy Modification",
+    "Endpoint Denial of Service",
+    "Establish Accounts",
+    "Exfiltration Over C2 Channel",
+    "Exploit Public-Facing Application",
+    "Exploitation for Client Execution",
+    "External Remote Services",
+    "File and Directory Discovery",
+    "Gather Victim Host Information",
+    "Gather Victim Identity Information",
+    "Gather Victim Network Information",
+    "Gather Victim Org Information",
+    "Indicator Removal",
+    "Ingress Tool Transfer",
+    "Inhibit System Recovery",
+    "Input Capture",
+    "Lateral Tool Transfer",
+    "Masquerading",
+    "Modify Registry",
+    "Native API",
+    "Network Sniffing",
+    "Non-Application Layer Protocol",
+    "Non-Standard Port",
+    "OS Credential Dumping",
+    "Obfuscated Files or Information",
+    "Obtain Capabilities",
+    "Phishing",
+    "Phishing for Information",
+    "Process Injection",
+    "Protocol Tunneling",
+    "Proxy",
+    "Remote Access Tools",
+    "Remote Services",
+    "Remote System Discovery",
+    "Scheduled Task/Job",
+    "Search Open Websites/Domains",
+    "Search Victim-Owned Websites",
+    "Server Software Component",
+    "Service Stop",
+    "Software Deployment Tools",
+    "Stage Capabilities",
+    "Steal Web Session Cookie",
+    "Supply Chain Compromise",
+    "System Binary Proxy Execution",
+    "System Information Discovery",
+    "System Network Connections Discovery",
+    "System Owner/User Discovery",
+    "Trusted Relationship",
+    "User Execution",
+    "Valid Accounts",
+    "Web Service",
+    "Windows Management Instrumentation"
+   ],
+   "iocs": {
+    "ips": [
+     "208.123.119.215",
+     "91.214.78.118"
+    ],
+    "domains": [
+     "douncloud.site",
+     "atlasgroup-ua.com",
+     "soprasteria-bg.com",
+     "soprasteriabg.com"
+    ],
+    "hashes": [
+     "6f98add5d1a7729192b6ad8491d85c505c64836f7881742d6b93bd8e3d2fe461",
+     "b037f45e02a289325a1a5eb0d4db6a9fce9954fd0fdfd07162cb4eb2acbef77d",
+     "db491181ece3f319de6567ab6f6daa90c6879911cd890155e6b7d8cc7a1a8c8e"
+    ]
+   },
+   "summary": "Reports indicate Sandworm-affiliated actors are exploiting critical Cisco Secure Firewall Management Center vulnerabilities (CVE-2026-20079 and CVE-2026-20316) to deploy Cyclops Blink variants and Qilin ransomware across three distinct threat clusters. Separately, Sandworm is reportedly targeting IT professionals through fake job interviews that deliver trojanized WireGuard VPN installers. The Cisco exploitation activity, specifically cluster UAT-12197, is attributed with high confidence to Sandworm-overlapping APT activity."
+  },
+  {
+   "name": "Transparent Tribe",
+   "aka": [
+    "Krypton",
+    "In-Trode"
+   ],
+   "sponsor": "Suspected India/Pakistan",
+   "pulses_24h": 0,
+   "pulses_7d": 2,
+   "malware": [],
+   "targets": [],
+   "campaigns": [
+    {
+     "title": "PATCHCORD: New malware cluster targets Afghan telecom and South Asian critical infrastructure",
+     "url": "https://otx.alienvault.com/pulse/6a7deb5e9423f6d0a5c5166d",
+     "modified": "2026-09-12T16:04:05.943000",
+     "last_24h": false
+    },
+    {
+     "title": "Analysis of APT-C-56 (Transparent Tribe)'s Recent Attack Activities.",
+     "url": "https://otx.alienvault.com/pulse/6aa3120703ed09fb42ddfb14",
+     "modified": "2026-09-10T20:24:39.281000",
+     "last_24h": false
+    }
+   ],
+   "ttps": [
+    "Acquire Infrastructure",
+    "Command and Scripting Interpreter",
+    "Compromise Infrastructure",
+    "Develop Capabilities",
+    "Drive-by Compromise",
+    "Dynamic Resolution",
+    "Exploitation for Client Execution",
+    "Hide Artifacts",
+    "Masquerading",
+    "Obfuscated Files or Information",
+    "Phishing",
+    "Stage Capabilities",
+    "User Execution"
+   ],
+   "iocs": {
+    "ips": [
+     "93.127.133.151"
+    ],
+    "domains": [
+     "afghanistanupdates.site",
+     "afghantelecom.site",
+     "appstoore.solutions",
+     "caprispine.health",
+     "nic-support.site",
+     "nicservice.org",
+     "servicesindia.services",
+     "zala-aer.info",
+     "appstoore.duckdns.org",
+     "defence.cdga.site"
+    ],
+    "hashes": [
+     "dce02a45e7bec01df012b626182a2a7f",
+     "5ccce62c594f5d18911b14d9ce8b17654f0cbca3",
+     "0f4073d3c866bc3daf55b25f71250b96ec120db94a4f9cc8fe85b7c9f9d346b3",
+     "1774e15e8eb96eb89bc03cb4768fc0620e10c09c5f795297f36dcc2aa5d9dd94",
+     "2323b55ea743c813e48689318e8ed54ae838cf9e8a2adbfc2488ea8a36dd0126",
+     "2eddfebb3f7419af27493a6a3bb601372cf6c494da8df62640cce7f830b4a73b",
+     "378484112b4e837d3850b5b0802fc509202c232bb124d6944a59fe66525ba668",
+     "50fc220347f9e281037e831c3755dc70a8ba7f663025aea35b301226918b016b",
+     "5e17360d32e9b272bb7e1b97c8e4dca34622ec9ce08fd240fe2758cc3f67dc4a",
+     "74d347785dc47f8cda3876826cdd3fb3935ac55dc8e9e0c0f96d5ef4e00089a2"
+    ]
+   },
+   "summary": "Transparent Tribe (APT-C-56) has been observed deploying a new custom backdoor called PATCHCORD against Afghan telecom providers and South Asian critical infrastructure, alongside a Go-based implant named SHEETCORD that uses Google Sheets for command-and-control. The group also conducted multistage attacks using LNK shortcuts hidden in disguised image or archive files to execute malicious scripts and establish persistent access. Reported malware families include PATCHCORD, SHEETCORD, HACKERAI C2 Agent, SHEETCREEP, ValleyRAT, and GateSentinel, with targeting across telecommunications, government, defense, energy, and healthcare sectors."
   },
   {
    "name": "Gamaredon",
@@ -520,78 +591,110 @@
     ],
     "hashes": []
    },
-   "summary": "Reporting this week consists only of two entries noting that Gamaredon indicators were identified by pivoting on a referenced pulse; no specific malware families, targeted countries, industries, or campaign activities are described. The entries appear to be indicator-sharing pulses rather than detailed campaign analyses. Consequently, no operational activity can be inferred from the provided text alone."
+   "summary": "Recent reporting indicates that Gamaredon indicators were identified through pivoting on referenced threat intelligence pulses. No specific malware families, targeted countries, industries, or victim organizations were detailed in the available campaign reports. The activity described appears limited to the discovery of indicators associated with the group."
   },
   {
-   "name": "Transparent Tribe",
+   "name": "Mustang Panda",
    "aka": [
-    "Krypton",
-    "In-Trode"
+    "RedDelta",
+    "HELIOSCRM",
+    "TA400"
    ],
-   "sponsor": "Suspected India/Pakistan",
+   "sponsor": "China (MSS)",
    "pulses_24h": 0,
-   "pulses_7d": 2,
+   "pulses_7d": 1,
    "malware": [],
    "targets": [],
    "campaigns": [
     {
-     "title": "PATCHCORD: New malware cluster targets Afghan telecom and South Asian critical infrastructure",
-     "url": "https://otx.alienvault.com/pulse/6a7deb5e9423f6d0a5c5166d",
-     "modified": "2026-09-12T16:04:05.943000",
-     "last_24h": false
-    },
-    {
-     "title": "Analysis of APT-C-56 (Transparent Tribe)'s Recent Attack Activities.",
-     "url": "https://otx.alienvault.com/pulse/6aa3120703ed09fb42ddfb14",
-     "modified": "2026-09-10T20:24:39.281000",
+     "title": "Mustang Panda",
+     "url": "https://otx.alienvault.com/pulse/6aa6eb8b13e252113a892ecf",
+     "modified": "2026-09-13T18:29:31.525000",
      "last_24h": false
     }
    ],
    "ttps": [
+    "Account Discovery",
     "Acquire Infrastructure",
+    "Adversary-in-the-Middle",
+    "Application Layer Protocol",
+    "Archive Collected Data",
+    "Automated Collection",
+    "Boot or Logon Autostart Execution",
     "Command and Scripting Interpreter",
-    "Compromise Infrastructure",
+    "Compromise Accounts",
+    "Data Obfuscation",
+    "Data Staged",
+    "Debugger Evasion",
+    "Delay Execution",
+    "Deobfuscate/Decode Files or Information",
     "Develop Capabilities",
-    "Drive-by Compromise",
-    "Dynamic Resolution",
+    "Encrypted Channel",
+    "Establish Accounts",
+    "Event Triggered Execution",
+    "Execution Guardrails",
+    "Exfiltration Over Alternative Protocol",
+    "Exfiltration Over C2 Channel",
+    "Exfiltration Over Physical Medium",
+    "Exfiltration Over Web Service",
     "Exploitation for Client Execution",
+    "File and Directory Discovery",
     "Hide Artifacts",
+    "Hijack Execution Flow",
+    "Indicator Removal",
+    "Ingress Tool Transfer",
+    "Log Enumeration",
     "Masquerading",
+    "Native API",
+    "Network Service Discovery",
+    "Non-Application Layer Protocol",
+    "OS Credential Dumping",
     "Obfuscated Files or Information",
+    "Obtain Capabilities",
+    "Permission Groups Discovery",
     "Phishing",
+    "Phishing for Information",
+    "Process Discovery",
+    "Protocol Tunneling",
+    "Proxy",
+    "Remote Access Tools",
+    "Remote System Discovery",
+    "Replication Through Removable Media",
+    "Scheduled Task/Job",
+    "Search Open Websites/Domains",
+    "Server Software Component",
+    "Shared Modules",
+    "Software Deployment Tools",
+    "Software Discovery",
+    "Software Extensions",
     "Stage Capabilities",
-    "User Execution"
+    "Subvert Trust Controls",
+    "System Binary Proxy Execution",
+    "System Information Discovery",
+    "System Network Configuration Discovery",
+    "System Network Connections Discovery",
+    "Traffic Signaling",
+    "User Execution",
+    "Web Service",
+    "Windows Management Instrumentation"
    ],
    "iocs": {
-    "ips": [
-     "93.127.133.151"
-    ],
-    "domains": [
-     "afghanistanupdates.site",
-     "afghantelecom.site",
-     "appstoore.solutions",
-     "caprispine.health",
-     "nic-support.site",
-     "nicservice.org",
-     "servicesindia.services",
-     "zala-aer.info",
-     "appstoore.duckdns.org",
-     "defence.cdga.site"
-    ],
+    "ips": [],
+    "domains": [],
     "hashes": [
-     "dce02a45e7bec01df012b626182a2a7f",
-     "5ccce62c594f5d18911b14d9ce8b17654f0cbca3",
-     "0f4073d3c866bc3daf55b25f71250b96ec120db94a4f9cc8fe85b7c9f9d346b3",
-     "1774e15e8eb96eb89bc03cb4768fc0620e10c09c5f795297f36dcc2aa5d9dd94",
-     "2323b55ea743c813e48689318e8ed54ae838cf9e8a2adbfc2488ea8a36dd0126",
-     "2eddfebb3f7419af27493a6a3bb601372cf6c494da8df62640cce7f830b4a73b",
-     "378484112b4e837d3850b5b0802fc509202c232bb124d6944a59fe66525ba668",
-     "50fc220347f9e281037e831c3755dc70a8ba7f663025aea35b301226918b016b",
-     "5e17360d32e9b272bb7e1b97c8e4dca34622ec9ce08fd240fe2758cc3f67dc4a",
-     "74d347785dc47f8cda3876826cdd3fb3935ac55dc8e9e0c0f96d5ef4e00089a2"
+     "08c8bcddc7e6ad5f426a028344785d38",
+     "18e2e29b7f077b62f65f3f6d1588c233",
+     "234c0961200263ca01b94ca32b4326b5",
+     "28c57c5c1899eb409b3a9c9be4edbd60",
+     "41f9450bba235c37d40cd0315c1013cf",
+     "43349dd33578dd9dc7388894670e0d07",
+     "77e676ef3c5a7a53e00b57a24d5ce182",
+     "9252f309722bf76de96f320274ce788b",
+     "b4d15ed76b325dc55113dceb76afe840",
+     "cd303043270578434a269ba13a60032b"
     ]
    },
-   "summary": "Transparent Tribe has been observed deploying a new custom backdoor called PATCHCORD against Afghan telecommunications providers and South Asian critical infrastructure organizations, delivered via fake VPN installers and telecom management tools. Infrastructure analysis also uncovered a Go-based implant named SHEETCORD that uses Google Sheets for command-and-control, alongside additional malware families including HACKERAI C2 Agent, SHEETCREEP, ValleyRAT, and GateSentinel targeting sectors such as government, defense, energy, and healthcare. In a separate campaign, the group used disguised image or archive files containing LNK shortcuts that execute hidden BAT scripts to load final payloads"
+   "summary": "Recent reports associate Mustang Panda with a cluster of malware families including Korplug (PlugX), HTran, Babar, Floxif, and a Meterpreter reflective loader variant. No specific targeted countries, industries, or campaign details were reported in the current dataset beyond the identification of these tools. The activity appears limited to malware signature reporting without accompanying intrusion context."
   },
   {
    "name": "APT41",
@@ -720,110 +823,7 @@
     ],
     "hashes": []
    },
-   "summary": "Reporting this week consists only of a notice that APT41 indicators were identified by pivoting on a referenced pulse, without details on specific campaigns, malware families, or targeted countries and industries. No new intrusion activity or tooling is described in the available summaries."
-  },
-  {
-   "name": "Mustang Panda",
-   "aka": [
-    "RedDelta",
-    "HELIOSCRM",
-    "TA400"
-   ],
-   "sponsor": "China (MSS)",
-   "pulses_24h": 0,
-   "pulses_7d": 1,
-   "malware": [],
-   "targets": [],
-   "campaigns": [
-    {
-     "title": "Mustang Panda",
-     "url": "https://otx.alienvault.com/pulse/6aa6eb8b13e252113a892ecf",
-     "modified": "2026-09-13T18:29:31.525000",
-     "last_24h": false
-    }
-   ],
-   "ttps": [
-    "Account Discovery",
-    "Acquire Infrastructure",
-    "Adversary-in-the-Middle",
-    "Application Layer Protocol",
-    "Archive Collected Data",
-    "Automated Collection",
-    "Boot or Logon Autostart Execution",
-    "Command and Scripting Interpreter",
-    "Compromise Accounts",
-    "Data Obfuscation",
-    "Data Staged",
-    "Debugger Evasion",
-    "Delay Execution",
-    "Deobfuscate/Decode Files or Information",
-    "Develop Capabilities",
-    "Encrypted Channel",
-    "Establish Accounts",
-    "Event Triggered Execution",
-    "Execution Guardrails",
-    "Exfiltration Over Alternative Protocol",
-    "Exfiltration Over C2 Channel",
-    "Exfiltration Over Physical Medium",
-    "Exfiltration Over Web Service",
-    "Exploitation for Client Execution",
-    "File and Directory Discovery",
-    "Hide Artifacts",
-    "Hijack Execution Flow",
-    "Indicator Removal",
-    "Ingress Tool Transfer",
-    "Log Enumeration",
-    "Masquerading",
-    "Native API",
-    "Network Service Discovery",
-    "Non-Application Layer Protocol",
-    "OS Credential Dumping",
-    "Obfuscated Files or Information",
-    "Obtain Capabilities",
-    "Permission Groups Discovery",
-    "Phishing",
-    "Phishing for Information",
-    "Process Discovery",
-    "Protocol Tunneling",
-    "Proxy",
-    "Remote Access Tools",
-    "Remote System Discovery",
-    "Replication Through Removable Media",
-    "Scheduled Task/Job",
-    "Search Open Websites/Domains",
-    "Server Software Component",
-    "Shared Modules",
-    "Software Deployment Tools",
-    "Software Discovery",
-    "Software Extensions",
-    "Stage Capabilities",
-    "Subvert Trust Controls",
-    "System Binary Proxy Execution",
-    "System Information Discovery",
-    "System Network Configuration Discovery",
-    "System Network Connections Discovery",
-    "Traffic Signaling",
-    "User Execution",
-    "Web Service",
-    "Windows Management Instrumentation"
-   ],
-   "iocs": {
-    "ips": [],
-    "domains": [],
-    "hashes": [
-     "08c8bcddc7e6ad5f426a028344785d38",
-     "18e2e29b7f077b62f65f3f6d1588c233",
-     "234c0961200263ca01b94ca32b4326b5",
-     "28c57c5c1899eb409b3a9c9be4edbd60",
-     "41f9450bba235c37d40cd0315c1013cf",
-     "43349dd33578dd9dc7388894670e0d07",
-     "77e676ef3c5a7a53e00b57a24d5ce182",
-     "9252f309722bf76de96f320274ce788b",
-     "b4d15ed76b325dc55113dceb76afe840",
-     "cd303043270578434a269ba13a60032b"
-    ]
-   },
-   "summary": "Reports indicate Mustang Panda was associated with a campaign deploying a suite of malware including Korplug (PlugX), HTran, Babar, Floxif, and a Meterpreter reflective loader, though no specific targeted countries, industries, or victim details were disclosed in the current reporting. The observed toolset suggests capabilities for remote access, traffic proxying, and post-exploitation activity. No further operational details regarding targeting or intrusion methods were provided in the source material."
+   "summary": "Reporting this week consists only of a notice that APT41 indicators were identified by pivoting on a referenced pulse. No specific malware families, targeted countries, industries, or campaign details were reported in the last seven days. The available information indicates indicator sharing activity rather than a new intrusion campaign."
   }
  ]
 }
