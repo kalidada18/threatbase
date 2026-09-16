@@ -17,7 +17,7 @@
  */
 import { scanIndicatorLogic, classifyIndicator } from '../../src/scanner'
 import { MAX_INDICATOR_LENGTH } from '../../src/lib/apiValidation'
-import { json, corsHeaders, ensureAbsoluteFetch } from '../_common'
+import { json, corsHeaders, ensureAbsoluteFetch } from './_common'
 
 const LOOKUP_DAILY_LIMIT = 500
 const LOOKUP_TTL = 3600 // 1 h

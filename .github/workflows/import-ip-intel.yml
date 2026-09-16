@@ -1,0 +1,88 @@
+name: Threatbase — Import IP corpus into ip_intel
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+# Manual-only: Actions tab -> "Import IP corpus into ip_intel" -> Run workflow.
+# The service-role key never leaves the runner; there is no scheduled trigger.
+on:
+  workflow_dispatch:
+    inputs:
+      file_path:
+        description: "File to import (repo-relative path, or upload first)"
+        required: true
+        default: "ioc/ip/threatbase-ip.txt"
+      format:
+        description: "Input format"
+        required: true
+        default: "feed"
+        type: choice
+        options:
+          - feed
+          - csv
+      batch:
+        description: "Rows per RPC call (1-10000)"
+        required: true
+        default: "5000"
+      dry_run:
+        description: "Validate only, write nothing?"
+        required: true
+        default: false
+        type: boolean
+      limit:
+        description: "Import at most N rows (0 = all) — smoke-test knob"
+        required: true
+        default: "0"
+      resume:
+        description: "Skip batches journaled ok by a previous run?"
+        required: true
+        default: false
+        type: boolean
+
+# One import at a time; a queued run waits rather than racing the same batches.
+concurrency:
+  group: import-ip-intel
+  cancel-in-progress: false
+
+jobs:
+  import:
+    name: Upsert ${{ inputs.file_path }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python dependencies
+        run: pip install --quiet --no-cache-dir -r pipeline/requirements.txt
+
+      # The journal rides along as an artifact so a failed run's --resume has
+      # something to work from: download import_ip_intel_job.jsonl from the
+      # previous run's artifacts, place it next to the input file with the
+      # exact name "<file_path>.job.jsonl", and rerun with resume checked.
+      - name: Import
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          ARGS="--format ${{ inputs.format }} --batch ${{ inputs.batch }}"
+          if [ "${{ inputs.dry_run }}" = "true" ]; then ARGS="$ARGS --dry-run"; fi
+          if [ "${{ inputs.resume }}" = "true" ]; then ARGS="$ARGS --resume"; fi
+          LIMIT="${{ inputs.limit }}"
+          if [ "$LIMIT" != "0" ]; then ARGS="$ARGS --limit $LIMIT"; fi
+          python pipeline/import_ip_intel.py "${{ inputs.file_path }}" $ARGS
+
+      - name: Upload journal
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: import-journal-${{ github.run_id }}
+          path: "${{ inputs.file_path }}.job.jsonl"
+          if-no-files-found: ignore
+          retention-days: 30
