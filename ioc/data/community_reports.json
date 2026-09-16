@@ -698,5 +698,12 @@
     "category": "Port Scan",
     "comment": "Port Scanner",
     "created_at": "2026-09-14T15:23:01.331143+00:00"
+  },
+  {
+    "id": "f258872e-781f-4792-8663-3684008bf0da",
+    "ip": "103.95.40.58",
+    "category": "SSH, Brute-Force",
+    "comment": "SSh brute force attacks",
+    "created_at": "2026-09-16T01:42:51.848414+00:00"
   }
 ]
