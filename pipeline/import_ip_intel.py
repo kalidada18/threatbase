@@ -16,8 +16,10 @@ Usage (from repo root):
   Import the repo's own feed files (lossless migration):
   python pipeline/import_ip_intel.py ioc/ip/threatbase-ip.txt --format feed
   python pipeline/import_ip_intel.py ioc/ip/threatbase-ipv6.txt --format feed
+  python pipeline/import_ip_intel.py ioc/hash/threatbase-hash-01.txt --format hashfeed
   ('--format feed' skips '#...' comments; the CIDR feed does not import —
-  inet holds single addresses, ranges stay a separate concern.)
+  inet holds single addresses, ranges stay a separate concern. hashfeed rows
+  land in the parallel hash_intel table instead of ip_intel.)
 
 Design:
   - Merge is monotonic (GREATEST score, OR malicious) inside the RPC, so a
@@ -37,6 +39,7 @@ import ipaddress
 import json
 import os
 import random
+import re
 import sys
 import time
 from datetime import datetime, timezone
@@ -98,6 +101,28 @@ def parse_feed_line(line):
         }
     raise ValueError(f"unrecognized feed line ({len(parts)} fields)")
 
+
+# md5 / sha1 / sha256, lowercase hex — same alphabet the hash_intel CHECK enforces.
+HASH_RE = re.compile(r"^(?:[0-9a-f]{32}|[0-9a-f]{40}|[0-9a-f]{64})$")
+
+
+def parse_hashfeed_line(line):
+    """threatbase-hash-NN.txt line -> validated row dict, or raise ValueError.
+
+    hash feeds carry no tier/feed-count: `hash,LastSeen`. Listing on any
+    feed is a positive verdict, so score/malicious mirror the ipv6 shape.
+    """
+    parts = line.rstrip("\r\n").split(",")
+    h = parts[0].strip().lower()
+    if not HASH_RE.match(h):
+        raise ValueError(f"not a md5/sha1/sha256 hex digest: {parts[0]!r}")
+    out = {"hash": h, "score": 90, "malicious": True, "feed_count": 1}
+    if len(parts) >= 2:
+        ds = parts[1].strip()
+        if re.match(r"^\d{4}-\d{2}-\d{2}$", ds):
+            out["last_seen"] = ds
+    return out
+
 # Windows cp1252 consoles otherwise crash on non-ASCII log lines.
 try:
     sys.stdout.reconfigure(errors="replace")
@@ -107,6 +132,14 @@ except AttributeError:
 VALID_SCORE = 100
 
 log_width = 0
+
+
+def is_stale(rec, since):
+    """--since gate: row predates the cutoff by its earliest seen-date.
+    ISO dates compare correctly as plain strings. A row with no date passes
+    (an undated row is not evidence of an old sighting)."""
+    d = rec.get("first_seen") or rec.get("last_seen") or ""
+    return bool(d) and d < since
 
 
 def log(msg):
@@ -167,9 +200,9 @@ def load_journal(path):
     return done, failed
 
 
-def call_rpc(session, rows, retries=6):
+def call_rpc(session, rows, rpc="upsert_ip_intel", retries=6):
     """One upsert batch through PostgREST /rpc. Returns (inserted, updated)."""
-    url = f"{SUPABASE_URL}/rest/v1/rpc/upsert_ip_intel"
+    url = f"{SUPABASE_URL}/rest/v1/rpc/{rpc}"
     headers = {
         "apikey": SUPABASE_SERVICE_KEY,
         "Authorization": f"Bearer {SUPABASE_SERVICE_KEY}",
@@ -202,12 +235,16 @@ def call_rpc(session, rows, retries=6):
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[1])
     ap.add_argument("csv_path")
-    ap.add_argument("--format", choices=("csv", "feed"), default="csv",
-                    help="csv: header ip,score[,…] | feed: threatbase-ip/ipv6 feed lines")
+    ap.add_argument("--format", choices=("csv", "feed", "hashfeed"), default="csv",
+                    help="csv: header ip,score[,…] | feed: threatbase-ip/ipv6 feed lines | "
+                    "hashfeed: threatbase-hash-NN.txt lines (upserts hash_intel)")
     ap.add_argument("--batch", type=int, default=5000, help="rows per RPC call (default 5000)")
     ap.add_argument("--start-at", type=int, default=0, help="skip data rows before this offset")
     ap.add_argument("--resume", action="store_true", help="skip batches already journaled ok")
     ap.add_argument("--limit", type=int, default=0, help="import at most N valid rows (smoke tests)")
+    ap.add_argument("--since", metavar="YYYY-MM-DD",
+                    help="skip rows first seen before this date (ip feed uses first_seen, "
+                    "ipv6/hash use last_seen — re-seen entries resend, merge is monotonic)")
     ap.add_argument("--dry-run", action="store_true", help="validate only; send nothing")
     args = ap.parse_args()
 
@@ -227,12 +264,14 @@ def main():
     jfh = None if args.dry_run else open(jp, "a", encoding="utf-8")
 
     stats = {"valid": 0, "invalid": 0, "inserted": 0, "updated": 0,
-             "resumed_skipped": 0, "batches": 0, "failed_batches": 0}
+             "resumed_skipped": 0, "skipped_stale": 0, "batches": 0, "failed_batches": 0}
     invalid_samples = []
     batch, batch_start = [], None
     session = requests.Session()
     t0 = time.time()
     exit_code = 0
+    rpc = "upsert_hash_intel" if args.format == "hashfeed" else "upsert_ip_intel"
+    line_parser = parse_hashfeed_line if args.format == "hashfeed" else parse_feed_line
 
     def flush():
         nonlocal batch, batch_start
@@ -248,7 +287,7 @@ def main():
             stats["resumed_skipped"] += len(batch)
         else:
             try:
-                ins, upd = call_rpc(session, batch)
+                ins, upd = call_rpc(session, batch, rpc)
                 stats["inserted"] += ins
                 stats["updated"] += upd
                 log(f"  batch @{batch_start}: {len(batch)} rows -> +{ins} new, {upd} merged"
@@ -267,17 +306,20 @@ def main():
         batch, batch_start = [], None
         return ok
 
-    if args.format == "feed":
+    if args.format in ("feed", "hashfeed"):
         with open(args.csv_path, "r", encoding="utf-8") as fh:
             for i, line in enumerate(fh):
                 if not line.strip() or line.startswith("#"):
                     continue
                 try:
-                    rec = parse_feed_line(line)
+                    rec = line_parser(line)
                 except ValueError as e:
                     stats["invalid"] += 1
                     if len(invalid_samples) < 10:
                         invalid_samples.append(f"    line {i + 1}: {e}")
+                    continue
+                if args.since and is_stale(rec, args.since):
+                    stats["skipped_stale"] += 1
                     continue
                 stats["valid"] += 1
                 if batch_start is None:
@@ -310,6 +352,9 @@ def main():
                     if len(invalid_samples) < 10:
                         invalid_samples.append(f"    line {i + 2}: {e}")
                     continue
+                if args.since and is_stale(rec, args.since):
+                    stats["skipped_stale"] += 1
+                    continue
                 stats["valid"] += 1
                 if batch_start is None:
                     batch_start = i
@@ -330,7 +375,7 @@ def main():
 
     log("")
     log("-- summary -------------------------------------------------")
-    for k in ("valid", "invalid", "resumed_skipped", "batches", "failed_batches",
+    for k in ("valid", "invalid", "skipped_stale", "resumed_skipped", "batches", "failed_batches",
               "inserted", "updated"):
         log(f"  {k:<16}{stats[k]}")
     if invalid_samples:

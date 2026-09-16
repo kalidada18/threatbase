@@ -20,6 +20,7 @@ on:
         options:
           - feed
           - csv
+          - hashfeed
       batch:
         description: "Rows per RPC call (1-10000)"
         required: true
@@ -33,6 +34,10 @@ on:
         description: "Import at most N rows (0 = all) — smoke-test knob"
         required: true
         default: "0"
+      since:
+        description: "Only rows first seen on/after YYYY-MM-DD (empty = all) — daily delta"
+        required: false
+        default: ""
       resume:
         description: "Skip batches journaled ok by a previous run?"
         required: true
@@ -76,6 +81,8 @@ jobs:
           if [ "${{ inputs.resume }}" = "true" ]; then ARGS="$ARGS --resume"; fi
           LIMIT="${{ inputs.limit }}"
           if [ "$LIMIT" != "0" ]; then ARGS="$ARGS --limit $LIMIT"; fi
+          SINCE="${{ inputs.since }}"
+          if [ -n "$SINCE" ]; then ARGS="$ARGS --since $SINCE"; fi
           python pipeline/import_ip_intel.py "${{ inputs.file_path }}" $ARGS
 
       - name: Upload journal
