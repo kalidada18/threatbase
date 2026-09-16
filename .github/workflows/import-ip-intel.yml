@@ -21,6 +21,7 @@ on:
           - feed
           - csv
           - hashfeed
+          - keyvalue
       batch:
         description: "Rows per RPC call (1-10000)"
         required: true

@@ -2,7 +2,7 @@
 """Self-check for import_ip_intel's hash feed parsing and --since gate."""
 import sys
 sys.path.insert(0, ".")
-from pipeline.import_ip_intel import parse_hashfeed_line, parse_feed_line, is_stale
+from pipeline.import_ip_intel import parse_hashfeed_line, parse_feed_line, parse_keyvalue_line, is_stale
 
 # hash line: digest + last_seen
 r = parse_hashfeed_line("00000077553a5b27a610ac98f29563bbd6e0decc020c2d49e4fa0d89197e7fd8,2026-09-02\n")
@@ -29,4 +29,16 @@ assert not is_stale({"score": 90}, "2026-09-15")
 r = parse_feed_line("1.2.3.4,3,HIGH,Malicious,2026-01-01,2026-09-16,urlhaus,abusech")
 assert r["ip"] == "1.2.3.4" and r["feed_count"] == 3 and r["score"] == 90 and r["source"] == "urlhaus,abusech"
 
-print("ok — 5 checks")
+# keyvalue: domain/url/cidr each keep their kind and reject the others' shapes
+r = parse_keyvalue_line("evil.example.com,2026-09-02", "domain")
+assert r["value"] == "evil.example.com" and r["kind"] == "domain" and r["last_seen"] == "2026-09-02"
+assert parse_keyvalue_line("http://a.b/c?d=1", "url")["kind"] == "url"
+assert parse_keyvalue_line("1.10.16.0/20,2026-09-02", "cidr")["score"] == 90
+for bad, kind in (("1.2.3.4", "domain"), ("ftp://x.y/z", "url"), ("1.2.3.4", "cidr"), ("999.1.0.0/8", "cidr")):
+    try:
+        parse_keyvalue_line(bad, kind)
+        raise AssertionError(f"accepted {bad!r} as {kind}")
+    except ValueError:
+        pass
+
+print("ok — 6 checks")

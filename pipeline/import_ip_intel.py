@@ -16,10 +16,12 @@ Usage (from repo root):
   Import the repo's own feed files (lossless migration):
   python pipeline/import_ip_intel.py ioc/ip/threatbase-ip.txt --format feed
   python pipeline/import_ip_intel.py ioc/ip/threatbase-ipv6.txt --format feed
-  python pipeline/import_ip_intel.py ioc/hash/threatbase-hash-01.txt --format hashfeed
-  ('--format feed' skips '#...' comments; the CIDR feed does not import —
-  inet holds single addresses, ranges stay a separate concern. hashfeed rows
-  land in the parallel hash_intel table instead of ip_intel.)
+  python pipeline/import_ip_intel.py ioc/hash/threatbase-hash-*.txt --format hashfeed --target hash
+  python pipeline/import_ip_intel.py ioc/domain/threatbase-domain-*.txt --format keyvalue --target indicator
+  python pipeline/import_ip_intel.py ioc/url/threatbase-url.txt --format keyvalue --target indicator
+  python pipeline/import_ip_intel.py ioc/ip/threatbase-cidr.txt --format keyvalue --target indicator
+  ('--format feed' skips '#...' comments; ip_intel holds single addresses, so
+  the CIDR feed goes to indicator_intel (keyvalue), not to ip_intel.)
 
 Design:
   - Merge is monotonic (GREATEST score, OR malicious) inside the RPC, so a
@@ -121,6 +123,32 @@ def parse_hashfeed_line(line):
         ds = parts[1].strip()
         if re.match(r"^\d{4}-\d{2}-\d{2}$", ds):
             out["last_seen"] = ds
+    return out
+
+
+def parse_keyvalue_line(line, kind):
+    """domain/url/cidr feed line `value,LastSeen` -> validated row dict.
+
+    Same verdict semantics as the hash feed: listed = malicious, score 90.
+    Kind-specific shape gate mirrors the DB CHECKs so junk never ships.
+    """
+    parts = line.rstrip("\r\n").split(",")
+    v = parts[0].strip()
+    if kind == "cidr":
+        # Bare "1.2.3.4" parses as an implicit /32 — the feed always spells
+        # the prefix, so require the slash rather than accept single IPs here.
+        if "/" not in v:
+            raise ValueError(f"not a CIDR prefix: {v!r}")
+        ipaddress.ip_network(v, strict=False)  # raises ValueError on junk
+    elif kind == "domain":
+        if not re.match(r"^(?=.{1,253}$)[a-z0-9A-Z._-]+\.[a-zA-Z][a-zA-Z0-9-]*$", v):
+            raise ValueError(f"not a hostname: {v!r}")
+    elif kind == "url":
+        if not re.match(r"^https?://\S+$", v):
+            raise ValueError(f"not an http(s) URL: {v!r}")
+    out = {"value": v, "kind": kind, "score": 90, "malicious": True, "feed_count": 1}
+    if len(parts) >= 2 and re.match(r"^\d{4}-\d{2}-\d{2}$", parts[1].strip()):
+        out["last_seen"] = parts[1].strip()
     return out
 
 # Windows cp1252 consoles otherwise crash on non-ASCII log lines.
@@ -235,9 +263,12 @@ def call_rpc(session, rows, rpc="upsert_ip_intel", retries=6):
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[1])
     ap.add_argument("csv_path")
-    ap.add_argument("--format", choices=("csv", "feed", "hashfeed"), default="csv",
-                    help="csv: header ip,score[,…] | feed: threatbase-ip/ipv6 feed lines | "
-                    "hashfeed: threatbase-hash-NN.txt lines (upserts hash_intel)")
+    ap.add_argument("--format", choices=("csv", "feed", "hashfeed", "keyvalue"), default="csv",
+                    help="csv: header ip,score[,…] | feed: threatbase-ip/ipv6 lines | "
+                    "hashfeed: threatbase-hash-NN lines (hash_intel) | "
+                    "keyvalue: domain/url/cidr `value,date` lines (indicator_intel)")
+    ap.add_argument("--kind", choices=("domain", "url", "cidr"),
+                    help="with --format keyvalue; defaults from the filename")
     ap.add_argument("--batch", type=int, default=5000, help="rows per RPC call (default 5000)")
     ap.add_argument("--start-at", type=int, default=0, help="skip data rows before this offset")
     ap.add_argument("--resume", action="store_true", help="skip batches already journaled ok")
@@ -259,6 +290,17 @@ def main():
         log("--batch must be between 1 and 10000 (RPC payload sanity).")
         sys.exit(1)
 
+    if args.format == "keyvalue":
+        # Infer the kind from the file name so CI only needs file_path.
+        kind = args.kind
+        if not kind:
+            low = args.csv_path.lower()
+            kind = "cidr" if "cidr" in low else "url" if "url" in low else "domain"
+        args.kind = kind
+    elif args.kind:
+        log("--kind is only meaningful with --format keyvalue.")
+        sys.exit(1)
+
     jp = journal_path(args.csv_path)
     done_offsets, _ = load_journal(jp) if args.resume else (set(), set())
     jfh = None if args.dry_run else open(jp, "a", encoding="utf-8")
@@ -270,8 +312,12 @@ def main():
     session = requests.Session()
     t0 = time.time()
     exit_code = 0
-    rpc = "upsert_hash_intel" if args.format == "hashfeed" else "upsert_ip_intel"
-    line_parser = parse_hashfeed_line if args.format == "hashfeed" else parse_feed_line
+    if args.format == "hashfeed":
+        rpc, line_parser = "upsert_hash_intel", parse_hashfeed_line
+    elif args.format == "keyvalue":
+        rpc, line_parser = "upsert_indicator_intel", lambda ln: parse_keyvalue_line(ln, args.kind)
+    else:
+        rpc, line_parser = "upsert_ip_intel", parse_feed_line
 
     def flush():
         nonlocal batch, batch_start
@@ -306,7 +352,7 @@ def main():
         batch, batch_start = [], None
         return ok
 
-    if args.format in ("feed", "hashfeed"):
+    if args.format in ("feed", "hashfeed", "keyvalue"):
         with open(args.csv_path, "r", encoding="utf-8") as fh:
             for i, line in enumerate(fh):
                 if not line.strip() or line.startswith("#"):
