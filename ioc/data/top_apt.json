@@ -1,8 +1,152 @@
 {
- "generated_at": "2026-09-16T05:35:30+00:00",
+ "generated_at": "2026-09-16T10:21:35+00:00",
  "source": "AlienVault OTX pulse search",
  "note": "Activity = threat-intel pulses (campaign reports) mentioning the group in the window. Vendor/community reporting \u2014 follow each link to its source. IOCs are community-reported pulse indicators, not Threatbase attribution. TTPs from MITRE ATT&CK. Per-group summaries are AI-generated from the pulse reports.",
  "actors": [
+  {
+   "name": "Lazarus Group",
+   "aka": [
+    "Lazarus",
+    "APT38",
+    "Hidden Cobra",
+    "BlueNoroff"
+   ],
+   "sponsor": "North Korea",
+   "pulses_24h": 1,
+   "pulses_7d": 4,
+   "malware": [],
+   "targets": [],
+   "campaigns": [
+    {
+     "title": "North Korean Remote Workers Are Infiltrating Government and Businesses: How to Expose Them Before Hiring",
+     "url": "https://otx.alienvault.com/pulse/6a82e8d11134c2cd6f7e0e58",
+     "modified": "2026-09-16T10:10:52.489000",
+     "last_24h": true
+    },
+    {
+     "title": "Windows AFD.sys Zero-Day Exploited by Lazarus Hackers to Gain SYSTEM Access",
+     "url": "https://otx.alienvault.com/pulse/6a7e137d417182865191ce16",
+     "modified": "2026-09-12T18:01:41.666000",
+     "last_24h": false
+    },
+    {
+     "title": "Lazarus Hackers Actively Exploiting Windows AFD.sys Zero-Day to Deploy FudModule Rootkit",
+     "url": "https://otx.alienvault.com/pulse/6a7beecb020ccbfd7b706fad",
+     "modified": "2026-09-11T03:30:09.323000",
+     "last_24h": false
+    },
+    {
+     "title": "IOC - Smile, You\u2019re on Camera. Part 2: Hiring Lazarus APT\u2019s IT Workers in a Fake DeFi Startup",
+     "url": "https://otx.alienvault.com/pulse/6a7a83379fe99658df18ed7f",
+     "modified": "2026-09-10T02:09:19.632000",
+     "last_24h": false
+    }
+   ],
+   "ttps": [
+    "Access Token Manipulation",
+    "Account Discovery",
+    "Account Manipulation",
+    "Acquire Infrastructure",
+    "Adversary-in-the-Middle",
+    "Application Layer Protocol",
+    "Application Window Discovery",
+    "Archive Collected Data",
+    "Boot or Logon Autostart Execution",
+    "Brute Force",
+    "Command and Scripting Interpreter",
+    "Compromise Infrastructure",
+    "Create or Modify System Process",
+    "Data Destruction",
+    "Data Encoding",
+    "Data Obfuscation",
+    "Data Staged",
+    "Data from Local System",
+    "Debugger Evasion",
+    "Defacement",
+    "Deobfuscate/Decode Files or Information",
+    "Develop Capabilities",
+    "Disable or Modify System Firewall",
+    "Disable or Modify Tools",
+    "Disk Wipe",
+    "Drive-by Compromise",
+    "Encrypted Channel",
+    "Establish Accounts",
+    "Exfiltration Over Alternative Protocol",
+    "Exfiltration Over C2 Channel",
+    "Exfiltration Over Web Service",
+    "Exploitation for Client Execution",
+    "Fallback Channels",
+    "File and Directory Discovery",
+    "Gather Victim Identity Information",
+    "Gather Victim Org Information",
+    "Hide Artifacts",
+    "Hijack Execution Flow",
+    "Indicator Removal",
+    "Indirect Command Execution",
+    "Ingress Tool Transfer",
+    "Input Capture",
+    "Internal Spearphishing",
+    "Local Storage Discovery",
+    "Masquerading",
+    "Multi-Stage Channels",
+    "Native API",
+    "Network Service Discovery",
+    "Non-Standard Port",
+    "Obfuscated Files or Information",
+    "Obtain Capabilities",
+    "Phishing",
+    "Pre-OS Boot",
+    "Process Discovery",
+    "Process Injection",
+    "Proxy",
+    "Query Registry",
+    "Reflective Code Loading",
+    "Remote Services",
+    "Scheduled Task/Job",
+    "Search Open Websites/Domains",
+    "Server Software Component",
+    "Service Stop",
+    "Social Engineering",
+    "Stage Capabilities",
+    "Subvert Trust Controls",
+    "System Binary Proxy Execution",
+    "System Information Discovery",
+    "System Location Discovery",
+    "System Network Configuration Discovery",
+    "System Network Connections Discovery",
+    "System Owner/User Discovery",
+    "System Shutdown/Reboot",
+    "System Time Discovery",
+    "Template Injection",
+    "User Execution",
+    "Valid Accounts",
+    "Virtualization/Sandbox Evasion",
+    "Web Service",
+    "Windows Management Instrumentation",
+    "XSL Script Processing"
+   ],
+   "iocs": {
+    "ips": [],
+    "domains": [
+     "enveil.online",
+     "envell.xyz",
+     "uxtramine.org"
+    ],
+    "hashes": [
+     "07bfd8b5cf77a22d6029c3fcf9157ecd",
+     "718706333b6f2251f13f62885ba0156d",
+     "cc9e17a83ff4e200e9ad2afc9be559b3",
+     "3df76260cd2612117d8638f8b56bb8b3b23f801c",
+     "60226f03e6ac978eb4ddbb55fa2f23f68aaabe53",
+     "e69d84517c8f95173a0a8a3d0f5dcf0fbe051a0e",
+     "743172aab606974b054a64561534ae66baa3a840657f79d7c6fa18350e8d45d1",
+     "a738059ce07c951c31ab2da3d93d8f69bff32f9b7d933dbf5943441b9cc99075",
+     "db3d69b7eeda2e35e23006bf4b7e206281fce809584207214fc213f9bc30376d",
+     "2b4987c07a3d9a9a5d1a9bf4efa3d1903e775090b611710edafdc92874265ca8"
+    ]
+   },
+   "summary": "Reports indicate Lazarus Group is running a sustained IT worker infiltration operation, using forged documents, shipped laptops, and AI-assisted interviews to place operatives in government and private sector roles. Concurrently, the group is reportedly exploiting a Windows AFD.sys zero-day vulnerability to deploy the FudModule rootkit and gain SYSTEM-level access. These campaigns highlight a dual focus on long-term human infiltration and high-value technical exploitation."
+  },
   {
    "name": "Kimsuky",
    "aka": [
@@ -11,7 +155,7 @@
     "Velvet Chollima"
    ],
    "sponsor": "North Korea",
-   "pulses_24h": 1,
+   "pulses_24h": 0,
    "pulses_7d": 5,
    "malware": [],
    "targets": [],
@@ -20,7 +164,7 @@
      "title": "Kimsuky Uses the AI Agent 'opencode' to Create Decoys as Its GitHub PAT-Based LNK Attacks Evolve",
      "url": "https://otx.alienvault.com/pulse/6aa8f771c68a48adcc551965",
      "modified": "2026-09-15T07:44:49.472000",
-     "last_24h": true
+     "last_24h": false
     },
     {
      "title": "Kimsuky incorporates AI into its attack framework, from creating lure documents to building a local LLM.",
@@ -158,145 +302,7 @@
      "ce5932b88f879f26006df81f2fa7667e"
     ]
    },
-   "summary": "Kimsuky, a North Korean threat group, is integrating local large language models \u2014 including Ollama, GPT4All, and Msty \u2014 into its operations to generate decoy documents and improve phishing tactics. The activity, linked to the ongoing \"Operation GitPower\" and the earlier \"FlowerPower\" campaign, uses GitHub-based infrastructure and LNK files to deliver AsyncRAT malware. Reported targeting focuses on government, defense, finance, and foreign diplomatic missions."
-  },
-  {
-   "name": "Lazarus Group",
-   "aka": [
-    "Lazarus",
-    "APT38",
-    "Hidden Cobra",
-    "BlueNoroff"
-   ],
-   "sponsor": "North Korea",
-   "pulses_24h": 0,
-   "pulses_7d": 3,
-   "malware": [],
-   "targets": [],
-   "campaigns": [
-    {
-     "title": "Windows AFD.sys Zero-Day Exploited by Lazarus Hackers to Gain SYSTEM Access",
-     "url": "https://otx.alienvault.com/pulse/6a7e137d417182865191ce16",
-     "modified": "2026-09-12T18:01:41.666000",
-     "last_24h": false
-    },
-    {
-     "title": "Lazarus Hackers Actively Exploiting Windows AFD.sys Zero-Day to Deploy FudModule Rootkit",
-     "url": "https://otx.alienvault.com/pulse/6a7beecb020ccbfd7b706fad",
-     "modified": "2026-09-11T03:30:09.323000",
-     "last_24h": false
-    },
-    {
-     "title": "IOC - Smile, You\u2019re on Camera. Part 2: Hiring Lazarus APT\u2019s IT Workers in a Fake DeFi Startup",
-     "url": "https://otx.alienvault.com/pulse/6a7a83379fe99658df18ed7f",
-     "modified": "2026-09-10T02:09:19.632000",
-     "last_24h": false
-    }
-   ],
-   "ttps": [
-    "Access Token Manipulation",
-    "Account Discovery",
-    "Account Manipulation",
-    "Acquire Infrastructure",
-    "Adversary-in-the-Middle",
-    "Application Layer Protocol",
-    "Application Window Discovery",
-    "Archive Collected Data",
-    "Boot or Logon Autostart Execution",
-    "Brute Force",
-    "Command and Scripting Interpreter",
-    "Compromise Infrastructure",
-    "Create or Modify System Process",
-    "Data Destruction",
-    "Data Encoding",
-    "Data Obfuscation",
-    "Data Staged",
-    "Data from Local System",
-    "Debugger Evasion",
-    "Defacement",
-    "Deobfuscate/Decode Files or Information",
-    "Develop Capabilities",
-    "Disable or Modify System Firewall",
-    "Disable or Modify Tools",
-    "Disk Wipe",
-    "Drive-by Compromise",
-    "Encrypted Channel",
-    "Establish Accounts",
-    "Exfiltration Over Alternative Protocol",
-    "Exfiltration Over C2 Channel",
-    "Exfiltration Over Web Service",
-    "Exploitation for Client Execution",
-    "Fallback Channels",
-    "File and Directory Discovery",
-    "Gather Victim Identity Information",
-    "Gather Victim Org Information",
-    "Hide Artifacts",
-    "Hijack Execution Flow",
-    "Indicator Removal",
-    "Indirect Command Execution",
-    "Ingress Tool Transfer",
-    "Input Capture",
-    "Internal Spearphishing",
-    "Local Storage Discovery",
-    "Masquerading",
-    "Multi-Stage Channels",
-    "Native API",
-    "Network Service Discovery",
-    "Non-Standard Port",
-    "Obfuscated Files or Information",
-    "Obtain Capabilities",
-    "Phishing",
-    "Pre-OS Boot",
-    "Process Discovery",
-    "Process Injection",
-    "Proxy",
-    "Query Registry",
-    "Reflective Code Loading",
-    "Remote Services",
-    "Scheduled Task/Job",
-    "Search Open Websites/Domains",
-    "Server Software Component",
-    "Service Stop",
-    "Social Engineering",
-    "Stage Capabilities",
-    "Subvert Trust Controls",
-    "System Binary Proxy Execution",
-    "System Information Discovery",
-    "System Location Discovery",
-    "System Network Configuration Discovery",
-    "System Network Connections Discovery",
-    "System Owner/User Discovery",
-    "System Shutdown/Reboot",
-    "System Time Discovery",
-    "Template Injection",
-    "User Execution",
-    "Valid Accounts",
-    "Virtualization/Sandbox Evasion",
-    "Web Service",
-    "Windows Management Instrumentation",
-    "XSL Script Processing"
-   ],
-   "iocs": {
-    "ips": [],
-    "domains": [
-     "enveil.online",
-     "envell.xyz",
-     "uxtramine.org"
-    ],
-    "hashes": [
-     "07bfd8b5cf77a22d6029c3fcf9157ecd",
-     "718706333b6f2251f13f62885ba0156d",
-     "cc9e17a83ff4e200e9ad2afc9be559b3",
-     "3df76260cd2612117d8638f8b56bb8b3b23f801c",
-     "60226f03e6ac978eb4ddbb55fa2f23f68aaabe53",
-     "e69d84517c8f95173a0a8a3d0f5dcf0fbe051a0e",
-     "743172aab606974b054a64561534ae66baa3a840657f79d7c6fa18350e8d45d1",
-     "a738059ce07c951c31ab2da3d93d8f69bff32f9b7d933dbf5943441b9cc99075",
-     "db3d69b7eeda2e35e23006bf4b7e206281fce809584207214fc213f9bc30376d",
-     "2b4987c07a3d9a9a5d1a9bf4efa3d1903e775090b611710edafdc92874265ca8"
-    ]
-   },
-   "summary": "Recent reporting indicates Lazarus Group is actively exploiting a Windows AFD.sys zero-day vulnerability to gain SYSTEM privileges and deploy the FudModule rootkit. Separately, researchers have documented the group\u2019s ongoing \u201cDream Job\u201d social engineering campaign, detailing how operatives infiltrate Western companies by forging documents, shipping hardware to facilitators, and using AI tools to pass technical interviews at a fake DeFi startup. No specific targeted countries or additional malware families were identified in these reports."
+   "summary": "Kimsuky is integrating local large language models (Ollama, GPT4All, Msty) into its attack framework to generate decoy documents and enhance phishing tactics, evolving its GitHub PAT-based LNK delivery chain. The group continues to deploy AsyncRAT against government, defense, and finance sectors as part of ongoing operations linked to the earlier \"FlowerPower\" campaign and the newly dubbed \"Operation GitPower.\""
   },
   {
    "name": "Sandworm",
@@ -424,7 +430,7 @@
      "db491181ece3f319de6567ab6f6daa90c6879911cd890155e6b7d8cc7a1a8c8e"
     ]
    },
-   "summary": "Reports indicate Sandworm-affiliated actors are exploiting critical Cisco Secure Firewall Management Center vulnerabilities (CVE-2026-20079 and CVE-2026-20316) to deploy Cyclops Blink variants and Qilin ransomware across three distinct threat clusters. Separately, Sandworm is reportedly targeting IT professionals through fake job interviews that deliver trojanized WireGuard VPN installers. The Cisco exploitation activity, specifically cluster UAT-12197, is attributed with high confidence to Sandworm-overlapping APT activity."
+   "summary": "Cisco Talos observed three threat clusters actively exploiting two critical Cisco Secure Firewall Management Center vulnerabilities (CVE-2026-20079 and CVE-2026-20316), with one cluster deploying a Cyclops Blink variant attributed to Sandworm alongside Qilin ransomware. Separately, CERT-UA reported Sandworm using fake job interviews to distribute a trojanized WireGuard VPN client targeting IT professionals. Post-compromise activity on the firewall appliances reportedly includes web shell deployment, credential theft, and reverse proxy installation."
   },
   {
    "name": "Transparent Tribe",
@@ -495,7 +501,7 @@
      "74d347785dc47f8cda3876826cdd3fb3935ac55dc8e9e0c0f96d5ef4e00089a2"
     ]
    },
-   "summary": "Transparent Tribe (APT-C-56) has been observed deploying a new custom backdoor called PATCHCORD against Afghan telecom providers and South Asian critical infrastructure, alongside a Go-based implant named SHEETCORD that uses Google Sheets for command-and-control. The group also conducted multistage attacks using LNK shortcuts hidden in disguised image or archive files to execute malicious scripts and establish persistent access. Reported malware families include PATCHCORD, SHEETCORD, HACKERAI C2 Agent, SHEETCREEP, ValleyRAT, and GateSentinel, with targeting across telecommunications, government, defense, energy, and healthcare sectors."
+   "summary": "Transparent Tribe has been observed deploying a new custom backdoor called PATCHCORD against Afghan telecommunications providers and South Asian critical infrastructure, delivered through fake VPN installers and telecom management tools. Researchers also identified a related Go-based implant, SHEETCORD, that uses Google Sheets for command-and-control, alongside several other malware families including HACKERAI C2 Agent, SHEETCREEP, ValleyRAT, and GateSentinel. In a separate but related activity cluster, the group used LNK shortcuts inside disguised image or archive files to launch hidden batch scripts that ultimately load a final payload, employing shared infrastructure and a multi-stage cha"
   },
   {
    "name": "Gamaredon",
@@ -694,7 +700,7 @@
      "cd303043270578434a269ba13a60032b"
     ]
    },
-   "summary": "Recent reports associate Mustang Panda with a cluster of malware families including Korplug (PlugX), HTran, Babar, Floxif, and a Meterpreter reflective loader variant. No specific targeted countries, industries, or campaign details were reported in the current dataset beyond the identification of these tools. The activity appears limited to malware signature reporting without accompanying intrusion context."
+   "summary": "Reports indicate Mustang Panda activity involving the deployment of multiple malware families, including Korplug (PlugX), HTran, Babar, Floxif, and a Meterpreter loader variant (SLF:MeterRefLoadApiHash). No specific targeted countries, industries, or victim details were reported in the campaign data for this period. The observations are limited to the presence of this toolset in the reporting feed."
   },
   {
    "name": "APT41",
@@ -823,7 +829,7 @@
     ],
     "hashes": []
    },
-   "summary": "Reporting this week consists only of a notice that APT41 indicators were identified by pivoting on a referenced pulse. No specific malware families, targeted countries, industries, or campaign details were reported in the last seven days. The available information indicates indicator sharing activity rather than a new intrusion campaign."
+   "summary": "Reporting indicates that APT41 indicators were identified this week through pivoting on a referenced pulse, though no specific malware families, targeted countries, or industries were detailed in the available summaries. The activity appears limited to the sharing of technical indicators rather than a described intrusion campaign."
   }
  ]
 }
