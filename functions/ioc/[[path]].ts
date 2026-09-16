@@ -26,17 +26,24 @@ const KV_MAX = 25_000_000 // Cloudflare KV hard limit per value
 // The paywalled path is /feed/<token>/… (functions/feed/[[path]].ts).
 const PAID_PREFIXES = ['ip/categories/', 'firewall/', 'stix/']
 
-const baseHeaders = (contentType?: string | null) => ({
+const baseHeaders = (contentType?: string | null, immutable = false) => ({
   'Content-Type': contentType || 'text/plain; charset=utf-8',
   'Access-Control-Allow-Origin': '*',
-  'Cache-Control': 'public, max-age=300',
+  // A ?v=<last_updated> URL is content-addressed by convention: the pipeline
+  // bump rewrites the query, so the answer for THIS url never changes and the
+  // browser can hold it a day instead of revalidating every hunt. Unversioned
+  // requests keep the 5-minute TTL.
+  'Cache-Control': immutable ? 'public, max-age=86400, immutable' : 'public, max-age=300',
 })
 
 export const onRequestGet = async (context: any) => {
   const rel = decodeURIComponent((context.params.path || []).join('/'))
   if (!rel || rel.includes('..')) return new Response('Not found', { status: 404 })
+  // Versioned URL (?v=… from the scanner / ?_=… polls) ⇒ immutable cache headers.
+  const versioned = new URL(context.request.url).searchParams.has('v')
+  const bh = (ct?: string | null) => baseHeaders(ct, versioned)
   if (PAID_PREFIXES.some((p) => rel.startsWith(p))) {
-    return new Response('This is a Threatbase Pro feed — see /pricing.', { status: 402, headers: baseHeaders() })
+    return new Response('This is a Threatbase Pro feed — see /pricing.', { status: 402, headers: bh() })
   }
 
   const kv = context.env.IOC_CACHE
@@ -54,7 +61,7 @@ export const onRequestGet = async (context: any) => {
         const staleMeta = META_KEYS.includes(rel) &&
           Date.now() - (Number(hit.metadata?.storedAt) || 0) > META_TTL * 1000
         if (!staleMeta) {
-          return new Response(hit.value, { headers: { ...baseHeaders(), 'X-KV-Cache': 'HIT' } })
+          return new Response(hit.value, { headers: { ...bh(), 'X-KV-Cache': 'HIT' } })
         }
       }
     } catch {
@@ -69,11 +76,11 @@ export const onRequestGet = async (context: any) => {
   // Only buffer files small enough to cache; stream everything else through.
   const len = Number(upstream.headers.get('Content-Length') || 0)
   if (!kv || upstream.status !== 200 || len > KV_MAX) {
-    return new Response(upstream.body, { status: upstream.status, headers: baseHeaders(upstream.headers.get('Content-Type')) })
+    return new Response(upstream.body, { status: upstream.status, headers: bh(upstream.headers.get('Content-Type')) })
   }
 
   const buf = await upstream.arrayBuffer()
-  let headers = baseHeaders(upstream.headers.get('Content-Type'))
+  let headers = bh(upstream.headers.get('Content-Type'))
   if (buf.byteLength <= KV_MAX) {
     context.waitUntil(kv.put(key, buf, {
       expirationTtl: META_KEYS.includes(rel) ? META_TTL : KV_TTL,

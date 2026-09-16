@@ -173,20 +173,27 @@ export async function runBulkScan(
     }
   }
 
-  // Batched dispute pass: flip dirty→disputed at >=3 like the single scanner,
-  // in one query per chunk instead of one per row.
+  // Batched dispute pass: flip dirty→disputed at >=3 like the single scanner.
+  // Chunks are disjoint, so fire them all at once — awaiting the loop
+  // serialized one full Supabase RTT per 200 rows after the scan finished.
   const dirty = results.filter((r) => r.isMalicious)
   if (dirty.length && supabaseClient) {
     try {
-      const counts: Record<string, number> = {}
+      const chunks: string[][] = []
       for (let i = 0; i < dirty.length; i += DISPUTE_CHUNK) {
-        const chunk = dirty.slice(i, i + DISPUTE_CHUNK).map((r) => r.value)
-        const { data } = await Promise.resolve(
-          supabaseClient.from('disputes').select('ip').in('ip', chunk)
-        )
-        for (const row of (data ?? []) as any[]) counts[row.ip] = (counts[row.ip] || 0) + 1
-        onProgress?.(results.length, rows.length)
+        chunks.push(dirty.slice(i, i + DISPUTE_CHUNK).map((r) => r.value))
       }
+      const sb = supabaseClient // module-level let: re-narrow for the callbacks
+      const responses = await Promise.all(
+        chunks.map((c) => sb
+          .from('disputes').select('ip').in('ip', c)
+          .abortSignal(AbortSignal.timeout(15_000)))
+      )
+      const counts: Record<string, number> = {}
+      for (const { data } of responses as any[]) {
+        for (const row of (data ?? []) as any[]) counts[row.ip] = (counts[row.ip] || 0) + 1
+      }
+      onProgress?.(results.length, rows.length)
       for (const r of dirty) {
         const n = counts[r.value] || 0
         r.disputeCount = n

@@ -172,9 +172,24 @@ export default function App() {
       if (section) smoothScrollTo(section)
     }, 50)
 
-    // statsData is passed through so the scanner can resolve the chunk layout of
-    // the large domain/hash feeds without re-fetching stats.json.
-    const result = await scanIndicatorLogic(raw, feedVersion, statsData)
+    // Server-side verdict via /api/lookup: a domain/URL hunt used to download
+    // a whole 36 MB feed chunk into the browser just to binary-search one
+    // line. The verdict is ~200 bytes and KV-cached at the edge. Falls back to
+    // the local scanner when the function is unreachable (dev server without
+    // functions, network blip) — slower there, never dead.
+    let result: any = null
+    try {
+      const r = await fetch(`/api/lookup?value=${encodeURIComponent(raw)}`, { signal: AbortSignal.timeout(20_000) })
+      if (r.ok) {
+        const j = await r.json()
+        if (j?.data) result = j.data
+      }
+    } catch { /* fall through to local scan */ }
+    if (!result) {
+      // statsData is passed through so the scanner can resolve the chunk layout of
+      // the large domain/hash feeds without re-fetching stats.json.
+      result = await scanIndicatorLogic(raw, feedVersion, statsData)
+    }
     setScanResult(result)
     setIsScanning(false)
 

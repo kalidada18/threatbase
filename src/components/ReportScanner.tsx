@@ -236,12 +236,15 @@ function CommentsSection({ ip, addToast }: { ip: string; addToast: (msg: string,
     }
     setLoading(true)
     // Promise.resolve: the Supabase builder is only *thenable* (see reports fetch above).
+    // abortSignal: without it a hanging request leaves the skeleton up
+    // forever — PostgREST only errors on refusal, never on slowness.
     void Promise.resolve(supabaseClient
       .from('comments')
       .select('id, body, username, user_id, created_at')
       .eq('indicator', ip)
       .order('created_at', { ascending: false })
-      .limit(50))
+      .limit(50)
+      .abortSignal(AbortSignal.timeout(12_000)))
       .then(({ data, error }) => {
         if (cancelled) return
         if (error) setLoadFailed(true)
@@ -503,10 +506,12 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
         // trailing .catch is not on its type without a real Promise.
         void Promise.resolve(supabaseClient
           .from('reported_ips')
-          .select('*')
+          // Only the rendered columns — row.id/user_id/etc never reach the UI.
+          .select('ip, category, comment, created_at, reporter_alias')
           .eq('ip', ip)
           .order('created_at', { ascending: false })
-          .limit(100))
+          .limit(100)
+          .abortSignal(AbortSignal.timeout(12_000)))
           .then(({ data }) => {
             if (data) setReports(data)
             setLoadingReports(false)

@@ -25,32 +25,13 @@ import {
 } from '@modelcontextprotocol/sdk/types.js'
 import { z } from 'zod'
 import { scanIndicatorLogic, validateTypedIndicator, BATCH_SCAN_TYPES } from '../../src/scanner'
-import { json, corsHeaders } from '../api/_common'
+import { json, corsHeaders, ensureAbsoluteFetch } from '../api/_common'
 
 /** Per-IP MCP request budget per day. Chat agents fire 5–15 lookups per
  *  conversation; 300 covers heavy use while a scraper still can't mine the
  *  whole corpus. Batch scan is charged at ceil(items/20) units. */
 const MCP_DAILY_LIMIT = 300
 
-/**
- * src/scanner.ts fetches feeds with RELATIVE urls (`/ioc/...`) — fine in the
- * browser, but inside a Pages Function relative fetch() fails to resolve, so
- * every scan would silently see empty feeds and return "clean". Absolutise
- * same-origin relative paths against the canonical host once per isolate;
- * pages.dev previews read the same public feeds, so the constant is safe.
- */
-const SITE_ORIGIN = 'https://threatbase.qzz.io'
-let fetchAbsolutised = false
-function ensureAbsoluteFetch() {
-  if (fetchAbsolutised) return
-  const real = globalThis.fetch.bind(globalThis)
-  const patched = ((input: RequestInfo | URL, init?: RequestInit) => {
-    if (typeof input === 'string' && input.startsWith('/')) input = SITE_ORIGIN + input
-    return real(input as any, init)
-  }) as typeof fetch
-  globalThis.fetch = patched
-  fetchAbsolutised = true
-}
 const BATCH_MAX = 100
 const RAW_BASE = 'https://raw.githubusercontent.com/kalidada18/threatbase/main/ioc/'
 

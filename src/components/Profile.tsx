@@ -361,16 +361,20 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
       }
       setLoadingReports(true)
       try {
-        const { data, error, count } = await supabaseClient
+        // Only the rendered columns; count:'exact' was redundant — PostgREST
+        // transfers every row anyway (no db_max_rows cap), so data.length is
+        // always the count.
+        const { data, error } = await supabaseClient
           .from('reported_ips')
-          .select('*', { count: 'exact' })
+          .select('ip, category, comment, created_at')
           .eq('reporter_alias', targetUsername)
           .order('created_at', { ascending: false })
+          .abortSignal(AbortSignal.timeout(15_000))
 
         if (error) throw error
         if (data) {
           setReports(data)
-          setReportsCount(count || data.length)
+          setReportsCount(data.length)
         }
       } catch (err) {
         console.error('Failed to load user reports:', err)

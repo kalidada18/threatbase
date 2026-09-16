@@ -73,7 +73,7 @@ export const onRequestOptions = async () => {
 }
 
 export const onRequestGet = async (context: any) => {
-  const { env } = context
+  const { env, request } = context
   const segments: string[] = context.params.path || []
   const [token, ...rest] = segments
   const rel = decodeURIComponent(rest.join('/'))
@@ -81,6 +81,26 @@ export const onRequestGet = async (context: any) => {
   if (!token || !rel || rel.includes('..')) return err('Not found', 404)
   const allowed = ALLOWED_PREFIXES.some((p) => rel.startsWith(p)) || ALLOWED_EXACT.includes(rel)
   if (!allowed) return err('Feed not available', 404)
+
+  // 0. Pre-auth per-IP failure gate — BEFORE the service-role RPC below, so a
+  //    flood of random tokens can't buy unlimited privileged round-trips.
+  //    Same fl_ ordering lesson the v1 middleware documents: the post-auth
+  //    rl_feed_ counter is keyed on the attacker-chosen (rotating) hash and
+  //    cannot bound this. Bumped only on token-invalid 401s, not the 403 —
+  //    a free-tier key pointed at a Pro URL must not burn the visitor's IP
+  //    budget. Fail open: a KV blip must not take the paid feed down.
+  const kv = env.IOC_CACHE
+  const clientIp = request.headers.get('CF-Connecting-IP') || 'unknown'
+  const today = new Date().toISOString().split('T')[0]
+  const flKey = `fl_feed_${clientIp}_${today}`
+  let flCount = 0
+  if (kv) {
+    try {
+      const cur = await kv.get(flKey)
+      flCount = parseInt(cur as string | null, 10) || 0
+      if (flCount >= 100) return err('Too many failed feed authentications from this network today.', 429)
+    } catch { /* fail open — the RPC still gates access */ }
+  }
 
   const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY
   if (!serviceKey) {
@@ -96,11 +116,13 @@ export const onRequestGet = async (context: any) => {
   const admin = createClient(env.SUPABASE_URL || SUPABASE_URL, serviceKey)
   const { data, error } = await admin.rpc('validate_feed_token', { client_hash: hashHex })
   const row = data?.[0]
-  if (error || !row) return err('Invalid or revoked key.', 401)
+  if (error || !row) {
+    if (kv) context.waitUntil(kv.put(flKey, String(flCount + 1), { expirationTtl: 86400 }).catch(() => {}))
+    return err('Invalid or revoked key.', 401)
+  }
   if (!row.is_pro) return err('This is a Threatbase Pro feed. Email threatbasepro@gmail.com to activate.', 403)
 
   // 2. Abuse cap — per-key daily fetch counter (KV, same as free mirror).
-  const kv = env.IOC_CACHE
   if (kv) {
     const today = new Date().toISOString().split('T')[0]
     const rlKey = `rl_feed_${hashHex}_${today}`

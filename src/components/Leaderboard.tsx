@@ -155,6 +155,7 @@ export default function Leaderboard() {
           .select('*')
           .order('reports_count', { ascending: false })
           .limit(10)
+          .abortSignal(AbortSignal.timeout(12_000))
 
         if (queryError) throw queryError
         if (data) {
@@ -170,8 +171,9 @@ export default function Leaderboard() {
     }
 
     loadLeaders()
-    // Refresh leaderboard every 30 seconds
-    const interval = setInterval(loadLeaders, 30000)
+    // Refresh leaderboard every 30 seconds — skip while the tab is hidden;
+    // nobody is watching, and each tick is a Supabase round-trip.
+    const interval = setInterval(() => { if (!document.hidden) loadLeaders() }, 30000)
     return () => clearInterval(interval)
   }, [])
 

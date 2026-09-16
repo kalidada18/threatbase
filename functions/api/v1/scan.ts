@@ -1,6 +1,6 @@
 import { scanIndicatorLogic, validateTypedIndicator } from '../../../src/scanner'
 import { MAX_INDICATOR_LENGTH } from '../../../src/lib/apiValidation'
-import { json } from '../_common'
+import { json, ensureAbsoluteFetch } from '../_common'
 
 /** Batch size cap for POST /scan. The middleware rate-limits per request, so
  *  without a cap one "request" could hide an arbitrarily large scan fan-out. */
@@ -89,6 +89,11 @@ async function handleBatchScan(request: Request, env: any, ctx: any) {
 
 export const onRequest = async (context: any) => {
   const { request } = context;
+
+  // Without this, scanIndicatorLogic's relative '/ioc/...' feed fetches fail to
+  // resolve inside a Pages Function, every feed reads empty, and every answer
+  // is a silent "clean". Must run before the first scan on this isolate.
+  ensureAbsoluteFetch()
 
   if (request.method === 'POST') {
     try {

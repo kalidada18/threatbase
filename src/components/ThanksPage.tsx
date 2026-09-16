@@ -18,6 +18,7 @@ export default function ThanksPage() {
           .select('reporter_alias')
           .order('reports_count', { ascending: false })
           .limit(1)
+          .abortSignal(AbortSignal.timeout(12_000))
           .single()
         if (!error && data) setTopReporter(data.reporter_alias)
       } catch (err) {

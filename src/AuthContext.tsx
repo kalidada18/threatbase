@@ -119,20 +119,11 @@ export function AuthProvider({
       return
     }
 
-    // Get initial session
-    supabaseClient.auth.getSession().then(async ({ data: { session } }) => {
-      setSession(session)
-      const u = session?.user ?? null
-      setUser(u)
-      if (u) {
-        await checkMfaLevel()
-        const p = await fetchProfile(u.id, u)
-        setProfile(p)
-      }
-      setLoading(false)
-    })
-
-    // Listen for auth changes
+    // auth-js 2.116 delivers the current session to every new subscription as
+    // a one-shot INITIAL_SESSION event, so the listener below already covers
+    // boot. The getSession().then block this replaces ran the *same*
+    // checkMfaLevel + fetchProfile chain on every logged-in load: two
+    // serialized Supabase round-trips, twice, before first paint settled.
     const { data: { subscription } } = supabaseClient.auth.onAuthStateChange(
       async (event, currentSession) => {
         setSession(currentSession)

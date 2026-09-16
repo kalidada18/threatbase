@@ -108,3 +108,28 @@ export async function verifyTurnstile(
   }
   return { ok: true }
 }
+
+/**
+ * src/scanner.ts fetches feeds with RELATIVE urls (`/ioc/...`) — fine in the
+ * browser, but inside a Pages Function relative fetch() fails to resolve, so
+ * every scan would silently see empty feeds and return "clean" (the catch in
+ * fetchAndCacheFeedText yields { text: '' }, not an error). Absolutise
+ * same-origin relative paths against the canonical host once per isolate;
+ * pages.dev previews read the same public feeds, so the constant is safe.
+ *
+ * Every server-side caller of scanIndicatorLogic MUST call this first
+ * (api/v1/scan, api/lookup, mcp all share it — drift here is a silent
+ * all-clean bug, not a visible failure).
+ */
+const SITE_ORIGIN = 'https://threatbase.qzz.io'
+let fetchAbsolutised = false
+export function ensureAbsoluteFetch() {
+  if (fetchAbsolutised) return
+  const real = globalThis.fetch.bind(globalThis)
+  const patched = ((input: RequestInfo | URL, init?: RequestInit) => {
+    if (typeof input === 'string' && input.startsWith('/')) input = SITE_ORIGIN + input
+    return real(input as any, init)
+  }) as typeof fetch
+  globalThis.fetch = patched
+  fetchAbsolutised = true
+}

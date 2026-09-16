@@ -6,8 +6,9 @@
  * visitor's Supabase JWT arrives as `Authorization: Bearer <access_token>`.
  *
  * A profiles.role = 'superadmin' account is Pro everywhere without holding a
- * paid key — role is server-controlled (the column grants in
- * db/pro_and_rls_fixes.sql make it self-writable by authenticated users).
+ * paid key — role is server-controlled (db/pro_and_rls_fixes.sql §2 revokes
+ * client-side UPDATE on the column, so the service-role read in guard() is
+ * the only writer path and the gate is trustworthy).
  */
 import { createClient } from '@supabase/supabase-js'
 import { SUPABASE_URL } from '../../src/lib/supabaseConfig'

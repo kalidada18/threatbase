@@ -199,12 +199,16 @@ export function getFeedChunks(statsData: any, filename: string): FeedChunk[] {
  * chunks, which is itself a definitive "not in the feed" answer requiring no
  * download at all.
  *
+ * The chunk file's bounds carry the feed's `key,last_seen` suffix, so both ends
+ * are reduced to the bare key before comparing — a bare query otherwise sorts
+ * below its own suffixed first entry ('K' < 'K,2026-..'), which made every
+ * chunk-head IOC fall in a phantom gap and scan "clean" with zero fetches.
  * Comparisons use the same plain string ordering as the Python side's sorted()
  * and as binarySearchString, so the three agree on every boundary.
  */
 export function selectChunkFor(chunks: FeedChunk[], query: string): FeedChunk | null {
   for (const c of chunks) {
-    if (query >= c.first && query <= c.last) return c
+    if (query >= c.first.split(',')[0] && query <= c.last.split(',')[0]) return c
   }
   return null
 }

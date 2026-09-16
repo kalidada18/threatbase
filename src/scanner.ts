@@ -517,10 +517,13 @@ export async function scanIndicatorLogic(
 
       if (supabaseClient && !opts?.skipDisputeCheck) {
         try {
+          // 10 s ceiling: the dispute tally is an enrichment, not a gate — a
+          // hanging request must not keep "Hunting…" spinning forever.
           const { count } = await supabaseClient
             .from('disputes')
             .select('*', { count: 'exact', head: true })
             .eq('ip', ip)
+            .abortSignal(AbortSignal.timeout(10_000))
 
           if (count !== null) {
             disputeCount = count
