@@ -60,10 +60,17 @@ export function AuthProvider({
   const fetchProfile = async (userId: string, userObj?: User) => {
     if (!supabaseClient) return null
     try {
+      // Bounded: the outer catch below handles a *rejection*, but a stalled read
+      // neither rejects nor resolves, so this function never returned and the
+      // caller's `setLoading(false)` never ran — the session stayed on the
+      // Navbar auth skeleton and Profile's full-screen "Loading Profile" until
+      // a full reload. Must precede .single(), which finalises to a builder
+      // that no longer carries abortSignal.
       const { data, error } = await supabaseClient
         .from('profiles')
         .select('*')
         .eq('id', userId)
+        .abortSignal(AbortSignal.timeout(15_000))
         .single()
       if (error) {
         if (error.code === 'PGRST116') {
@@ -84,6 +91,7 @@ export function AuthProvider({
                 .from('profiles')
                 .insert([newProfile])
                 .select()
+                .abortSignal(AbortSignal.timeout(15_000))
                 .single()
                 
               if (!insertError && inserted) return inserted
@@ -93,6 +101,7 @@ export function AuthProvider({
                   .from('profiles')
                   .insert([{ ...newProfile, username: `${baseUsername}_${Math.floor(Math.random()*1000)}` }])
                   .select()
+                  .abortSignal(AbortSignal.timeout(15_000))
                   .single()
                 if (!insertError2 && inserted2) return inserted2
               }

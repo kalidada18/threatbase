@@ -27,8 +27,18 @@ async function fetchStats(baseUrl: string, feedVersion: string | number, provide
   const key = `stats?v=${feedVersion}`
   if (key in statsCache) return statsCache[key]
   try {
-    const r = await fetch(`${baseUrl}${feedPath('stats.json')}?v=${feedVersion}`)
-    statsCache[key] = r.ok ? await r.json() : null
+    // Bounded like fetchAndCacheFeedText below. The caller awaits this at
+    // scanIndicatorLogic top level, OUTSIDE its try — so a stalled stats.json
+    // (or a stalled connection generally) rejected nothing and resolved never,
+    // and the scan's "Hunting…" skeleton stayed up with no way out but a reload.
+    const ctrl = new AbortController()
+    const timer = setTimeout(() => ctrl.abort(), 45_000)
+    try {
+      const r = await fetch(`${baseUrl}${feedPath('stats.json')}?v=${feedVersion}`, { signal: ctrl.signal })
+      statsCache[key] = r.ok ? await r.json() : null
+    } finally {
+      clearTimeout(timer)
+    }
   } catch (e) {
     console.error('stats.json fetch failed, falling back to unsplit feeds:', e)
     statsCache[key] = null

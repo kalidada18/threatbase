@@ -436,6 +436,7 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
           .eq('is_active', true)
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
+          .abortSignal(AbortSignal.timeout(15_000))
         if (error) throw error
         if (data) {
           setApiKeys(data)
@@ -486,6 +487,7 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
       //    INSERT. The direct client INSERT policy was dropped (db/mint_api_key_rpc.sql).
       const { data: newKeyData, error } = await supabaseClient
         .rpc('mint_api_key', { p_key_hash: hashHex, p_prefix: plainKey.substring(0, 15) })
+        .abortSignal(AbortSignal.timeout(15_000))
         .single()
 
       if (error) {
@@ -562,6 +564,9 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
           avatar_url: authProfile?.avatar_url || user.user_metadata?.avatar_url || null,
           updated_at: new Date().toISOString()
         })
+        // Either await in this handler can strand the "Saving..." button, so
+        // both carry a ceiling.
+        .abortSignal(AbortSignal.timeout(15_000))
 
       if (error) {
         // Handle unique constraint violation (username already taken)
@@ -584,6 +589,7 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
           p_old_alias: oldUsername,
           p_new_alias: newUsername,
         })
+          .abortSignal(AbortSignal.timeout(15_000))
         if (migrateError) {
           console.error('Failed to migrate report alias (server-side):', migrateError)
         }
@@ -625,6 +631,11 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
       // 'deletedaccount' internally. We no longer do this client-side because
       // a malicious client could reassign any user's reports via the anon key.
       const { error } = await supabaseClient.rpc('delete_user')
+        // A ceiling here is a trade, not a free win: if the RPC lands but the
+        // response is slow past 20 s we report a failure for a delete that
+        // happened. The alternative — no bound — leaves "Deleting..." up
+        // forever, which is the worse of the two.
+        .abortSignal(AbortSignal.timeout(20_000))
       if (error) throw error
 
       addToast('Your account and profile have been permanently deleted.', 'success')

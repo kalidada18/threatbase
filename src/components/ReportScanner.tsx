@@ -6,6 +6,7 @@ import supabaseClient from '../supabaseClient'
 import { timeAgo, categoryTier, TIER_CHIP, TIER_ACCENT, countryFlag } from '../utils'
 import { useAuth } from '../AuthContext'
 import { getMalwareDescription } from '../malwareDictionary'
+import { commentsSettled } from '../lib/commentsState'
 
 
 
@@ -218,8 +219,13 @@ function WhoisSection({ scanResult, ip, abuseHref }: any) {
 function CommentsSection({ ip, addToast }: { ip: string; addToast: (msg: string, type: string) => void }) {
   const { user, profile, signInWithGoogle } = useAuth()
   const [comments, setComments] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-  const [loadFailed, setLoadFailed] = useState(false)
+  // One explicit terminal-or-loading status, not a pair of booleans. With
+  // `loading` + `loadFailed` there was a reachable combination — loading=false,
+  // loadFailed=false, zero rows — that rendered as "no comments yet" when the
+  // fetch had actually failed, and no combination at all that offered a retry.
+  // `empty` is deliberately not a status: it is just `ready` with no rows.
+  const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')
+  const [reloadKey, setReloadKey] = useState(0)
   const [body, setBody] = useState('')
   const [posting, setPosting] = useState(false)
   // Composer stays collapsed behind a quiet trigger; only opens on click.
@@ -227,14 +233,11 @@ function CommentsSection({ ip, addToast }: { ip: string; addToast: (msg: string,
 
   useEffect(() => {
     let cancelled = false
-    setComments([])
-    setLoadFailed(false)
     if (!ip || !supabaseClient) {
-      setLoadFailed(true)
-      setLoading(false)
+      setStatus('error')
       return
     }
-    setLoading(true)
+    setStatus('loading')
     // Promise.resolve: the Supabase builder is only *thenable* (see reports fetch above).
     // abortSignal: without it a hanging request leaves the skeleton up
     // forever — PostgREST only errors on refusal, never on slowness.
@@ -245,15 +248,16 @@ function CommentsSection({ ip, addToast }: { ip: string; addToast: (msg: string,
       .order('created_at', { ascending: false })
       .limit(50)
       .abortSignal(AbortSignal.timeout(12_000)))
-      .then(({ data, error }) => {
+      .then((res: any) => {
         if (cancelled) return
-        if (error) setLoadFailed(true)
-        if (data) setComments(data)
-        setLoading(false)
+        const { rows, status: settled } = commentsSettled(res)
+        setComments(rows)
+        setStatus(settled)
       })
-      .catch(() => { if (!cancelled) { setLoadFailed(true); setLoading(false) } })
+      // Every exit above sets a status, so no path can leave the skeleton up.
+      .catch(() => { if (!cancelled) { setComments([]); setStatus('error') } })
     return () => { cancelled = true }
-  }, [ip])
+  }, [ip, reloadKey])
 
   const handlePost = async () => {
     if (!user) return
@@ -269,7 +273,13 @@ function CommentsSection({ ip, addToast }: { ip: string; addToast: (msg: string,
         body: text,
         user_id: user.id,
         username: profile?.username || user.email?.split('@')[0] || 'contributor'
-      }]).select('id, body, username, user_id, created_at').single()
+      }]).select('id, body, username, user_id, created_at')
+        // Without a ceiling the `finally { setPosting(false) }` below is
+        // unreachable on a stalled write, pinning the button on "Posting...".
+        // Must precede .single(), which finalises to a builder that no longer
+        // carries abortSignal.
+        .abortSignal(AbortSignal.timeout(12_000))
+        .single()
 
       if (error) throw error
       setComments(prev => [data || { id: crypto.randomUUID(), body: text, username: profile?.username || 'contributor', user_id: user.id, created_at: new Date().toISOString() }, ...prev])
@@ -363,8 +373,8 @@ function CommentsSection({ ip, addToast }: { ip: string; addToast: (msg: string,
         </p>
       )}
 
-      {loading ? (
-        <div className="space-y-3">
+      {status === 'loading' ? (
+        <div className="space-y-3" role="status" aria-label="Loading comments">
           {Array.from({ length: 2 }, (_, i) => (
             <div key={i} className="rounded-xl border border-slate-800 bg-slate-900 p-5 animate-pulse">
               <div className="mb-2 h-3 w-28 rounded bg-slate-800" />
@@ -374,9 +384,20 @@ function CommentsSection({ ip, addToast }: { ip: string; addToast: (msg: string,
         </div>
       ) : (
         <div className="space-y-3">
-          {comments.length === 0 && (
-            <p className="text-sm text-slate-400">{loadFailed ? 'Comments unavailable.' : 'No comments on this indicator yet.'}</p>
-          )}
+          {comments.length === 0 && (status === 'error' ? (
+            <p className="text-sm text-slate-400">
+              Unable to load comments.{' '}
+              <button
+                type="button"
+                onClick={() => setReloadKey(k => k + 1)}
+                className="font-semibold text-platinum-200 underline-offset-4 hover:underline"
+              >
+                Retry
+              </button>
+            </p>
+          ) : (
+            <p className="text-sm text-slate-400">No comments on this indicator yet.</p>
+          ))}
           {comments.map(c => (
             <div key={c.id} className="rounded-xl border border-slate-800 bg-slate-900 px-5 py-4">
               <div className="flex items-center justify-between gap-3">
@@ -613,6 +634,9 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
         reporter_alias: alias,
         reason: safeReason
       }])
+        // Same ceiling as the reports read above: an unbounded write leaves the
+        // dispute button disabled on "Submitting..." for the rest of the session.
+        .abortSignal(AbortSignal.timeout(12_000))
 
       if (error) {
         if (error.code === '23505') {
@@ -1036,7 +1060,11 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
               </motion.div>
 
               {scanResult && type !== 'warn' && ip && (
-                <CommentsSection ip={ip} addToast={addToast} />
+                // keyed on the indicator so a new hunt remounts the section:
+                // state resets on the same render the heading changes, rather
+                // than a frame later once the effect runs, which is what let
+                // the previous IOC's comments sit under the new heading.
+                <CommentsSection key={ip} ip={ip} addToast={addToast} />
               )}
 
               {loadingReports ? (

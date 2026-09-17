@@ -96,6 +96,10 @@ export default function ReportIP({ addToast }: any) {
   const [reportCount, setReportCount] = useState(0)
   const [page, setPage] = useState(0)
   const [loading, setLoading] = useState(true)
+  // Distinct from `isEmpty`, which means "the feed really has no rows". A read
+  // that timed out used to fall into the empty branch and print "No submissions
+  // yet." — a failed load reported as a fact about the data.
+  const [loadFailed, setLoadFailed] = useState(false)
   const [isEmpty, setIsEmpty] = useState(false)
   const [copiedIp, setCopiedIp] = useState<string | null>(null)
   
@@ -178,6 +182,7 @@ export default function ReportIP({ addToast }: any) {
     setPage(p)
     setLoading(true)
     setIsEmpty(false)
+    setLoadFailed(false)
 
     const from = p * REPORT_PAGE_SIZE
     const to = from + REPORT_PAGE_SIZE - 1
@@ -190,6 +195,11 @@ export default function ReportIP({ addToast }: any) {
         .select('*', { count: 'exact' })
         .order('created_at', { ascending: false })
         .range(from, to)
+        // Without this the read has no ceiling: postgrest-js surfaces a refusal
+        // as an error but treats a slow response as "still waiting", so a stalled
+        // backend left the Syncing spinner up forever — `finally` below only runs
+        // once the await settles, and it never did.
+        .abortSignal(AbortSignal.timeout(12_000))
 
       if (error) throw error
 
@@ -205,6 +215,7 @@ export default function ReportIP({ addToast }: any) {
     } catch (err) {
       console.error('Failed to load reports:', err)
       setReports([])
+      setLoadFailed(true)
     } finally {
       setLoading(false)
     }
@@ -268,6 +279,10 @@ export default function ReportIP({ addToast }: any) {
           category: tags.join(', '),
           comment: safeComment,
         }),
+        // A hung POST never settles, so the `finally` below never runs and the
+        // button sits on "Submitting..." indefinitely. Aborting at 20s does not
+        // retry (a report is not safely repeatable), it just ends the wait.
+        signal: AbortSignal.timeout(20_000),
       })
 
       const result = await res.json().catch(() => ({}))
@@ -311,6 +326,9 @@ export default function ReportIP({ addToast }: any) {
         .eq('id', id)
         .eq('reporter_alias', alias)
         .select()
+        // Ceiling so `finally { setIsSavingEdit(false) }` is always reached;
+        // otherwise a stalled update pins the button on "Saving...".
+        .abortSignal(AbortSignal.timeout(12_000))
         
       if (error) throw error
       if (!data || data.length === 0) {
@@ -545,6 +563,19 @@ export default function ReportIP({ addToast }: any) {
               <div className="flex flex-col items-center justify-center py-24 text-slate-500">
                 <div className="mb-4 h-6 w-6 animate-spin rounded-full border-2 border-slate-700 border-t-slate-400" />
                 <p className="text-[10px] font-bold uppercase tracking-widest">Syncing</p>
+              </div>
+            ) : loadFailed ? (
+              <div className="flex flex-col items-center justify-center rounded-2xl border border-white/5 bg-white/[0.01] py-16 text-center">
+                <p className="text-sm text-slate-400">
+                  Couldn&rsquo;t load the live feed.{' '}
+                  <button
+                    type="button"
+                    onClick={() => loadReportedIPs(0)}
+                    className="font-semibold text-platinum-200 underline-offset-4 hover:underline"
+                  >
+                    Retry
+                  </button>
+                </p>
               </div>
             ) : isEmpty ? (
               <div className="flex flex-col items-center justify-center rounded-2xl border border-white/5 bg-white/[0.01] py-16 text-center">
