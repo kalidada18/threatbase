@@ -81,8 +81,11 @@ ioc/stix/
 .cursor/
 skills-lock.json
 
-# Database
-db/
+# Database — schema SQL IS tracked (db/ was accidentally ignored until
+# 2026-09-17, leaving the entire schema untracked and only on one laptop).
+# The admin runbook stays out: it names the superadmin's account and the
+# off-platform billing terms.
+db/pro_admin.md
 
 # MCPs
 .mcp.json
