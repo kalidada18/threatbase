@@ -221,10 +221,6 @@ export function HeroSection({ scanInput, setScanInput, handleScan, isScanning, s
                   </motion.span>
                 )}
               </AnimatePresence>
-              {/* Scan-line effect */}
-              <div className="absolute inset-0 rounded-full overflow-hidden pointer-events-none opacity-0 group-focus-within/search:opacity-100 transition-opacity">
-                <div className="scan-line absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-red-500/60 to-transparent motion-reduce:hidden" />
-              </div>
               {/* Arrival ring — one shot, verdict-tinted. Reduced-motion users
                   get the border flash on the button instead (see below). */}
               <AnimatePresence>
@@ -289,7 +285,7 @@ export function HeroSection({ scanInput, setScanInput, handleScan, isScanning, s
                 <button
                   type="button"
                   onClick={openBulk}
-                  className="shrink-0 inline-flex items-center justify-center gap-1.5 rounded-full border border-red-500/40 bg-red-500/[0.12] px-4 sm:px-6 text-sm font-semibold text-red-300 transition-all duration-200 hover:bg-red-500/20 hover:text-white hover:border-red-400/50 active:scale-[0.97] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/50"
+                  className="shrink-0 inline-flex items-center justify-center gap-1.5 rounded-full px-4 sm:px-6 bg-red-500 hover:bg-red-400 text-white text-sm font-semibold shadow-glow-red transition-all duration-200 hover:shadow-[0_0_28px_rgba(207,23,51,0.55)] active:scale-[0.97] cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/50"
                 >
                   <ListChecks size={14} /> <span className="hidden sm:inline">Bulk / CSV hunt</span><span className="sm:hidden">Bulk</span>
                 </button>
