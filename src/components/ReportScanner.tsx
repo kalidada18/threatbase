@@ -703,9 +703,17 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
   }, [scanResult, confidence, reduce, confidenceMv])
 
   const scannedAt = useMemo(() => new Date(), [scanResult])
-  // Raw upstream key count — labelSources collapses to one branded label, so
-  // never derive feed counts from it.
-  const feedCount = type === 'danger' ? (scanResult?.sources?.length ?? 0) : 0
+  // The same `feedCount` the API returns, the DB stores as feed_count and
+  // computeConfidence() scores with — so the badge, the confidence and the
+  // table all report one number.
+  //
+  // This used to be `sources.length`, which is a DIFFERENT quantity: the count
+  // of upstream feed keys, not of flagging feeds. labelSources collapses that
+  // key list to a single branded label, and the keys do not cover every
+  // contributing feed, so the two disagreed by 1-2 on real rows — the page
+  // showed "14 flagging feeds" for 2.57.121.112 while the API and the DB both
+  // said 16. `Number()` because the feed path yields the string '1'.
+  const feedCount = type === 'danger' ? (Number(scanResult?.feedCount) || 0) : 0
   const filledSegments = Math.max(confidence > 0 ? 1 : 0, Math.round((confidence / 100) * METER_SEGMENTS))
 
   if (!showReport) return null;
