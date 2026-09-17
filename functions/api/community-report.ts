@@ -79,14 +79,31 @@ export const onRequestPost = async (context: any) => {
     return json({ error: `Comment is too long (max ${MAX_COMMENT_LENGTH} characters).` }, 400, request)
   }
 
+  // The service-role client is needed from here on: profiles is owner-only
+  // under RLS (db/rls_policies.sql), so the anon client below reads zero rows
+  // and the alias would silently degrade to the email local-part. Fail closed
+  // if the key is absent — there is no anon-key fallback, because anon has no
+  // EXECUTE on the RPC and a direct table insert would leave user_id NULL
+  // (breaking dedup and ownership).
+  const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY
+  if (!serviceKey) {
+    console.error('SUPABASE_SERVICE_ROLE_KEY is not configured — cannot insert report.')
+    return json({ error: 'Reporting is temporarily unavailable.' }, 503, request)
+  }
+  const adminClient = createClient(env.SUPABASE_URL || SUPABASE_URL, serviceKey)
+
   // 4. Resolve the alias from the authenticated user's profile (can't be spoofed
   //    by the client — the browser no longer chooses its own reporter name).
+  //    This must be the username verbatim, not a guess: reported_ips_update_own
+  //    and reported_ips_delete_own both require
+  //    reporter_alias = (select username from profiles where id = auth.uid()),
+  //    so a fallback alias would leave the reporter unable to edit their own row.
   let reporterAlias = 'Anonymous'
-  const { data: profile } = await supabaseClient
+  const { data: profile } = await adminClient
     .from('profiles')
     .select('username')
     .eq('id', user.id)
-    .single()
+    .maybeSingle()
   if (profile?.username) {
     reporterAlias = profile.username
   } else if (user) {
@@ -106,21 +123,11 @@ export const onRequestPost = async (context: any) => {
     return json({ error: 'You have already reported this IP. Edit your existing report instead.' }, 409, request)
   }
 
-  // 6. Insert via SECURITY DEFINER RPC using the server-only service_role key.
-  //    All checks (Turnstile, auth, rate limit, validation) have already passed
-  //    above, so the privileged write happens server-side and the RPC is
+  // 6. Insert via SECURITY DEFINER RPC using the service_role client built
+  //    above. All checks (Turnstile, auth, rate limit, validation) have already
+  //    passed, so the privileged write happens server-side and the RPC is
   //    REVOKEd from anon/authenticated (see db/lock_down_api_insert_report.sql)
-  //    to close the direct-PostgREST bypass. Fail closed if the key is absent —
-  //    there is no anon-key fallback, because anon has no EXECUTE on the RPC and
-  //    a direct table insert would leave user_id NULL (breaking dedup and
-  //    ownership).
-  const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY
-  if (!serviceKey) {
-    console.error('SUPABASE_SERVICE_ROLE_KEY is not configured — cannot insert report.')
-    return json({ error: 'Reporting is temporarily unavailable.' }, 503, request)
-  }
-
-  const adminClient = createClient(env.SUPABASE_URL || SUPABASE_URL, serviceKey)
+  //    to close the direct-PostgREST bypass.
   const { error: insertError } = await adminClient.rpc('api_insert_report', {
     p_ip: cleanIp,
     p_category: cleanCategory,

@@ -35,16 +35,34 @@ ALTER TABLE public.api_keys     ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Enforce MFA for Profiles" ON public.profiles;
 
 -- ----------------------------------------------------------------------------
--- profiles : public read of display data; owner-only insert/update
---   NOTE: profiles holds only public display fields (username, full_name,
---   avatar_url, bio, website, role…) — NEVER email/secrets (those live in
---   auth.users). If you ever add a sensitive column, move it to a separate
---   table or use column-level GRANTs instead of widening this policy.
+-- profiles : OWNER-ONLY read; owner-only insert/update
+--
+-- ⚠️ CHANGED 2026-09-17. This was `FOR SELECT TO anon, authenticated USING
+-- (true)` — a public read of every profile. Production is owner-only: anon
+-- SELECT on profiles returns zero rows there (verified directly against the
+-- hosted project). The old "profiles holds only public display fields"
+-- reasoning misses `role`, which the same hardening pass treats as sensitive
+-- enough to guard with a trigger (profile_role_unchanged, A2 CRITICAL).
+--
+-- Three separate definer workarounds exist precisely BECAUSE this table is
+-- owner-only, which is what production intends:
+--   * VIEW top_contributors      WITH (security_invoker = false)
+--   * VIEW reported_ips_feed     WITH (security_invoker = false)
+--   * FUNCTION first_user_ids()  SECURITY DEFINER, crosses the same wall
+-- If profiles were publicly readable, none of them would be necessary.
+--
+-- Cross-user display data (usernames, avatars, admin badges) reaches anon
+-- through those views, which expose exactly five columns and no role strings.
+-- Nothing in the browser reads another user's profile row: AuthContext only
+-- ever selects its own (`.eq('id', userId)`).
+--
+-- If a sensitive column is ever added here, it stays protected by this policy.
 -- ----------------------------------------------------------------------------
 DROP POLICY IF EXISTS "profiles_select_public" ON public.profiles;
-CREATE POLICY "profiles_select_public" ON public.profiles
-  FOR SELECT TO anon, authenticated
-  USING (true);
+DROP POLICY IF EXISTS "profiles_select_own" ON public.profiles;
+CREATE POLICY "profiles_select_own" ON public.profiles
+  FOR SELECT TO authenticated
+  USING (auth.uid() = id);
 
 DROP POLICY IF EXISTS "profiles_insert_own" ON public.profiles;
 CREATE POLICY "profiles_insert_own" ON public.profiles
