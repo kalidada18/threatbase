@@ -3,6 +3,7 @@ import supabaseClient from '../supabaseClient'
 import { Shield, ShieldAlert, Loader2, KeyRound } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { pickVerifiedTotpFactor } from '@/lib/mfaFactor'
+import { withTimeout } from '@/lib/withTimeout'
 
 export default function MfaSetup({ addToast }: { addToast: (msg: string, type: 'success'|'error') => void }) {
   const [loading, setLoading] = useState(true)
@@ -27,7 +28,11 @@ export default function MfaSetup({ addToast }: { addToast: (msg: string, type: '
     if (!supabaseClient) return
     setLoading(true)
     try {
-      const { data, error } = await supabaseClient.auth.mfa.listFactors()
+      const { data, error } = await withTimeout(
+        supabaseClient.auth.mfa.listFactors(),
+        15_000,
+        'Loading your authenticators',
+      )
       if (error) throw error
       
       // An account may carry several TOTP factors (e.g. stale unverified ones
@@ -58,7 +63,11 @@ export default function MfaSetup({ addToast }: { addToast: (msg: string, type: '
       // incomplete setup (QR shown but never verified). Otherwise enroll()
       // fails with: A factor with the friendly name "" for this user already
       // exists. Verified factors are left untouched.
-      const { data: existing } = await supabaseClient.auth.mfa.listFactors()
+      const { data: existing } = await withTimeout(
+        supabaseClient.auth.mfa.listFactors(),
+        15_000,
+        'Loading your existing authenticators',
+      )
       const staleFactors = (existing?.totp || []).filter((f) => f.status !== 'verified')
       for (const stale of staleFactors) {
         // auth-js resolves with { error } rather than throwing, so a bare
@@ -66,30 +75,40 @@ export default function MfaSetup({ addToast }: { addToast: (msg: string, type: '
         // enroll() — which then failed with the baffling "A factor with the
         // friendly name ... already exists" (422 mfa_factor_name_conflict)
         // that this cleanup exists to prevent.
-        const { error: unenrollError } = await supabaseClient.auth.mfa.unenroll({
-          factorId: stale.id,
-        })
+        const { error: unenrollError } = await withTimeout(
+          supabaseClient.auth.mfa.unenroll({ factorId: stale.id }),
+          15_000,
+          'Removing an incomplete setup',
+        )
         if (unenrollError) throw unenrollError
       }
 
       // 1. Enroll. The name is a human-readable label for the user's
       // authenticator app; uniqueness is guaranteed by the cleanup above, not
       // by this string (it is only accurate to the day).
-      const { data: enrollData, error: enrollError } = await supabaseClient.auth.mfa.enroll({
-        factorType: 'totp',
-        friendlyName: `Authenticator (${new Date().toISOString().slice(0, 10)})`,
-        issuer: 'https://threatbase.qzz.io/'
-      })
-      
+      const { data: enrollData, error: enrollError } = await withTimeout(
+        supabaseClient.auth.mfa.enroll({
+          factorType: 'totp',
+          friendlyName: `Authenticator (${new Date().toISOString().slice(0, 10)})`,
+          issuer: 'https://threatbase.qzz.io/'
+        }),
+        20_000,
+        'Creating the authenticator',
+      )
+
       if (enrollError) throw enrollError
-      
+
       setFactorId(enrollData.id)
       setQrCodeSvg(enrollData.totp.qr_code)
-      
-      // 2. Challenge
-      const { data: challengeData, error: challengeError } = await supabaseClient.auth.mfa.challenge({
-        factorId: enrollData.id
-      })
+
+      // 2. Challenge. Bounded: without this a challenge that never settles
+      // leaves the QR panel spinning forever with no way out but a reload —
+      // the `finally` below is unreachable while an await is pending.
+      const { data: challengeData, error: challengeError } = await withTimeout(
+        supabaseClient.auth.mfa.challenge({ factorId: enrollData.id }),
+        15_000,
+        'Preparing the verification challenge',
+      )
       
       if (challengeError) throw challengeError
       setChallengeId(challengeData.id)
@@ -115,11 +134,11 @@ export default function MfaSetup({ addToast }: { addToast: (msg: string, type: '
     setVerifying(true)
     setVerifyError(null)
     try {
-      const { error } = await supabaseClient.auth.mfa.verify({
-        factorId,
-        challengeId,
-        code: otp
-      })
+      const { error } = await withTimeout(
+        supabaseClient.auth.mfa.verify({ factorId, challengeId, code: otp }),
+        20_000,
+        'Verifying the code',
+      )
 
       if (error) throw error
 
@@ -140,9 +159,11 @@ export default function MfaSetup({ addToast }: { addToast: (msg: string, type: '
 
     setUnenrolling(true)
     try {
-      const { error } = await supabaseClient.auth.mfa.unenroll({
-        factorId
-      })
+      const { error } = await withTimeout(
+        supabaseClient.auth.mfa.unenroll({ factorId }),
+        15_000,
+        'Disabling two-factor authentication',
+      )
       if (error) throw error
 
       addToast('Two-Factor Authentication disabled.', 'success')

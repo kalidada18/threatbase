@@ -4,6 +4,7 @@ import { Loader2, AlertCircle, LogOut } from 'lucide-react'
 import { useAuth } from '../AuthContext'
 import supabaseClient from '../supabaseClient'
 import { pickVerifiedTotpFactor } from '../lib/mfaFactor'
+import { withTimeout } from '../lib/withTimeout'
 
 export default function MfaChallengeModal() {
   const { requiresMfa, mfaVerified, signOut } = useAuth()
@@ -56,9 +57,13 @@ export default function MfaChallengeModal() {
     setLoading(true)
     setError(null)
     try {
-      const { data: factors, error: factorsError } = await supabaseClient.auth.mfa.listFactors()
+      const { data: factors, error: factorsError } = await withTimeout(
+        supabaseClient.auth.mfa.listFactors(),
+        15_000,
+        'Loading your two-factor methods',
+      )
       if (factorsError) throw factorsError
-      
+
       // The verified factor, not totp[0]: an abandoned setup leaves an
       // unverified row behind, and challenging that one fails every code the
       // user types — a permanent lockout from 2FA-protected sign-in.
@@ -66,12 +71,14 @@ export default function MfaChallengeModal() {
       if (!totpFactor) {
         throw new Error('No verified two-factor method found on this account.')
       }
-      
+
       setFactorId(totpFactor.id)
-      
-      const { data: challenge, error: challengeError } = await supabaseClient.auth.mfa.challenge({ 
-        factorId: totpFactor.id 
-      })
+
+      const { data: challenge, error: challengeError } = await withTimeout(
+        supabaseClient.auth.mfa.challenge({ factorId: totpFactor.id }),
+        15_000,
+        'Preparing the verification challenge',
+      )
       if (challengeError) throw challengeError
       
       setChallengeId(challenge.id)
@@ -96,11 +103,11 @@ export default function MfaChallengeModal() {
     setError(null)
     
     try {
-      const { error } = await supabaseClient.auth.mfa.verify({
-        factorId,
-        challengeId,
-        code: otp
-      })
+      const { error } = await withTimeout(
+        supabaseClient.auth.mfa.verify({ factorId, challengeId, code: otp }),
+        20_000,
+        'Verifying the code',
+      )
       
       if (error) throw error
       
