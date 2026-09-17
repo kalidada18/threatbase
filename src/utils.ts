@@ -239,15 +239,4 @@ export function timeAgo(dateStr: string | number | Date): string {
 
 
 
-/** Helper to get base url safely in both Vite and Worker envs */
-const safeBaseUrl = () => {
-  try {
-    return import.meta.env.BASE_URL || '/'
-  } catch {
-    return '/'
-  }
-}
-
-/** Neutral avatar for reporters with no uploaded picture. */
-export const DEFAULT_AVATAR = `${safeBaseUrl()}img/security_robot.png`
 

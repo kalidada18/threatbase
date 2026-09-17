@@ -6,7 +6,7 @@ import {
 import { Link } from 'react-router-dom'
 import { AuthComponent } from '@/components/ui/sign-up'
 import supabaseClient from '../supabaseClient'
-import { fmt, timeAgo, DEFAULT_AVATAR, categoryTier, TIER_CHIP } from '../utils'
+import { fmt, timeAgo, categoryTier, TIER_CHIP } from '../utils'
 import { useAuth } from '../AuthContext'
 import { useSEO } from '@/useSEO'
 import DOMPurify from 'dompurify'
@@ -620,7 +620,9 @@ export default function ReportIP({ addToast }: any) {
 
                         <div className="flex items-center justify-between border-t border-white/5 pt-3">
                           <div className="flex items-center gap-2">
-                            <img src={row.avatar_url || DEFAULT_AVATAR} alt="" className="h-5 w-5 rounded-full object-cover" />
+                            {row.avatar_url && (
+                              <img src={row.avatar_url} alt="" className="h-5 w-5 rounded-full object-cover" />
+                            )}
                             <span className="text-[12px] font-medium text-slate-400">{row.reporter_alias || 'Anonymous'}</span>
                           </div>
                           <div className="flex gap-1.5">

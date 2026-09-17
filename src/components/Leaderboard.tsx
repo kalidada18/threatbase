@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion, type Variants } from 'framer-motion'
 import supabaseClient from '../supabaseClient'
-import { fmt, DEFAULT_AVATAR } from '../utils'
+import { fmt } from '../utils'
 import { useCountUp } from '../lib/useCountUp'
 
 // Ranks based on number of reports. Each rank exposes a single `accent` token
@@ -87,11 +87,19 @@ function Row({ leader, index, max }: { leader: any; index: number; max: number }
           {String(index + 1).padStart(2, '0')}
         </span>
 
-        <img
-          src={leader.avatar_url || DEFAULT_AVATAR}
-          alt=""
-          className="h-9 w-9 flex-shrink-0 rounded-full border border-white/[0.08] bg-black/20 object-cover"
-        />
+        {/* Show the real picture or nothing — never a stand-in face that
+            misattributes an identity to an anonymous reporter.
+            The avatar is a positional cell in this grid, so the empty span
+            keeps the score column aligned when there is no picture. */}
+        {leader.avatar_url ? (
+          <img
+            src={leader.avatar_url}
+            alt=""
+            className="h-9 w-9 flex-shrink-0 rounded-full border border-white/[0.08] bg-black/20 object-cover"
+          />
+        ) : (
+          <span className="h-9 w-9 flex-shrink-0" aria-hidden />
+        )}
 
         <div className="flex min-w-0 flex-col gap-1.5">
           <div className="flex items-center gap-2 min-w-0">
