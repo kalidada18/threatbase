@@ -176,6 +176,18 @@ CREATE POLICY "comments_insert_own" ON public.comments
 CREATE POLICY "comments_delete_own" ON public.comments
   FOR DELETE TO authenticated USING (auth.uid() = user_id);
 
+-- ⚠️ ADDED 2026-09-17 — this file never created a SELECT policy for comments,
+-- so every comment was write-only: src/components/ReportScanner.tsx:242 reads
+-- .from('comments').select(...).eq('indicator', ip) with the anon client, and
+-- with no SELECT policy RLS returned zero rows for everyone. The feature looked
+-- implemented and always rendered an empty list. The hosted project does have
+-- this policy (anon SELECT returns its rows), so this restores parity.
+-- The trigger above stamps username from profiles, so nothing sensitive is
+-- exposed here — indicator, body, username, user_id, created_at only.
+DROP POLICY IF EXISTS comments_select_public ON public.comments;
+CREATE POLICY comments_select_public ON public.comments
+  FOR SELECT TO anon, authenticated USING (true);
+
 -- ── 9. SECURITY DEFINER lockdown ────────────────────────────────────────────
 -- Trigger functions inherit the default EXECUTE-to-PUBLIC grant, which exposes
 -- them as callable RPCs at /rest/v1/rpc/<name>. Triggers fire as the table

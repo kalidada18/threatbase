@@ -56,12 +56,20 @@ CREATE POLICY api_keys_require_mfa ON public.api_keys
 -- search_path (search-path hijack via CREATE SCHEMA public on shared db).
 -- Zero callers in app code -> revoked from anon/authenticated, pinned, and
 -- granted to service_role only (pipeline writes go through it).
-REVOKE ALL ON FUNCTION public.trace_neighborhood(text, integer) FROM PUBLIC, anon, authenticated;
-REVOKE ALL ON FUNCTION public.upsert_trace_edge(text,text,text,text,text,text,text,text,integer,date,date,text) FROM PUBLIC, anon, authenticated;
-GRANT EXECUTE ON FUNCTION public.trace_neighborhood(text, integer) TO service_role;
-GRANT EXECUTE ON FUNCTION public.upsert_trace_edge(text,text,text,text,text,text,text,text,integer,date,date,text) TO service_role;
-ALTER FUNCTION public.trace_neighborhood(text, integer) SET search_path = public;
-ALTER FUNCTION public.upsert_trace_edge(text,text,text,text,text,text,text,text,integer,date,date,text) SET search_path = public;
+--
+-- ⚠️ COMMENTED OUT 2026-09-17 — these two functions exist ONLY on the hosted
+-- project. Neither is defined anywhere in this repo, and nothing in the app or
+-- pipeline calls them (grep: only this file mentions them). On a fresh database
+-- these eight statements abort the whole file. Drop the block entirely unless
+-- the trace feature is coming back — in which case recover the definitions
+-- first (SELECT pg_get_functiondef(oid) FROM pg_proc WHERE proname LIKE '%trace%').
+--
+-- REVOKE ALL ON FUNCTION public.trace_neighborhood(text, integer) FROM PUBLIC, anon, authenticated;
+-- REVOKE ALL ON FUNCTION public.upsert_trace_edge(text,text,text,text,text,text,text,text,integer,date,date,text) FROM PUBLIC, anon, authenticated;
+-- GRANT EXECUTE ON FUNCTION public.trace_neighborhood(text, integer) TO service_role;
+-- GRANT EXECUTE ON FUNCTION public.upsert_trace_edge(text,text,text,text,text,text,text,text,integer,date,date,text) TO service_role;
+-- ALTER FUNCTION public.trace_neighborhood(text, integer) SET search_path = public;
+-- ALTER FUNCTION public.upsert_trace_edge(text,text,text,text,text,text,text,text,integer,date,date,text) SET search_path = public;
 
 -- A1 MEDIUM: delete_user() (SECURITY DEFINER, deletes the auth.users row) had
 -- the PUBLIC default grant -> reachable anonymously-by-role; throwaway-account
@@ -74,8 +82,23 @@ REVOKE ALL ON FUNCTION public.delete_user() FROM PUBLIC, anon;
 -- cosmetic join-order badge -> authenticated-only, anon revoked.
 REVOKE ALL ON FUNCTION public.first_user_ids() FROM PUBLIC, anon;
 
--- Views: reported_ips_feed / top_contributors were SECURITY DEFINER (linter
--- ERROR) -> make them honor querying-role RLS. They only expose publicly
--- visible columns, so zero app-visible change; just no future surprises.
-ALTER VIEW public.reported_ips_feed SET (security_invoker = on);
-ALTER VIEW public.top_contributors SET (security_invoker = on);
+-- Views: reported_ips_feed / top_contributors were SECURITY DEFINER and the
+-- Supabase linter flagged that as ERROR.
+--
+-- ⚠️ DO NOT APPLY THE ALTER BELOW. The reasoning it was written with ("they
+-- only expose publicly visible columns, so zero app-visible change") is WRONG:
+-- both views LEFT JOIN public.profiles, which is OWNER-ONLY under RLS, so an
+-- invoker view returns NULL avatar_url for every row and the Leaderboard and
+-- the ReportIP live-feed cards all fall back to the robot placeholder.
+--
+-- Confirmed on the hosted project 2026-09-17: anon SELECT on profiles returns 0
+-- rows, yet top_contributors returns real avatars — i.e. the views are definer
+-- there, so this ALTER is not in effect in production either. db/
+-- top_contributors_avatars.sql:9-10 documents the definer choice deliberately.
+--
+-- The linter ERROR is an accepted trade: the views expose only
+-- (reporter_alias, counts, avatar_url) — no email, no bio, no role, no id.
+--
+-- ALTER VIEW public.reported_ips_feed SET (security_invoker = on);
+-- ALTER VIEW public.top_contributors SET (security_invoker = on);
+
