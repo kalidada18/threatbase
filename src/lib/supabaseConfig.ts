@@ -15,4 +15,4 @@ export const SUPABASE_URL =
   viteEnv('VITE_SUPABASE_URL') || 'https://api.threatbase.qzz.io'
 
 export const SUPABASE_ANON_KEY =
-  viteEnv('VITE_SUPABASE_ANON_KEY') || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzg5NjQzMjkxLCJleHAiOjIxMDUwMDMyOTF9.YDg8hR6FBYcQHxR5mNWLNKnVuHDeCSRMfrbm16trmhM'
+  viteEnv('VITE_SUPABASE_ANON_KEY') || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzg5NjQ5MDUxLCJleHAiOjIxMDUwMDMyOTF9.thPYFTgTFZ-HRD_tLX0vAG4WdyxnNagJJPH4vjIlr7U'
