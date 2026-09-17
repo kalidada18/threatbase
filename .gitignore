@@ -81,11 +81,13 @@ ioc/stix/
 .cursor/
 skills-lock.json
 
-# Database — schema SQL IS tracked (db/ was accidentally ignored until
-# 2026-09-17, leaving the entire schema untracked and only on one laptop).
-# The admin runbook stays out: it names the superadmin's account and the
-# off-platform billing terms.
-db/pro_admin.md
+# Database — untracked per user request 2026-09-17. The whole directory is
+# ignored now, which also covers the admin runbook (it names the superadmin's
+# account and the off-platform billing terms).
+# NOTE: the 18 files committed by 2c70114 / e81d633 / 19dbfec are still
+# readable in this repo's history on GitHub; ignoring them only stops FUTURE
+# commits. Purging them needs a history rewrite + force-push.
+db/
 
 # MCPs
 .mcp.json
