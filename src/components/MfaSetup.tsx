@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import supabaseClient from '../supabaseClient'
 import { Shield, ShieldAlert, Loader2, KeyRound } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { pickVerifiedTotpFactor } from '@/lib/mfaFactor'
 
 export default function MfaSetup({ addToast }: { addToast: (msg: string, type: 'success'|'error') => void }) {
   const [loading, setLoading] = useState(true)
@@ -33,7 +34,7 @@ export default function MfaSetup({ addToast }: { addToast: (msg: string, type: '
       // from earlier setup attempts). Look for ANY verified factor rather than
       // just the first entry, otherwise a leftover unverified factor masks a
       // real, enabled one and the UI wrongly shows "Disabled".
-      const verifiedFactor = data?.totp?.find((f) => f.status === 'verified')
+      const verifiedFactor = pickVerifiedTotpFactor(data?.totp)
       if (verifiedFactor) {
         setIsEnrolled(true)
         setFactorId(verifiedFactor.id)
@@ -60,10 +61,20 @@ export default function MfaSetup({ addToast }: { addToast: (msg: string, type: '
       const { data: existing } = await supabaseClient.auth.mfa.listFactors()
       const staleFactors = (existing?.totp || []).filter((f) => f.status !== 'verified')
       for (const stale of staleFactors) {
-        await supabaseClient.auth.mfa.unenroll({ factorId: stale.id })
+        // auth-js resolves with { error } rather than throwing, so a bare
+        // `await` here swallowed every failure and fell straight through to
+        // enroll() — which then failed with the baffling "A factor with the
+        // friendly name ... already exists" (422 mfa_factor_name_conflict)
+        // that this cleanup exists to prevent.
+        const { error: unenrollError } = await supabaseClient.auth.mfa.unenroll({
+          factorId: stale.id,
+        })
+        if (unenrollError) throw unenrollError
       }
 
-      // 1. Enroll (explicit unique friendlyName avoids name collisions)
+      // 1. Enroll. The name is a human-readable label for the user's
+      // authenticator app; uniqueness is guaranteed by the cleanup above, not
+      // by this string (it is only accurate to the day).
       const { data: enrollData, error: enrollError } = await supabaseClient.auth.mfa.enroll({
         factorType: 'totp',
         friendlyName: `Authenticator (${new Date().toISOString().slice(0, 10)})`,

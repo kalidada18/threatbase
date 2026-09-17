@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Loader2, AlertCircle, LogOut } from 'lucide-react'
 import { useAuth } from '../AuthContext'
 import supabaseClient from '../supabaseClient'
+import { pickVerifiedTotpFactor } from '../lib/mfaFactor'
 
 export default function MfaChallengeModal() {
   const { requiresMfa, mfaVerified, signOut } = useAuth()
@@ -58,9 +59,12 @@ export default function MfaChallengeModal() {
       const { data: factors, error: factorsError } = await supabaseClient.auth.mfa.listFactors()
       if (factorsError) throw factorsError
       
-      const totpFactor = factors?.totp?.[0]
+      // The verified factor, not totp[0]: an abandoned setup leaves an
+      // unverified row behind, and challenging that one fails every code the
+      // user types — a permanent lockout from 2FA-protected sign-in.
+      const totpFactor = pickVerifiedTotpFactor(factors?.totp)
       if (!totpFactor) {
-        throw new Error('No TOTP factor found.')
+        throw new Error('No verified two-factor method found on this account.')
       }
       
       setFactorId(totpFactor.id)
