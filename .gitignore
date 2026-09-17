@@ -109,3 +109,8 @@ pipeline/test_stix_feed.py
 
 # graphify AI memory (local knowledge graph, not for the repo)
 graphify-out/
+
+# Import resume journals — machine-local progress state written next to each
+# ioc/ feed file by pipeline/import_ip_intel.py. Deleting one forces a full
+# re-run; committing one would make a fresh clone skip already-done batches.
+*.job.jsonl

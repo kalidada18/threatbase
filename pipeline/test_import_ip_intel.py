@@ -41,4 +41,16 @@ for bad, kind in (("1.2.3.4", "domain"), ("ftp://x.y/z", "url"), ("1.2.3.4", "ci
     except ValueError:
         pass
 
-print("ok — 6 checks")
+# keyvalue length gate: indicator_intel.value is CHECK (length BETWEEN 1 AND
+# 2048) for every kind, and the url feed carries percent-encoded junk well past
+# that — 7 such rows sit in the live feed. Without the gate each one rejects its
+# whole 5000-row batch (HTTP 400, indicator_intel_value_check) and aborts the
+# run. The bound is inclusive at 2048.
+assert len(parse_keyvalue_line("http://a.b/" + "c" * 2037, "url")["value"]) == 2048
+try:
+    parse_keyvalue_line("http://a.b/" + "c" * 2038, "url")
+    raise AssertionError("accepted a 2049-char value")
+except ValueError:
+    pass
+
+print("ok — 8 checks")

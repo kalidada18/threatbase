@@ -134,6 +134,14 @@ def parse_keyvalue_line(line, kind):
     """
     parts = line.rstrip("\r\n").split(",")
     v = parts[0].strip()
+    # indicator_intel.value is CHECK (length BETWEEN 1 AND 2048) for every kind,
+    # and the url feed carries percent-encoded junk well past that — e.g.
+    # "http://www.uspsmailjourney.com/…/%C3%83%C2%83…" at several KB. Nothing
+    # downstream truncates, so without this gate one such row rejects its whole
+    # 5000-row batch and aborts the run (HTTP 400, indicator_intel_value_check).
+    # Gate it here: the row is counted invalid and the rest of the file imports.
+    if not 1 <= len(v) <= 2048:
+        raise ValueError(f"value length {len(v)} outside 1..2048: {v[:60]!r}")
     if kind == "cidr":
         # Bare "1.2.3.4" parses as an implicit /32 — the feed always spells
         # the prefix, so require the slash rather than accept single IPs here.
