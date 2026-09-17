@@ -1,0 +1,73 @@
+# Threatbase
+
+> Threatbase is a free, community-driven threat-intelligence platform that
+> publishes continuously refreshed IOC feeds (IP, IPv6, CIDR, domain, URL, hash)
+> and an indicator-lookup API at https://threatbase.qzz.io.
+
+Feeds are aggregated from public sources plus community reports, deduplicated,
+scored for risk, and republished in plain text. False positives reported by the
+community are suppressed before publication, not filtered client-side.
+
+## Public IOC feeds
+
+Free. No token, no signup, no attribution required. Served same-origin from
+`https://threatbase.qzz.io/ioc/`, refreshed continuously. Live counts are in
+[stats.json](https://threatbase.qzz.io/ioc/data/stats.json); chunk names and
+byte sizes are in [manifest.json](https://threatbase.qzz.io/ioc/data/manifest.json).
+
+| Feed | URL | Lines |
+|---|---|---|
+| IPv4 | `https://threatbase.qzz.io/ioc/ip/threatbase-ip.txt` | `IP,FeedCount,RiskScore,Tags,FirstSeen,LastSeen,Sources` |
+| IPv6 | `https://threatbase.qzz.io/ioc/ip/threatbase-ipv6.txt` | `value,date` |
+| CIDR | `https://threatbase.qzz.io/ioc/ip/threatbase-cidr.txt` | `value,date` |
+| Domain | `https://threatbase.qzz.io/ioc/domain/threatbase-domain-01.txt` | `value,date` |
+| URL | `https://threatbase.qzz.io/ioc/url/threatbase-url.txt` | `value,date` |
+| Hash | `https://threatbase.qzz.io/ioc/hash/threatbase-hash-01.txt` | `value,date` |
+
+The domain and hash feeds are split into numbered chunks (`-01`, `-02`, …) to stay
+under GitHub's per-file limits. Enumerate them from `manifest.json` rather than
+assuming a chunk count; the chunk set changes.
+
+**Do not hardcode a chunk count.** The unsplit domain and hash feeds are published
+only as GitHub release assets on the `latest` tag — requesting the unsplit names
+from this domain returns 404 by design.
+
+## Indicator lookup API
+
+Public documentation: https://threatbase.qzz.io/api
+
+- `GET /api/v1/scan?indicator=<value>` — look up one indicator.
+- `GET /api/lookup` — raw lookup across the corpus.
+- `GET /api/geo`, `GET /api/rdap` — enrichment for an IP or domain.
+- `POST /api/v1/report` — report an indicator. Requires a Pro API key.
+- `POST /api/community-report` — unauthenticated community submission, Turnstile-gated.
+
+## Threatbase Pro
+
+Pro adds per-category feeds, firewall-ready formats (ipset, nftables, STIX 2.1)
+and a bulk scan endpoint. Feed access is token-gated:
+
+`https://threatbase.qzz.io/feed/<token>/<path>`
+
+Requests without a valid token are rejected at the edge. Pro content is not
+mirrored to any public repository or CDN — the token is the only door.
+
+## Security and acceptable use
+
+- Vulnerability disclosure: see https://threatbase.qzz.io/.well-known/security.txt
+- Report abuse or a false positive: mailto:threatbasepro@gmail.com
+- Automated access to the free feeds is welcome. Respect rate limits, send a
+  descriptive `User-Agent`, and cache what you fetch — these files are large and
+  change at most hourly.
+- Enumerating Pro feed tokens, probing `/api/admin/*`, or otherwise attempting to
+  reach data without authorization is not permitted. Requests are logged with
+  source address, user agent and timestamp, and may be reported.
+
+## Optional
+
+- [About](https://threatbase.qzz.io/about)
+- [Threat feed browser](https://threatbase.qzz.io/threatfeed)
+- [Contributors](https://threatbase.qzz.io/contributors)
+- [Pricing](https://threatbase.qzz.io/pricing)
+- [FAQ](https://threatbase.qzz.io/faq)
+- [Reporting policy](https://threatbase.qzz.io/policy)
