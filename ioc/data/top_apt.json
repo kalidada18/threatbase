@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-09-16T18:22:42+00:00",
+ "generated_at": "2026-09-17T02:22:18+00:00",
  "source": "AlienVault OTX pulse search",
  "note": "Activity = threat-intel pulses (campaign reports) mentioning the group in the window. Vendor/community reporting \u2014 follow each link to its source. IOCs are community-reported pulse indicators, not Threatbase attribution. TTPs from MITRE ATT&CK. Per-group summaries are AI-generated from the pulse reports.",
  "actors": [
@@ -13,7 +13,7 @@
    ],
    "sponsor": "North Korea",
    "pulses_24h": 1,
-   "pulses_7d": 4,
+   "pulses_7d": 3,
    "malware": [],
    "targets": [],
    "campaigns": [
@@ -33,12 +33,6 @@
      "title": "Lazarus Hackers Actively Exploiting Windows AFD.sys Zero-Day to Deploy FudModule Rootkit",
      "url": "https://otx.alienvault.com/pulse/6a7beecb020ccbfd7b706fad",
      "modified": "2026-09-11T03:30:09.323000",
-     "last_24h": false
-    },
-    {
-     "title": "IOC - Smile, You\u2019re on Camera. Part 2: Hiring Lazarus APT\u2019s IT Workers in a Fake DeFi Startup",
-     "url": "https://otx.alienvault.com/pulse/6a7a83379fe99658df18ed7f",
-     "modified": "2026-09-10T02:09:19.632000",
      "last_24h": false
     }
    ],
@@ -276,6 +270,102 @@
    "summary": "Cisco Talos observed three threat clusters actively exploiting two critical Cisco Secure Firewall Management Center vulnerabilities (CVE-2026-20079 and CVE-2026-20316), with one cluster deploying a Cyclops Blink variant attributed to Sandworm alongside Qilin ransomware. Separately, CERT-UA reported Sandworm using fake job interviews to distribute a trojanized WireGuard VPN client targeting IT professionals. Post-compromise activity on the firewall appliances reportedly includes web shell deployment, credential theft, and reverse proxy installation."
   },
   {
+   "name": "Gamaredon",
+   "aka": [
+    "Primitive Bear",
+    "ShallowBurrow"
+   ],
+   "sponsor": "Russia (GRU)",
+   "pulses_24h": 0,
+   "pulses_7d": 2,
+   "malware": [],
+   "targets": [],
+   "campaigns": [
+    {
+     "title": "Gamaredon",
+     "url": "https://otx.alienvault.com/pulse/6aa7cebb0e2a0c3b46af74a9",
+     "modified": "2026-09-14T10:38:51.042000",
+     "last_24h": false
+    },
+    {
+     "title": "Gamaredon",
+     "url": "https://otx.alienvault.com/pulse/6aa29d804176b9cd1fc5a768",
+     "modified": "2026-09-10T12:07:28.542000",
+     "last_24h": false
+    }
+   ],
+   "ttps": [
+    "Acquire Infrastructure",
+    "Application Layer Protocol",
+    "Automated Collection",
+    "Automated Exfiltration",
+    "Boot or Logon Autostart Execution",
+    "Command and Scripting Interpreter",
+    "Data Obfuscation",
+    "Data from Local System",
+    "Data from Network Shared Drive",
+    "Data from Removable Media",
+    "Defacement",
+    "Deobfuscate/Decode Files or Information",
+    "Develop Capabilities",
+    "Disable or Modify Tools",
+    "Disk Wipe",
+    "Dynamic Resolution",
+    "Execution Guardrails",
+    "Exfiltration Over C2 Channel",
+    "File and Directory Discovery",
+    "Hide Artifacts",
+    "Indicator Removal",
+    "Ingress Tool Transfer",
+    "Inter-Process Communication",
+    "Internal Spearphishing",
+    "Masquerading",
+    "Modify Registry",
+    "Native API",
+    "Non-Application Layer Protocol",
+    "Non-Standard Port",
+    "Obfuscated Files or Information",
+    "Obtain Capabilities",
+    "Office Application Startup",
+    "Peripheral Device Discovery",
+    "Phishing",
+    "Process Discovery",
+    "Process Injection",
+    "Proxy",
+    "Query Registry",
+    "Reflective Code Loading",
+    "Remote Services",
+    "Replication Through Removable Media",
+    "Scheduled Task/Job",
+    "Screen Capture",
+    "Software Discovery",
+    "Stage Capabilities",
+    "System Binary Proxy Execution",
+    "System Information Discovery",
+    "System Network Configuration Discovery",
+    "System Owner/User Discovery",
+    "Taint Shared Content",
+    "Template Injection",
+    "User Execution",
+    "Virtualization/Sandbox Evasion",
+    "Web Service",
+    "Windows Management Instrumentation"
+   ],
+   "iocs": {
+    "ips": [
+     "64.176.67.139",
+     "172.86.83.183"
+    ],
+    "domains": [
+     "bloodywolves.ddns.net",
+     "domains.servehttp.com",
+     "worker.3utilities.com"
+    ],
+    "hashes": []
+   },
+   "summary": "Recent reporting indicates that Gamaredon indicators were identified through pivoting on referenced threat intelligence pulses. No specific malware families, targeted countries, industries, or victim organizations were detailed in the available campaign reports. The activity described appears limited to the discovery of indicators associated with the group."
+  },
+  {
    "name": "Transparent Tribe",
    "aka": [
     "Krypton",
@@ -483,102 +573,6 @@
     ]
    },
    "summary": "Kimsuky is integrating local large language models (Ollama, GPT4All, Msty) into its attack framework to generate decoy documents and enhance phishing tactics, evolving its GitHub PAT-based LNK delivery chain. The group continues to deploy AsyncRAT against government, defense, and finance sectors as part of ongoing operations linked to the earlier \"FlowerPower\" campaign and the newly dubbed \"Operation GitPower.\""
-  },
-  {
-   "name": "Gamaredon",
-   "aka": [
-    "Primitive Bear",
-    "ShallowBurrow"
-   ],
-   "sponsor": "Russia (GRU)",
-   "pulses_24h": 0,
-   "pulses_7d": 2,
-   "malware": [],
-   "targets": [],
-   "campaigns": [
-    {
-     "title": "Gamaredon",
-     "url": "https://otx.alienvault.com/pulse/6aa7cebb0e2a0c3b46af74a9",
-     "modified": "2026-09-14T10:38:51.042000",
-     "last_24h": false
-    },
-    {
-     "title": "Gamaredon",
-     "url": "https://otx.alienvault.com/pulse/6aa29d804176b9cd1fc5a768",
-     "modified": "2026-09-10T12:07:28.542000",
-     "last_24h": false
-    }
-   ],
-   "ttps": [
-    "Acquire Infrastructure",
-    "Application Layer Protocol",
-    "Automated Collection",
-    "Automated Exfiltration",
-    "Boot or Logon Autostart Execution",
-    "Command and Scripting Interpreter",
-    "Data Obfuscation",
-    "Data from Local System",
-    "Data from Network Shared Drive",
-    "Data from Removable Media",
-    "Defacement",
-    "Deobfuscate/Decode Files or Information",
-    "Develop Capabilities",
-    "Disable or Modify Tools",
-    "Disk Wipe",
-    "Dynamic Resolution",
-    "Execution Guardrails",
-    "Exfiltration Over C2 Channel",
-    "File and Directory Discovery",
-    "Hide Artifacts",
-    "Indicator Removal",
-    "Ingress Tool Transfer",
-    "Inter-Process Communication",
-    "Internal Spearphishing",
-    "Masquerading",
-    "Modify Registry",
-    "Native API",
-    "Non-Application Layer Protocol",
-    "Non-Standard Port",
-    "Obfuscated Files or Information",
-    "Obtain Capabilities",
-    "Office Application Startup",
-    "Peripheral Device Discovery",
-    "Phishing",
-    "Process Discovery",
-    "Process Injection",
-    "Proxy",
-    "Query Registry",
-    "Reflective Code Loading",
-    "Remote Services",
-    "Replication Through Removable Media",
-    "Scheduled Task/Job",
-    "Screen Capture",
-    "Software Discovery",
-    "Stage Capabilities",
-    "System Binary Proxy Execution",
-    "System Information Discovery",
-    "System Network Configuration Discovery",
-    "System Owner/User Discovery",
-    "Taint Shared Content",
-    "Template Injection",
-    "User Execution",
-    "Virtualization/Sandbox Evasion",
-    "Web Service",
-    "Windows Management Instrumentation"
-   ],
-   "iocs": {
-    "ips": [
-     "64.176.67.139",
-     "172.86.83.183"
-    ],
-    "domains": [
-     "bloodywolves.ddns.net",
-     "domains.servehttp.com",
-     "worker.3utilities.com"
-    ],
-    "hashes": []
-   },
-   "summary": "Recent reporting indicates that Gamaredon indicators were identified through pivoting on referenced threat intelligence pulses. No specific malware families, targeted countries, industries, or victim organizations were detailed in the available campaign reports. The activity described appears limited to the discovery of indicators associated with the group."
   },
   {
    "name": "APT41",
