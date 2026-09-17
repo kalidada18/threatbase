@@ -1,22 +1,48 @@
-import { scanIndicatorLogic, classifyIndicator } from '../scanner'
+import { classifyIndicator } from '../scanner'
 import { isStrictIpv6 } from './ipValidation'
 import supabaseClient from '../supabaseClient'
+import {
+  cleanVerdict,
+  intelBase,
+  invalidVerdict,
+  pivotCandidates,
+  rowToVerdict,
+  type IntelRow,
+  type IntelVerdict,
+} from './intelVerdict'
 
 /**
- * Client-side bulk scan. Deliberately NOT routed through POST /api/v1/scan:
- * that endpoint demands an x-api-key and bills 1 of ~1000/day per indicator
- * (functions/api/v1/_middleware.ts), while scanIndicatorLogic reuses the
- * module-level feed cache — the IP feed download is paid once per session and
- * every later row is a sub-ms binary search. Same reasoning as the batch API's
- * own "sequential on purpose" comment (functions/api/v1/scan.ts).
+ * Client-side bulk scan, now read from the Supabase corpus.
+ *
+ * It used to run scanIndicatorLogic against the published /ioc text: one ~56 MB
+ * feed download per session, then a sub-ms binary search per row. Fast per row,
+ * but it was the last read path that still needed the feeds at all, and it
+ * bought that speed by downloading the corpus to every visitor.
+ *
+ * It is still NOT routed through POST /api/v1/scan: that endpoint demands an
+ * x-api-key and bills 1 of ~1000/day per indicator
+ * (functions/api/v1/_middleware.ts). It calls lookup_intel_batch
+ * (db/lookup_intel_batch.sql) directly instead — the same lookup the
+ * single-value path uses, fanned out over one round trip per BATCH_CHUNK rows.
+ *
+ * Calling the single-value lookup_intel once per row was the obvious
+ * alternative and is the wrong one: BULK_MAX_ROWS is 10000, so a full file
+ * would be 10000 sequential requests. A 500-item batch measures ~1.3 s
+ * end-to-end, making a full file ~26 s.
+ *
+ * lookup_intel_batch is granted to `authenticated`, NOT anon — bulk hunt is
+ * Pro-gated, so the caller is always signed in and their session JWT rides
+ * along on the shared client. One call costs ~1.2 s of database time, which
+ * must not be spendable by anyone holding the publishable anon key.
  */
 
 // Rows past this are rejected up front: one file should not turn the tab into
 // a minutes-long loop with nothing but a counter to show for it.
 export const BULK_MAX_ROWS = 10000
 
-// Supabase GETs go through a URL; keep each .in() list well under proxy limits.
-const DISPUTE_CHUNK = 200
+// lookup_intel_batch's own MAX_ITEMS cap (db/lookup_intel_batch.sql) is 500,
+// and it RAISES rather than truncating — so these two must not drift apart.
+const BATCH_CHUNK = 500
 
 export type BulkRow = {
   value: string
@@ -123,86 +149,116 @@ export async function parseBulkFile(file: File): Promise<ParsedBulk> {
   return parseBulkText(await file.text())
 }
 
+/** One BulkRow from a corpus verdict, in the shape the ledger and CSV expect. */
+function toBulkRow(value: string, v: IntelVerdict): BulkRow {
+  return {
+    value,
+    type: v.type,
+    isMalicious: !!v.isMalicious,
+    // Same precedence the old two-phase version produced: the >=3 dispute
+    // flip wins over the raw malicious flag.
+    status: v.isMalicious ? 'malicious' : (v.isDisputed ? 'disputed' : 'clean'),
+    riskScore: v.riskScore,
+    feedCount: v.feedCount,
+    tags: v.tags ?? [],
+    sources: v.sources ?? [],
+    matchedCidr: v.matchedCidr ?? null,
+    relatedMatch: v.relatedMatch ?? null,
+    disputeCount: v.disputeCount ?? 0,
+  }
+}
+
+function errorRow(value: string, message: string): BulkRow {
+  return { value, type: 'unknown', isMalicious: false, status: 'error', riskScore: 'Low', feedCount: 1, tags: [], sources: [], matchedCidr: null, relatedMatch: null, disputeCount: 0, error: message }
+}
+
 /**
- * Scan rows sequentially (feeds the module cache; Promise.all would race the
- * fill-after-await in fetchAndCacheFeedText and refetch the 56 MB feed).
- * Dispute flips happen once at the end via one batched query per 200 dirty
- * IPs, reusing the same >=3 rule as scanIndicatorLogic.
+ * Scan rows in chunks against lookup_intel_batch.
+ *
+ * Verdicts stream to the caller row by row so the ledger animates, but they
+ * ARRIVE a chunk at a time — hence the yield every 25 rows here rather than
+ * one yield per chunk. Without it a 500-row burst would land in a single task
+ * and the UI would jump instead of filling.
+ *
+ * The >=3 dispute rule needs no second pass: lookup_intel_batch returns
+ * dispute_count per value (the same count the single-value function computes)
+ * and rowToVerdict applies the flip. This function used to end with its own
+ * batched `disputes` query — that went away with the feed dependency, along
+ * with a full network round trip per 200 rows after every scan.
+ *
+ * Chunk size is bounded by the function's MAX_ITEMS, not by the 8 s
+ * authenticated statement_timeout — 500 items measures ~1.2 s in-database, so
+ * there is roughly 6x headroom. Re-measure before raising it.
  */
 export async function runBulkScan(
   rows: string[],
-  feedVersion: string | number,
-  statsData?: any,
   onProgress?: (done: number, total: number) => void,
   shouldAbort?: () => boolean,
   onRow?: (row: BulkRow) => void,
 ): Promise<BulkRow[]> {
   const results: BulkRow[] = []
-  for (const value of rows) {
+
+  if (!supabaseClient) {
+    // Mirrors an unreachable scan engine: report every row as an error rather
+    // than letting unverifiable indicators render as clean.
+    for (const value of rows) results.push(errorRow(value, 'Scan engine unavailable'))
+    onProgress?.(rows.length, rows.length)
+    return results
+  }
+  const sb = supabaseClient
+
+  for (let start = 0; start < rows.length; start += BATCH_CHUNK) {
     if (shouldAbort?.()) break
+    const chunk = rows.slice(start, start + BATCH_CHUNK)
+
+    // Classify and derive pivots here, not in SQL — the same helpers the
+    // single Hunt uses, so the corpus is asked the same question either way.
+    const prepared = chunk.map((value) => {
+      const c = classifyIndicator(value)
+      const { host, parents } = pivotCandidates(c)
+      return { value, c, host, parents }
+    })
+
+    const byValue = new Map<string, IntelRow>()
+    let failure: string | null = null
     try {
-      const r = await scanIndicatorLogic(value, feedVersion, statsData, { skipDisputeCheck: true })
-      results.push({
-        value,
-        type: r.type,
-        isMalicious: !!r.isMalicious,
-        status: r.isMalicious ? 'malicious' : 'clean',
-        riskScore: r.riskScore,
-        feedCount: r.feedCount,
-        tags: r.tags ?? [],
-        sources: r.sources ?? [],
-        matchedCidr: r.matchedCidr ?? null,
-        relatedMatch: r.relatedMatch ?? null,
-        disputeCount: 0,
+      const { data, error } = await sb
+        .rpc('lookup_intel_batch', {
+          p_items: prepared.map((p) => ({ value: p.c.ip, parents: p.parents })),
+        })
+        .abortSignal(AbortSignal.timeout(30_000))
+      if (error) throw error
+      ;((data ?? []) as IntelRow[]).forEach((row) => {
+        if (row.input_value) byValue.set(row.input_value, row)
       })
     } catch (err: any) {
-      results.push({ value, type: 'unknown', isMalicious: false, status: 'error', riskScore: 'Low', feedCount: 1, tags: [], sources: [], matchedCidr: null, relatedMatch: null, disputeCount: 0, error: err?.message || 'Scan failed' })
+      // One failed chunk fails its own rows only — the rest of the file still
+      // gets scanned, which is why this is not a throw.
+      failure = err?.message || 'Scan failed'
     }
-    const last = results[results.length - 1]
-    // Streaming: hand the row to the caller as it lands so the UI can show
-    // verdicts mid-run. onProgress is the batched tick (every 25 rows);
-    // onRow fires for every row but is cheap (a buffer push in the UI).
-    onRow?.(last)
-    if (results.length % 25 === 0 || results.length === rows.length) {
-      onProgress?.(results.length, rows.length)
-      // Once the feed is cached each scan is pure CPU behind a resolved
-      // await, which stays in the microtask queue and starves painting.
-      // A real macrotask yield every 25 rows lets the ledger actually
-      // stream and Stop stay responsive.
-      await new Promise((r) => setTimeout(r, 0))
-    }
-  }
 
-  // Batched dispute pass: flip dirty→disputed at >=3 like the single scanner.
-  // Chunks are disjoint, so fire them all at once — awaiting the loop
-  // serialized one full Supabase RTT per 200 rows after the scan finished.
-  const dirty = results.filter((r) => r.isMalicious)
-  if (dirty.length && supabaseClient) {
-    try {
-      const chunks: string[][] = []
-      for (let i = 0; i < dirty.length; i += DISPUTE_CHUNK) {
-        chunks.push(dirty.slice(i, i + DISPUTE_CHUNK).map((r) => r.value))
+    for (const p of prepared) {
+      if (shouldAbort?.()) break
+      const base = intelBase(p.c)
+      let row: BulkRow
+      if (failure) {
+        row = errorRow(p.value, failure)
+      } else if (base.type === 'invalid') {
+        row = toBulkRow(p.value, invalidVerdict(base))
+      } else {
+        const hit = byValue.get(p.c.ip)
+        row = toBulkRow(p.value, hit ? rowToVerdict(base, p.c, p.host, hit) : cleanVerdict(base))
       }
-      const sb = supabaseClient // module-level let: re-narrow for the callbacks
-      const responses = await Promise.all(
-        chunks.map((c) => sb
-          .from('disputes').select('ip').in('ip', c)
-          .abortSignal(AbortSignal.timeout(15_000)))
-      )
-      const counts: Record<string, number> = {}
-      for (const { data } of responses as any[]) {
-        for (const row of (data ?? []) as any[]) counts[row.ip] = (counts[row.ip] || 0) + 1
-      }
-      onProgress?.(results.length, rows.length)
-      for (const r of dirty) {
-        const n = counts[r.value] || 0
-        r.disputeCount = n
-        if (n >= 3) { r.isMalicious = false; r.status = 'disputed' }
-      }
-    } catch (err) {
-      // Non-fatal, mirrors the single-scanner's console.error behavior.
-      console.error('Bulk dispute check failed:', err)
+      results.push(row)
+      onRow?.(row)
+      // Once the chunk is in hand each row is pure CPU behind a resolved
+      // await, which stays in the microtask queue and starves painting. A real
+      // macrotask yield every 25 rows lets the ledger stream and Stop respond.
+      if (results.length % 25 === 0) await new Promise((r) => setTimeout(r, 0))
     }
+
+    onProgress?.(results.length, rows.length)
+    await new Promise((r) => setTimeout(r, 0))
   }
 
   return results

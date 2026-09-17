@@ -132,7 +132,10 @@ export function findMatchingCidr(cidrText: string, ipLong: number | null): strin
     list = []
     const lines = cidrText.split('\n')
     for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim()
+      // Strip the trailing keyvalue column first ('1.19.0.0/16,2026-09-02'):
+      // Number() on the whole tail after the slash is NaN, which silently
+      // skipped every CIDR line and killed containment outright.
+      const line = lines[i].trim().split(',')[0]
       if (!line || line.startsWith('#') || line.indexOf(':') !== -1) continue
       const slash = line.indexOf('/')
       if (slash === -1) continue

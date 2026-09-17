@@ -78,6 +78,14 @@ describe('findMatchingCidr', () => {
   it('skips IPv6 ranges and comments for IPv4 tests', () => {
     expect(findMatchingCidr(cidrs, ipv4ToLong('172.16.0.1'))).toBeNull()
   })
+
+  // The served feed is keyvalue format ('cidr,YYYY-MM-DD') since the age-decay
+  // commit, which made the mask parse to NaN and every line get skipped.
+  it('parses the keyvalue feed format and returns the bare CIDR', () => {
+    const keyvalue = '1.19.0.0/16,2026-09-02\n10.0.0.0/8,2026-09-01\n2001:db8::/32,2026-09-02\n'
+    expect(findMatchingCidr(keyvalue, ipv4ToLong('1.19.255.254'))).toBe('1.19.0.0/16')
+    expect(findMatchingCidr(keyvalue, ipv4ToLong('8.8.8.8'))).toBeNull()
+  })
 })
 
 describe('binarySearchString', () => {

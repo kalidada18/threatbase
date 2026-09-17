@@ -24,7 +24,8 @@ import {
   ListToolsRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js'
 import { z } from 'zod'
-import { scanIndicatorLogic, validateTypedIndicator, BATCH_SCAN_TYPES } from '../../src/scanner'
+import { validateTypedIndicator, BATCH_SCAN_TYPES } from '../../src/scanner'
+import { scanIndicatorIntel } from '../api/_intel'
 import { json, corsHeaders, ensureAbsoluteFetch } from '../api/_common'
 
 /** Per-IP MCP request budget per day. Chat agents fire 5–15 lookups per
@@ -102,7 +103,7 @@ async function scanOne(type: string, value: string) {
   if ('error' in validated) {
     return { type, value, malicious: false, status: 'error', error: validated.error }
   }
-  const r: any = await scanIndicatorLogic(validated.value, 'latest')
+  const r: any = await scanIndicatorIntel(validated.value)
   return scanShape({
     type: type.trim().toLowerCase(),
     value: validated.value,
@@ -116,7 +117,7 @@ async function handleToolCall(name: string, args: any) {
   if (name === 'scan_ioc') {
     const parsed = z.object({ indicator: z.string().min(1).max(2048) }).safeParse(args)
     if (!parsed.success) return { isError: true, content: [{ type: 'text', text: 'scan_ioc needs {indicator: string}' }] }
-    const r: any = await scanIndicatorLogic(parsed.data.indicator, 'latest')
+    const r: any = await scanIndicatorIntel(parsed.data.indicator)
     const verdict = r.isMalicious ? 'MALICIOUS' : r.isDisputed ? 'DISPUTED' : r.type === 'invalid' ? 'INVALID INPUT' : 'clean'
     return {
       content: [{ type: 'text', text: `Threatbase verdict: ${verdict} (risk: ${r.riskScore}, feeds: ${r.feedCount}${r.tags?.length ? `, tags: ${r.tags.join(', ')}` : ''})` }],

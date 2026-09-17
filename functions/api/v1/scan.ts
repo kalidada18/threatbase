@@ -1,4 +1,5 @@
-import { scanIndicatorLogic, validateTypedIndicator } from '../../../src/scanner'
+import { validateTypedIndicator } from '../../../src/scanner'
+import { scanIndicatorIntel } from '../_intel'
 import { MAX_INDICATOR_LENGTH } from '../../../src/lib/apiValidation'
 import { json, ensureAbsoluteFetch } from '../_common'
 
@@ -45,9 +46,10 @@ async function handleBatchScan(request: Request, env: any, ctx: any) {
   }
 
   const results: any[] = []
-  // Sequential on purpose: scanIndicatorLogic warms a process-wide feed cache,
-  // so item N+1 usually skips the download item N paid for. Promise.all over a
-  // cold isolate would race that cache and fetch the same big feed many times.
+  // Sequential on purpose: each lookup hits the same Supabase corpus and the
+  // per-isolate client, so a Promise.all fan-out buys little while making the
+  // 100-item cap burst the connection pool. Kept from the feed-scanning days,
+  // when item N+1 reused the multi-MB download item N paid for.
   for (const ind of indicators) {
     const { type, value } = ind ?? {}
     if (typeof type !== 'string' || typeof value !== 'string') {
@@ -64,7 +66,7 @@ async function handleBatchScan(request: Request, env: any, ctx: any) {
       continue
     }
     try {
-      const r = await scanIndicatorLogic(validated.value, 'latest')
+      const r = await scanIndicatorIntel(validated.value)
       results.push({
         type: type.trim().toLowerCase(),
         value: validated.value,
@@ -116,7 +118,7 @@ export const onRequest = async (context: any) => {
   }
 
   try {
-    const result = await scanIndicatorLogic(ip, 'latest');
+    const result = await scanIndicatorIntel(ip);
     return json({ success: true, data: result })
   } catch (err: any) {
     console.error('GET /api/v1/scan failed:', err?.message || err);

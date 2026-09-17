@@ -9,8 +9,8 @@ import { usePro } from '../usePro'
 
 /**
  * Bulk IOC hunt: paste, load a CSV/TXT, or drop an Excel workbook — every
- * sheet cell is scanned against the same client-side engine as the single
- * Hunt (one feed download, then sub-ms binary searches), and verdicts export
+ * sheet cell is scanned against the same corpus the single Hunt reads
+ * (lookup_intel_batch, one round trip per 500 rows), and verdicts export
  * back as a detailed CSV.
  * The ledger idiom is borrowed from FeedHealth's <ul divide-y> + status dots.
  */
@@ -28,7 +28,7 @@ type Filter = (typeof FILTERS)[number]
 const PREVIEW_ROWS = 200
 const PAGE_ROWS = 1000
 
-export default function BulkScanner({ feedVersion, statsData, addToast, onClose }: any) {
+export default function BulkScanner({ addToast, onClose }: any) {
   const { status: proStatus, refetch } = usePro()
   const [text, setText] = useState('')
   const [phase, setPhase] = useState<'input' | 'running' | 'done'>('input')
@@ -40,7 +40,8 @@ export default function BulkScanner({ feedVersion, statsData, addToast, onClose 
   const fileRef = useRef<HTMLInputElement>(null)
   const [dragging, setDragging] = useState(false)
   // Closing the panel mid-run must stop the scan: runBulkScan checks
-  // abortRef every 25 rows, and only the Stop button used to set it.
+  // abortRef at each batch boundary and between rows within one, and only
+  // the Stop button used to set it.
   useEffect(() => () => { abortRef.current = true }, [])
 
   // Pro gate: bulk hunt rides the same entitlement as the Pro feed URLs
@@ -116,8 +117,6 @@ export default function BulkScanner({ feedVersion, statsData, addToast, onClose 
     let buf: BulkRow[] = []
     const rows = await runBulkScan(
       p.valid,
-      feedVersion,
-      statsData,
       (done, total) => { setProgress({ done, total }) },
       () => abortRef.current,
       (row) => {

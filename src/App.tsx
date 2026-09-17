@@ -319,8 +319,6 @@ export default function App() {
             {bulkOpen && (
               <Suspense fallback={null}>
                 <BulkScanner
-                  feedVersion={feedVersion}
-                  statsData={statsData}
                   addToast={addToast}
                   onClose={() => setBulkOpen(false)}
                 />

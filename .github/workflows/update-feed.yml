@@ -391,4 +391,69 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  # ── 10. Mirror the new feed into the Supabase corpus ─────────────────────────
+  #
+  # /api/lookup, /api/v1/scan and the MCP scan tool read ip_intel / hash_intel /
+  # indicator_intel, not the /ioc text — so the corpus has to move whenever the
+  # feed does, or every server-side verdict silently ages. `needs:` also means
+  # this cannot run against a failed or half-published feed.
+  #
+  # Separate job, so its own checkout resolves the commit step 7 just pushed
+  # (in-run checkouts are pinned to the SHA the run started on). The repo only
+  # carries the SPLIT domain/hash chunks — the unsplit files are release assets —
+  # so the globs below are the real inputs, and the shell expands them into one
+  # import per chunk.
+  #
+  # `--since auto` (yesterday UTC) plus the importer's monotonic merge
+  # (GREATEST/OR, db/ip_intel.sql) makes the day of overlap a no-op rather than a
+  # re-write, and is what keeps this to minutes instead of the ~25 min a full
+  # 3.7M-row pass takes.
+  import-corpus:
+    name: Import feed delta into the Supabase corpus
+    needs: update-feed
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout the freshly pushed feed
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python dependencies
+        run: pip install --quiet --no-cache-dir -r pipeline/requirements.txt
+
+      - name: Import delta
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          PYTHONUNBUFFERED: '1'
+        run: |
+          set -euo pipefail
+          SINCE=$(date -u -d yesterday +%F)
+          # format:glob pairs. A glob that matches nothing passes through
+          # literally and the importer exits 1 — a missing feed must fail loudly,
+          # not import zero rows and look green.
+          for pair in \
+            "feed:ioc/ip/threatbase-ip.txt" \
+            "feed:ioc/ip/threatbase-ipv6.txt" \
+            "keyvalue:ioc/ip/threatbase-cidr.txt" \
+            "keyvalue:ioc/domain/threatbase-domain-0*.txt" \
+            "keyvalue:ioc/url/threatbase-url.txt" \
+            "hashfeed:ioc/hash/threatbase-hash-0*.txt" \
+          ; do
+            format="${pair%%:*}"
+            for file in ${pair#*:}; do
+              # --kind is inferred from the filename (import_ip_intel.py:293).
+              echo "::group::${format} ${file}"
+              python pipeline/import_ip_intel.py "$file" --format "$format" --since "$SINCE"
+              echo "::endgroup::"
+            done
+          done
+
 
