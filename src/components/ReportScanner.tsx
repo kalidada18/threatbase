@@ -560,6 +560,11 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
     } else {
       setReports([])
       setIpInfo(null)
+      // Clear the flags too. Without this, a scan that ends up in this branch
+      // after setLoadingReports(true) ran above leaves the skeleton on screen
+      // forever with no request outstanding — a permanent ghost loader.
+      setLoadingReports(false)
+      setLoadingIpInfo(false)
     }
   }, [scanResult, ip])
 
