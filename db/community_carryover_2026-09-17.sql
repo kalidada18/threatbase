@@ -11,13 +11,33 @@
 --     reported_ips_update_own and reported_ips_delete_own require
 --     user_id = auth.uid(). Relink once users re-register:
 --
+--       with pick as (
+--         select distinct on (r.ip, p.id) r.id as row_id, p.id as uid
+--           from public.reported_ips r
+--           join public.profiles p on p.username = r.reporter_alias
+--          where r.user_id is null
+--          order by r.ip, p.id, r.created_at
+--       )
+--       update public.reported_ips t set user_id = pick.uid
+--         from pick where t.id = pick.row_id;
+--
+--     The DISTINCT ON is REQUIRED, not stylistic. The obvious form —
 --       update public.reported_ips r set user_id = p.id
 --         from public.profiles p
 --        where r.user_id is null and r.reporter_alias = p.username;
+--     — links ZERO rows and raises 23505. reported_ips_ip_user_uniq is unique
+--     on (ip, user_id) where user_id is not null, so a second row for the same
+--     reporter on the same IP is rejected, and Postgres aborts the entire
+--     statement on the first conflict rather than skipping it. It fails here on
+--     213.209.159.158, reported 3x under one alias; linking one row and leaving
+--     the other two NULL is the intended outcome. Verified 2026-09-17 in a
+--     rolled-back transaction before running for real.
 --
 --     That also repairs the 9 hosted rows that were already orphaned, and it
 --     brings back avatars in top_contributors (the view joins on user_id, not
---     on the alias).
+--     on the alias). Applied 2026-09-17: 51 of 97 rows linked — previously
+--     user_id was NULL on all 97, so avatar_url was NULL for EVERY
+--     top_contributors group even where a profile had a real picture.
 --
 --  2. comments_stamp_username is DISABLED for the load. The trigger overwrites
 --     NEW.username from profiles, and with profiles empty it would flatten both
