@@ -74,7 +74,9 @@ export default function Navbar() {
             await signOut()
             setDropdownOpen(false)
             setMenuState(false)
-            navigate('/')
+            // replace: signing out is not a place you navigate back to, and a
+            // push here leaves a dead signed-in entry in the history stack.
+            navigate('/', { replace: true })
         } catch (e) {
             console.error('Sign out failed:', e)
         }

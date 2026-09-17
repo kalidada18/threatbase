@@ -17,6 +17,11 @@ interface AuthContextType {
   signInWithEmail: (email: string, password: string) => Promise<void>
   signUpWithEmail: (email: string, password: string) => Promise<void>
   signOut: (opts?: { scope: 'global' | 'local' }) => Promise<void>
+  /** Set by signOut(), cleared on the next sign-in. auth-js fires the same
+   *  SIGNED_OUT event for a deliberate sign-out and for a session expiring, so
+   *  the event alone cannot tell them apart — and the profile guard must not
+   *  scold someone for choosing to sign out. */
+  signOutIntent: React.MutableRefObject<boolean>
   refreshProfile: () => Promise<void>
 }
 
@@ -130,6 +135,7 @@ export function AuthProvider({
         const u = currentSession?.user ?? null
         setUser(u)
         if (u) {
+          signOutIntent.current = false
           await checkMfaLevel()
           const p = await fetchProfile(u.id, u)
           setProfile(p)
@@ -191,13 +197,21 @@ export function AuthProvider({
     if (error) throw error
   }
 
+  const signOutIntent = React.useRef(false)
+
   // scope:'local' (default global in auth-js v2 revokes EVERY session on
   // every device — the MFA-dismiss button was wiping all logins, the
   // "logged out again and again" loop). Deliberate sign-outs stay global.
   const signOut = async (opts?: { scope: 'global' | 'local' }) => {
     if (!supabaseClient) return
+    signOutIntent.current = true
     const { error } = await supabaseClient.auth.signOut(opts ?? { scope: 'global' })
-    if (error) throw error
+    if (error) {
+      // The sign-out failed, so the session is still live. Leaving the intent
+      // set would silence the profile guard for a later expiry instead.
+      signOutIntent.current = false
+      throw error
+    }
   }
 
   return (
@@ -214,6 +228,7 @@ export function AuthProvider({
         signInWithEmail,
         signUpWithEmail,
         signOut,
+        signOutIntent,
         refreshProfile,
       }}
     >

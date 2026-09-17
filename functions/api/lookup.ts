@@ -49,7 +49,16 @@ export const onRequestGet = async (context: any) => {
   const ip = request.headers.get('CF-Connecting-IP') || 'unknown'
   const today = new Date().toISOString().split('T')[0]
   const rlKey = `fl_lookup_${ip}_${today}`
-  const cacheKey = `lookup/${today}/${value.toLowerCase()}`
+  // Keyed on the EXACT value, not a lowercased form. The cached body is the
+  // verdict computed for the first spelling that was ever requested, and it is
+  // served back verbatim — including its `data.ip`. Folding case meant a later
+  // request in different case got the first spelling back as its indicator, so
+  // anything keyed on that string (the comments query, the copy-link URL)
+  // addressed an indicator the user never searched. Worse for URLs, where case
+  // is meaningful: /A and /a are different resources and were sharing a verdict.
+  // Domains, IPs and hashes are already lowercased upstream by the scanner, so
+  // dropping the fold costs no cache hits for them.
+  const cacheKey = `lookup/${today}/${value}`
 
   // read-modify-write like every other gate here: a fast flood overshoots by a
   // handful, not by 1000x. Fetched once and reused for the HIT/MISS bumps.

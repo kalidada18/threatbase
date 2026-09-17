@@ -375,7 +375,7 @@ function CommentsSection({ ip, addToast }: { ip: string; addToast: (msg: string,
       ) : (
         <div className="space-y-3">
           {comments.length === 0 && (
-            <p className="text-sm text-slate-400">{loadFailed ? 'Comments unavailable.' : 'No comments yet.'}</p>
+            <p className="text-sm text-slate-400">{loadFailed ? 'Comments unavailable.' : 'No comments on this indicator yet.'}</p>
           )}
           {comments.map(c => (
             <div key={c.id} className="rounded-xl border border-slate-800 bg-slate-900 px-5 py-4">
@@ -498,7 +498,18 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
     : null
 
   useEffect(() => {
+    // Responses from a superseded scan must not land. Without this flag a slow
+    // request for the PREVIOUS indicator resolves after the next scan started
+    // and writes its rows into state — they then render under the new heading
+    // (:1039) and feed computeConfidence(), scoring B with A's report count.
+    let cancelled = false
+
     if (scanResult && (scanResult.isIP || scanResult.isIPv6 || scanResult.isDomain) && ip) {
+      // Drop the previous indicator's rows before fetching. `reports` was
+      // otherwise only cleared in the else branch below, so rows from the last
+      // scan stayed on screen for the whole of the next one.
+      setReports([])
+      setIpInfo(null)
       setLoadingReports(true)
 
       if (supabaseClient) {
@@ -513,10 +524,11 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
           .limit(100)
           .abortSignal(AbortSignal.timeout(12_000)))
           .then(({ data }) => {
+            if (cancelled) return
             if (data) setReports(data)
             setLoadingReports(false)
           })
-          .catch(() => setLoadingReports(false))
+          .catch(() => { if (!cancelled) setLoadingReports(false) })
       } else {
         setLoadingReports(false)
       }
@@ -534,6 +546,7 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
           .then(r => (r.ok ? r.json() : null))
           .then(data => {
             clearTimeout(timeoutId)
+            if (cancelled) return
             if (data && data.ip) {
               setIpInfo({
                 country: data.country,
@@ -550,6 +563,7 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
           .catch((err) => {
             clearTimeout(timeoutId)
             console.error("IP lookup failed or timed out:", err);
+            if (cancelled) return
             setIpInfo(null)
             setLoadingIpInfo(false)
           })
@@ -566,6 +580,8 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
       setLoadingReports(false)
       setLoadingIpInfo(false)
     }
+
+    return () => { cancelled = true }
   }, [scanResult, ip])
 
   // Build external links

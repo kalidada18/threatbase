@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button'
 import { fmt, timeAgo, categoryTier, TIER_TEXT } from '../utils'
 import { useSEO } from '../useSEO'
 import MfaSetup from './MfaSetup'
-import ProAdminPanel from './ProAdminPanel'
 import NotFound from './ui/not-found'
 
 /**
@@ -233,7 +232,7 @@ function ProfileAvatar({ src, name }: { src?: string; name: string }) {
 export default function Profile({ addToast }: { addToast: (msg: string, type?: string) => void }) {
   const navigate = useNavigate()
   const { username: paramUsername } = useParams<{ username?: string }>()
-  const { user, profile: authProfile, loading: authLoading, refreshProfile, signOut } = useAuth()
+  const { user, profile: authProfile, loading: authLoading, refreshProfile, signOut, signOutIntent } = useAuth()
 
   // Profile Data
   const [viewedProfile, setViewedProfile] = useState<any>(null)
@@ -299,13 +298,16 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
   const [generatingKey, setGeneratingKey] = useState(false)
   const [hasMfaEnrolled, setHasMfaEnrolled] = useState(false)
 
-  // Block anonymous access if trying to view own profile
+  // Block anonymous access if trying to view own profile. `signOutIntent`
+  // excludes a sign-out the user just asked for: without it, signing out on
+  // /profile fires "Please sign in to access your profile account" in red at
+  // the person who just chose to sign out, and navigates a second time.
   useEffect(() => {
-    if (!authLoading && !paramUsername && !user) {
+    if (!authLoading && !paramUsername && !user && !signOutIntent.current) {
       addToast('Please sign in to access your profile account', 'error')
       navigate('/')
     }
-  }, [user, authLoading, paramUsername, navigate, addToast])
+  }, [user, authLoading, paramUsername, navigate, addToast, signOutIntent])
 
   // Load the current user's OWN profile. Other users' profiles are private:
   // they are gated to a 403 above and are never fetched here.
@@ -1095,26 +1097,6 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
                 </p>
               )}
             </div>
-          </motion.div>
-        )}
-
-        {/* Superadmin: Pro entitlement management (server-guarded via /api/admin/pro) */}
-        {isOwnProfile && authProfile?.role === 'superadmin' && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
-            className="glass-card p-6 md:p-8"
-          >
-            <div className="mb-6">
-              <h3 className="text-sm font-semibold text-white flex items-center gap-2 tracking-tight">
-                <span className="icon-chip h-7 w-7"><Crown size={14} /></span> Pro Management
-              </h3>
-              <p className="text-xs text-slate-400 mt-1 max-w-lg">
-                Superadmin tools: grant or revoke Threatbase Pro for any account.
-              </p>
-            </div>
-            <ProAdminPanel />
           </motion.div>
         )}
 
