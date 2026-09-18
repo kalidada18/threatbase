@@ -705,5 +705,33 @@
     "category": "SSH, Brute-Force",
     "comment": "SSh brute force attacks",
     "created_at": "2026-09-16T01:42:51.848414+00:00"
+  },
+  {
+    "id": "54671371-8eee-4905-9eeb-d480882c6f18",
+    "ip": "202.78.167.117",
+    "category": "Web App Attack",
+    "comment": "API Hacking",
+    "created_at": "2026-09-18T03:21:39.010024+00:00"
+  },
+  {
+    "id": "9534b6fc-aa1f-4874-8190-31946d9dde34",
+    "ip": "207.154.248.254",
+    "category": "Web App Attack",
+    "comment": "Web application attack observed in threatbase from this IP",
+    "created_at": "2026-09-18T03:38:26.22432+00:00"
+  },
+  {
+    "id": "6df87350-a74f-45af-8f87-c3921e6451a7",
+    "ip": "202.53.68.18",
+    "category": "Hacking",
+    "comment": "RCE Exploit",
+    "created_at": "2026-09-18T05:59:49.515874+00:00"
+  },
+  {
+    "id": "c2ba4144-37c4-4f61-bd9f-74c34c7daac5",
+    "ip": "59.52.226.146",
+    "category": "Web App Attack, Port Scan",
+    "comment": "NMAP Scanner",
+    "created_at": "2026-09-18T07:55:31.297904+00:00"
   }
 ]
