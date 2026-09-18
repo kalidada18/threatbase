@@ -11,6 +11,7 @@ import { useAuth } from '../AuthContext'
 import { useSEO } from '@/useSEO'
 import DOMPurify from 'dompurify'
 import { DNS_WHITELIST_CIDRS, PRIVATE_RESERVED_CIDRS, IPV4_RE, inCidr, isPrivateReservedIpv6 } from '@/lib/ipValidation'
+import { withTimeout } from '@/lib/withTimeout'
 
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -261,7 +262,16 @@ export default function ReportIP({ addToast }: any) {
     const safeComment = DOMPurify.sanitize(rawComment)
 
     try {
-      const { data: sessionData } = await supabaseClient.auth.getSession()
+      // Bounded: getSession() takes no signal and can stall behind auth-js's
+      // internal session lock (see src/lib/withTimeout.ts for the production
+      // sighting). It is the first await after setSubmitting(true), so a stall
+      // here makes the `finally` below unreachable and pins the button on
+      // "Submitting..." with no way out but a reload.
+      const { data: sessionData } = await withTimeout(
+        supabaseClient.auth.getSession(),
+        12_000,
+        'Checking your session',
+      )
       const accessToken = sessionData?.session?.access_token
       if (!accessToken) {
         setSubmitting(false)
