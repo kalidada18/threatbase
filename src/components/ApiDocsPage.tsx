@@ -1,8 +1,11 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import IsoPageShell from './layout/IsoPageShell'
-import { KeyRound, Gauge, Terminal, Copy, Check, ArrowRight, ShieldCheck, Globe } from 'lucide-react'
+import {
+  KeyRound, Gauge, Terminal, Copy, Check, ArrowRight, ShieldCheck, Globe,
+  Zap, SearchX, CircleAlert, BookOpen, Layers, Radio,
+} from 'lucide-react'
 import { useSEO } from '@/useSEO'
 
 const BASE_URL = 'https://threatbase.qzz.io'
@@ -122,7 +125,7 @@ interface CodeBlockProps {
 }
 
 function CodeBlock({ code, language = 'text', filename }: CodeBlockProps) {
-  const [copied, setCopied] = React.useState(false)
+  const [copied, setCopied] = useState(false)
 
   const handleCopy = async () => {
     try {
@@ -143,7 +146,8 @@ function CodeBlock({ code, language = 'text', filename }: CodeBlockProps) {
         </span>
         <button
           onClick={handleCopy}
-          className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-2.5 py-2 md:py-1 text-[11px] font-bold text-slate-400 transition-all hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-400 active:scale-95"
+          aria-label="Copy code"
+          className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-2.5 py-2 text-[11px] font-bold text-slate-400 transition-all hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-400 active:scale-95 md:py-1"
         >
           {copied ? (
             <>
@@ -165,7 +169,7 @@ function CodeBlock({ code, language = 'text', filename }: CodeBlockProps) {
               language === 'json' ? highlightJson(line) : tokenizeLine(line, language)
             return (
               <div key={idx} className="flex px-4 hover:bg-white/[0.015]">
-                <span className="select-none pr-4 text-right text-slate-500 w-8 shrink-0">
+                <span className="w-8 shrink-0 select-none pr-4 text-right text-slate-500">
                   {idx + 1}
                 </span>
                 <code className="whitespace-pre">
@@ -246,11 +250,15 @@ function ParamTable({ rows, title }: { rows: ParamRow[]; title: string }) {
 }
 
 function SectionHeading({
+  id,
   icon: Icon,
+  eyebrow,
   title,
   children,
 }: {
+  id?: string
   icon: React.ElementType
+  eyebrow?: string
   title: string
   children?: React.ReactNode
 }) {
@@ -261,21 +269,119 @@ function SectionHeading({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-80px' }}
       transition={{ duration: 0.5 }}
-      className="mb-8"
+      id={id}
+      className="mb-8 scroll-mt-28"
     >
       <div className="mb-3 flex items-center gap-3">
-        <div className="icon-chip w-10 h-10">
+        <div className="icon-chip h-10 w-10">
           <Icon className="h-5 w-5" />
         </div>
+        {eyebrow && (
+          <span className="font-mono text-[11px] font-semibold uppercase tracking-widest text-red-400/80">
+            {eyebrow}
+          </span>
+        )}
       </div>
       <h2 className="text-3xl font-extrabold tracking-tight text-white md:text-4xl">{title}</h2>
-      {children && <p className="mt-3 max-w-2xl text-base leading-relaxed text-slate-400">{children}</p>}
+      {children && (
+        <p className="mt-3 max-w-2xl text-base leading-relaxed text-slate-400">{children}</p>
+      )}
     </motion.div>
   )
 }
 
+/** A labelled endpoint header bar: method + path + one-line description. */
+function EndpointBar({
+  method,
+  path,
+  desc,
+  pro,
+}: {
+  method: 'GET' | 'POST'
+  path: string
+  desc: string
+  pro?: boolean
+}) {
+  return (
+    <div className="mb-6 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-white/[0.04] glass-card px-5 py-4">
+      <MethodBadge method={method} />
+      <code className="font-mono text-sm font-semibold text-white sm:text-base">{path}</code>
+      {pro && (
+        <span className="rounded-md border border-red-500/30 bg-red-500/10 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-red-300">
+          key required
+        </span>
+      )}
+      <span className="ml-auto text-sm text-slate-400">{desc}</span>
+    </div>
+  )
+}
+
 /* ------------------------------------------------------------------ */
-/* Code samples                                                        */
+/* Scroll-spy for the in-page sidebar                                  */
+/* ------------------------------------------------------------------ */
+
+const NAV_SECTIONS = [
+  { id: 'authentication', label: 'Authentication' },
+  { id: 'rate-limits', label: 'Rate limits' },
+  { id: 'scan', label: 'GET /scan' },
+  { id: 'batch-scan', label: 'POST /scan' },
+  { id: 'report', label: 'POST /report' },
+  { id: 'lookup', label: 'GET /lookup' },
+  { id: 'errors', label: 'Errors' },
+  { id: 'quickstart', label: 'Quickstart' },
+]
+
+function useScrollSpy(ids: string[]) {
+  const [active, setActive] = useState(ids[0])
+  useEffect(() => {
+    const obs = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) setActive(e.target.id)
+        })
+      },
+      { rootMargin: '-20% 0px -70% 0px', threshold: 0 },
+    )
+    ids.forEach((id) => {
+      const el = document.getElementById(id)
+      if (el) obs.observe(el)
+    })
+    return () => obs.disconnect()
+  }, [ids.join(',')])
+  return active
+}
+
+function SideNav({ active }: { active: string }) {
+  return (
+    <nav aria-label="On this page" className="sticky top-28 hidden lg:block">
+      <p className="mb-3 font-mono text-[11px] font-semibold uppercase tracking-widest text-slate-600">
+        On this page
+      </p>
+      <ul className="space-y-0.5 border-l border-white/[0.06]">
+        {NAV_SECTIONS.map((s) => {
+          const on = active === s.id
+          return (
+            <li key={s.id}>
+              <a
+                href={`#${s.id}`}
+                className={`-ml-px block border-l-2 py-1.5 pl-4 text-sm transition-colors ${
+                  on
+                    ? 'border-red-500 font-semibold text-white'
+                    : 'border-transparent text-slate-500 hover:border-white/20 hover:text-slate-300'
+                }`}
+              >
+                {s.label}
+              </a>
+            </li>
+          )
+        })}
+      </ul>
+    </nav>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/* Code samples — verified against the live response shapes            */
 /* ------------------------------------------------------------------ */
 
 const PYTHON_EXAMPLE = `import requests
@@ -286,7 +392,7 @@ BASE_URL = "${BASE_URL}/api/v1"
 
 headers = {"x-api-key": API_KEY}
 
-# 1. Scan an indicator (IP, domain, URL, or file hash)
+# 1. Scan one indicator (IP, IPv6, domain, URL, or file hash)
 def scan(indicator):
     resp = requests.get(
         f"{BASE_URL}/scan",
@@ -294,9 +400,19 @@ def scan(indicator):
         params={"ip": indicator},
     )
     resp.raise_for_status()
-    return resp.json()
+    return resp.json()["data"]
 
-# 2. Report a malicious IP to the community feed
+# 2. Scan up to 100 typed indicators in a single call
+def scan_batch(pairs):
+    resp = requests.post(
+        f"{BASE_URL}/scan",
+        headers=headers,
+        json={"indicators": [{"type": t, "value": v} for t, v in pairs]},
+    )
+    resp.raise_for_status()
+    return resp.json()["results"]
+
+# 3. Report a malicious IP to the community feed
 def report(ip, category, comment):
     resp = requests.post(
         f"{BASE_URL}/report",
@@ -307,27 +423,72 @@ def report(ip, category, comment):
     return resp.json()
 
 if __name__ == "__main__":
-    result = scan("8.8.8.8")
-    print("Malicious:", result["data"]["isMalicious"])
-    print("Risk score:", result["data"]["riskScore"])
+    verdict = scan("1.0.164.165")
+    print("Malicious:", verdict["isMalicious"], "| risk:", verdict["riskScore"])
+    print("Tags:", ", ".join(verdict["tags"]))
 
-    report("45.155.205.233", "Brute-Force", "Repeated SSH login attempts")`
+    hits = scan_batch([("ipv4", "8.8.8.8"), ("domain", "example.com")])
+    print("Batch clean count:", sum(1 for h in hits if not h["malicious"]))`
 
-const CURL_SCAN = `curl "${BASE_URL}/api/v1/scan?ip=8.8.8.8" \\
+const CURL_SCAN = `curl "${BASE_URL}/api/v1/scan?ip=1.0.164.165" \\
   -H "x-api-key: tb_api_xxxxxxxxxxxxxxxx"`
 
+// Verbatim from a live /api/lookup for this listed indicator (same shape as
+// the keyed /api/v1/scan), so copy-pasting the curl reproduces it exactly.
 const SCAN_RESPONSE = `{
   "success": true,
   "data": {
-    "type": "ip",
-    "ip": "45.155.205.233",
+    "type": "IP Address",
+    "ip": "1.0.164.165",
+    "isIP": true,
+    "isDomain": false,
+    "isHash": false,
+    "isURL": false,
+    "isIPv6": false,
+    "isCIDR": false,
     "isMalicious": true,
     "riskScore": "High",
-    "feedCount": 4,
+    "feedCount": 6,
     "isDisputed": false,
     "disputeCount": 0,
-    "tags": ["Brute-Force", "C2"],
-    "matchedCidr": "45.155.205.0/24"
+    "tags": ["Brute-Force", "Malicious"],
+    "sources": [
+      "blocklist_de",
+      "blocklist_de_ssh",
+      "firehol_level2",
+      "ipsum",
+      "romainmarcoux_outgoing_ab"
+    ],
+    "matchedCidr": null,
+    "relatedMatch": null
+  }
+}`
+
+// The same endpoint for an unlisted indicator: isMalicious flips false and the
+// detection fields empty out. Copy-paste this curl and it is what you get.
+const CURL_SCAN_CLEAN = `curl "${BASE_URL}/api/v1/scan?ip=8.8.8.8" \\
+  -H "x-api-key: tb_api_xxxxxxxxxxxxxxxx"`
+
+const SCAN_RESPONSE_CLEAN = `{
+  "success": true,
+  "data": {
+    "type": "IP Address",
+    "ip": "8.8.8.8",
+    "isIP": true,
+    "isDomain": false,
+    "isHash": false,
+    "isURL": false,
+    "isIPv6": false,
+    "isCIDR": false,
+    "isMalicious": false,
+    "riskScore": "Low",
+    "feedCount": 1,
+    "isDisputed": false,
+    "disputeCount": 0,
+    "tags": [],
+    "sources": [],
+    "matchedCidr": null,
+    "relatedMatch": null
   }
 }`
 
@@ -336,34 +497,46 @@ const CURL_BATCH_SCAN = `curl -X POST "${BASE_URL}/api/v1/scan" \\
   -H "x-api-key: tb_api_xxxxxxxxxxxxxxxx" \\
   -d '{
     "indicators": [
-      { "type": "ipv4", "value": "8.8.8.8" },
-      { "type": "domain", "value": "example.com" },
-      { "type": "url", "value": "https://example.com/login" },
-      { "type": "sha256", "value": "275a021bbfb6489e54d471899f7db9d1663fc695ec2fe2a2c4538aabf651fd0f" }
+      { "type": "ipv4", "value": "1.0.164.165" },
+      { "type": "domain", "value": "example.com" }
     ]
   }'`
 
+// Batch items carry value/malicious/status (not ip/isMalicious) and one entry
+// is returned per submitted indicator. Values reflect the live corpus.
 const BATCH_SCAN_RESPONSE = `{
   "results": [
     {
       "type": "ipv4",
-      "value": "8.8.8.8",
+      "value": "1.0.164.165",
+      "malicious": true,
+      "status": "malicious",
+      "riskScore": "High",
+      "feedCount": 6,
+      "tags": ["Brute-Force", "Malicious"],
+      "sources": [
+        "blocklist_de",
+        "blocklist_de_ssh",
+        "firehol_level2",
+        "ipsum",
+        "romainmarcoux_outgoing_ab"
+      ],
+      "matchedCidr": null,
+      "relatedMatch": null,
+      "disputeCount": 0
+    },
+    {
+      "type": "domain",
+      "value": "example.com",
       "malicious": false,
       "status": "clean",
       "riskScore": "Low",
       "feedCount": 1,
       "tags": [],
-      "sources": []
-    },
-    {
-      "type": "domain",
-      "value": "example.com",
-      "malicious": true,
-      "status": "malicious",
-      "riskScore": "High",
-      "feedCount": 6,
-      "tags": ["Phishing", "C2"],
-      "sources": ["threatbase-01", "threatbase-02"]
+      "sources": [],
+      "matchedCidr": null,
+      "relatedMatch": null,
+      "disputeCount": 0
     }
   ],
   "total": 2
@@ -385,13 +558,24 @@ const BATCH_ERROR_RESPONSE = `{
 const CURL_REPORT = `curl -X POST "${BASE_URL}/api/v1/report" \\
   -H "x-api-key: tb_api_xxxxxxxxxxxxxxxx" \\
   -H "Content-Type: application/json" \\
-  -d '{"ip": "45.155.205.233", "category": "Brute-Force", "comment": "SSH brute force"}'`
+  -d '{"ip": "45.155.205.233", "category": "Brute-Force", "comment": "Repeated SSH login attempts"}'`
+
 const REPORT_RESPONSE = `{
   "success": true,
   "message": "IP reported successfully."
 }`
 
+const CURL_LOOKUP = `curl "${BASE_URL}/api/lookup?value=1.0.164.165"`
+
 const AUTH_HEADER_EXAMPLE = `x-api-key: tb_api_xxxxxxxxxxxxxxxx`
+
+const STATUS_CODES = [
+  { code: '400', meaning: 'Bad request', detail: "Missing or oversized 'ip'/'value', invalid JSON body, an empty or >100-item indicators array, or a rejected report field (non-public IP, bad category, comment too long)." },
+  { code: '401', meaning: 'Unauthorized', detail: "No x-api-key header, or the key is invalid or revoked. Also returned after 100 failed auth attempts from one IP in a day." },
+  { code: '409', meaning: 'Conflict', detail: 'You have already reported this IP (deduped per key on ip + user).' },
+  { code: '429', meaning: 'Rate limited', detail: 'Over your tier cap — 1,000 requests/day on Free, 20,000/day on Pro. The error quotes your own limit. The window resets at 00:00 UTC.' },
+  { code: '503', meaning: 'Unavailable', detail: 'A server secret is missing, so authentication or reporting is temporarily disabled. Fail-closed by design.' },
+]
 
 /* ------------------------------------------------------------------ */
 /* Page                                                                */
@@ -399,6 +583,8 @@ const AUTH_HEADER_EXAMPLE = `x-api-key: tb_api_xxxxxxxxxxxxxxxx`
 
 export default function ApiDocsPage() {
   const prefersReducedMotion = useReducedMotion()
+  const active = useScrollSpy(NAV_SECTIONS.map((s) => s.id))
+
   useSEO({
     title: 'API Documentation | Threatbase Threat Intelligence API',
     description:
@@ -413,7 +599,7 @@ export default function ApiDocsPage() {
       name: 'ip',
       type: 'string',
       required: true,
-      desc: 'The indicator to scan. Accepts an IPv4/IPv6 address, domain, URL, or file hash. (Alias: indicator)',
+      desc: 'The indicator to scan. Auto-detected: IPv4, IPv6, CIDR, domain, URL, or MD5/SHA-1/SHA-256 hash. Defanged input (hxxp://evil[.]com, 1.2.3[.]4) is refanged first. (Alias: indicator)',
     },
   ]
 
@@ -422,24 +608,24 @@ export default function ApiDocsPage() {
       name: 'indicators',
       type: 'array',
       required: true,
-      desc: 'List of { type, value } objects to scan in one request. Maximum 100 per request.',
+      desc: 'List of { type, value } objects to scan in one request. 1–100 items; each value is charged against the daily quota.',
     },
     {
       name: 'indicators[].type',
       type: 'string',
       required: true,
-      desc: 'One of: ipv4, ipv6, domain, url, md5, sha1, sha256. Each value is validated against its declared type.',
+      desc: 'One of: ipv4, ipv6, domain, url, md5, sha1, sha256. Each value is validated against its declared type (a mismatch is a per-item error).',
     },
     {
       name: 'indicators[].value',
       type: 'string',
       required: true,
-      desc: 'The indicator. Defanged forms (hxxp://evil[.]com, 1.2.3[.]4) are accepted and normalized.',
+      desc: 'The indicator. Defanged forms are accepted and normalized.',
     },
   ]
 
   const reportParams: ParamRow[] = [
-    { name: 'ip', type: 'string', required: true, desc: 'The malicious IP address you are reporting.' },
+    { name: 'ip', type: 'string', required: true, desc: 'The public IPv4/IPv6 address you are reporting. Loopback, private, and reserved ranges are rejected.' },
     {
       name: 'category',
       type: 'string',
@@ -450,224 +636,369 @@ export default function ApiDocsPage() {
       name: 'comment',
       type: 'string',
       required: true,
-      desc: 'A short description with supporting evidence for the report.',
+      desc: 'A short description with supporting evidence. HTML is stripped; capped at 500 characters.',
     },
   ]
 
   return (
-    <IsoPageShell>
-      {/* Hero */}
-      <motion.div
-        initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="mx-auto max-w-4xl text-center"
-      >
-        <div className="eyebrow mb-6">
-          <Terminal className="h-3.5 w-3.5" />
-          Developer API
-        </div>
-
-        <h1 className="mb-6 text-5xl font-extrabold tracking-tighter text-white md:text-7xl">
-          The Threatbase <br />
-          <span className="text-liquid-red">
-            Threat Intelligence API.
-          </span>
-        </h1>
-
-        <p className="mx-auto mb-8 max-w-2xl text-lg leading-relaxed text-slate-300 md:text-xl">
-          Bring real-time threat intelligence straight into your applications, pipelines, and
-          security tooling. Scan any indicator and report malicious activity with a single,
-          authenticated HTTP request.
-        </p>
-
-        <div className="mb-16 inline-block rounded-2xl bg-gradient-to-r from-red-500/40 to-red-800/40 p-[1px] shadow-glow-ruby">
-          <div className="rounded-2xl bg-slate-950/80 px-6 py-4 backdrop-blur-xl">
-            <span className="font-mono text-xs sm:text-sm text-metal tracking-wide md:text-base">
-              <span className="text-red-500">$</span> base url{' '}
-              <span className="text-slate-200 break-all">{BASE_URL}/api/v1</span>
-            </span>
+    <IsoPageShell contentClassName="px-0">
+      {/* Hero — editorial statement: the promise, left-aligned and full
+          width, with the base URL and the two primary CTAs. */}
+      <section className="mx-auto w-full max-w-6xl px-6">
+        <motion.div
+          initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-left"
+        >
+          <div className="eyebrow mb-6">
+            <Terminal className="h-3.5 w-3.5" />
+            Developer API
           </div>
-        </div>
-      </motion.div>
+
+          <h1 className="mb-6 text-[2.6rem] font-extrabold leading-[1.03] tracking-tighter text-white sm:text-6xl">
+            The Threat Intelligence{' '}
+            <span className="text-liquid-red">API, minus the noise.</span>
+          </h1>
+
+          <p className="mb-8 max-w-xl text-lg leading-relaxed text-slate-300">
+            Scan any indicator and report malicious activity with a single
+            authenticated HTTP request. Clean JSON, one header, no SDK.
+          </p>
+
+          <div className="mb-8 inline-flex max-w-full items-center gap-2 overflow-x-auto rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 font-mono text-xs text-slate-300 sm:text-sm">
+            <span className="text-red-500">$</span>
+            <span className="text-slate-500">base url</span>
+            <span className="whitespace-nowrap text-slate-100">{BASE_URL}/api/v1</span>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-4">
+            <Link
+              to="/profile"
+              className="group inline-flex items-center gap-2 rounded-2xl bg-red-600 px-6 py-3 text-sm font-semibold text-white shadow-glow-ruby transition-all hover:bg-red-500"
+            >
+              <KeyRound className="h-4 w-4" />
+              Get your API key
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            </Link>
+            <a
+              href="#scan"
+              className="inline-flex items-center gap-2 rounded-2xl border border-platinum-400/20 bg-white/[0.03] px-6 py-3 text-sm font-semibold text-platinum-300 backdrop-blur-md transition-all hover:border-platinum-400/40 hover:bg-white/[0.06] hover:text-white"
+            >
+              <BookOpen className="h-4 w-4" />
+              Read the reference
+            </a>
+          </div>
+        </motion.div>
+      </section>
 
       {/* Quick highlights */}
-      <motion.div
+      <motion.section
         initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.15, duration: 0.5 }}
-        className="mx-auto mb-28 flex flex-col sm:flex-row w-full max-w-4xl divide-y sm:divide-y-0 sm:divide-x divide-white/[0.08] glass-card"
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
+        className="mx-auto mt-24 mb-4 flex w-full max-w-6xl flex-col divide-y divide-white/[0.08] overflow-hidden rounded-2xl border border-white/[0.06] glass-card sm:flex-row sm:divide-x sm:divide-y-0"
       >
         {[
-          { icon: Globe, title: 'REST + JSON', desc: 'Predictable HTTPS endpoints returning clean JSON.' },
-          { icon: KeyRound, title: 'API Key Auth', desc: 'Simple x-api-key header authentication.' },
-          { icon: Gauge, title: '1,000 / day', desc: 'Generous free per-key daily rate limit.' },
+          { icon: Globe, title: 'REST + JSON', desc: 'Predictable HTTPS endpoints returning one clean verdict object.' },
+          { icon: KeyRound, title: 'One header', desc: 'Authenticate every call with an x-api-key you mint free.' },
+          { icon: Gauge, title: '1K – 20K / day', desc: 'Free keys get 1,000/day, Pro keys 20,000. Batch charged per indicator.' },
+          { icon: Radio, title: 'Live corpus', desc: 'Answers come from the same indexed data behind the Hunt.' },
         ].map((f) => (
-          <div
-            key={f.title}
-            className="flex-1 p-6 text-left"
-          >
-            <div className="icon-chip w-10 h-10 mb-4">
+          <div key={f.title} className="flex-1 p-6 text-left">
+            <div className="icon-chip mb-4 h-10 w-10">
               <f.icon className="h-5 w-5" />
             </div>
             <h3 className="mb-1 text-base font-bold text-white">{f.title}</h3>
             <p className="text-sm leading-relaxed text-slate-400">{f.desc}</p>
           </div>
         ))}
-      </motion.div>
+      </motion.section>
 
-      {/* Authentication */}
-      <section className="mx-auto mb-28 w-full max-w-4xl">
-        <SectionHeading icon={KeyRound} title="Authentication">
-          Every request must be authenticated with an API key. Generate one for free from your{' '}
-          <Link to="/profile" className="font-semibold text-red-400 underline-offset-4 hover:underline">
-            Profile page
-          </Link>{' '}
-          under the <span className="font-semibold text-slate-300">API Keys</span> section, then pass
-          it in the <code className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-sm text-platinum-300 border border-white/10">x-api-key</code>{' '}
-          header on every call.
-        </SectionHeading>
+      {/* Body: sticky sidebar + content column */}
+      <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-12 px-6 lg:grid-cols-[200px_1fr]">
+        <SideNav active={active} />
 
-        <div className="mb-6 flex flex-col md:flex-row gap-8 relative items-start">
-          <div className="absolute top-8 left-0 right-0 h-px bg-white/5 hidden md:block" />
-          {[
-            { step: 'Sign in', desc: 'Log into Threatbase with Google or GitHub.' },
-            { step: 'Generate a key', desc: 'Open your Profile and create a new API key.' },
-            { step: 'Send the header', desc: 'Attach x-api-key to every request.' },
-          ].map((s) => (
-            <div
-              key={s.step}
-              className="flex-1 relative"
-            >
-              <div className="w-4 h-4 rounded-full bg-red-500 shadow-glow-ruby mb-4 relative z-10" />
-              <h3 className="mb-2 text-base font-bold text-white">{s.step}</h3>
-              <p className="text-sm leading-relaxed text-slate-400">{s.desc}</p>
+        <div className="min-w-0 max-w-3xl">
+          {/* Authentication */}
+          <section id="authentication" className="mb-24 scroll-mt-28">
+            <SectionHeading icon={KeyRound} eyebrow="Getting started" title="Authentication">
+              Every <code className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 font-mono text-sm text-platinum-300">/api/v1</code>{' '}
+              request must carry an API key. Mint one for free from your{' '}
+              <Link to="/profile" className="font-semibold text-red-400 underline-offset-4 hover:underline">
+                Profile page
+              </Link>{' '}
+              under <span className="font-semibold text-slate-300">API Keys</span> (up to three per
+              account), then pass it in the{' '}
+              <code className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 font-mono text-sm text-platinum-300">x-api-key</code>{' '}
+              header.
+            </SectionHeading>
+
+            <div className="relative mb-8 flex flex-col items-start gap-6 md:flex-row md:gap-8">
+              <div className="absolute left-0 right-0 top-2 hidden h-px bg-white/5 md:block" />
+              {[
+                { step: 'Sign in', desc: 'Log into Threatbase with Google or GitHub.' },
+                { step: 'Generate a key', desc: 'Open your Profile and create an API key — verify with a second factor.' },
+                { step: 'Send the header', desc: 'Attach x-api-key to every request you make.' },
+              ].map((s) => (
+                <div key={s.step} className="relative flex-1">
+                  <div className="relative z-10 mb-4 h-4 w-4 rounded-full bg-red-500 shadow-glow-ruby" />
+                  <h3 className="mb-2 text-base font-bold text-white">{s.step}</h3>
+                  <p className="text-sm leading-relaxed text-slate-400">{s.desc}</p>
+                </div>
+              ))}
             </div>
-          ))}
+
+            <CodeBlock code={AUTH_HEADER_EXAMPLE} language="http" filename="Request header" />
+
+            <div className="mt-6 flex items-start gap-3 rounded-xl border border-red-500/20 bg-red-950/20 px-5 py-4">
+              <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-red-400" />
+              <p className="text-sm leading-relaxed text-red-100/80">
+                Your key is shown only once at creation and is stored hashed on our servers — we
+                keep the <code className="font-mono text-red-300">tb_api_</code> prefix and discard
+                the rest. Treat it like a password: never embed it in client-side code or commit it
+                to source control.
+              </p>
+            </div>
+          </section>
+
+          {/* Rate limits */}
+          <section id="rate-limits" className="mb-24 scroll-mt-28">
+            <SectionHeading icon={Gauge} eyebrow="Fair use" title="Rate Limits">
+              Every validated key carries a daily quota that follows your plan:{' '}
+              <span className="font-semibold text-white">1,000 requests/day on Free</span> and{' '}
+              <span className="font-semibold text-white">20,000/day on Pro</span>, resetting at
+              00:00 UTC. A batch{' '}
+              <code className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 font-mono text-sm text-platinum-300">POST /scan</code>{' '}
+              is charged <span className="font-semibold text-white">per indicator</span>, not per
+              HTTP call. Failed-auth attempts are limited separately to 100 per IP per day.
+            </SectionHeading>
+
+            <div className="grid gap-6 sm:grid-cols-3">
+              {[
+                { k: '1K / 20K', v: 'free / pro requests per day' },
+                { k: '100', v: 'indicators / batch' },
+                { k: '255', v: 'chars / indicator' },
+              ].map((s) => (
+                <div key={s.v} className="rounded-xl border border-white/[0.06] glass-card p-5">
+                  <div className="font-mono text-3xl font-extrabold text-white">{s.k}</div>
+                  <div className="mt-1 text-xs uppercase tracking-widest text-slate-500">{s.v}</div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-6">
+              <CodeBlock
+                code={`{\n  "error": "Rate limit exceeded. Maximum 1000 requests per day."\n}`}
+                language="json"
+                filename="429 Too Many Requests · free-tier key"
+              />
+              <p className="mt-4 text-sm leading-relaxed text-slate-400">
+                The limit quoted inside the error always matches your key&apos;s tier — a Pro key
+                over the wire sees{' '}
+                <code className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 font-mono text-xs text-platinum-300">"Rate limit exceeded. Maximum 20000 requests per day."</code>
+              </p>
+            </div>
+          </section>
+
+          {/* GET /scan */}
+          <section id="scan" className="mb-24 scroll-mt-28">
+            <SectionHeading icon={SearchX} eyebrow="Reference" title="Scan one indicator">
+              Enrich a single IP, IPv6, CIDR, domain, URL, or file hash against the live corpus.
+              The endpoint auto-detects the type and echoes it back in{' '}
+              <code className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 font-mono text-sm text-platinum-300">data.type</code>.
+            </SectionHeading>
+
+            <EndpointBar method="GET" path="/api/v1/scan" desc="Scan a single indicator." pro />
+
+            <div className="space-y-6">
+              <ParamTable rows={scanParams} title="Query Parameters" />
+
+              <div>
+                <p className="mb-3 text-xs font-bold uppercase tracking-widest text-slate-400">
+                  Example Request · listed indicator
+                </p>
+                <CodeBlock code={CURL_SCAN} language="bash" filename="cURL" />
+              </div>
+
+              <div>
+                <p className="mb-3 text-xs font-bold uppercase tracking-widest text-slate-400">
+                  Example Response · 200 OK
+                </p>
+                <CodeBlock code={SCAN_RESPONSE} language="json" filename="200 OK" />
+              </div>
+
+              <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5">
+                <p className="mb-3 text-xs font-bold uppercase tracking-widest text-slate-400">
+                  Unlisted indicator → clean verdict
+                </p>
+                <p className="mb-4 max-w-2xl text-sm leading-relaxed text-slate-400">
+                  The same call on an indicator the corpus has never seen returns{' '}
+                  <code className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 font-mono text-xs text-emerald-300">isMalicious: false</code>{' '}
+                  with empty <code className="font-mono text-xs text-slate-400">tags</code>,{' '}
+                  <code className="font-mono text-xs text-slate-400">sources</code>, and a{' '}
+                  <code className="font-mono text-xs text-slate-400">Low</code> risk score — this is
+                  exactly what the curl below produces.
+                </p>
+                <CodeBlock code={CURL_SCAN_CLEAN} language="bash" filename="cURL" />
+                <div className="mt-4">
+                  <CodeBlock code={SCAN_RESPONSE_CLEAN} language="json" filename="200 OK" />
+                </div>
+              </div>
+
+              <FieldLegend />
+            </div>
+          </section>
+
+          {/* POST /scan batch */}
+          <section id="batch-scan" className="mb-24 scroll-mt-28">
+            <SectionHeading icon={Layers} eyebrow="Reference" title="Batch scan">
+              Scan up to 100 typed indicators in one request. Batch items use a leaner shape —{' '}
+              <code className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 font-mono text-sm text-platinum-300">value</code>,{' '}
+              <code className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 font-mono text-sm text-platinum-300">malicious</code>,{' '}
+              <code className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 font-mono text-sm text-platinum-300">status</code>{' '}
+              — and you always get one result per submitted indicator.
+            </SectionHeading>
+
+            <EndpointBar method="POST" path="/api/v1/scan" desc="Scan up to 100 indicators." pro />
+
+            <div className="space-y-6">
+              <ParamTable rows={batchScanParams} title="JSON Body Parameters" />
+
+              <div>
+                <p className="mb-3 text-xs font-bold uppercase tracking-widest text-slate-400">
+                  Example Request
+                </p>
+                <CodeBlock code={CURL_BATCH_SCAN} language="bash" filename="cURL" />
+              </div>
+
+              <div>
+                <p className="mb-3 text-xs font-bold uppercase tracking-widest text-slate-400">
+                  Example Response · 200 OK
+                </p>
+                <CodeBlock code={BATCH_SCAN_RESPONSE} language="json" filename="200 OK" />
+              </div>
+
+              <div>
+                <p className="mb-3 text-xs font-bold uppercase tracking-widest text-slate-400">
+                  Per-item errors
+                </p>
+                <p className="mb-3 max-w-2xl text-sm leading-relaxed text-slate-400">
+                  A malformed indicator never fails the batch — it comes back as a{' '}
+                  <code className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 font-mono text-xs text-platinum-300">status: "error"</code>{' '}
+                  entry. Only structural problems (invalid JSON, an empty or oversized array) return
+                  a 400 for the whole request.
+                </p>
+                <CodeBlock code={BATCH_ERROR_RESPONSE} language="json" filename="200 OK" />
+              </div>
+            </div>
+          </section>
+
+          {/* POST /report */}
+          <section id="report" className="mb-24 scroll-mt-28">
+            <SectionHeading icon={ShieldCheck} eyebrow="Reference" title="Report an indicator">
+              Submit a malicious IP to the community feed. Reports are validated, attributed to
+              your key, deduplicated per account, and folded into the corpus after review.
+            </SectionHeading>
+
+            <EndpointBar method="POST" path="/api/v1/report" desc="Report a malicious IP." pro />
+
+            <div className="space-y-6">
+              <ParamTable rows={reportParams} title="JSON Body Parameters" />
+
+              <div>
+                <p className="mb-3 text-xs font-bold uppercase tracking-widest text-slate-400">
+                  Example Request
+                </p>
+                <CodeBlock code={CURL_REPORT} language="bash" filename="cURL" />
+              </div>
+
+              <div>
+                <p className="mb-3 text-xs font-bold uppercase tracking-widest text-slate-400">
+                  Example Response · 200 OK
+                </p>
+                <CodeBlock code={REPORT_RESPONSE} language="json" filename="200 OK" />
+              </div>
+
+              <p className="text-sm leading-relaxed text-slate-400">
+                Reporting the same IP again with the same key returns{' '}
+                <code className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 font-mono text-xs text-amber-300">409</code>{' '}
+                <span className="font-mono text-xs text-slate-500">"You have already reported this IP."</span>
+              </p>
+            </div>
+          </section>
+
+          {/* GET /lookup (free) */}
+          <section id="lookup" className="mb-24 scroll-mt-28">
+            <SectionHeading icon={Globe} eyebrow="No key" title="Free public lookup">
+              The endpoint powering the free Hunt box. Browsers cannot hold a secret, so this one
+              answer stays unauthenticated on purpose — rate-limited per network (500/day). The
+              documented, keyed API above is <code className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 font-mono text-sm text-platinum-300">/api/v1</code>.
+            </SectionHeading>
+
+            <EndpointBar method="GET" path="/api/lookup" desc="Public, no API key." />
+
+            <div className="space-y-6">
+              <ParamTable
+                title="Query Parameters"
+                rows={[
+                  { name: 'value', type: 'string', required: true, desc: 'The indicator to check. Same auto-detection and refanging as /api/v1/scan.' },
+                ]}
+              />
+              <div>
+                <p className="mb-3 text-xs font-bold uppercase tracking-widest text-slate-400">
+                  Example Request
+                </p>
+                <CodeBlock code={CURL_LOOKUP} language="bash" filename="cURL" />
+              </div>
+              <div>
+                <p className="mb-3 text-xs font-bold uppercase tracking-widest text-slate-400">
+                  Example Response · 200 OK
+                </p>
+                <CodeBlock code={SCAN_RESPONSE} language="json" filename="200 OK" />
+              </div>
+            </div>
+          </section>
+
+          {/* Errors */}
+          <section id="errors" className="mb-24 scroll-mt-28">
+            <SectionHeading icon={CircleAlert} eyebrow="Reference" title="Errors & status codes">
+              Errors are JSON objects with a single{' '}
+              <code className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 font-mono text-sm text-platinum-300">error</code>{' '}
+              string. Every message below is emitted verbatim by the API.
+            </SectionHeading>
+
+            <div className="overflow-hidden glass-card">
+              <div className="hidden grid-cols-[80px_150px_1fr] gap-4 border-b border-white/[0.06] bg-white/[0.02] px-5 py-3 text-xs font-bold uppercase tracking-widest text-slate-400 sm:grid">
+                <span>Code</span>
+                <span>Meaning</span>
+                <span>When it happens</span>
+              </div>
+              <div className="divide-y divide-white/[0.04]">
+                {STATUS_CODES.map((e) => (
+                  <div key={e.code} className="grid grid-cols-1 gap-1 px-5 py-4 sm:grid-cols-[80px_150px_1fr] sm:gap-4">
+                    <code className="font-mono text-sm font-bold text-red-300">{e.code}</code>
+                    <span className="text-sm font-semibold text-slate-200">{e.meaning}</span>
+                    <p className="text-sm leading-relaxed text-slate-400">{e.detail}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* Quickstart */}
+          <section id="quickstart" className="mb-12 scroll-mt-28">
+            <SectionHeading icon={Zap} eyebrow="Quickstart" title="Python example">
+              A copy-paste script that scans an indicator, runs a batch, and reports a malicious IP
+              with the{' '}
+              <code className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 font-mono text-sm text-platinum-300">requests</code>{' '}
+              library.
+            </SectionHeading>
+            <CodeBlock code={PYTHON_EXAMPLE} language="python" filename="threatbase_client.py" />
+          </section>
         </div>
-
-        <CodeBlock code={AUTH_HEADER_EXAMPLE} language="http" filename="Request header" />
-
-        <div className="mt-8 flex items-start gap-3 glass-card bg-red-950/20 border-red-500/20 px-5 py-4 shadow-none">
-          <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-red-400" />
-          <p className="text-sm leading-relaxed text-red-100/80">
-            Your key is shown only once at creation time and is stored hashed on our servers. Treat it
-            like a password. Never embed it in client-side code or commit it to source control. Keys
-            begin with the prefix <code className="font-mono text-red-300">tb_api_</code>.
-          </p>
-        </div>
-      </section>
-
-      {/* Rate limiting */}
-      <section className="mx-auto mb-28 w-full max-w-4xl">
-        <SectionHeading icon={Gauge} title="Rate Limiting">
-          Each API key is limited to <span className="font-semibold text-white">1,000 requests per day</span>.
-          The window resets at 00:00 UTC. Requests beyond the limit receive an HTTP{' '}
-          <code className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-sm text-red-400 border border-white/10">429</code>{' '}
-          response.
-        </SectionHeading>
-
-        <CodeBlock
-          code={`{\n  "error": "Rate limit exceeded. Maximum 1000 requests per day."\n}`}
-          language="json"
-          filename="429 Too Many Requests"
-        />
-      </section>
-
-      {/* Endpoints */}
-      <section className="mx-auto mb-12 w-full max-w-4xl">
-        <SectionHeading icon={Terminal} title="Endpoints" />
-      </section>
-
-      {/* GET /scan */}
-      <section className="mx-auto mb-28 w-full max-w-4xl">
-        <div className="mb-6 flex flex-wrap items-center gap-3 glass-card px-5 py-4 shadow-none border-white/[0.04]">
-          <MethodBadge method="GET" />
-          <code className="font-mono text-sm font-semibold text-white sm:text-base">/api/v1/scan</code>
-          <span className="text-sm text-slate-400">Scan an indicator against the live feeds.</span>
-        </div>
-
-        <div className="space-y-6">
-          <ParamTable rows={scanParams} title="Query Parameters" />
-
-          <div>
-            <p className="mb-3 text-xs font-bold uppercase tracking-widest text-slate-400">Example Request</p>
-            <CodeBlock code={CURL_SCAN} language="bash" filename="cURL" />
-          </div>
-
-          <div>
-            <p className="mb-3 text-xs font-bold uppercase tracking-widest text-slate-400">Example Response · 200 OK</p>
-            <CodeBlock code={SCAN_RESPONSE} language="json" filename="200 OK" />
-          </div>
-        </div>
-      </section>
-
-      {/* POST /scan (batch) */}
-      <section className="mx-auto mb-28 w-full max-w-4xl">
-        <div className="mb-6 flex flex-wrap items-center gap-3 glass-card px-5 py-4 shadow-none border-white/[0.04]">
-          <MethodBadge method="POST" />
-          <code className="font-mono text-sm font-semibold text-white sm:text-base">/api/v1/scan</code>
-          <span className="text-sm text-slate-400">Scan up to 100 indicators in one request.</span>
-        </div>
-
-        <div className="space-y-6">
-          <ParamTable rows={batchScanParams} title="JSON Body Parameters" />
-
-          <div>
-            <p className="mb-3 text-xs font-bold uppercase tracking-widest text-slate-400">Example Request</p>
-            <CodeBlock code={CURL_BATCH_SCAN} language="bash" filename="cURL" />
-          </div>
-
-          <div>
-            <p className="mb-3 text-xs font-bold uppercase tracking-widest text-slate-400">Example Response · 200 OK</p>
-            <CodeBlock code={BATCH_SCAN_RESPONSE} language="json" filename="200 OK" />
-          </div>
-
-          <div>
-            <p className="mb-3 text-xs font-bold uppercase tracking-widest text-slate-400">Per-Item Errors</p>
-            <p className="mb-3 max-w-2xl text-sm leading-relaxed text-slate-400">
-              A malformed indicator never fails the batch. It comes back as a{' '}
-              <code className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-xs text-platinum-300 border border-white/10">status: "error"</code>{' '}
-              entry, so you always get one result per submitted indicator. Structural problems (invalid JSON, an empty or oversized array) return a 400 instead.
-            </p>
-            <CodeBlock code={BATCH_ERROR_RESPONSE} language="json" filename="200 OK" />
-          </div>
-        </div>
-      </section>
-
-      {/* POST /report */}
-      <section className="mx-auto mb-28 w-full max-w-4xl">
-        <div className="mb-6 flex flex-wrap items-center gap-3 glass-card px-5 py-4 shadow-none border-white/[0.04]">
-          <MethodBadge method="POST" />
-          <code className="font-mono text-sm font-semibold text-white sm:text-base">/api/v1/report</code>
-          <span className="text-sm text-slate-400">Submit a malicious IP to the community feed.</span>
-        </div>
-
-        <div className="space-y-6">
-          <ParamTable rows={reportParams} title="JSON Body Parameters" />
-
-          <div>
-            <p className="mb-3 text-xs font-bold uppercase tracking-widest text-slate-400">Example Request</p>
-            <CodeBlock code={CURL_REPORT} language="bash" filename="cURL" />
-          </div>
-
-          <div>
-            <p className="mb-3 text-xs font-bold uppercase tracking-widest text-slate-400">Example Response · 200 OK</p>
-            <CodeBlock code={REPORT_RESPONSE} language="json" filename="200 OK" />
-          </div>
-        </div>
-      </section>
-
-      {/* Python quickstart */}
-      <section className="mx-auto mb-28 w-full max-w-4xl">
-        <SectionHeading icon={Terminal} title="Python Example">
-          A complete, copy-paste script that scans an indicator and reports a malicious IP using the{' '}
-          <code className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-sm text-platinum-300 border border-white/10">requests</code>{' '}
-          library.
-        </SectionHeading>
-
-        <CodeBlock code={PYTHON_EXAMPLE} language="python" filename="threatbase_client.py" />
-      </section>
+      </div>
 
       {/* CTA */}
       <motion.div
@@ -675,7 +1006,7 @@ export default function ApiDocsPage() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.5 }}
-        className="relative mx-auto w-full max-w-4xl overflow-hidden rounded-[2rem] glass-card p-10 text-center shadow-glass-lux md:p-14"
+        className="relative mx-auto mt-24 w-full max-w-4xl overflow-hidden rounded-[2rem] border border-white/[0.06] glass-card px-6 py-12 text-center shadow-glass-lux md:px-14"
       >
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-red-500/10 via-transparent to-red-900/10" />
         <div className="relative z-10">
@@ -683,13 +1014,13 @@ export default function ApiDocsPage() {
             Ready to build?
           </h2>
           <p className="mx-auto mb-8 max-w-xl leading-relaxed text-slate-300">
-            Generate your API key and start integrating real-time threat intelligence into your stack
-            in minutes.
+            Generate your API key and start integrating real-time threat intelligence into your
+            stack in minutes.
           </p>
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link
               to="/profile"
-              className="group inline-flex items-center gap-2 rounded-2xl bg-red-600 px-7 py-3 text-sm font-semibold text-white transition-all hover:bg-red-500 shadow-glow-ruby"
+              className="group inline-flex items-center gap-2 rounded-2xl bg-red-600 px-7 py-3 text-sm font-semibold text-white shadow-glow-ruby transition-all hover:bg-red-500"
             >
               <KeyRound className="h-4 w-4" />
               Get your API key
@@ -697,7 +1028,7 @@ export default function ApiDocsPage() {
             </Link>
             <Link
               to="/about"
-              className="inline-flex items-center gap-2 px-7 py-3 rounded-2xl border border-platinum-400/20 bg-white/[0.03] backdrop-blur-md text-platinum-300 font-semibold text-sm transition-all hover:border-platinum-400/40 hover:bg-white/[0.06] hover:text-white"
+              className="inline-flex items-center gap-2 rounded-2xl border border-platinum-400/20 bg-white/[0.03] px-7 py-3 text-sm font-semibold text-platinum-300 backdrop-blur-md transition-all hover:border-platinum-400/40 hover:bg-white/[0.06] hover:text-white"
             >
               Learn more
             </Link>
@@ -705,5 +1036,31 @@ export default function ApiDocsPage() {
         </div>
       </motion.div>
     </IsoPageShell>
+  )
+}
+
+/** Compact legend for the verdict object's non-obvious fields. */
+function FieldLegend() {
+  const rows = [
+    { name: 'type', desc: 'Human label from auto-detection: "IP Address", "IPv6 Address", "CIDR Block", "Domain", "URL", "File Hash", or "invalid".' },
+    { name: 'riskScore', desc: '"High" (score ≥ 90), "Medium" (≥ 60), or "Low".' },
+    { name: 'isDisputed', desc: 'True once 3+ community disputes are open — this flips isMalicious to false even when listed.' },
+    { name: 'matchedCidr', desc: 'The listed CIDR that contained your IP, when detection came from a range rather than an exact hit.' },
+    { name: 'relatedMatch', desc: 'Set when the hit is inferred — e.g. a subdomain of a listed domain, or a URL hosted on a listed IP.' },
+  ]
+  return (
+    <div className="overflow-hidden glass-card">
+      <div className="border-b border-white/[0.06] bg-white/[0.02] px-5 py-3 text-xs font-bold uppercase tracking-widest text-slate-400">
+        Response fields
+      </div>
+      <div className="divide-y divide-white/[0.04]">
+        {rows.map((r) => (
+          <div key={r.name} className="grid grid-cols-1 gap-1 px-5 py-4 sm:grid-cols-[160px_1fr]">
+            <code className="font-mono text-sm font-semibold text-platinum-200">{r.name}</code>
+            <p className="text-sm leading-relaxed text-slate-400">{r.desc}</p>
+          </div>
+        ))}
+      </div>
+    </div>
   )
 }

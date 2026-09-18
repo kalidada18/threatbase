@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Check, Copy, ExternalLink } from 'lucide-react'
+import { Check, Copy } from 'lucide-react'
 import Section from './layout/Section'
 import { SectionHeading } from './motion/SectionHeading'
 
@@ -16,7 +16,6 @@ const MISP_FEEDS = [
   { name: 'Threatbase (URL feed)', url: 'https://threatbase.qzz.io/ioc/misp/threatbase-url.txt' },
   { name: 'Threatbase (File hash feed)', url: 'https://threatbase.qzz.io/ioc/misp/threatbase-hash.txt' },
 ]
-const PR_URL = 'https://github.com/MISP/MISP/pull/11115'
 
 export default function MispIntegration() {
   const [copied, setCopied] = useState<string | null>(null)
@@ -33,15 +32,10 @@ export default function MispIntegration() {
         title="Use in MISP"
         subtitle="Threatbase is an official default feed in MISP — four feeds merged upstream. Enable them in your instance, or add the URLs to any install today."
         aside={
-          <a
-            href={PR_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="shrink-0 self-start inline-flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.03] px-3.5 py-2 text-[11px] font-semibold uppercase tracking-wider text-slate-300 transition-colors hover:border-white/25 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/30 md:self-end"
-          >
-            Merged PR #11115
-            <ExternalLink aria-hidden size={12} />
-          </a>
+          <span className="shrink-0 self-start inline-flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.03] px-3.5 py-2 text-[11px] font-semibold uppercase tracking-wider text-slate-200 md:self-end">
+            <Check aria-hidden size={13} className="text-red-400" />
+            Official MISP default feed
+          </span>
         }
       />
 
@@ -91,8 +85,8 @@ export default function MispIntegration() {
         </ul>
 
         <p className="border-t border-white/[0.05] px-5 py-4 text-xs leading-relaxed text-slate-500 md:px-7">
-          Merged into MISP's <span className="font-mono text-slate-400">develop</span> on 15 Sep 2026 — the four feeds ship
-          with the next release train. Until then, paste any URL above as a custom feed and it pulls the same data.
+          Merged into MISP's <span className="font-mono text-slate-400">develop</span> on 15 Sep 2026 (upstream PR #11115) —
+          the four feeds ship with the next release train. Until then, paste any URL above as a custom feed and it pulls the same data.
         </p>
       </motion.div>
     </Section>

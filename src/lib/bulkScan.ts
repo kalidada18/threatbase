@@ -20,8 +20,8 @@ import {
  * bought that speed by downloading the corpus to every visitor.
  *
  * It is still NOT routed through POST /api/v1/scan: that endpoint demands an
- * x-api-key and bills 1 of ~1000/day per indicator
- * (functions/api/v1/_middleware.ts). It calls lookup_intel_batch
+ * x-api-key and bills 1 of the key's daily quota per indicator (1,000/day on
+ * Free, 20,000/day on Pro — functions/api/v1/_middleware.ts). It calls lookup_intel_batch
  * (db/lookup_intel_batch.sql) directly instead — the same lookup the
  * single-value path uses, fanned out over one round trip per BATCH_CHUNK rows.
  *

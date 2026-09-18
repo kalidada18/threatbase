@@ -2,7 +2,14 @@ import { createClient } from '@supabase/supabase-js'
 import { SUPABASE_URL } from '../../../src/lib/supabaseConfig'
 import { json, resolveAllowedOrigin } from '../_common'
 
-const DAILY_LIMIT = 1000
+// Tiered daily quotas, keyed off the holder's api_keys.is_pro entitlement —
+// the same source the Pro feed (functions/feed) and the bulk-hunt gate
+// (functions/api/_pro.ts) use. Free = 1,000/day, Pro = 20,000/day.
+const FREE_DAILY_LIMIT = 1000
+const PRO_DAILY_LIMIT = 20000
+// Tier reads are one indexed query per user per this TTL, KV-cached. Any
+// failure (KV blip, DB error) falls to the *stricter* free limit.
+const PRO_TIER_CACHE_TTL = 300
 // Per-IP cap on *failed* auth attempts. Each attempt costs a full service-role
 // RPC round-trip, so this bounds the unauthenticated work budget. 100/day is
 // generous for a legit user mistyping a key and still leaves the RPC cheap.
@@ -94,7 +101,49 @@ export const onRequest = async (context: any) => {
       return json({ error: 'Invalid or revoked API key' }, 401, request);
     }
 
-    // 3. Per-key daily limit — only for *validated* keys, so unauthenticated
+    // 3. Resolve the caller's tier (superadmin counts as Pro everywhere,
+    //    matching functions/api/_pro.ts).
+    let dailyLimit = FREE_DAILY_LIMIT;
+    try {
+      const tierKey = `pro_${userId}`;
+      let pro: boolean | null = null;
+      if (kv) {
+        try {
+          const cached = await kv.get(tierKey);
+          if (cached === '1') pro = true;
+          else if (cached === '0') pro = false;
+        } catch { /* KV miss behaves like a cold tier check */ }
+      }
+      if (pro === null) {
+        const { data: prof } = await adminClient
+          .from('profiles')
+          .select('role')
+          .eq('id', userId)
+          .maybeSingle();
+        if (prof?.role === 'superadmin') {
+          pro = true;
+        } else {
+          // limit(1), not maybeSingle(): api_keys_inherit_pro can briefly leave
+          // two active pro rows during a rotate-and-revoke.
+          const { data: rows } = await adminClient
+            .from('api_keys')
+            .select('is_pro')
+            .eq('user_id', userId)
+            .eq('is_pro', true)
+            .eq('is_active', true)
+            .limit(1);
+          pro = !!rows?.length;
+        }
+        if (kv) {
+          try { await kv.put(tierKey, pro ? '1' : '0', { expirationTtl: PRO_TIER_CACHE_TTL }); } catch { /* best-effort */ }
+        }
+      }
+      dailyLimit = pro ? PRO_DAILY_LIMIT : FREE_DAILY_LIMIT;
+    } catch (err) {
+      console.error('tier lookup failed — applying free limit:', err);
+    }
+
+    // 4. Per-key daily limit — only for *validated* keys, so unauthenticated
     //    callers can neither write arbitrary rl_ rows nor sidestep a bucket
     //    keyed on a hash they chose to be new every time.
     let rlKey: string | undefined;
@@ -103,8 +152,8 @@ export const onRequest = async (context: any) => {
         rlKey = `rl_${hashHex}_${today}`;
         const cur = await kv.get(rlKey);
         const count = cur ? parseInt(cur, 10) : 0;
-        if (count >= DAILY_LIMIT) {
-          return json({ error: `Rate limit exceeded. Maximum ${DAILY_LIMIT} requests per day.` }, 429, request);
+        if (count >= dailyLimit) {
+          return json({ error: `Rate limit exceeded. Maximum ${dailyLimit} requests per day.` }, 429, request);
         }
         await kv.put(rlKey, (count + 1).toString(), { expirationTtl: 86400 });
       } catch (err) {
@@ -115,7 +164,7 @@ export const onRequest = async (context: any) => {
 
     // Attach user context for downstream functions. rlKey lets POST /scan charge
     // a multi-item batch per item instead of per request.
-    context.data = { userId, rlKey };
+    context.data = { userId, rlKey, dailyLimit };
 
     const response = await next();
 

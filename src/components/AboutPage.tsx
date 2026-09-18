@@ -1,9 +1,9 @@
 import { motion, useReducedMotion } from 'framer-motion'
+import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, ShieldCheck, Radar, Database, Waypoints } from 'lucide-react'
+import { ArrowRight, ShieldCheck, Radar, Database, Waypoints, FileJson, Network, FileText, FileCode, Layers, ExternalLink, Search, Terminal, ListChecks } from 'lucide-react'
 import { GithubIcon as Github } from './ui/github-icon'
 import IsoPageShell from './layout/IsoPageShell'
-import HowItWorks from './HowItWorks'
 import { Typewriter } from './motion/Typewriter'
 import { useSEO } from '@/useSEO'
 
@@ -53,6 +53,62 @@ export default function AboutPage() {
       desc: 'Plain-text blocklists and stable auto-update URLs drop straight into firewalls, IDS/IPS, and SIEMs.',
       span: 'md:col-span-3 md:col-start-4 md:row-start-2',
       hero: false,
+    },
+  ]
+
+  // Delivery model, verified against the real gating: the free tier is query
+  // access (web lookup, REST API, rate-limited bulk — functions/api/v1/*);
+  // downloadable feed subscriptions are Pro (functions/feed/ tokenized
+  // delivery; the functions/ioc mirror returns 402 for ip/categories/, firewall/
+  // and stix/). Only formats pipeline/update_feed.py actually emits are listed.
+  type DeliveryItem = { icon: ReactNode; name: string; desc: string }
+  const tiers: { key: 'free' | 'pro'; label: string; items: DeliveryItem[] }[] = [
+    {
+      key: 'free',
+      label: 'Free — query the intelligence',
+      items: [
+        {
+          icon: <Search className="h-5 w-5" strokeWidth={1.8} />,
+          name: 'Indicator lookup',
+          desc: 'Look up any IP, IPv6, domain, URL, SHA-256 hash, or CIDR and get enrichment — verdict, risk score, categories, and first/last-seen.',
+        },
+        {
+          icon: <Terminal className="h-5 w-5" strokeWidth={1.8} />,
+          name: 'REST API',
+          desc: 'A documented JSON API for programmatic enrichment, authenticated with your own API key — free to start using.',
+        },
+        {
+          icon: <ListChecks className="h-5 w-5" strokeWidth={1.8} />,
+          name: 'Limited bulk lookups',
+          desc: 'Submit a batch of indicators and get verdicts back in a single call, within the free tier\'s rate limits.',
+        },
+      ],
+    },
+    {
+      key: 'pro',
+      label: 'Pro — subscribe and download the feeds',
+      items: [
+        {
+          icon: <FileText className="h-5 w-5" strokeWidth={1.8} />,
+          name: 'Plain-text blocklist feeds',
+          desc: 'IPv4, IPv6, CIDR, domain, URL, and SHA-256 — one indicator per line on stable, tokenized auto-update URLs your appliance polls.',
+        },
+        {
+          icon: <FileJson className="h-5 w-5" strokeWidth={1.8} />,
+          name: 'STIX 2.1 + TAXII',
+          desc: 'Bundle-per-page collections that Microsoft Sentinel, MISP, and OpenCTI pull natively, with stable indicator IDs held across every run.',
+        },
+        {
+          icon: <FileCode className="h-5 w-5" strokeWidth={1.8} />,
+          name: 'Firewall & IDS formats',
+          desc: 'Deploy-ready Suricata rules, ipset sets, EDLs, and gzipped JSONL — loaded straight into the sensor with no parsing downstream.',
+        },
+        {
+          icon: <Layers className="h-5 w-5" strokeWidth={1.8} />,
+          name: 'Threat-category feeds',
+          desc: 'The corpus split by behaviour — C2, botnet, brute-force, scanning, and more — each published in every format above.',
+        },
+      ],
     },
   ]
 
@@ -217,10 +273,68 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* How it works — its own section with established rhythm. */}
-      <div className="mx-auto w-full max-w-5xl">
-        <HowItWorks />
-      </div>
+      {/* Delivery model — the honest Free/Pro split: query the corpus free,
+          subscribe and download the feeds on Pro. Split layout is earned: the
+          right column is a real two-tier ledger, not filler copy. */}
+      <section className="mx-auto mt-24 w-full max-w-5xl">
+        <div className="grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:items-start lg:gap-14">
+          <motion.div {...rise(0)}>
+            <h2 className="text-3xl font-bold tracking-tight text-white md:text-[2.5rem] md:leading-[1.1]">
+              Query it free. Feed your stack in its native format.
+            </h2>
+            <p className="mt-5 text-base leading-relaxed text-slate-400">
+              Threatbase splits cleanly down the middle. Interactive lookup, the
+              REST API, and limited bulk queries are free forever. Downloadable,
+              auto-updating feed subscriptions — in every format a SOC already
+              ingests — are Pro.
+            </p>
+            <p className="mt-6 flex items-start gap-2.5 text-[13px] leading-relaxed text-slate-500">
+              <Network className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" strokeWidth={1.8} aria-hidden />
+              <span>
+                Already run MISP? Four Threatbase feeds are merged into its
+                upstream default-feed list.{' '}
+                <a
+                  href="https://github.com/MISP/MISP/pull/11115"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 rounded-sm font-semibold text-red-300 transition-colors hover:text-red-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/30"
+                >
+                  Merged PR #11115
+                  <ExternalLink className="h-3 w-3" aria-hidden />
+                </a>
+              </span>
+            </p>
+          </motion.div>
+
+          <motion.div {...rise(0.1)} className="space-y-6">
+            {tiers.map((tier) => (
+              <div key={tier.key}>
+                <span
+                  className={
+                    'mb-2 ml-1 inline-flex items-center rounded-full border px-3 py-1 font-mono text-[11px] font-semibold uppercase tracking-wider ' +
+                    (tier.key === 'pro'
+                      ? 'border-red-500/25 bg-red-500/[0.08] text-red-200'
+                      : 'border-white/10 bg-white/[0.03] text-slate-300')
+                  }
+                >
+                  {tier.label}
+                </span>
+                <ul className="divide-y divide-white/[0.06] overflow-hidden rounded-2xl border border-white/[0.06] bg-white/[0.02]">
+                  {tier.items.map((item) => (
+                    <li key={item.name} className="flex items-start gap-4 px-5 py-4 transition-colors hover:bg-white/[0.02] sm:px-6">
+                      <span className="icon-chip mt-0.5 h-9 w-9 shrink-0">{item.icon}</span>
+                      <span className="min-w-0 flex-1">
+                        <span className="text-[15px] font-semibold text-white">{item.name}</span>
+                        <span className="mt-1 block text-[13px] leading-relaxed text-slate-500">{item.desc}</span>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
 
       {/* Closing CTA — two distinct intents (contribute / integrate), neither
           duplicating the hero's feeds or GitHub actions. */}

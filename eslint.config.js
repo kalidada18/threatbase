@@ -10,6 +10,7 @@ export default tseslint.config(
   {
     ignores: [
       'dist/**',
+      '.wrangler/**',
       'node_modules/**',
       'public/**',
       'design-system/**',
