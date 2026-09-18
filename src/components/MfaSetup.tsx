@@ -1,9 +1,23 @@
 import React, { useState, useEffect } from 'react'
 import supabaseClient from '../supabaseClient'
-import { Shield, ShieldAlert, Loader2, KeyRound } from 'lucide-react'
+import { Shield, ShieldAlert, Loader2, KeyRound, Copy, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { pickVerifiedTotpFactor } from '@/lib/mfaFactor'
 import { withTimeout } from '@/lib/withTimeout'
+
+/**
+ * Normalize Supabase's `totp.qr_code` to an `<img src>` value.
+ *
+ * auth-js `_enroll` already prepends `data:image/svg+xml;utf-8,` to the raw
+ * SVG, and the official docs render it via `<Image src={qr_code}>`. Older
+ * payloads (or a future SDK that stops prepending) may still be raw `<svg>`
+ * markup — encode those into a data URI instead of injecting HTML.
+ */
+export function toQrImgSrc(qrCode: string): string {
+  if (qrCode.startsWith('data:image')) return qrCode
+  if (qrCode.trimStart().startsWith('<')) return `data:image/svg+xml;utf-8,${encodeURIComponent(qrCode)}`
+  return `data:image/svg+xml;utf-8,${qrCode}`
+}
 
 export default function MfaSetup({ addToast }: { addToast: (msg: string, type: 'success'|'error') => void }) {
   const [loading, setLoading] = useState(true)
@@ -13,6 +27,9 @@ export default function MfaSetup({ addToast }: { addToast: (msg: string, type: '
   // Setup flow state
   const [isSettingUp, setIsSettingUp] = useState(false)
   const [qrCodeSvg, setQrCodeSvg] = useState<string | null>(null)
+  const [totpSecret, setTotpSecret] = useState<string | null>(null)
+  const [showSecret, setShowSecret] = useState(false)
+  const [copiedSecret, setCopiedSecret] = useState(false)
   const [otp, setOtp] = useState('')
   const [challengeId, setChallengeId] = useState<string | null>(null)
   const [verifying, setVerifying] = useState(false)
@@ -62,6 +79,9 @@ export default function MfaSetup({ addToast }: { addToast: (msg: string, type: '
     // cleanup below is about to delete — reusing it would fail verification.
     setChallengeId(null)
     setQrCodeSvg(null)
+    setTotpSecret(null)
+    setShowSecret(false)
+    setCopiedSecret(false)
     // Tracked locally rather than read back from `qrCodeSvg` in the catch: that
     // state variable is captured from the render that created this handler, so
     // it is still null no matter what setQrCodeSvg was just called with.
@@ -98,7 +118,9 @@ export default function MfaSetup({ addToast }: { addToast: (msg: string, type: '
         supabaseClient.auth.mfa.enroll({
           factorType: 'totp',
           friendlyName: `Authenticator (${new Date().toISOString().slice(0, 10)})`,
-          issuer: 'https://threatbase.qzz.io/'
+          // Human-readable service name shown in the authenticator app. Must
+          // not be a URL — slashes break the otpauth:// URI some apps parse.
+          issuer: 'Threatbase',
         }),
         20_000,
         'Creating the authenticator',
@@ -109,6 +131,10 @@ export default function MfaSetup({ addToast }: { addToast: (msg: string, type: '
       enrolledFactorId = enrollData.id
       setFactorId(enrollData.id)
       setQrCodeSvg(enrollData.totp.qr_code)
+      // Manual-entry fallback: Supabase's own guidance is to show the secret
+      // when the QR can't be scanned (camera broken, SVG blocked, screen
+      // reader). Never log this value.
+      setTotpSecret(enrollData.totp.secret ?? null)
 
       // 2. Challenge. Best-effort on purpose: the QR is already on screen and
       // the user still has to open their app and type a code, so a challenge
@@ -178,6 +204,9 @@ export default function MfaSetup({ addToast }: { addToast: (msg: string, type: '
       setIsEnrolled(true)
       setIsSettingUp(false)
       setOtp('')
+      setQrCodeSvg(null)
+      setTotpSecret(null)
+      setShowSecret(false)
     } catch (err: any) {
       console.error('MFA Verification error:', err)
       setVerifyError(err.message || 'Invalid code.')
@@ -294,18 +323,64 @@ export default function MfaSetup({ addToast }: { addToast: (msg: string, type: '
             Scan this QR code with your authenticator app
           </p>
           
-          {/* Keyed on the QR, not on `loading`: the challenge pre-fetch can
-              take up to 15s, and the QR is valid the moment enroll returns.
-              Hiding a working QR behind that spinner is the whole bug. */}
+          {/* The QR is valid the moment enroll returns — even while the
+              challenge pre-fetch is still in flight (up to 15s). Render from
+              the SVG the instant it lands; never gate it on `loading`. */}
           {qrCodeSvg ? (
-            // Safe: qrCodeSvg is the TOTP QR returned by Supabase Auth's MFA
-            // enroll API (first-party, trusted), never user-supplied input.
-            <div
-              className="bg-white p-4 rounded-xl border-4 border-red-500/20"
-              dangerouslySetInnerHTML={{ __html: qrCodeSvg }}
-            />
+            <div className="flex flex-col items-center gap-3">
+              <div className="bg-white p-4 rounded-xl border-4 border-red-500/20">
+                <img
+                  src={toQrImgSrc(qrCodeSvg)}
+                  alt="Scan this QR code with your authenticator app to enable two-factor authentication"
+                  className="w-48 h-48 block"
+                />
+              </div>
+              {totpSecret && (
+                <div className="w-full max-w-xs">
+                  <button
+                    type="button"
+                    onClick={() => setShowSecret((s) => !s)}
+                    className="text-[11px] font-semibold text-slate-400 hover:text-white transition-colors"
+                    aria-expanded={showSecret}
+                  >
+                    {showSecret ? 'Hide manual entry key' : "Can't scan the code?"}
+                  </button>
+                  {showSecret && (
+                    <div className="mt-2 flex items-center gap-2 bg-black/50 border border-white/10 p-2 rounded-lg">
+                      <code
+                        className="text-xs text-slate-200 font-mono flex-1 select-all break-all"
+                        aria-label="Manual entry key for your authenticator app"
+                      >
+                        {totpSecret}
+                      </code>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          try {
+                            await navigator.clipboard.writeText(totpSecret)
+                            setCopiedSecret(true)
+                            setTimeout(() => setCopiedSecret(false), 2000)
+                          } catch {
+                            addToast('Copy failed — select the key manually.', 'error')
+                          }
+                        }}
+                        className="p-2 text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 rounded transition-colors shrink-0"
+                        title="Copy manual entry key"
+                        aria-label="Copy manual entry key"
+                      >
+                        {copiedSecret ? <Check size={14} /> : <Copy size={14} />}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           ) : (
-            <div className="w-48 h-48 bg-white/5 rounded-xl flex items-center justify-center animate-pulse">
+            <div
+              className="w-48 h-48 bg-white/5 rounded-xl flex items-center justify-center animate-pulse"
+              role="status"
+              aria-label="Generating your authenticator QR code"
+            >
               <Loader2 className="animate-spin text-slate-500" size={24} />
             </div>
           )}
@@ -336,7 +411,8 @@ export default function MfaSetup({ addToast }: { addToast: (msg: string, type: '
             <div className="flex gap-3">
               <Button 
                 type="submit"
-                disabled={verifying || otp.length < 6}
+                disabled={verifying || otp.length < 6 || !qrCodeSvg}
+                title={!qrCodeSvg ? 'Wait for the QR code to appear first' : undefined}
                 className="flex-1 h-10 rounded-xl bg-red-500 hover:bg-red-600 text-white text-xs font-bold transition-colors disabled:opacity-50"
               >
                 {verifying ? 'Verifying...' : 'Verify & Enable'}
@@ -347,6 +423,9 @@ export default function MfaSetup({ addToast }: { addToast: (msg: string, type: '
                   setIsSettingUp(false)
                   setChallengeId(null)
                   setQrCodeSvg(null)
+                  setTotpSecret(null)
+                  setShowSecret(false)
+                  setCopiedSecret(false)
                   setOtp('')
                   setVerifyError(null)
                 }}

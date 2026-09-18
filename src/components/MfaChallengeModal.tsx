@@ -168,6 +168,19 @@ export default function MfaChallengeModal() {
                 <span>{error}</span>
               </div>
             )}
+            {/* The challenge fetch can time out while the user is ready to type.
+                Without this the input stays disabled forever and the only way
+                out is Sign Out — a login dead-end. */}
+            {(error || (!challengeId && !loading)) && (
+              <button
+                type="button"
+                onClick={initiateChallenge}
+                disabled={loading}
+                className="text-xs font-semibold text-slate-300 hover:text-white underline underline-offset-4 transition-colors disabled:opacity-50"
+              >
+                Retry verification challenge
+              </button>
+            )}
             
             <form onSubmit={handleVerify} className="w-full space-y-4">
               <input
