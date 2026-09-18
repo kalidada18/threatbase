@@ -72,6 +72,11 @@ jobs:
       # something to work from: download import_ip_intel_job.jsonl from the
       # previous run's artifacts, place it next to the input file with the
       # exact name "<file_path>.job.jsonl", and rerun with resume checked.
+      - name: Pin Supabase API to its origin
+        uses: ./.github/actions/pin-supabase-origin
+        with:
+          supabase-url: ${{ secrets.SUPABASE_URL }}
+
       - name: Import
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}

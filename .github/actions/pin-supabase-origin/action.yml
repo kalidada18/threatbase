@@ -1,0 +1,74 @@
+name: Pin the Supabase API host to its origin
+description: >-
+  Routes the Supabase API straight to the origin box for the rest of the job, so
+  pipeline calls never touch Cloudflare.
+
+  Why this exists: GitHub Actions runner IP ranges get a Cloudflare managed
+  challenge on the API hostname — HTTP 403 with a "Just a moment..."
+  interstitial, which never reaches Envoy. It is specific to runners; the same
+  URL answers 200 from a residential IP, from the origin box itself, and from an
+  unrelated datacenter.
+
+  The dashboard is a dead end for this. The zone's custom rule matches only
+  `http.request.uri.path eq "/" or == "/report"`, so a Skip action on it can
+  never apply to `/rest/v1/...` — which is exactly what failed. On the free plan
+  Bot Fight Mode cannot be skipped by a custom rule at all.
+
+  So this bypasses the edge rather than arguing with it: same hostname, same
+  SNI, same public TLS cert, same Caddy -> Envoy -> Supabase origin. The only
+  thing removed is the edge that refuses runners. No pipeline call wants
+  Cloudflare's WAF or bot protection, and this keeps the service-role key off a
+  third party's request path on top of that.
+
+inputs:
+  supabase-url:
+    description: >-
+      Pass secrets.SUPABASE_URL. The host to pin is derived from it, so the pin
+      cannot drift from the host the pipeline actually calls.
+    required: true
+  origin-ip:
+    description: Public IPv4 of the origin box. Change here if the host moves.
+    required: false
+    default: "80.225.223.56"
+
+runs:
+  using: composite
+  steps:
+    - name: Pin the Supabase API to ${{ inputs.origin-ip }}
+      shell: bash
+      run: |
+        set -euo pipefail
+        IP='${{ inputs.origin-ip }}'
+
+        HOST='${{ inputs.supabase-url }}'
+        HOST="${HOST#http://}"; HOST="${HOST#https://}"; HOST="${HOST%%/*}"
+        if [ -z "$HOST" ]; then
+          echo "::error::SUPABASE_URL is empty — is the repository secret set?"
+          exit 1
+        fi
+        echo "Pinning $HOST -> $IP (was: $(getent hosts "$HOST" | head -1))"
+
+        # The runner is not root; /etc/hosts is. tee runs as the runner user and
+        # the sudo applies to the write only.
+        echo "$IP $HOST" | sudo tee -a /etc/hosts >/dev/null
+
+        # Assert the pin works, because the failure it replaces is a bare 403 in
+        # a Python traceback three steps later. Two distinct causes get distinct
+        # messages: a wrong SUPABASE_URL (the origin serves only its own API
+        # hostname, so pinning the Pages app host here fails the TLS handshake)
+        # and a challenge that survived (Bot Fight Mode, which no custom rule
+        # can skip).
+        CODE=$(curl -sS --max-time 20 -o /tmp/pin-check.html -w '%{http_code}' \
+                 "https://$HOST/auth/v1/settings" || echo 000)
+        if [ "$CODE" = "000" ]; then
+          echo "::error::Cannot reach https://$HOST after pinning it to $IP."
+          echo "::error::SUPABASE_URL must be the API host the origin serves over its own"
+          echo "::error::TLS cert (api.threatbase.qzz.io) — not the Pages app host."
+          exit 1
+        fi
+        if grep -q 'Just a moment' /tmp/pin-check.html; then
+          echo "::error::Still served a Cloudflare challenge after pinning $HOST to $IP."
+          echo "::error::The /etc/hosts entry did not take, or the job is not using it."
+          exit 1
+        fi
+        echo "✓ $HOST -> $IP, no Cloudflare in the path (HTTP $CODE from Envoy)"
