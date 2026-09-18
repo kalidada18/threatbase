@@ -52,6 +52,14 @@ runs:
         # the sudo applies to the write only.
         echo "$IP $HOST" | sudo tee -a /etc/hosts >/dev/null
 
+        # The host keeps its Cloudflare AAAA records, and after the pin `getent
+        # hosts` still listed the v6 one first — glibc sorts per RFC 6724, and
+        # that sort does not know this entry is the one we want. It worked only
+        # because GitHub runners have no IPv6 route to fall through. Prefer v4
+        # outright so the pin does not depend on the runner's network stack.
+        grep -q '^precedence ::ffff:0:0/96' /etc/gai.conf 2>/dev/null \
+          || echo 'precedence ::ffff:0:0/96  100' | sudo tee -a /etc/gai.conf >/dev/null
+
         # Assert the pin works, because the failure it replaces is a bare 403 in
         # a Python traceback three steps later. Two distinct causes get distinct
         # messages: a wrong SUPABASE_URL (the origin serves only its own API
