@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Globe, Copy, Check, ArrowLeft, Loader2, Key, Trash2, AlertTriangle, Crown } from 'lucide-react'
+import { Globe, Copy, Check, ArrowLeft, Loader2, Key, Trash2, AlertTriangle, Crown, ShieldCheck } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../AuthContext'
 import supabaseClient from '../supabaseClient'
 import { Button } from '@/components/ui/button'
-import { fmt, timeAgo, categoryTier, TIER_TEXT } from '../utils'
+import { fmt } from '../utils'
 import { useSEO } from '../useSEO'
 import MfaSetup from './MfaSetup'
 import NotFound from './ui/not-found'
@@ -270,17 +270,11 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
   const [isEditing, setIsEditing] = useState(false)
   const [profileErrors, setProfileErrors] = useState<{ username?: string; website?: string }>({})
 
-  // Submissions state
-  const [reports, setReports] = useState<any[]>([])
+  // Contribution total only. The profile reports the volume of intel a user has
+  // contributed, not the intel itself, so nothing here enumerates rows.
   const [reportsCount, setReportsCount] = useState(0)
-  const [loadingReports, setLoadingReports] = useState(true)
+  const [loadingCount, setLoadingCount] = useState(true)
   const [copiedIp, setCopiedIp] = useState<string | null>(null)
-
-  // Submissions log pagination (20/page, "page / total" chip in the header).
-  const [logPage, setLogPage] = useState(1)
-  const LOG_PAGE_SIZE = 20
-  const logPages = Math.max(1, Math.ceil(reports.length / LOG_PAGE_SIZE))
-  const pageReports = reports.slice((logPage - 1) * LOG_PAGE_SIZE, logPage * LOG_PAGE_SIZE)
   
   // Join index for badges
   const [joinIndex, setJoinIndex] = useState<number | null>(null)
@@ -349,43 +343,37 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
     }
   }, [authProfile, user, isOwnProfile])
 
-  // Fetch reports submitted by this user
+  // Fetch this user's contribution total. Head-only: PostgREST returns the
+  // count and no rows cross the wire.
   useEffect(() => {
-    async function loadReports() {
-      // Don't load (or expose) another user's submission log on a forbidden view.
-      if (isForbidden) { setLoadingReports(false); return }
+    async function loadReportCount() {
+      // Don't probe another user's submission volume on a forbidden view.
+      if (isForbidden) { setLoadingCount(false); return }
       // Non-forbidden ⇒ own profile; use the canonical own alias (not the URL
       // param, which may differ only by case).
       const targetUsername = authProfile?.username || user?.user_metadata?.user_name || user?.user_metadata?.preferred_username || user?.email?.split('@')[0]
       if (!supabaseClient || !targetUsername || loadingProfile) {
-        if (!loadingProfile) setLoadingReports(false)
+        if (!loadingProfile) setLoadingCount(false)
         return
       }
-      setLoadingReports(true)
+      setLoadingCount(true)
       try {
-        // Only the rendered columns; count:'exact' was redundant — PostgREST
-        // transfers every row anyway (no db_max_rows cap), so data.length is
-        // always the count.
-        const { data, error } = await supabaseClient
+        const { count, error } = await supabaseClient
           .from('reported_ips')
-          .select('ip, category, comment, created_at')
+          .select('id', { count: 'exact', head: true })
           .eq('reporter_alias', targetUsername)
-          .order('created_at', { ascending: false })
           .abortSignal(AbortSignal.timeout(15_000))
 
         if (error) throw error
-        if (data) {
-          setReports(data)
-          setReportsCount(data.length)
-        }
+        setReportsCount(count ?? 0)
       } catch (err) {
-        console.error('Failed to load user reports:', err)
+        console.error('Failed to load user report count:', err)
       } finally {
-        setLoadingReports(false)
+        setLoadingCount(false)
       }
     }
 
-    loadReports()
+    loadReportCount()
   }, [authProfile, user, loadingProfile, isForbidden])
 
   // Escape closes the Delete Account confirmation.
@@ -606,13 +594,6 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
     }
   }
 
-  const handleCopyIp = (ip: string) => {
-    navigator.clipboard.writeText(ip)
-    setCopiedIp(ip)
-    addToast(`Copied ${ip} to clipboard!`, 'success')
-    setTimeout(() => setCopiedIp(null), 1500)
-  }
-
   // Copy a secret (e.g. a freshly generated API key) WITHOUT echoing its value
   // into a toast. Toasts can be screenshotted, screen-recorded, or captured by
   // logging, so the plaintext key must never appear in user-facing chrome.
@@ -653,12 +634,13 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
 
   const activeProfile = viewedProfile || authProfile || { user_metadata: user?.user_metadata, email: user?.email }
   const usernameDisplay = activeProfile?.username || editUsername || activeProfile?.email?.split('@')[0] || 'User'
+  const badges = getUserBadges(activeProfile, reportsCount, joinIndex)
 
   useSEO({
     title: isForbidden ? 'Access Denied | Threatbase' : `${usernameDisplay}'s Profile | Threatbase`,
     description: isForbidden
       ? 'This profile is private to its owner.'
-      : `View ${usernameDisplay}'s threat intelligence contributions, badges, and activity on Threatbase.`,
+      : `View ${usernameDisplay}'s threat intelligence contributions, badges, and account security on Threatbase.`,
     path: `/u/${paramUsername || usernameDisplay}`,
     noindex: true,
   })
@@ -695,8 +677,6 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
       </div>
     )
   }
-
-  const getCategoryColor = (cat: string) => TIER_TEXT[categoryTier(cat)]
 
   return (
     <main className="min-h-[100dvh] pt-28 pb-24 relative bg-app font-sans">
@@ -737,7 +717,7 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
                 
                 {/* Earned Badges Row */}
                 <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 pt-1">
-                  {getUserBadges(activeProfile, reportsCount, joinIndex).map((badge) => (
+                  {badges.map((badge) => (
                     <div
                       key={badge.id}
                       title={badge.desc}
@@ -780,7 +760,7 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
 
             <div className="text-center md:text-right flex-shrink-0">
               <div className="text-5xl md:text-6xl font-extralight text-metal tracking-tighter tabular-nums leading-none">
-                {fmt(reportsCount)}
+                {loadingCount ? '—' : fmt(reportsCount)}
               </div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-platinum-400 mt-3">
                 Intel Reports
@@ -796,6 +776,37 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
                   Edit Profile
                 </Button>
               )}
+            </div>
+          </div>
+
+          {/* Account posture strip: the compact, at-a-glance summary an operator
+              needs. The submission log itself lives in the threat feed. */}
+          <div className="relative z-10 mt-8 grid grid-cols-1 overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.02] sm:grid-cols-3">
+            <div className="px-5 py-4">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-platinum-400">Recognition</p>
+              <p className="mt-1.5 text-sm font-semibold text-white tabular-nums">
+                {badges.length} {badges.length === 1 ? 'badge' : 'badges'} earned
+              </p>
+            </div>
+            <div className="border-t border-white/[0.06] px-5 py-4 sm:border-l sm:border-t-0">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-platinum-400">API access keys</p>
+              <p className="mt-1.5 text-sm font-semibold text-white tabular-nums">
+                {apiKeys.length} of 3 active
+              </p>
+            </div>
+            <div className="border-t border-white/[0.06] px-5 py-4 sm:border-l sm:border-t-0">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-platinum-400">Two-factor</p>
+              <p className="mt-1.5 flex items-center gap-1.5 text-sm font-semibold">
+                {hasMfaEnrolled ? (
+                  <span className="flex items-center gap-1.5 text-platinum-100">
+                    <ShieldCheck size={14} className="text-red-400" /> Enabled
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1.5 text-amber-400">
+                    <AlertTriangle size={14} /> Not enrolled
+                  </span>
+                )}
+              </p>
             </div>
           </div>
         </motion.div>
@@ -892,111 +903,6 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
           )}
         </AnimatePresence>
 
-        {/* User's Reports Table logs */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="glass-card flex flex-col overflow-hidden"
-        >
-          <div className="relative px-6 py-5 border-b border-white/[0.06] bg-gradient-to-r from-white/[0.03] to-transparent flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-white tracking-tight">
-              Submissions Log
-            </h3>
-            {!loadingReports && reports.length > 0 && (
-              <span className="font-mono text-[11px] text-platinum-300 tabular-nums rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-1">
-                {logPage}/{logPages} · {fmt(reportsCount)}
-              </span>
-            )}
-          </div>
-
-          <div className="overflow-x-auto min-h-[200px]">
-            {loadingReports ? (
-              <div className="py-24 flex flex-col items-center justify-center text-slate-500">
-                <Loader2 className="animate-spin text-red-400/70 mb-3" size={20} />
-                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-platinum-400">Loading Records</p>
-              </div>
-            ) : reports.length === 0 ? (
-              <div className="py-24 text-center text-slate-500 flex flex-col items-center">
-                <p className="text-sm text-slate-400">No submissions found for this user.</p>
-              </div>
-            ) : (
-              <>
-              <table className="w-full text-xs text-left">
-                <thead className="hidden md:table-header-group text-[10px] uppercase text-slate-500 font-semibold border-b border-white/[0.05]">
-                  <tr>
-                    <th className="px-6 py-4 font-normal">Indicator</th>
-                    <th className="px-6 py-4 font-normal">Category</th>
-                    <th className="px-6 py-4 font-normal">Context</th>
-                    <th className="px-6 py-4 text-right font-normal">Date</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/[0.04] md:divide-white/[0.02]">
-                  {pageReports.map((row) => (
-                    <tr
-                      key={row.id || row.created_at}
-                      className="block md:table-row px-4 py-3 md:p-0 hover:bg-white/[0.02] transition-colors group"
-                    >
-                      <td className="block md:table-cell md:px-6 py-1 md:py-4 md:whitespace-nowrap">
-                        <div className="font-mono text-slate-200 flex items-center gap-2 break-all md:break-normal">
-                          <span>{row.ip}</span>
-                          <button
-                            type="button"
-                            onClick={() => handleCopyIp(row.ip)}
-                            className="p-2 -m-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-slate-500 hover:text-white"
-                          >
-                            {copiedIp === row.ip ? <Check size={12} /> : <Copy size={12} />}
-                          </button>
-                        </div>
-                      </td>
-                      <td className="block md:table-cell md:px-6 py-1 md:py-4">
-                        <div className="flex flex-wrap gap-1.5">
-                          {(row.category || 'Other').split(', ').map((cat: string) => (
-                            <span key={cat} className={`inline-flex items-center rounded-md border border-white/[0.06] bg-white/[0.02] px-2 py-0.5 text-[11px] font-medium ${getCategoryColor(cat)}`}>
-                              {cat}
-                            </span>
-                          ))}
-                        </div>
-                      </td>
-                      <td className="block md:table-cell md:px-6 py-1 md:py-4 text-slate-400 md:max-w-sm md:truncate">
-                        {row.comment || <span className="text-slate-600 italic">No context</span>}
-                      </td>
-                      <td className="block md:table-cell md:px-6 py-1 md:py-4 text-slate-500 md:text-right md:whitespace-nowrap">
-                        {timeAgo(row.created_at)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              </>
-            )}
-          </div>
-
-          {!loadingReports && logPages > 1 && (
-            <div className="flex items-center justify-center gap-4 border-t border-white/[0.06] px-6 py-4">
-              <button
-                type="button"
-                onClick={() => setLogPage((p) => Math.max(1, p - 1))}
-                disabled={logPage === 1}
-                className="h-8 rounded-lg border border-white/10 px-4 text-xs font-semibold text-platinum-300 hover:text-white hover:border-white/20 disabled:opacity-30 disabled:pointer-events-none transition-colors"
-              >
-                Newer
-              </button>
-              <span className="font-mono text-[11px] text-slate-500 tabular-nums">
-                {logPage} / {logPages}
-              </span>
-              <button
-                type="button"
-                onClick={() => setLogPage((p) => Math.min(logPages, p + 1))}
-                disabled={logPage === logPages}
-                className="h-8 rounded-lg border border-white/10 px-4 text-xs font-semibold text-platinum-300 hover:text-white hover:border-white/20 disabled:opacity-30 disabled:pointer-events-none transition-colors"
-              >
-                Older
-              </button>
-            </div>
-          )}
-        </motion.div>
-
         {/* Security Settings */}
         {isOwnProfile && (
           <motion.div
@@ -1005,6 +911,11 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
             transition={{ delay: 0.15 }}
             className="space-y-6"
           >
+            <div className="flex flex-col gap-1 pt-2 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
+              <h2 className="text-lg font-bold tracking-tight text-white">Security &amp; access</h2>
+              <p className="text-xs text-slate-500">Two-factor authentication and API credentials for this account.</p>
+            </div>
+
             {/* MFA Setup */}
             <MfaSetup addToast={addToast} />
 
