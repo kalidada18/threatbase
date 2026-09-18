@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import supabaseClient from './supabaseClient'
 import { ensureTurnstileLogin } from './lib/turnstile-gate'
+import { withTimeout } from './lib/withTimeout'
 import MfaChallengeModal from './components/MfaChallengeModal'
 
 
@@ -40,15 +41,31 @@ export function AuthProvider({
 
   const checkMfaLevel = async () => {
     if (!supabaseClient) return
-    const { data, error } = await supabaseClient.auth.mfa.getAuthenticatorAssuranceLevel()
-    if (error) {
-      console.error('Error fetching MFA level:', error)
-      return
-    }
-    if (data.nextLevel === 'aal2' && data.currentLevel === 'aal1') {
-      setRequiresMfa(true)
-    } else {
-      setRequiresMfa(false)
+    try {
+      // Bound: like the other MFA methods this takes no signal argument, and
+      // it runs inside onAuthStateChange BEFORE setLoading(false) — a stall
+      // here hangs the whole app on the boot loader, not just one panel. On
+      // timeout the gate stays as-is: an aal1 session already passed login,
+      // and the server-side AAL claim still applies.
+      const { data, error } = await withTimeout(
+        supabaseClient.auth.mfa.getAuthenticatorAssuranceLevel(),
+        15_000,
+        'Checking your two-factor status',
+      )
+      if (error) {
+        console.error('Error fetching MFA level:', error)
+        return
+      }
+      if (data.nextLevel === 'aal2' && data.currentLevel === 'aal1') {
+        setRequiresMfa(true)
+      } else {
+        setRequiresMfa(false)
+      }
+    } catch (err) {
+      // withTimeout rejects rather than resolving with { error }; same
+      // handling — never let this throw into the onAuthStateChange callback,
+      // or setLoading(false) there is unreachable.
+      console.error('Error fetching MFA level:', err)
     }
   }
 
@@ -145,8 +162,9 @@ export function AuthProvider({
         setUser(u)
         if (u) {
           signOutIntent.current = false
-          await checkMfaLevel()
-          const p = await fetchProfile(u.id, u)
+          // Independent round-trips: run them in parallel so boot (and every
+          // TOKEN_REFRESHED) waits on the slower one, not their sum.
+          const [, p] = await Promise.all([checkMfaLevel(), fetchProfile(u.id, u)])
           setProfile(p)
         } else {
           setProfile(null)

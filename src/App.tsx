@@ -178,28 +178,41 @@ export default function App() {
     // functions, network blip) — slower there, never dead.
     let result: any = null
     try {
-      const r = await fetch(`/api/lookup?value=${encodeURIComponent(raw)}`, { signal: AbortSignal.timeout(20_000) })
-      if (r.ok) {
-        const j = await r.json()
-        if (j?.data) result = j.data
+      try {
+        const r = await fetch(`/api/lookup?value=${encodeURIComponent(raw)}`, { signal: AbortSignal.timeout(20_000) })
+        if (r.ok) {
+          const j = await r.json()
+          if (j?.data) result = j.data
+        }
+      } catch { /* fall through to local scan */ }
+      if (!result) {
+        // statsData is passed through so the scanner can resolve the chunk layout of
+        // the large domain/hash feeds without re-fetching stats.json.
+        result = await scanIndicatorLogic(raw, feedVersion, statsData)
       }
-    } catch { /* fall through to local scan */ }
-    if (!result) {
-      // statsData is passed through so the scanner can resolve the chunk layout of
-      // the large domain/hash feeds without re-fetching stats.json.
-      result = await scanIndicatorLogic(raw, feedVersion, statsData)
+      setScanResult(result)
+    } catch (err) {
+      // scanIndicatorLogic can throw (e.g. a feed chunk fetch fails). Without
+      // this, setIsScanning(false) was unreachable and the caller —
+      // fire-and-forget from handleScan and the ?search= effect — never saw
+      // the rejection: the hero spinner spun forever.
+      console.error('Scan failed:', err)
+      setShowReport(false)
+      addToast('Scan failed. Please try again.', 'error')
+    } finally {
+      setIsScanning(false)
     }
-    setScanResult(result)
-    setIsScanning(false)
 
     // Recent-hunts memory for the hero's keyboard console (cap 5, dedupe).
-    try {
-      const item = { value: raw, type: result.type, malicious: !!result.isMalicious }
-      const prev: any[] = JSON.parse(localStorage.getItem('tb:recent') || '[]')
-      localStorage.setItem('tb:recent', JSON.stringify([item, ...prev.filter((r) => r.value !== raw)].slice(0, 5)))
-      window.dispatchEvent(new Event(RECENT_EVENT))
-    } catch { /* private mode / quota: recent row is an enhancement, not a feature */ }
-  }, [scanInput, feedVersion, statsData])
+    if (result) {
+      try {
+        const item = { value: raw, type: result.type, malicious: !!result.isMalicious }
+        const prev: any[] = JSON.parse(localStorage.getItem('tb:recent') || '[]')
+        localStorage.setItem('tb:recent', JSON.stringify([item, ...prev.filter((r) => r.value !== raw)].slice(0, 5)))
+        window.dispatchEvent(new Event(RECENT_EVENT))
+      } catch { /* private mode / quota: recent row is an enhancement, not a feature */ }
+    }
+  }, [scanInput, feedVersion, statsData, addToast])
 
 
   // Boot & Poll: fetch stats.json. Hoisted (not just inside the effect) so the
@@ -207,7 +220,12 @@ export default function App() {
   const loadStats = useCallback(async () => {
     const GITHUB_RAW = getBaseUrl()
     try {
-      const r = await fetch(GITHUB_RAW + feedPath('stats.json') + '?_=' + Date.now())
+      // Bounded: a hung GitHub Raw fetch neither resolves nor rejects, so
+      // statsFailed was never set and /threatfeed sat in its loading state
+      // forever.
+      const r = await fetch(GITHUB_RAW + feedPath('stats.json') + '?_=' + Date.now(), {
+        signal: AbortSignal.timeout(20_000),
+      })
       if (!r.ok) throw new Error('HTTP ' + r.status)
       const d = await r.json()
       setStatsData(d)
