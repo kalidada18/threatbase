@@ -58,6 +58,14 @@ export default function MfaSetup({ addToast }: { addToast: (msg: string, type: '
     if (!supabaseClient) return
     setIsSettingUp(true)
     setLoading(true)
+    // A challenge from a previous, cancelled attempt belongs to a factor the
+    // cleanup below is about to delete — reusing it would fail verification.
+    setChallengeId(null)
+    setQrCodeSvg(null)
+    // Tracked locally rather than read back from `qrCodeSvg` in the catch: that
+    // state variable is captured from the render that created this handler, so
+    // it is still null no matter what setQrCodeSvg was just called with.
+    let enrolledFactorId: string | null = null
     try {
       // Clean up stale, unverified TOTP factors left behind by a previous
       // incomplete setup (QR shown but never verified). Otherwise enroll()
@@ -98,25 +106,34 @@ export default function MfaSetup({ addToast }: { addToast: (msg: string, type: '
 
       if (enrollError) throw enrollError
 
+      enrolledFactorId = enrollData.id
       setFactorId(enrollData.id)
       setQrCodeSvg(enrollData.totp.qr_code)
 
-      // 2. Challenge. Bounded: without this a challenge that never settles
-      // leaves the QR panel spinning forever with no way out but a reload —
-      // the `finally` below is unreachable while an await is pending.
-      const { data: challengeData, error: challengeError } = await withTimeout(
-        supabaseClient.auth.mfa.challenge({ factorId: enrollData.id }),
-        15_000,
-        'Preparing the verification challenge',
-      )
-      
-      if (challengeError) throw challengeError
-      setChallengeId(challengeData.id)
-      
+      // 2. Challenge. Best-effort on purpose: the QR is already on screen and
+      // the user still has to open their app and type a code, so a challenge
+      // that fails or stalls here must not take the panel down with it. It
+      // used to — the throw below fell into the catch, which closed the setup
+      // panel and discarded a perfectly good QR, showing the user nothing at
+      // all. handleVerifySetup creates one on submit if this did not land.
+      try {
+        const { data: challengeData, error: challengeError } = await withTimeout(
+          supabaseClient.auth.mfa.challenge({ factorId: enrollData.id }),
+          15_000,
+          'Preparing the verification challenge',
+        )
+        if (challengeError) throw challengeError
+        setChallengeId(challengeData.id)
+      } catch (challengeErr: any) {
+        console.warn('MFA challenge pre-fetch failed; retrying on submit:', challengeErr)
+      }
+
     } catch (err: any) {
       console.error('MFA Setup initialization error:', err)
       addToast(err.message || 'Failed to initialize MFA setup.', 'error')
-      setIsSettingUp(false)
+      // Unwind only when there is nothing to show: before enrollment succeeds
+      // there is no QR, but after it there is, and it cannot be recovered.
+      if (!enrolledFactorId) setIsSettingUp(false)
     } finally {
       setLoading(false)
     }
@@ -124,8 +141,8 @@ export default function MfaSetup({ addToast }: { addToast: (msg: string, type: '
 
   const handleVerifySetup = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!supabaseClient || !factorId || !challengeId) return
-    
+    if (!supabaseClient || !factorId) return
+
     if (otp.length < 6) {
       setVerifyError('Please enter a 6-digit code')
       return
@@ -134,8 +151,23 @@ export default function MfaSetup({ addToast }: { addToast: (msg: string, type: '
     setVerifying(true)
     setVerifyError(null)
     try {
+      // The pre-fetch in handleStartSetup is an optimization, not a
+      // prerequisite — it may have failed or timed out while the QR was
+      // already on screen. Mint one here instead of leaving Verify dead.
+      let activeChallengeId = challengeId
+      if (!activeChallengeId) {
+        const { data, error } = await withTimeout(
+          supabaseClient.auth.mfa.challenge({ factorId }),
+          15_000,
+          'Preparing the verification challenge',
+        )
+        if (error) throw error
+        activeChallengeId = data.id
+        setChallengeId(activeChallengeId)
+      }
+
       const { error } = await withTimeout(
-        supabaseClient.auth.mfa.verify({ factorId, challengeId, code: otp }),
+        supabaseClient.auth.mfa.verify({ factorId, challengeId: activeChallengeId, code: otp }),
         20_000,
         'Verifying the code',
       )
@@ -262,18 +294,21 @@ export default function MfaSetup({ addToast }: { addToast: (msg: string, type: '
             Scan this QR code with your authenticator app
           </p>
           
-          {loading ? (
-            <div className="w-48 h-48 bg-white/5 rounded-xl flex items-center justify-center animate-pulse">
-              <Loader2 className="animate-spin text-slate-500" size={24} />
-            </div>
-          ) : qrCodeSvg ? (
+          {/* Keyed on the QR, not on `loading`: the challenge pre-fetch can
+              take up to 15s, and the QR is valid the moment enroll returns.
+              Hiding a working QR behind that spinner is the whole bug. */}
+          {qrCodeSvg ? (
             // Safe: qrCodeSvg is the TOTP QR returned by Supabase Auth's MFA
             // enroll API (first-party, trusted), never user-supplied input.
             <div
               className="bg-white p-4 rounded-xl border-4 border-red-500/20"
               dangerouslySetInnerHTML={{ __html: qrCodeSvg }}
             />
-          ) : null}
+          ) : (
+            <div className="w-48 h-48 bg-white/5 rounded-xl flex items-center justify-center animate-pulse">
+              <Loader2 className="animate-spin text-slate-500" size={24} />
+            </div>
+          )}
 
           <form onSubmit={handleVerifySetup} className="mt-8 w-full max-w-xs space-y-4">
             <div className="space-y-2">
@@ -310,6 +345,7 @@ export default function MfaSetup({ addToast }: { addToast: (msg: string, type: '
                 type="button"
                 onClick={() => {
                   setIsSettingUp(false)
+                  setChallengeId(null)
                   setQrCodeSvg(null)
                   setOtp('')
                   setVerifyError(null)

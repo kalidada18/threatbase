@@ -196,7 +196,13 @@ def fetch_paginated(table, params):
     while True:
         headers = {**HEADERS, "Prefer": "", "Range": f"{start}-{start + PAGE_SIZE - 1}", "Range-Unit": "items"}
         r = requests.get(url, headers=headers, params=params, timeout=30)
-        r.raise_for_status()
+        if not r.ok:
+            # Body, not just status: a bare raise_for_status() logs "403 Forbidden"
+            # and leaves CI red with no way to tell an edge refusal (Cloudflare WAF,
+            # which answers with a CF error page) from PostgREST's own
+            # {"code":"42501","message":"permission denied..."} for a role missing
+            # its GRANT. Those need opposite fixes and look identical in the log.
+            raise RuntimeError(f"HTTP {r.status_code} from {url}: {r.text[:300]}")
         page = r.json()
         rows.extend(page)
         if len(page) < PAGE_SIZE:
