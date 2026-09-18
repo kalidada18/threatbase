@@ -127,7 +127,8 @@ jobs:
       - name: Sync community reports & disputes
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          # Accept the conventional name too; the app uses SERVICE_ROLE_KEY.
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY || secrets.SUPABASE_SERVICE_ROLE_KEY }}
           PYTHONUNBUFFERED: '1'
         run: python pipeline/sync_community_reports.py
 
