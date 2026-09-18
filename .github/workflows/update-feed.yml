@@ -124,6 +124,11 @@ jobs:
       # Dispute IPs pass the shared public-IPv4 gate, and the DB CHECK on disputes.ip
       # (db/dispute_ip_constraint.sql) plus the /8 floor in update_feed.py's
       # FalsePositivesSet.add_item make a feed-wipe entry impossible end to end.
+      - name: Pin Supabase API to its origin
+        uses: ./.github/actions/pin-supabase-origin
+        with:
+          supabase-url: ${{ secrets.SUPABASE_URL }}
+
       - name: Sync community reports & disputes
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -428,6 +433,11 @@ jobs:
 
       - name: Install Python dependencies
         run: pip install --quiet --no-cache-dir -r pipeline/requirements.txt
+
+      - name: Pin Supabase API to its origin
+        uses: ./.github/actions/pin-supabase-origin
+        with:
+          supabase-url: ${{ secrets.SUPABASE_URL }}
 
       - name: Import delta
         env:
