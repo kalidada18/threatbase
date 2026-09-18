@@ -57,12 +57,15 @@ export default function MfaSetup({ addToast }: { addToast: (msg: string, type: '
       // just the first entry, otherwise a leftover unverified factor masks a
       // real, enabled one and the UI wrongly shows "Disabled".
       const verifiedFactor = pickVerifiedTotpFactor(data?.totp)
+      console.log('MFA factors check:', { factors: data?.totp, verifiedFactor })
       if (verifiedFactor) {
         setIsEnrolled(true)
         setFactorId(verifiedFactor.id)
+        console.log('MFA is ENABLED, factorId:', verifiedFactor.id)
       } else {
         setIsEnrolled(false)
         setFactorId(null)
+        console.log('MFA is DISABLED')
       }
     } catch (err) {
       console.error('Error fetching MFA factors:', err)
@@ -262,6 +265,7 @@ export default function MfaSetup({ addToast }: { addToast: (msg: string, type: '
         
         {!isSettingUp && (
           <div>
+            <span className="hidden text-xs">MFA Enrolled State: {isEnrolled ? 'ENABLED' : 'DISABLED'}</span>
             {isEnrolled ? (
               confirmDisable ? (
                 <div className="flex items-center gap-3">
