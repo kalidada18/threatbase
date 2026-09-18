@@ -172,15 +172,15 @@ usable data in the last run.
 ```mermaid
 flowchart LR
     subgraph SRC["Upstream OSINT"]
-        A1["Abuse.ch · Spamhaus<br/>FireHOL · DShield"]
-        A2["OpenPhish · URLhaus<br/>Hagezi · Blocklist Project"]
-        A3["ThreatFox · MalwareBazaar<br/>Custom + community IOCs"]
+        A1["Abuse.ch, Spamhaus<br/>FireHOL, DShield"]
+        A2["OpenPhish, URLhaus<br/>Hagezi, Blocklist Project"]
+        A3["ThreatFox, MalwareBazaar<br/>Custom and community IOCs"]
     end
 
     subgraph AGG["Aggregator · pipeline/update_feed.py"]
         B1["Concurrent fetch<br/>ThreadPoolExecutor"]
-        B2["Validate · normalise<br/>whitelist · FP suppression"]
-        B3["Dedup · classify<br/>score · decay"]
+        B2["Validate and normalise<br/>whitelist, FP suppression"]
+        B3["Deduplicate, classify<br/>score, decay"]
         B1 --> B2 --> B3
     end
 
@@ -197,9 +197,9 @@ flowchart LR
     end
 
     subgraph APP["Consumption"]
-        E1["Hunt console<br/>React 19 · Cloudflare Pages"]
-        E2["REST API · MCP server"]
-        E3["ipset · Suricata · STIX"]
+        E1["Hunt console<br/>React 19, Cloudflare Pages"]
+        E2["REST API and MCP server"]
+        E3["ipset, Suricata, STIX"]
     end
 
     SRC --> AGG
@@ -210,7 +210,7 @@ flowchart LR
     D1 --> APP
     D2 --> APP
     D3 --> APP
-    DB[("Supabase Postgres<br/>profiles · reports · disputes<br/>api_keys · intel corpus")] <--> APP
+    DB[("Supabase Postgres<br/>profiles, reports, disputes<br/>api_keys, intel corpus")] <--> APP
 ```
 
 | Layer | Stack | Responsibility |
@@ -246,33 +246,34 @@ sequenceDiagram
 
 ```text
 threatbase/
-├── pipeline/           Feed engine (run from repo root)
-│   ├── update_feed.py         54 sources, dedup, classify, publish
-│   ├── import_ip_intel.py     Bulk-load feeds into the Postgres corpus
-│   ├── sync_community_reports.py
-│   ├── whitelist.txt          Never-publish ranges (research, RFC-reserved)
-│   ├── custom_iocs.txt        Threatbase-owned indicators
-│   └── test_*.py              pytest suites for the above
-├── ioc/                Generated public feeds, organised by type
-│   ├── ip/             IPv4, IPv6, CIDR, categories/, top_ips.json
-│   ├── domain/         Domain feed chunks
-│   ├── hash/           Hash feed chunks
-│   ├── url/            URL feed
-│   ├── misp/           MISP free-text exports (IP · domain · URL · hash)
-│   └── data/           stats · manifest · history · geo · feed_health · community
-├── src/                Web console
-│   ├── components/     Pages, blocks/, layout/, ui/, motion/
-│   ├── lib/            Validation, verdict logic, rate gates, helpers
-│   └── *.ts(x)         App shell, router, auth context, scanner
-├── functions/          Cloudflare Pages Functions (the API)
-│   ├── api/            lookup · scan · report · rdap · geo · community · MCP admin
-│   ├── ioc/            Same-origin edge mirror of every public feed
-│   ├── feed/           Token-authenticated Pro delivery
-│   └── mcp/            Model Context Protocol server
-├── db/                 Supabase SQL: schema, RLS, RPCs (applied by hand, see db/README.md)
-├── public/             Static assets, _redirects, _headers, robots, sitemap
-├── .github/            ci.yml · update-feed.yml · import-ip-intel.yml · pinned action
-└── SECURITY.md         Vulnerability disclosure policy and safe harbour
+├── pipeline/                      Feed engine — run from the repository root
+│   ├── update_feed.py             54 upstream sources: fetch, dedup, classify, publish
+│   ├── import_ip_intel.py         Bulk-load a feed into the Postgres corpus
+│   ├── sync_community_reports.py  Fold community reports back into the feed
+│   ├── whitelist.txt              Never-publish ranges (reserved, research)
+│   ├── custom_iocs.txt            Threatbase-owned indicators
+│   └── test_*.py                  pytest suites for the above
+├── ioc/                           Generated public feeds, organised by type
+│   ├── ip/                        IPv4, IPv6, CIDR, categories/, top_ips.json
+│   ├── domain/                    Domain feed chunks
+│   ├── hash/                      Hash feed chunks
+│   ├── url/                       URL feed
+│   ├── misp/                      MISP free-text exports
+│   └── data/                      stats, manifest, history, geo, feed_health, community
+├── src/                           Web console
+│   ├── components/                Pages plus blocks/, layout/, ui/, motion/
+│   ├── lib/                       Validation, verdict logic, rate gates, helpers
+│   └── *.ts / *.tsx               App shell, router, auth context, scanner
+├── functions/                     Cloudflare Pages Functions — the API
+│   ├── api/                       lookup, scan, report, rdap, geo, community, admin
+│   ├── ioc/                       Same-origin edge mirror of every public feed
+│   ├── feed/                      Token-authenticated Pro delivery
+│   └── mcp/                       Model Context Protocol server
+├── db/                            Supabase SQL: schema, RLS, RPCs (see db/README.md)
+├── public/                        Static assets, _redirects, _headers, robots, sitemap
+├── .github/                       ci, update-feed and import-ip-intel workflows, pinned action
+├── SECURITY.md                    Vulnerability disclosure policy and safe harbour
+└── wrangler.jsonc                 Pages project, KV binding, nodejs_compat
 ```
 
 Generated but intentionally **not** committed: `ioc/ip/categories/`, `ioc/firewall/` and
