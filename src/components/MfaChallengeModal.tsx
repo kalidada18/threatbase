@@ -197,7 +197,7 @@ export default function MfaChallengeModal() {
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.96, y: 12 }}
           transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-          className="relative w-full max-w-md overflow-hidden rounded-2xl border border-white/[0.08] bg-app p-8 text-center shadow-glass-lux sm:p-10"
+          className="relative w-full max-w-md min-w-0 overflow-hidden rounded-2xl border border-white/[0.08] bg-app p-8 text-center shadow-glass-lux sm:p-10"
         >
           {/* Ruby hairline across the top edge. */}
           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-red-500/60 to-transparent" />
@@ -254,10 +254,10 @@ export default function MfaChallengeModal() {
                     onFocus={(e) => e.target.select()}
                     aria-label={`Digit ${i + 1} of ${CODE_LEN}`}
                     disabled={loading || !challengeId}
-                    className={`h-14 flex-1 rounded-xl border bg-black/40 text-center font-mono text-xl text-white transition-all duration-200 focus:outline-none disabled:opacity-50 ${
+                    className={`${i === 3 ? 'ml-1.5 sm:ml-2.5 ' : ''}h-14 min-w-0 flex-1 rounded-xl border bg-black/40 text-center font-mono text-xl text-white caret-red-400 transition-all duration-200 focus:outline-none disabled:opacity-50 ${
                       active
                         ? 'border-red-500/40 bg-red-500/[0.06] shadow-[inset_0_0_0_1px_rgba(207,23,51,0.15)]'
-                        : 'border-white/10'
+                        : 'border-white/[0.12]'
                     } focus:border-red-500/60 focus:bg-white/[0.06] focus:ring-2 focus:ring-red-500/25`}
                   />
                 )
