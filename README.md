@@ -177,14 +177,14 @@ flowchart LR
         A3["ThreatFox, MalwareBazaar<br/>Custom and community IOCs"]
     end
 
-    subgraph AGG["Aggregator · pipeline/update_feed.py"]
+    subgraph AGG["Aggregator, pipeline/update_feed.py"]
         B1["Concurrent fetch<br/>ThreadPoolExecutor"]
         B2["Validate and normalise<br/>whitelist, FP suppression"]
         B3["Deduplicate, classify<br/>score, decay"]
         B1 --> B2 --> B3
     end
 
-    subgraph PUB["Publisher · GitHub Actions"]
+    subgraph PUB["Publisher, GitHub Actions"]
         C1["ioc/ feeds<br/>committed to git"]
         C2["Daily ZIP<br/>GitHub Releases"]
         C3["Pro payload<br/>private repo"]
