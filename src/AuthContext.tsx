@@ -156,21 +156,53 @@ export function AuthProvider({
     // checkMfaLevel + fetchProfile chain on every logged-in load: two
     // serialized Supabase round-trips, twice, before first paint settled.
     const { data: { subscription } } = supabaseClient.auth.onAuthStateChange(
-      async (event, currentSession) => {
+      (event, currentSession) => {
         setSession(currentSession)
         const u = currentSession?.user ?? null
         setUser(u)
-        if (u) {
-          signOutIntent.current = false
-          // Independent round-trips: run them in parallel so boot (and every
-          // TOKEN_REFRESHED) waits on the slower one, not their sum.
-          const [, p] = await Promise.all([checkMfaLevel(), fetchProfile(u.id, u)])
-          setProfile(p)
-        } else {
+        if (!u) {
           setProfile(null)
           setRequiresMfa(false)
+          setLoading(false)
+          return
         }
-        setLoading(false)
+        signOutIntent.current = false
+        // NOTHING here may be awaited inside this callback.
+        //
+        // auth-js awaits the callback while still holding its session lock
+        // (_notifyAllSubscribers, GoTrueClient.js). Both calls below acquire that
+        // same lock: getAuthenticatorAssuranceLevel() goes through getSession(),
+        // and the profiles read goes through supabase-js's _getAccessToken().
+        // Awaiting them here deadlocks the two against each other — the callback
+        // cannot return until their 15s abortSignals fire, and until it returns
+        // the lock stays held. On the configured navigatorLock that is a real
+        // Web Lock, so every getSession() in that 15s window queues behind it.
+        // That is what pinned ReportIP's submit to its own 12s ceiling
+        // ("Checking your session timed out after 12s") and failed comment
+        // posting the same way — both lose the race against a 15s hold.
+        //
+        // auth-js only protects the INITIAL_SESSION path (its init notification
+        // queue defers callbacks until initializePromise resolves). Every later
+        // event — TOKEN_REFRESHED from auto-refresh or a focus/visibility regain —
+        // fires with the lock genuinely held, which is why this is constant.
+        //
+        // setTimeout defers us off the callback, and so off the held lock, before
+        // either call starts. Ordering is preserved: setLoading(false) still runs
+        // only after both settle.
+        setTimeout(() => {
+          // Independent round-trips: run them in parallel so boot (and every
+          // TOKEN_REFRESHED) waits on the slower one, not their sum.
+          void Promise.all([checkMfaLevel(), fetchProfile(u.id, u)]).then(
+            ([, p]) => {
+              setProfile(p)
+              setLoading(false)
+            },
+            // Both helpers catch internally, so this should be unreachable — but
+            // a rejection here would strand setLoading(false) exactly as the
+            // deadlock did, and the boot loader would never clear.
+            () => setLoading(false),
+          )
+        }, 0)
       }
     )
 
