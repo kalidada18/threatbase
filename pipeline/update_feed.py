@@ -18,7 +18,7 @@ Writes to ioc/, organized by consumer ("ip in ip, hash in hash, firewall in fire
                 categories/<slug>/ the same six shapes per threat category
                 — Pro only, written when PRO_ENABLED is set (see PAID_DIRS)
   ioc/data/     stats.json, manifest.json, history.json, geo.json,
-                feed_health.json, top_apt.json, community_reports.json,
+                feed_health.json, community_reports.json,
                 false_positives.txt
 
 The domain and hash feeds are additionally written as threatbase-domain-01.txt,

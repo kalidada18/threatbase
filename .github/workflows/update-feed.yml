@@ -17,7 +17,7 @@ jobs:
   update-feed:
     name: Fetch, Aggregate & Publish
     runs-on: ubuntu-latest
-    # aggregator ~90s + APT sync (OTX search can be slow) + ~180 MB of release
+    # aggregator ~90s + ~180 MB of release
     # assets in step 9. Was 15, which the release uploads outgrew: the job was
     # cancelled mid-upload and every consumer URL under releases/download/latest/
     # kept serving the previous run's assets while the run itself looked merely red.
@@ -152,20 +152,6 @@ jobs:
           PRO_ENABLED: ${{ secrets.PRO_REPO_TOKEN != '' }}
           PYTHONUNBUFFERED: '1'
         run: python pipeline/update_feed.py
-
-      # ── 6b. APT leaderboard (top_apt.json) ────────────────────────────────
-      # Exits 0 without OTX_API_KEY. Fails loudly (red step + annotation) when
-      # OTX is unreachable so a stale leaderboard is never overwritten — but
-      # continue-on-error keeps that from blocking the feed push below.
-      # OPENROUTER_API_KEY (optional, free models) adds per-group AI summaries;
-      # absent key or failed calls publish the plain leaderboard as before.
-      - name: Sync APT leaderboard
-        continue-on-error: true
-        env:
-          OTX_API_KEY: ${{ secrets.OTX_API_KEY }}
-          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-          PYTHONUNBUFFERED: '1'
-        run: python pipeline/sync_apt.py
 
       # ── 6b. Publish Pro products to the PRIVATE repo ─────────────────────────
       #

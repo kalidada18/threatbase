@@ -90,7 +90,7 @@ threatbase/
 │   ├── hash/    hash feed chunks
 │   ├── url/     URL feed
 │   ├── misp/    MISP free-text exports (IP · domain · URL · hash)
-│   └── data/    stats, manifest, history, geo, feed_health, top_apt, community data
+│   └── data/    stats, manifest, history, geo, feed_health, community data
 ├── src/         Web console (Cloudflare Pages)
 ├── functions/   API endpoints: /api/v1/* scan, report, community; /ioc/* edge
 │                mirror; /feed/<key>/* Pro delivery; /mcp MCP server (Cloudflare)

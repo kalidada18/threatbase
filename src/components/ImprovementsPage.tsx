@@ -124,7 +124,6 @@ const IMPROVEMENTS: { date: string; title: string; items: string[] }[] = [
       'Feed downloads save as files instead of opening tens of megabytes of text in a browser tab; the MISP free-text export joined the feed manifest.',
       'Real Cloudflare Turnstile challenges now protect sign-in and community reports, replacing the cosmetic gate.',
       'The live threat-intel panel was rebuilt as an ops-room instrument: gradient frame, sparkline well, segmented composition strip; "Flagged by N feeds" counts real independent sources again.',
-      'Top APT digests summarise real campaign detail — pulse descriptions, malware families, targets — not just titles. The #2/#3 cards show the full summary.',
       'Skipped rows in bulk are flagged as an error, not a success; Pro members no longer see a paywall flash; low-contrast micro-text bumped to readable levels; MFA errors announced to screen readers; a crash after an update offers one-click reload instead of a dead stack dump.',
       'Snort IP filter source repaired; a Streamable-HTTP MCP server (/mcp: scan_ioc, batch_scan, feed_stats) lets AI tooling query Threatbase directly.',
       'The Deep Investigation dossier was removed; the whole UI is branded Threatbase, with upstream attribution kept in the data feeds and exports.',
@@ -165,17 +164,6 @@ const IMPROVEMENTS: { date: string; title: string; items: string[] }[] = [
       'Each indicator is validated against its declared type (ipv4, ipv6, domain, url, md5, sha1, sha256) before it is scanned.',
       'A malformed indicator no longer fails the whole batch; it returns as a per-item error while every valid indicator still resolves.',
       'Stricter IPv6 and hash-length validation on both the single and batch scan paths.',
-    ],
-  },
-  {
-    date: '2026-09-03',
-    title: 'Top APT Leaderboard',
-    items: [
-      'New /top-apt page ranks the most active APT groups by fresh campaign intelligence.',
-      'Each group expands to the campaigns attributed to it, every claim linked to its source pulse.',
-      '24-hour and 7-day activity windows, with sponsor attribution and known aliases per group.',
-      'Leaderboard refreshes automatically with the feed pipeline run.',
-      'Top APT added to the main navigation.',
     ],
   },
   {
