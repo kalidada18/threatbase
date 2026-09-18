@@ -56,12 +56,13 @@
 | [What is Threatbase?](#what-is-threatbase) | [Threatbase Pro](#threatbase-pro) |
 | [Coverage dashboard](#coverage-dashboard) | [Web console](#web-console) |
 | [Architecture](#architecture) | [Security posture](#security-posture) |
-| [Repository structure](#repository-structure) | [Development](#development) |
+| [Repository structure](#repository-structure) | [Quick start](#quick-start) |
 | [Data model](#data-model) | [Running the pipeline](#running-the-pipeline) |
 | [Using the feeds](#using-the-feeds) | [CI and operations](#ci-and-operations) |
-| [API reference](#api-reference) | [Contributing](#contributing) |
-| [MCP server](#mcp-server) | [Licence and attribution](#licence-and-attribution) |
-| [Deploy-ready formats](#deploy-ready-formats) | |
+| [API reference](#api-reference) | [Historical archives](#historical-archives) |
+| [MCP server](#mcp-server) | [Upstream sources](#upstream-sources) |
+| [Deploy-ready formats](#deploy-ready-formats) | [Contributing](#contributing) |
+| [STIX 2.1 and TAXII](#stix-21-and-taxii) | [Licence and attribution](#licence-and-attribution) |
 
 ---
 
@@ -109,7 +110,8 @@ pie showData
 ### IPv4 corpus, last 90 days
 
 Sampled from the daily series in [`ioc/data/history.json`](ioc/data/history.json)
-(89 consecutive runs). Every point is published unedited — including the June step-down.
+(89 recorded runs, 2 June to 18 September). Every point is published unedited — including the
+June step-down.
 
 ```mermaid
 xychart-beta
@@ -171,11 +173,9 @@ usable data in the last run.
 flowchart LR
     subgraph SRC["Upstream OSINT"]
         A1["Abuse.ch · Spamhaus<br/>FireHOL · DShield"]
-        A2["PhishTank · OpenPhish<br/>Hagezi · Blocklist.de"]
-        A3["ThreatFox · Datalake<br/>Custom + community IOCs"]
+        A2["OpenPhish · URLhaus<br/>Hagezi · Blocklist Project"]
+        A3["ThreatFox · MalwareBazaar<br/>Custom + community IOCs"]
     end
-
-    SRC --> AGG
 
     subgraph AGG["Aggregator · pipeline/update_feed.py"]
         B1["Concurrent fetch<br/>ThreadPoolExecutor"]
@@ -184,18 +184,17 @@ flowchart LR
         B1 --> B2 --> B3
     end
 
-    AGG --> PUB["GitHub Actions<br/>workflow_dispatch"]
+    subgraph PUB["Publisher · GitHub Actions"]
+        C1["ioc/ feeds<br/>committed to git"]
+        C2["Daily ZIP<br/>GitHub Releases"]
+        C3["Pro payload<br/>private repo"]
+    end
 
-    PUB --> C1["ioc/ feeds<br/>committed to git"]
-    PUB --> C2["Daily ZIP<br/>GitHub Releases"]
-    PUB --> C3["Pro payload<br/>private repo"]
-
-    C1 --> D1["raw.githubusercontent.com"]
-    C1 --> D2["/ioc/* edge mirror"]
-    C3 --> D3["/feed/&lt;key&gt;/* token delivery"]
-
-    D1 & D2 --> APP
-    D3 --> APP
+    subgraph EDGE["Delivery"]
+        D1["raw.githubusercontent.com"]
+        D2["/ioc/* edge mirror"]
+        D3["/feed/&lt;key&gt;/* token delivery"]
+    end
 
     subgraph APP["Consumption"]
         E1["Hunt console<br/>React 19 · Cloudflare Pages"]
@@ -203,6 +202,14 @@ flowchart LR
         E3["ipset · Suricata · STIX"]
     end
 
+    SRC --> AGG
+    AGG --> PUB
+    C1 --> D1
+    C1 --> D2
+    C3 --> D3
+    D1 --> APP
+    D2 --> APP
+    D3 --> APP
     DB[("Supabase Postgres<br/>profiles · reports · disputes<br/>api_keys · intel corpus")] <--> APP
 ```
 
@@ -295,21 +302,21 @@ erDiagram
     }
     reported_ips {
         uuid id PK
-        text ip "CHECK host(ip::inet) = ip"
+        text ip "constrained to a bare inet literal"
         text category
         text comment
-        text reporter_alias
+        text reporter_alias "survives account deletion"
         uuid user_id FK
     }
     disputes {
         uuid id PK
         text ip
-        uuid user_id FK "NOT NULL, defaults auth.uid()"
+        uuid user_id FK "bound to the voter"
     }
     api_keys {
         uuid id PK
         uuid user_id FK
-        text key_hash UK "SHA-256 of the key, never the key"
+        text key_hash UK "digest only"
     }
     comments {
         uuid id PK
@@ -405,11 +412,15 @@ Key inputs and switches:
 
 | Path / variable | Role |
 |:--|:--|
-| `pipeline/update_feed.py` → `FEEDS`, `DOMAIN_FEEDS`, `HASH_FEEDS`, `URL_FEEDS`, `THREATFOX_FEEDS` | The upstream registry. Add a source here and a matching entry in `FEED_CATEGORIES` |
+| `pipeline/update_feed.py` → `FEEDS`, `DOMAIN_FEEDS`, `HASH_FEEDS`, `URL_FEEDS`, `THREATFOX_FEEDS` | The upstream registry: 54 sources in total. Add one here and a matching entry in `FEED_CATEGORIES` |
+| `ABUSEIPDB_API_KEY` | Optional. When set, AbuseIPDB's reputation blacklist is appended as a 55th source |
 | `pipeline/whitelist.txt` | Ranges that must never be published (reserved, research, known-good infrastructure) |
 | `pipeline/custom_iocs.txt` | Threatbase-owned indicators, injected with the `custom` tag |
 | `PRO_ENABLED` | When set, also writes `ioc/ip/categories/`, `ioc/firewall/`, `ioc/stix/` and `manifest-pro.json` |
 | `SUPABASE_URL` + `SUPABASE_SERVICE_KEY` | Required by `sync_community_reports.py` and `import_ip_intel.py` only |
+
+Transient upstream failures are retried three times with linear backoff (`MAX_RETRIES`,
+`RETRY_BACKOFF`), because dropping a single fetch silently removes live indicators from the run.
 
 Pipeline regression suites:
 
@@ -969,11 +980,12 @@ Threatbase curates and de-duplicates from authoritative providers including:
 | **Spamhaus** — DROP, EDROP, Dropv6 | Spam networks, hijacked ASNs | IP, CIDR, IPv6 |
 | **FireHOL** — levels 1–3 | Cybercrime infrastructure | IP |
 | **DShield / SANS ISC** | Port scanners, brute-forcers | IP, CIDR |
-| **PhishTank, OpenPhish, Hagezi** | Phishing and malicious domains | Domain, URL |
+| **OpenPhish, Blocklist Project, StevenBlack** | Phishing and malicious domains | Domain, URL |
 | **Emerging Threats, CINS Army, AlienVault** | Compromised hosts | IP |
+| **Hagezi, Romain Marcoux** | DNS blocklists, outgoing reputation | Domain, IP |
 | **Blocklist.de, GreenSnow, DataPlane, BinaryDefense** | SSH/FTP/mail abuse, service scanners | IP |
 | **Tor Project, dan.me.uk** | Exit nodes | IP |
-| **Romain Marcoux** — outgoing reputation | Network-level abuse | IP |
+| **AbuseIPDB** | Reputation blacklist, opt-in with `ABUSEIPDB_API_KEY` | IP |
 
 Full attribution, with per-feed links and licence notes, is on the
 **[Thanks page](https://threatbase.qzz.io/thanks)**.
