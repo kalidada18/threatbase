@@ -30,11 +30,79 @@ import {
  * would be 10000 sequential requests. A 500-item batch measures ~1.3 s
  * end-to-end, making a full file ~26 s.
  *
- * lookup_intel_batch is granted to `authenticated`, NOT anon — bulk hunt is
- * Pro-gated, so the caller is always signed in and their session JWT rides
- * along on the shared client. One call costs ~1.2 s of database time, which
- * must not be spendable by anyone holding the publishable anon key.
+ * lookup_intel_batch is granted to `authenticated`, NOT anon — one call costs
+ * ~1.2 s of database time, which must not be spendable by anyone holding the
+ * publishable anon key. Bulk hunt is available to every signed-in account now,
+ * so the caller's session JWT rides along on the shared client.
+ *
+ * QUOTA (db/bulk_quota.sql): every scan is a metered unit. Before chunking we
+ * call begin_bulk_scan(), which mints a scan_id and returns the caller's
+ * standing for the UTC day; each lookup_intel_batch chunk carries that scan_id
+ * and the DB refuses any chunk that rides no valid, owned, today-dated token or
+ * that would push the scan past its row budget. That is what makes the limit
+ * real: the old gate was UI-only and any signed-in account could replay the
+ * RPC straight. Free and Pro differ only in the numbers (see below).
  */
+
+// Pro / signed-out-copy mirrors of the DB constants. Kept here so the UI can
+// speak about the allowance without a second round trip; the RPC is the source
+// of truth and the two are stated together in db/bulk_quota.sql.
+export const BULK_FREE_DAILY = 1
+export const BULK_PRO_DAILY = 10
+export const BULK_FREE_ROWS = 250
+
+/** One scan's standing, as returned by begin_bulk_scan(). */
+export type BulkQuota = {
+  scanId: string | null
+  tier: 'free' | 'pro'
+  dailyLimit: number
+  usedToday: number
+  remaining: number
+  maxRows: number
+  denied: boolean
+}
+
+/**
+ * Open a metered scan. Returns null when the Supabase client is unavailable
+ * (the caller then reports an engine error rather than a quota one), throws on
+ * an RPC failure the UI cannot reason about, and otherwise hands back the
+ * quota row — including `denied: true` when the day's allowance is spent.
+ */
+export async function beginBulkScan(): Promise<BulkQuota | null> {
+  if (!supabaseClient) return null
+  const { data, error } = await supabaseClient.rpc('begin_bulk_scan')
+  if (error) throw error
+  const row: any = Array.isArray(data) ? data[0] : data
+  if (!row) throw new Error('begin_bulk_scan returned no row')
+  return {
+    scanId: row.scan_id ?? null,
+    tier: row.tier === 'pro' ? 'pro' : 'free',
+    dailyLimit: Number(row.daily_limit) || 0,
+    usedToday: Number(row.used_today) || 0,
+    remaining: Number(row.remaining) || 0,
+    maxRows: Number(row.max_rows) || 0,
+    denied: !!row.denied,
+  }
+}
+
+/**
+ * Read-only quota (bulk_quota_status): the "X of Y left today" line, safe to
+ * call on mount because it never mints a scan_id or spends an allowance.
+ */
+export async function fetchBulkQuota(): Promise<Omit<BulkQuota, 'scanId' | 'denied'> | null> {
+  if (!supabaseClient) return null
+  const { data, error } = await supabaseClient.rpc('bulk_quota_status')
+  if (error) throw error
+  const row: any = Array.isArray(data) ? data[0] : data
+  if (!row) return null
+  return {
+    tier: row.tier === 'pro' ? 'pro' : 'free',
+    dailyLimit: Number(row.daily_limit) || 0,
+    usedToday: Number(row.used_today) || 0,
+    remaining: Number(row.remaining) || 0,
+    maxRows: Number(row.max_rows) || 0,
+  }
+}
 
 // Rows past this are rejected up front: one file should not turn the tab into
 // a minutes-long loop with nothing but a counter to show for it.
@@ -192,6 +260,7 @@ function errorRow(value: string, message: string): BulkRow {
  */
 export async function runBulkScan(
   rows: string[],
+  scanId: string | null,
   onProgress?: (done: number, total: number) => void,
   shouldAbort?: () => boolean,
   onRow?: (row: BulkRow) => void,
@@ -225,6 +294,7 @@ export async function runBulkScan(
       const { data, error } = await sb
         .rpc('lookup_intel_batch', {
           p_items: prepared.map((p) => ({ value: p.c.ip, parents: p.parents })),
+          p_scan_id: scanId,
         })
         .abortSignal(AbortSignal.timeout(30_000))
       if (error) throw error

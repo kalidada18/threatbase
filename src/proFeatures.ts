@@ -7,8 +7,9 @@ export const PRO_FEATURES = [
   'False positives reviewed and pulled before every publish',
   'Your own allowlist applied server-side to every download',
   'Per-category lists: block C2 without blocking Tor',
-  'First-hand honeypot intel, listed minutes after our sensors see it',
+  'First-hand intel, listed minutes after our sensors see it',
   'Every source liveness-monitored: dead ones dropped, never stale',
+  'Bulk / CSV hunt at Pro scale: 10 scans a day, up to 10,000 indicators each',
   'Formats for your firewall, IDS/IPS and SIEM, under one stable auto-update URL',
 ] as const
 

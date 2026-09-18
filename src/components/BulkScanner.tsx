@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { ShieldCheck, Bug, Upload, Download, X, Lock } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { EASE_EXPO } from './motion/primitives'
-import { parseBulkText, parseBulkFile, runBulkScan, bulkToCsv, BULK_MAX_ROWS, type BulkRow, type ParsedBulk } from '../lib/bulkScan'
+import { parseBulkText, parseBulkFile, runBulkScan, bulkToCsv, beginBulkScan, fetchBulkQuota, BULK_MAX_ROWS, BULK_PRO_DAILY, BULK_FREE_ROWS, type BulkRow, type ParsedBulk, type BulkQuota } from '../lib/bulkScan'
 import { labelSources } from './sourceLabels'
 import { usePro } from '../usePro'
 
@@ -29,9 +29,9 @@ const PREVIEW_ROWS = 200
 const PAGE_ROWS = 1000
 
 export default function BulkScanner({ addToast, onClose }: any) {
-  const { status: proStatus, refetch } = usePro()
+  const { status: proStatus } = usePro()
   const [text, setText] = useState('')
-  const [phase, setPhase] = useState<'input' | 'running' | 'done'>('input')
+  const [phase, setPhase] = useState<'input' | 'running' | 'done' | 'quota'>('input')
   const [progress, setProgress] = useState({ done: 0, total: 0 })
   const [results, setResults] = useState<BulkRow[]>([])
   const [filter, setFilter] = useState<Filter>('all')
@@ -43,6 +43,17 @@ export default function BulkScanner({ addToast, onClose }: any) {
   // abortRef at each batch boundary and between rows within one, and only
   // the Stop button used to set it.
   useEffect(() => () => { abortRef.current = true }, [])
+
+  // Remaining allowance for today, read without consuming a scan. Null until
+  // the first fetch resolves (and forced null while signed-out / still
+  // resolving auth, so the pill never flashes a stale number across accounts).
+  const [quota, setQuota] = useState<Omit<BulkQuota, 'scanId' | 'denied'> | null>(null)
+  useEffect(() => {
+    if (proStatus === 'signed-out' || proStatus === 'checking') { setQuota(null); return }
+    let cancelled = false
+    fetchBulkQuota().then((q) => { if (!cancelled) setQuota(q) }).catch(() => {})
+    return () => { cancelled = true }
+  }, [proStatus])
 
   // Pro gate: bulk hunt rides the same entitlement as the Pro feed URLs
   // (GET /api/me/pro). superadmin bypasses server-side inside that check.
@@ -62,39 +73,34 @@ export default function BulkScanner({ addToast, onClose }: any) {
       </section>
     )
   }
-  if (proStatus !== 'pro') {
+  // Bulk hunt is open to every signed-in account; only the tier's numbers
+  // differ (db/bulk_quota.sql), so the ONE hard gate is being signed in — and
+  // that gate is real regardless of this UI, since lookup_intel_batch is
+  // granted to `authenticated` only. 'not-pro' and 'unavailable' fall through
+  // to the scanner; the allowance and "left today" come from the quota.
+  if (proStatus === 'signed-out') {
     return (
       <section id="bulk-section" className="py-12 scroll-mt-24">
         <div className="mx-auto max-w-5xl px-6 lg:px-12">
           <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-gradient-to-b from-slate-900/70 to-slate-950/80 backdrop-blur-2xl shadow-glass-lux p-10 text-center">
             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-red-500/80 to-transparent" />
             <span className="icon-chip mx-auto h-10 w-10"><Lock size={18} /></span>
-            <h3 className="mt-4 text-lg font-bold text-white">Bulk hunt is a Pro feature</h3>
+            <h3 className="mt-4 text-lg font-bold text-white">Sign in to bulk hunt</h3>
             <p className="mt-2 text-sm text-slate-400 max-w-md mx-auto leading-relaxed">
-              {proStatus === 'signed-out'
-                ? 'Sign in with an account that has Threatbase Pro to scan CSV / Excel files up to 10,000 indicators at once.'
-                : 'Your account is not on Pro yet. Ask us and we will enable it — Pro includes the private feed URLs and Bulk / CSV hunt.'}
+              Bulk / CSV hunt is free for signed-in accounts — up to {BULK_FREE_ROWS.toLocaleString()} indicators, once a day.
+              Pro raises that to {BULK_PRO_DAILY} scans a day and the full {BULK_MAX_ROWS.toLocaleString()} indicators per run.
             </p>
             <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-              {proStatus === 'signed-out' ? (
-                <Link to="/profile" className="inline-flex items-center gap-2 rounded-xl bg-red-500 px-5 py-2.5 text-[13px] font-semibold tracking-[0.06em] text-white transition-all hover:bg-red-400 active:translate-y-px shadow-glow-red cursor-pointer">
-                  Sign in
-                </Link>
-              ) : (
-                <>
-                  <Link to="/pricing" className="inline-flex items-center gap-2 rounded-xl bg-red-500 px-5 py-2.5 text-[13px] font-semibold tracking-[0.06em] text-white transition-all hover:bg-red-400 active:translate-y-px shadow-glow-red cursor-pointer">
-                    See Pro
-                  </Link>
-                  <button type="button" onClick={refetch} className="rounded-xl border border-white/[0.08] px-5 py-2.5 text-[13px] font-semibold text-platinum-300 transition-all hover:border-white/20 hover:text-white cursor-pointer">
-                    Retry
-                  </button>
-                </>
-              )}
+              <Link to="/profile" className="inline-flex items-center gap-2 rounded-xl bg-red-500 px-5 py-2.5 text-[13px] font-semibold tracking-[0.06em] text-white transition-all hover:bg-red-400 active:translate-y-px shadow-glow-red cursor-pointer">
+                Sign in
+              </Link>
+              <Link to="/pricing" className="inline-flex items-center gap-2 rounded-xl border border-white/[0.08] px-5 py-2.5 text-[13px] font-semibold text-platinum-300 transition-all hover:border-white/20 hover:text-white cursor-pointer">
+                See Pro
+              </Link>
               <button type="button" onClick={onClose} className="text-xs font-bold uppercase tracking-wider text-slate-500 hover:text-slate-300 transition-colors cursor-pointer">
                 Close
               </button>
             </div>
-            {proStatus === 'unavailable' && <p className="mt-3 text-xs text-slate-600">Status check failed — this is a connectivity issue, not your account.</p>}
           </div>
         </div>
       </section>
@@ -104,19 +110,43 @@ export default function BulkScanner({ addToast, onClose }: any) {
   const scanRows = async (p: ParsedBulk, sourceName?: string) => {
     if (p.valid.length === 0) { addToast(`No valid indicators found${sourceName ? ` in ${sourceName}` : ''}.`, 'error'); return }
     if (p.invalid.length > 0) addToast(`${p.invalid.length} unparseable row${p.invalid.length === 1 ? '' : 's'} skipped${sourceName ? ` (${sourceName})` : ''}.`, 'error')
-    if (p.truncated) addToast(`Capped at ${BULK_MAX_ROWS.toLocaleString()} rows. Split larger files into multiple runs.`, 'error')
+
+    // Open a metered scan before touching the corpus. begin_bulk_scan() both
+    // charges one of today's units and mints the scan_id the chunks must carry;
+    // a denied result means the day's allowance is spent, so switch to the
+    // reset / upgrade state without running anything.
+    let q: BulkQuota | null
+    try { q = await beginBulkScan() }
+    catch { addToast('Could not start the scan — please try again.', 'error'); return }
+    if (!q) { addToast('Scan engine unavailable.', 'error'); return }
+    if (q.denied) {
+      setQuota({ tier: q.tier, dailyLimit: q.dailyLimit, usedToday: q.usedToday, remaining: 0, maxRows: q.maxRows })
+      setPhase('quota')
+      return
+    }
+
+    // Free and Pro share this code; only the row budget differs. Cap the input
+    // to the scan's budget so the DB never rejects a mid-file chunk on over-cap.
+    const cap = q.maxRows > 0 ? q.maxRows : BULK_MAX_ROWS
+    let valid = p.valid
+    if (p.truncated || valid.length > cap) {
+      if (valid.length > cap) valid = valid.slice(0, cap)
+      addToast(`${q.tier === 'pro' ? 'Pro' : 'Free'} scans up to ${cap.toLocaleString()} indicators per run — kept the first ${valid.length.toLocaleString()}.`, 'error')
+    }
+
     abortRef.current = false
     setPhase('running')
     setFilter('all')
     setLimit(PREVIEW_ROWS)
     setResults([])
-    setProgress({ done: 0, total: p.valid.length })
+    setProgress({ done: 0, total: valid.length })
 
     // Streaming: buffer rows and flush to state every 50 so verdicts appear
     // while the run works; the final set gets the dispute-annotated rows.
     let buf: BulkRow[] = []
     const rows = await runBulkScan(
-      p.valid,
+      valid,
+      q.scanId,
       (done, total) => { setProgress({ done, total }) },
       () => abortRef.current,
       (row) => {
@@ -126,6 +156,8 @@ export default function BulkScanner({ addToast, onClose }: any) {
     )
     setResults(rows)
     setPhase('done')
+    // This scan spent one of today's units — refresh the "left today" line.
+    fetchBulkQuota().then((nq) => setQuota(nq)).catch(() => {})
   }
 
   const start = async () => {
@@ -208,8 +240,16 @@ export default function BulkScanner({ addToast, onClose }: any) {
               <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-platinum-500">Bulk hunt</p>
               <h3 className="mt-1 text-xl md:text-[1.65rem] font-bold tracking-tight text-white">Scan a CSV or Excel of indicators</h3>
               <p className="mt-2 text-sm text-slate-400 leading-relaxed max-w-xl">
-                One IP / domain / URL / hash per cell or line — extra columns (dates, notes) are ignored. Up to {BULK_MAX_ROWS.toLocaleString()} unique indicators per run.
+                One IP / domain / URL / hash per cell or line — extra columns (dates, notes) are ignored.
               </p>
+              {quota && (
+                <p className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] font-semibold uppercase tracking-wider text-platinum-500">
+                  <span className="rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-1">
+                    {quota.remaining} of {quota.dailyLimit} {quota.tier === 'pro' ? 'Pro' : 'free'} scans left today
+                  </span>
+                  <span className="text-slate-600">resets 00:00 UTC · up to {quota.maxRows.toLocaleString()} indicators / run</span>
+                </p>
+              )}
             </div>
             <button
               type="button"
@@ -361,6 +401,32 @@ export default function BulkScanner({ addToast, onClose }: any) {
                     >
                       <ShieldCheck size={15} /> New bulk scan
                     </button>
+                  </div>
+                </motion.div>
+              )}
+
+              {phase === 'quota' && (
+                <motion.div key="quota" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.3, ease: EASE_EXPO }}>
+                  <div className="rounded-xl border border-white/[0.08] bg-slate-950/40 p-8 text-center">
+                    <span className="icon-chip mx-auto h-10 w-10"><Lock size={18} /></span>
+                    <h3 className="mt-4 text-lg font-bold text-white">
+                      {quota?.tier === 'pro' ? 'You’ve used all your bulk scans today' : 'That’s today’s free bulk scan'}
+                    </h3>
+                    <p className="mt-2 text-sm text-slate-400 max-w-md mx-auto leading-relaxed">
+                      {quota?.tier === 'pro'
+                        ? `Pro includes ${quota?.dailyLimit ?? BULK_PRO_DAILY} bulk scans a day. Yours resets at 00:00 UTC.`
+                        : `Free accounts get 1 bulk scan a day (up to ${BULK_FREE_ROWS.toLocaleString()} indicators). Pro raises it to ${BULK_PRO_DAILY} scans a day and the full ${BULK_MAX_ROWS.toLocaleString()} indicators per run.`}
+                    </p>
+                    <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+                      {quota?.tier !== 'pro' && (
+                        <Link to="/pricing" className="inline-flex items-center gap-2 rounded-xl bg-red-500 px-5 py-2.5 text-[13px] font-semibold tracking-[0.06em] text-white transition-all hover:bg-red-400 active:translate-y-px shadow-glow-red cursor-pointer">
+                          See Pro
+                        </Link>
+                      )}
+                      <button type="button" onClick={() => setPhase('input')} className="rounded-xl border border-white/[0.08] px-5 py-2.5 text-[13px] font-semibold text-platinum-300 transition-all hover:border-white/20 hover:text-white cursor-pointer">
+                        Back
+                      </button>
+                    </div>
                   </div>
                 </motion.div>
               )}

@@ -1,8 +1,9 @@
-import { Download } from 'lucide-react'
+import { Download, Lock } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import Section from './layout/Section'
 import { SectionHeading } from './motion/SectionHeading'
+import { usePro } from '../usePro'
 import { fmt, getBaseUrl, getDomainUrl, getHashUrl, INDICATOR_ACCENT, feedPath } from '../utils'
 
 /**
@@ -60,12 +61,18 @@ type Feed = typeof feeds[number]
 /**
  * Published lists as a release manifest: filename, size, one download per row.
  *
- * The card grid this replaces printed the same filled red button six times, so
- * the page had six primary actions and no shape. A row list carries the same
- * links, adds the line count of each file, and spends the accent colour on the
- * type rule instead of on six buttons.
+ * Direct raw-list downloads are a Pro benefit. The manifest stays public — it
+ * is the honest catalogue of what Pro unlocks — but the download action itself
+ * is gated on the same entitlement as bulk hunt (GET /api/me/pro). Free and
+ * signed-out visitors see the locked rows plus a single Pro CTA; Pro members
+ * get the working same-origin downloads. 'checking' renders a neutral state so
+ * paying members never see the paywall flash while the round-trip resolves.
  */
 export default function Feeds({ statsData }: { statsData?: any }) {
+  const { status } = usePro()
+  const canDownload = status === 'pro'
+  const checking = status === 'checking'
+
   const getChunks = (filename: string): string[] => statsData?.chunk_files?.[filename] || [filename]
 
   return (
@@ -93,16 +100,36 @@ export default function Feeds({ statsData }: { statsData?: any }) {
           <ul className="divide-y divide-white/[0.05]">
             {feeds.map((f) => (
               <li key={f.file}>
-                <FeedRow f={f} chunks={getChunks(f.file)} count={statsData?.[f.statKey] ?? null} />
+                <FeedRow
+                  f={f}
+                  chunks={getChunks(f.file)}
+                  count={statsData?.[f.statKey] ?? null}
+                  canDownload={canDownload}
+                  checking={checking}
+                />
               </li>
             ))}
           </ul>
         </motion.div>
+
+        {!canDownload && <ProGate checking={checking} />}
     </Section>
   )
 }
 
-function FeedRow({ f, chunks, count }: { f: Feed; chunks: string[]; count: number | null }) {
+function FeedRow({
+  f,
+  chunks,
+  count,
+  canDownload,
+  checking,
+}: {
+  f: Feed
+  chunks: string[]
+  count: number | null
+  canDownload: boolean
+  checking: boolean
+}) {
   // Always link a single, directly downloadable file. The domain and hash feeds
   // are committed to the repo as ~31 MiB chunks (too large for one file in git),
   // but the unsplit build is published as a GitHub Release asset, so the download
@@ -125,14 +152,11 @@ function FeedRow({ f, chunks, count }: { f: Feed; chunks: string[]; count: numbe
     split ? `mirrored in-repo as ${chunks.length} chunks: ${chunks.join(', ')}` : null,
   ].filter(Boolean).join(', ')
 
-  return (
-    <a
-      href={href}
-      download
-      rel="noopener noreferrer"
-      aria-label={label}
-      className="group grid grid-cols-[3px_minmax(0,1fr)_auto_1rem] items-center gap-x-4 px-5 py-4 transition-colors hover:bg-white/[0.03] focus-visible:outline-none focus-visible:bg-white/[0.04] md:grid-cols-[3px_minmax(0,1.5fr)_minmax(0,1fr)_auto_1rem] md:gap-x-6 md:px-7 md:py-5"
-    >
+  const gridCls =
+    'group grid grid-cols-[3px_minmax(0,1fr)_auto_1rem] items-center gap-x-4 px-5 py-4 transition-colors md:grid-cols-[3px_minmax(0,1.5fr)_minmax(0,1fr)_auto_1rem] md:gap-x-6 md:px-7 md:py-5'
+
+  const body = (
+    <>
       <span aria-hidden className="h-10 w-[3px] rounded-full" style={{ backgroundColor: f.accent }} />
 
       <span className="min-w-0">
@@ -157,12 +181,103 @@ function FeedRow({ f, chunks, count }: { f: Feed; chunks: string[]; count: numbe
         {count != null ? fmt(count) : ''}
         {count != null && <span className="ml-1.5 text-[10px] font-medium uppercase tracking-wider text-slate-500">lines</span>}
       </span>
+    </>
+  )
 
-      <Download
+  // Locked / pending rows keep the exact same grid so switching states after the
+  // entitlement resolves never reflows the manifest.
+  const trailing = canDownload ? (
+    <Download
+      aria-hidden
+      size={16}
+      className="justify-self-end text-slate-500 transition-all group-hover:translate-y-0.5 group-hover:text-red-400"
+    />
+  ) : checking ? (
+    <span
+      aria-hidden
+      className="justify-self-end font-mono text-[10px] uppercase tracking-wider text-slate-600"
+    >
+      ···
+    </span>
+  ) : (
+    <span aria-hidden className="icon-chip justify-self-end h-7 w-7">
+      <Lock size={13} />
+    </span>
+  )
+
+  if (canDownload) {
+    return (
+      <a
+        href={href}
+        download
+        rel="noopener noreferrer"
+        aria-label={label}
+        className={`${gridCls} hover:bg-white/[0.03] focus-visible:outline-none focus-visible:bg-white/[0.04]`}
+      >
+        {body}
+        {trailing}
+      </a>
+    )
+  }
+
+  return (
+    <div
+      className={gridCls}
+      aria-label={`${f.name}, ${count != null ? `${fmt(count)} entries. ` : ''}Direct download is a Pro feature`}
+    >
+      {body}
+      {trailing}
+    </div>
+  )
+}
+
+/**
+ * The one gate below the locked manifest. Same shell and motion idiom as the
+ * bulk-hunt paywall so a free visitor meets a single, consistent "this is Pro"
+ * surface rather than a per-row error. While the entitlement is still
+ * resolving we show a neutral note instead of the pitch (LandingSections and
+ * BulkScanner gate on 'checking' the same way).
+ */
+function ProGate({ checking }: { checking: boolean }) {
+  if (checking) {
+    return (
+      <p
+        role="status"
+        className="mt-5 text-center font-mono text-xs uppercase tracking-widest text-slate-500"
+      >
+        Checking your Pro status…
+      </p>
+    )
+  }
+
+  return (
+    <div className="glass-card relative mt-5 overflow-hidden p-8 text-center md:p-10">
+      <div
         aria-hidden
-        size={16}
-        className="justify-self-end text-slate-500 transition-all group-hover:translate-y-0.5 group-hover:text-red-400"
+        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-red-500/80 to-transparent"
       />
-    </a>
+      <span className="icon-chip mx-auto h-10 w-10">
+        <Lock size={18} />
+      </span>
+      <h3 className="mt-4 text-lg font-bold text-white">Direct feed downloads are Pro</h3>
+      <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-slate-400">
+        The open corpus stays MIT and free to browse and query. Pulling the raw
+        blocklists below, under one stable auto-update URL, is what Pro unlocks.
+      </p>
+      <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+        <Link
+          to="/pricing"
+          className="inline-flex items-center gap-2 rounded-xl bg-red-500 px-5 py-2.5 text-[13px] font-semibold tracking-[0.06em] text-white shadow-glow-red transition-all hover:bg-red-400 active:translate-y-px"
+        >
+          Join the Pro waitlist
+        </Link>
+        <Link
+          to="/api"
+          className="inline-flex items-center gap-2 rounded-xl border border-white/[0.08] px-5 py-2.5 text-[13px] font-semibold text-platinum-300 transition-all hover:border-white/20 hover:text-white"
+        >
+          See auto-update URLs
+        </Link>
+      </div>
+    </div>
   )
 }

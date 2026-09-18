@@ -55,8 +55,8 @@ function smoothScrollTo(el: Element, offset = -96) {
 /** Homepage-only SEO. Scoped to the index route so it never overrides subpage meta. */
 function HomeSeo() {
   useSEO({
-    title: 'Threatbase: Real-Time Threat Intelligence & Free IOC Blocklists',
-    description: 'Free, community-driven threat intelligence. Scan any IP, domain, URL, or file hash for malicious activity and download real-time IOC blocklists.',
+    title: 'Threatbase | Cyber Threat Intelligence Platform',
+    description: 'Threatbase is a cyber threat intelligence platform for defenders. Hunt any IP, domain, URL or file hash in real time and deploy curated IOC feeds to your firewall, IDS and SIEM — free to start, Pro for precision at scale.',
     path: '/',
     keywords: 'threat intelligence, free IOC feed, IP blocklist, check malicious IP, domain reputation, malware hash lookup, open source threat intelligence, abuse IP database, IOC blocklist, SIEM threat feed',
   })

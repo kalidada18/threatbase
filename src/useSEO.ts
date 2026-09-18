@@ -15,7 +15,7 @@ interface SEOProps {
 
 const BASE_URL = 'https://threatbase.qzz.io'
 const SITE_NAME = 'Threatbase'
-const DEFAULT_TITLE = `${SITE_NAME}: Real-Time Threat Intelligence & Free IOC Blocklists`
+const DEFAULT_TITLE = `${SITE_NAME} | Cyber Threat Intelligence Platform`
 const DEFAULT_IMAGE = `${BASE_URL}/img/og.png`
 
 /**

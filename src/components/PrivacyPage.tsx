@@ -1,5 +1,6 @@
 import React from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
+import { Link } from 'react-router-dom'
 import { useSEO } from '@/useSEO'
 
 // Legal text is data, not prose in JSX: drafted for operator protection and
@@ -16,7 +17,7 @@ const CLAUSES: Clause[] = [
     "heading": "2. Information We Collect"
   },
   {
-    "body": "We state below each purpose of processing and the legal basis we rely on, using GDPR terminology as our uniform reference standard for all users regardless of location. No automated decision-making producing legal or similarly significant effects, and no marketing profiling, occurs on the Service.\n\nProvision of Accounts, sign-in, API keys, and Pro entitlement management: basis, performance of the contract formed by your acceptance of the Terms of Service. Publication and enforcement of Reports and reporter attribution, and enforcement of submission limits: basis, the legitimate interests of the Operator and of the public in open, accountable threat intelligence, plus performance of the contract. Operation, security, and debugging of the Service, including Cloudflare bot challenges, Turnstile verification, rate limiting, and the restriction, blocking, suspension, or termination of any Account, API key, Pro entitlement, or access at the Operator's sole discretion, with or without cause and with or without notice: basis, the legitimate interest of the Operator in the security, integrity, and availability of the Service. Communication with you regarding your Account, entitlements, disputes, or legal claims, and response to lawful demands: basis, legitimate interest and, where applicable, legal obligation. Consent-based processing: the Operator stores only strictly-necessary local-storage items and security cookies, none of which require consent under prevailing enforcement practice; where a jurisdiction nonetheless requires consent, providing or retaining the relevant feature constitutes that consent, which you may withdraw by using the feature's own controls or by closing your Account.\n\nNo legal basis stated in this Policy creates or implies any entitlement to continued or uninterrupted access to the Service, to publication or retention of any entry or Report, or to any outcome of the dispute process, and the exercise of the Operator's discretion under this clause is not a breach of this Policy.",
+    "body": "We state below each purpose of processing and the legal basis we rely on, using GDPR terminology as our uniform reference standard for all users regardless of location. No automated decision-making producing legal or similarly significant effects, and no marketing profiling, occurs on the Service.\n\nProvision of Accounts, sign-in, API keys, and Pro entitlement management: basis, performance of the contract formed by your acceptance of the Terms of Service.\n\nPublication and enforcement of Reports and reporter attribution, and enforcement of submission limits: basis, the legitimate interests of the Operator and of the public in open, accountable threat intelligence, plus performance of the contract.\n\nOperation, security, and debugging of the Service, including Cloudflare bot challenges, Turnstile verification, rate limiting, and the restriction, blocking, suspension, or termination of any Account, API key, Pro entitlement, or access at the Operator's sole discretion, with or without cause and with or without notice: basis, the legitimate interest of the Operator in the security, integrity, and availability of the Service.\n\nCommunication with you regarding your Account, entitlements, disputes, or legal claims, and response to lawful demands: basis, legitimate interest and, where applicable, legal obligation.\n\nConsent-based processing: the Operator stores only strictly-necessary local-storage items and security cookies, none of which require consent under prevailing enforcement practice; where a jurisdiction nonetheless requires consent, providing or retaining the relevant feature constitutes that consent, which you may withdraw by using the feature's own controls or by closing your Account.\n\nNo legal basis stated in this Policy creates or implies any entitlement to continued or uninterrupted access to the Service, to publication or retention of any entry or Report, or to any outcome of the dispute process, and the exercise of the Operator's discretion under this clause is not a breach of this Policy.",
     "heading": "3. How We Use Personal Data and Our Legal Bases"
   },
   {
@@ -28,7 +29,7 @@ const CLAUSES: Clause[] = [
     "heading": "5. Information That Is Public by Design"
   },
   {
-    "body": "We disclose Personal Data only to the processors listed below, each of which operates under its own published privacy policy, and to no other recipient except as clause 7 permits. The Operator has no other subprocessors and will not engage a payment processor or new subprocessor without first amending this Policy.\n\nCloudflare, Inc.: hosting, edge logging, managed bot challenge, and Turnstile CAPTCHA verification. Supabase, Inc.: authentication and the database storing Accounts, Reports, profile fields, and API-key metadata including key hashes. GitHub, Inc.: source-code hosting and public mirroring of the Feeds. Supabase session tokens are additionally held by your browser as described in clause 4.",
+    "body": "We disclose Personal Data only to the processors listed below, each of which operates under its own published privacy policy, and to no other recipient except as clause 7 permits. The Operator has no other subprocessors and will not engage a payment processor or new subprocessor without first amending this Policy.\n\nCloudflare, Inc.: hosting, edge logging, managed bot challenge, and Turnstile CAPTCHA verification.\n\nSupabase, Inc.: cloud-hosted authentication and the cloud database (hosted in the United States) that stores Accounts, Reports, profile fields, and API-key metadata including key hashes.\n\nGitHub, Inc.: source-code hosting and public mirroring of the Feeds.\n\nGoogle LLC and GitHub, Inc. (identity providers): when you choose to sign in with Google or GitHub OAuth, that provider authenticates you and transmits your name, email address, and profile/avatar URL to the Service; the Operator never receives or stores your provider password.\n\nSupabase session tokens are additionally held by your browser as described in clause 4.",
     "heading": "6. Service Providers and Subprocessors"
   },
   {
@@ -57,50 +58,119 @@ const CLAUSES: Clause[] = [
   }
 ]
 
+/** Anchor id for a clause heading, used by the on-page index links. */
+const slug = (s: string) =>
+  s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+
 export default function PrivacyPage() {
   const prefersReducedMotion = useReducedMotion()
 
   useSEO({
     title: 'Privacy Policy | Threatbase',
-    description: 'How Threatbase handles personal data: exact collection, legal bases, device storage, subprocessors, retention, transfers, breach response, and rights requests.',
+    description: 'How Threatbase, a cyber threat intelligence platform, handles personal data: exact collection, legal bases, device storage, subprocessors, retention, transfers, breach response, and rights requests.',
     path: '/privacy',
   })
 
   return (
-    <main className="min-h-[100dvh] bg-[#050505] font-sans text-slate-300 selection:bg-red-500/30 pt-32 pb-32">
-      <div className="mx-auto max-w-4xl px-6 lg:px-12 relative z-10">
+    <main className="relative min-h-[100dvh] overflow-hidden bg-[#050505] font-sans text-slate-300 selection:bg-red-500/30">
+      {/* Ambient ruby + platinum wash behind the header. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-[460px]"
+        style={{
+          background:
+            'radial-gradient(680px 300px at 28% -8%, rgba(207,23,51,0.13), transparent 70%), radial-gradient(560px 300px at 82% 6%, rgba(205,211,222,0.06), transparent 70%)',
+        }}
+      />
+
+      <div className="relative mx-auto max-w-5xl px-6 pt-32 pb-32 lg:px-10">
         <motion.div
           initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         >
-          <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-red-500/20 bg-red-500/5 px-3 py-1 text-[10px] font-bold tracking-widest text-red-400 uppercase">
+          <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-red-500/20 bg-red-500/5 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-red-400">
             Legal Information
           </div>
 
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter text-white leading-[0.95] mb-6">
+          <h1 className="mb-6 text-5xl font-black leading-[0.95] tracking-tighter text-white md:text-7xl">
             Privacy Policy.
           </h1>
-          <p className="text-sm font-mono text-slate-500 mb-16 border-b border-white/5 pb-8">
-            Effective Date: September 15, 2026 &middot; supersedes all prior versions
+          <p className="max-w-2xl text-lg leading-relaxed text-slate-400">
+            A complete, plain statement of how Threatbase handles your personal
+            data. No trackers, no ad network, no sale of data.
           </p>
 
-          <div className="space-y-14 text-slate-400 leading-relaxed text-base md:text-lg max-w-[68ch]">
-            {CLAUSES.map((c) => (
-              <section key={c.heading}>
-                <h3 className="text-2xl font-bold text-white mb-4 tracking-tight">{c.heading}</h3>
-                {c.body.split('\n\n').map((para, i) =>
-                  // ALL-CAPS paragraphs are the operative disclaimers; set them apart.
-                  /^[^\p{Ll}]+$/u.test(para) ? (
-                    <p key={i} className="my-5 font-semibold leading-relaxed text-white">{para}</p>
-                  ) : (
-                    <p key={i} className="my-4">{para}</p>
-                  )
-                )}
-              </section>
-            ))}
+          <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 border-y border-white/5 py-4 font-mono text-xs text-slate-500">
+            <span>Effective: September 15, 2026</span>
+            <span className="hidden text-slate-700 sm:inline">/</span>
+            <span>Supersedes all prior versions</span>
+            <span className="hidden text-slate-700 sm:inline">/</span>
+            <Link to="/terms" className="text-slate-400 transition-colors hover:text-white">
+              Terms of Service &rarr;
+            </Link>
           </div>
         </motion.div>
+
+        <div className="mt-16 grid gap-12 lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-16">
+          {/* Section index. App routes anchor clicks through Lenis, so these
+              jump-links scroll smoothly and land under the sticky navbar. */}
+          <nav aria-label="On this page" className="lg:sticky lg:top-28 lg:self-start">
+            <p className="mb-4 text-[11px] font-bold uppercase tracking-widest text-slate-500">On this page</p>
+            <ul className="space-y-2.5 text-sm">
+              {CLAUSES.map((c, i) => (
+                <li key={c.heading}>
+                  <a
+                    href={`#${slug(c.heading)}`}
+                    className="group flex gap-2.5 text-slate-500 transition-colors hover:text-white"
+                  >
+                    <span className="font-mono text-xs leading-6 text-slate-700 transition-colors group-hover:text-red-500">
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <span className="leading-6">{c.heading.replace(/^\d+\.\s*/, '')}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          {/* Clauses. */}
+          <div className="max-w-[68ch]">
+            <div className="space-y-14 text-base leading-relaxed text-slate-400 md:text-lg">
+              {CLAUSES.map((c) => (
+                <section key={c.heading} id={slug(c.heading)} className="scroll-mt-28">
+                  <h2 className="mb-4 text-xl font-bold tracking-tight text-white md:text-2xl">
+                    {c.heading}
+                  </h2>
+                  {c.body.split('\n\n').map((para, i) =>
+                    // ALL-CAPS paragraphs are the operative disclaimers; set them apart.
+                    /^[^\p{Ll}]+$/u.test(para) ? (
+                      <p
+                        key={i}
+                        className="my-5 rounded-lg border border-red-500/15 bg-red-500/[0.04] px-5 py-4 text-sm font-semibold leading-relaxed text-white md:text-base"
+                      >
+                        {para}
+                      </p>
+                    ) : (
+                      <p key={i} className="my-4">{para}</p>
+                    )
+                  )}
+                </section>
+              ))}
+            </div>
+
+            <div className="mt-16 rounded-2xl border border-white/10 bg-white/[0.02] p-6 md:p-8">
+              <p className="text-sm leading-relaxed text-slate-400">
+                Questions about this policy or your data? Email{' '}
+                <a href="mailto:threatbasepro@gmail.com" className="font-medium text-white hover:underline">
+                  threatbasepro@gmail.com
+                </a>
+                . The governing terms for reuse and conduct live in the{' '}
+                <Link to="/terms" className="font-medium text-white hover:underline">Terms of Service</Link>.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </main>
   )
