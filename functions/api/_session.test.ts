@@ -26,6 +26,8 @@ import {
   isTrustedOrigin,
   newSessionId,
   readSessionId,
+  refreshSessionCredentials,
+  type ResolvedSession,
   sha256hex,
 } from './_session'
 
@@ -291,5 +293,82 @@ describe('dayStamp', () => {
   it('is a UTC date, which is what makes a KV counter bucket day-scoped', () => {
     expect(dayStamp()).toMatch(/^\d{4}-\d{2}-\d{2}$/)
     expect(dayStamp()).toBe(new Date().toISOString().slice(0, 10))
+  })
+})
+
+/**
+ * Phase 2.5: a re-handoff for the account a cookie already represents must keep
+ * the session id, because rotating it lets an in-flight request carrying the
+ * just-retired id be classified as `reused` and revoke the whole family.
+ *
+ * These cover only the branch decision — when the function declines to keep a
+ * session in place and the caller must rotate instead. The write itself goes
+ * through PostgREST, and a fake client would prove the fake works rather than
+ * the code, so it is deliberately not asserted here.
+ *
+ * Every case passes `null` as the admin client: reaching the database would
+ * throw, so a clean result is also proof the decision was made without it.
+ */
+describe('refreshSessionCredentials', () => {
+  const ENV = { SESSION_ENC_KEY: VALID_KEY_B64 }
+  const live = (over: Record<string, any> = {}): ResolvedSession => ({
+    state: 'ok',
+    id: 'session-id-1',
+    userId: 'user-1',
+    familyId: 'family-1',
+    aal: 'aal1',
+    expiresAt: 1_800_000_000,
+    idleExpiresAt: 1_799_000_000,
+    accessToken: 'stored-access',
+    refreshToken: 'stored-refresh',
+    ...over,
+  })
+
+  it('keeps a same-account, same-assurance session in place', async () => {
+    const kept = await refreshSessionCredentials(null, ENV, live(), {
+      aal: 'aal1',
+      accessToken: undefined,
+      refreshToken: undefined,
+    })
+    expect(kept).toEqual({ expiresAt: 1_800_000_000 })
+  })
+
+  it('does not extend the absolute expiry', async () => {
+    // A re-handoff arrives on every token refresh. Sliding expires_at here would
+    // make ABSOLUTE_TTL_SECONDS unmeasurable.
+    const kept = await refreshSessionCredentials(null, ENV, live(), {
+      aal: 'aal1',
+    })
+    expect(kept!.expiresAt).toBe(live().expiresAt)
+    // A slid window would be roughly now + ABSOLUTE_TTL. Returning the stored
+    // value untouched is the whole point of this assertion.
+    expect(kept!.expiresAt).not.toBe(Math.floor(Date.now() / 1000) + ABSOLUTE_TTL_SECONDS)
+  })
+
+  it('rotates instead when assurance changed', async () => {
+    // aal1 -> aal2 IS an authentication event: the id that only reached aal1 must
+    // not survive into an aal2 session.
+    expect(
+      await refreshSessionCredentials(null, ENV, live({ aal: 'aal1' }), { aal: 'aal2' }),
+    ).toBeNull()
+  })
+
+  it('rotates instead when there is no key to encrypt the new credential with', async () => {
+    expect(
+      await refreshSessionCredentials(null, {}, live(), { aal: 'aal1', accessToken: 'x' }),
+    ).toBeNull()
+  })
+
+  it('rotates instead for a session that is not live', async () => {
+    for (const state of ['invalid', 'expired', 'reused', 'revoked', 'anonymous', 'unavailable']) {
+      const dead = { state, expiresAt: 1 } as any
+      expect(await refreshSessionCredentials(null, ENV, dead, { aal: 'aal1' }), state).toBeNull()
+    }
+  })
+
+  it('rotates instead when the row has no id to update', async () => {
+    expect(
+      await refreshSessionCredentials(null, ENV, live({ id: undefined }), { aal: 'aal1' }),
+    ).toBeNull()
   })
 })

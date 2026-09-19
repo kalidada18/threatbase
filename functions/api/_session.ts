@@ -455,6 +455,67 @@ export async function rotateSession(
   return minted
 }
 
+/**
+ * Update the stored GoTrue credentials on the caller's existing row, keeping the
+ * session id — and therefore the cookie — unchanged.
+ *
+ * Why this exists. Rotating on a *re*-handoff is what makes an ordinary
+ * concurrent request dangerous. `AuthContext` fires the handoff and the first
+ * data read in the same tick, so that read carries the pre-rotation cookie. If
+ * the edge processes it after the rotation commits, `authenticate_session` finds
+ * a retired row with `rotated_at` set, classifies it as `reused`, and revokes
+ * every row sharing the `family_id` — including the brand-new one the browser
+ * has just been handed. One request losing that race kills the session it was
+ * sent to protect. Re-handoffs happen on every `TOKEN_REFRESHED`, so the window
+ * reopens hourly in every open tab; serialising the client would close the boot
+ * case and leave the rest.
+ *
+ * Anti-fixation is not weakened by this. The requirement is that an id issued
+ * *before* authentication must not survive *authentication*. A re-handoff that
+ * presents the same user's still-valid JWT to the session that already represents
+ * them is not an authentication event, so there is no new id to hand out. Sign-in,
+ * account switch, and any assurance change still rotate.
+ *
+ * Returns the row's existing absolute expiry, or null when the session cannot be
+ * kept in place — the caller then falls back to `rotateSession`, which is always
+ * correct and merely racy.
+ */
+export async function refreshSessionCredentials(
+  admin: any,
+  env: any,
+  current: ResolvedSession,
+  input: { accessToken?: string; refreshToken?: string; aal: MintInput['aal'] },
+): Promise<{ expiresAt: number } | null> {
+  const key = encKey(env)
+  // Every field on ResolvedSession is optional, so the live-session shape has to
+  // be established field by field here rather than assumed from the caller's
+  // branch: a session with no row id or no known expiry cannot be kept in place.
+  const expiresAt = current.state === 'ok' ? current.expiresAt : undefined
+  if (!key || !current.id || expiresAt === undefined) return null
+  // An assurance change IS an authentication event: it has to rotate so the id
+  // that only reached aal1 cannot survive into an aal2 session.
+  if (current.aal !== input.aal) return null
+
+  const patch: Record<string, unknown> = {}
+  if (input.accessToken) patch.access_token_enc = await encryptSecret(input.accessToken, key)
+  if (input.refreshToken) patch.refresh_token_enc = await encryptSecret(input.refreshToken, key)
+  if (!Object.keys(patch).length) return { expiresAt }
+
+  // expires_at is deliberately not extended. A re-handoff arrives on every token
+  // refresh, so renewing the absolute window here would make ABSOLUTE_TTL_SECONDS
+  // unmeasurable and turn a 30-day backstop into a sliding one.
+  const { error } = await admin
+    .from('sessions')
+    .update(patch)
+    .eq('id', current.id)
+    .is('revoked_at', null)
+  if (error) {
+    console.error('in-place credential refresh failed:', error.message)
+    return null
+  }
+  return { expiresAt }
+}
+
 export async function revokeSession(admin: any, sessionId: string): Promise<boolean> {
   const { error } = await admin
     .from('sessions')

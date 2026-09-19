@@ -43,6 +43,7 @@ import {
   peekKv,
   readJson,
   readSessionId,
+  refreshSessionCredentials,
   resolveSession,
   revokeSession,
   rotateSession,
@@ -229,8 +230,38 @@ export const onRequestPost = async (context: any) => {
   // Anti-fixation, and it must cover the dead-cookie cases too: whatever id the
   // browser arrived with is retired, and the surviving id is minted here, after
   // authentication.
+  //
+  // One case is not an authentication event and must not rotate: a re-handoff for
+  // the account this cookie already represents. Rotating there is what let an
+  // in-flight data read carrying the just-retired id be classified as `reused`,
+  // which revokes the whole family including the live session — see
+  // refreshSessionCredentials.
+  const sameAccount = existing.state === 'ok' && existing.userId === userId
+  if (sameAccount) {
+    const kept = await refreshSessionCredentials(admin, env, existing, {
+      accessToken,
+      refreshToken,
+      aal,
+    })
+    if (kept) {
+      // Counted against the mint budget like any other accepted handoff: the
+      // abuse accounting for this endpoint must not depend on which branch ran.
+      await bumpKv(kv, `sl_m_${clientIp}_${today}`)
+      // No Set-Cookie at all. The browser already holds the right id, and the
+      // edge only ever sees its hash, so it could not re-issue it if it wanted to.
+      return jsonResponse(
+        { ok: true, expires_at: kept.expiresAt, aal, mfa_required: mfaRequired },
+        200,
+        request,
+        [],
+      )
+    }
+    // Fall through: an in-place write failed, so rotate. Correct, merely racy,
+    // and preferable to a 503 for a user whose credentials are perfectly good.
+  }
+
   let minted: Minted | null
-  if (existing.state === 'ok' && existing.userId === userId) {
+  if (sameAccount) {
     // Same account: inherit the family, so a later replay of the old id is
     // detectable as reuse rather than as an unknown token.
     minted = await rotateSession(admin, env, existing, credentials)
