@@ -1,20 +1,28 @@
 /**
- * POST /api/auth/refresh — renew the GoTrue tokens stored behind this browser's
- * session cookie and return the new access token.
+ * POST /api/auth/refresh — renew the GoTrue credentials stored behind this
+ * browser's session cookie.
  *
- * This is the route that lets `persistSession: false` become possible: the
- * browser stops being the thing that knows how to stay signed in, and the
- * `sessions` row does. Until it is wired up client-side, `persistSession` stays
- * true and this endpoint is still correct to deploy — it only ever renews
- * credentials the session already owns.
+ * This is the route that lets `persistSession: false` eventually become possible:
+ * the browser stops being the thing that knows how to stay signed in, and the
+ * `sessions` row does. It is wired up (src/lib/dbClient.ts calls it on a 401 from
+ * the proxy), and `persistSession` still stays true until MFA and sign-out move
+ * server-side — those flows send a JWT header from auth-js's own session.
+ *
+ * THE RESPONSE DELIBERATELY CONTAINS NO CREDENTIALS.
+ * `refreshSessionWithLease` hands this route a fresh access and refresh token and
+ * it withholds both. Returning them would make this endpoint a token oracle for
+ * any script running on the page: `isTrustedOrigin` accepts same-origin requests,
+ * so after localStorage is removed an XSS payload could POST here and read back a
+ * live JWT, rebuilding the exact theft the cookie exists to prevent. The only
+ * consumer needs the *effect* of a renewal, not its output: the proxy re-sends
+ * the original request with the cookie and the edge injects the stored token
+ * server-side. A future route that needs the credential (an MFA proxy) should
+ * call refreshSessionWithLease directly rather than widen this response.
  *
  * REQUESTS ARE POST-ONLY AND ORIGIN-GATED, AND THE GATE IS NOT JUST ABOUT CSRF.
- * A successful response contains a live access token. SameSite=Lax stops
- * cross-site *submissions*, but it does nothing about a cross-origin reader on a
- * response that is already allowed to happen; `isTrustedOrigin` is what keeps a
- * third-party page from *reading* the token it provoked. Losing that check would
- * turn a state-changing defence into a credential-disclosure bug, so it is the
- * first statement in the handler and it fails closed on a missing Origin.
+ * SameSite=Lax stops cross-site *submissions*, but it does nothing about a
+ * cross-origin reader; `isTrustedOrigin` is the second layer, and it fails closed
+ * on a missing Origin. It is not sufficient on its own, which is the point above.
  *
  * FAILS CLOSED AND NEVER DESTROYS A SESSION ON UPSTREAM NOISE. A rejected
  * refresh token returns 401; it does not revoke the row. Our own idle/absolute
@@ -77,15 +85,10 @@ export const onRequestPost = async (context: any) => {
 
   switch (out.status) {
     case 'refreshed':
-      return json(
-        {
-          access_token: out.accessToken,
-          refresh_token: out.refreshToken,
-          expires_in: out.expiresIn ?? 3600,
-        },
-        200,
-        request,
-      )
+      // No tokens. See the header comment: this response is readable by any
+      // script on the page, so echoing a credential back would hand XSS exactly
+      // what the cookie was introduced to keep away from JS.
+      return json({ status: 'renewed', expires_in: out.expiresIn ?? 3600 }, 200, request)
 
     case 'busy':
       // Another tab holds the lease. Its commit is the token this client should

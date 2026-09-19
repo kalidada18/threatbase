@@ -15,6 +15,14 @@
  * cookie at all, but a logout is a state change and an availability property, so
  * the second layer applies here too. Without it, any page could sign users out
  * on every visit.
+ *
+ * The GoTrue session behind the stored token is revoked upstream too (best
+ * effort, before the local row is touched). Our `sessions` row is what the cookie
+ * maps to, but the access token we present still points at a first-class GoTrue
+ * session that would otherwise outlive this request and stay refreshable. It is
+ * strictly best-effort: an upstream failure never blocks or fails the local
+ * revoke, because leaving the row live after the visitor asked to be signed out
+ * is the worse failure. auth-js treats a 401/403/404 from /logout the same way.
  */
 import { corsHeaders, json } from '../_common'
 import {
@@ -28,6 +36,42 @@ import {
   revokeSession,
   resolveSession,
 } from '../_session'
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from '../../../src/lib/supabaseConfig'
+
+/** Bounded so a wedged GoTrue cannot hold the request open past the local
+ *  revoke; the timeout path is caught and simply skips the upstream call. */
+const UPSTREAM_TIMEOUT_MS = 10_000
+
+/**
+ * Revoke the caller's GoTrue session(s) with their OWN stored access token.
+ *
+ * Never throws. `global` maps to `?scope=global` (every device, mirroring
+ * scope:'all' below); the default path signs out only this session. If there is
+ * no token — an expired/revoked/reused row — there is nothing for us to revoke
+ * upstream and the local cookie clear already handled it.
+ */
+async function revokeGoTrueSession(
+  env: any,
+  accessToken: string,
+  global: boolean,
+): Promise<void> {
+  try {
+    const base = env?.SUPABASE_URL || SUPABASE_URL
+    const url = `${base}/auth/v1/logout${global ? '?scope=global' : ''}`
+    await fetch(url, {
+      method: 'POST',
+      headers: {
+        apikey: env?.SUPABASE_ANON_KEY || SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${accessToken}`,
+      },
+      signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
+    })
+  } catch (err) {
+    // Best-effort by contract. Log and move on; the row revoke and cookie clear
+    // below still happen, so the session is unusable against us regardless.
+    console.error('logout: upstream GoTrue revocation failed:', err instanceof Error ? err.message : err)
+  }
+}
 
 export const onRequestOptions = async (context: any) => {
   const { request } = context
@@ -69,6 +113,13 @@ export const onRequestPost = async (context: any) => {
   }
 
   const session = await resolveSession(request, env, admin)
+
+  // Revoke upstream first, while the token is still in hand and the row is still
+  // ours to act on. Best-effort: it never returns early or throws, so a GoTrue
+  // outage cannot stop the visitor from being signed out of ThreatBase.
+  if (session.state === 'ok' && session.accessToken) {
+    await revokeGoTrueSession(env, session.accessToken, scopeAll)
+  }
 
   if (scopeAll) {
     // Requires a recognised identity: "log out everywhere" from an anonymous or

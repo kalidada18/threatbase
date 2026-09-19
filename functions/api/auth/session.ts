@@ -237,6 +237,31 @@ export const onRequestPost = async (context: any) => {
   // which revokes the whole family including the live session — see
   // refreshSessionCredentials.
   const sameAccount = existing.state === 'ok' && existing.userId === userId
+
+  // A stale tab must not be able to un-verify MFA. An aal1 token re-presented to
+  // a session that has reached aal2 fails the in-place path further below (an
+  // assurance change is an authentication event, so
+  // `refreshSessionCredentials` refuses to write it) and used to fall straight
+  // through to `rotateSession` — which would
+  // mint a fresh cookie and rewrite the row to aal1, silently dropping a session
+  // that had completed its second factor. Old tab wins, assurance level goes
+  // down, and nothing anywhere says so. Rotating *upwards* is required; rotating
+  // *downwards* is a bug, so an aal1 handoff against an aal2 session is accepted
+  // as a no-op: the row keeps the stronger credential it already holds.
+  const downgrade =
+    sameAccount && existing.aal === 'aal2' && aal !== 'aal2' && existing.expiresAt !== undefined
+  if (downgrade) {
+    await bumpKv(kv, `sl_m_${clientIp}_${today}`)
+    // No Set-Cookie, no write: the browser already holds the id that reached
+    // aal2, and its hash is the only thing the edge can see anyway.
+    return jsonResponse(
+      { ok: true, expires_at: existing.expiresAt, aal: 'aal2', mfa_required: false },
+      200,
+      request,
+      [],
+    )
+  }
+
   if (sameAccount) {
     const kept = await refreshSessionCredentials(admin, env, existing, {
       accessToken,

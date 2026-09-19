@@ -24,6 +24,7 @@
  */
 
 const SESSION_PATH = '/api/auth/session'
+const REFRESH_PATH = '/api/auth/refresh'
 const LOGOUT_PATH = '/api/auth/logout'
 const LIST_PATH = '/api/auth/sessions'
 const ME_PATH = '/api/me'
@@ -125,6 +126,39 @@ export async function establishSession(
   })
   inFlight = { token: accessToken, promise }
   return promise
+}
+
+/**
+ * Outcome of a server-side credential renewal, mapped from the HTTP status.
+ *
+ *   'renewed' — the sessions row now holds a fresh access token.
+ *   'retry'   — nothing is wrong with the session; the renewal just didn't
+ *               happen this time (409 lease held by another tab, 429 limiter,
+ *               503 misconfiguration or GoTrue outage, or a transport failure).
+ *   'dead'    — the server agrees this browser has no usable session. The one
+ *               answer a caller must not retry, and the reason 401 is split out
+ *               instead of being lumped in with 'retry'.
+ *
+ * Deliberately NOT a Session: the tokens in the 200 body are discarded. A caller
+ * that needs a JWT to put in an Authorization header is a caller that still has
+ * to move to a server route — reading the credential back out of this response
+ * and handing it to JS is how the cookie stops being the point of the exercise.
+ */
+export type RefreshOutcome = 'renewed' | 'retry' | 'dead'
+
+/**
+ * Renew the credentials stored behind the tb_session cookie.
+ *
+ * Needs no arguments and sends no body: the cookie is the whole request, which
+ * is exactly what makes it usable on a boot where the browser holds nothing.
+ * POST-only because it changes state; the route rejects GET with 405.
+ */
+export async function refreshSession(): Promise<RefreshOutcome> {
+  const res = await postJson(REFRESH_PATH, {}, HANDOFF_TIMEOUT_MS)
+  if (!res) return 'retry'
+  if (res.ok) return 'renewed'
+  if (res.status === 401) return 'dead'
+  return 'retry'
 }
 
 /**

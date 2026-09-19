@@ -24,15 +24,19 @@
  *  - It does not authenticate. No session is persisted or auto-refreshed here;
  *    the only credential this client presents is the cookie the browser already
  *    has. supabaseClient.ts's navigatorLock warning is about cross-tab refresh
- *    and deliberately does NOT carry over: this client never refreshes, so there
- *    is nothing to serialise.
+ *    and deliberately does NOT carry over: this client holds no auth-js session
+ *    and never calls auth-js refresh, so there is nothing in the browser to
+ *    serialise. It does now trigger a refresh (serverRenew below), but across
+ *    tabs that is serialised by the Postgres lease in db/sessions_refresh.sql,
+ *    which is the stronger primitive: it holds even when two tabs are different
+ *    browsers, where a Web Lock would not reach.
  *  - It does not touch supabase.auth. Sign-in, MFA and OAuth still go through
  *    the original client until Phase 3 moves them.
  */
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { SUPABASE_ANON_KEY } from './supabaseConfig'
 import supabaseClient from '../supabaseClient'
-import { establishSession } from './session'
+import { establishSession, refreshSession } from './session'
 
 const PROXY_PREFIX = '/api/db'
 
@@ -77,19 +81,71 @@ async function remintCookie(): Promise<boolean> {
 }
 
 /**
- * 401 -> re-handoff -> one retry.
+ * Renew the cookie's credential on the server, from nothing but the cookie.
+ *
+ * Deduped for the same reason `remintCookie` is: a boot burst fires several
+ * `.from()` calls at once, and without a shared promise each 401 would POST its
+ * own refresh and race the lease — the exact multi-tab storm the lease exists to
+ * absorb. A single delayed second attempt covers 409: another tab holding the
+ * lease is about to commit the token this request needs, and 400ms is enough for
+ * that commit to land. A second 409 is not chased further.
+ */
+let renewing: Promise<boolean> | null = null
+
+async function serverRenew(): Promise<boolean> {
+  if (!renewing) {
+    renewing = (async () => {
+      const outcome = await refreshSession()
+      if (outcome !== 'retry') return outcome === 'renewed'
+      await new Promise((resolve) => setTimeout(resolve, 400))
+      return (await refreshSession()) === 'renewed'
+    })().finally(() => {
+      renewing = null
+    })
+  }
+  return renewing
+}
+
+/**
+ * 401 -> renew or re-handoff -> one retry.
  *
  * 401 is unambiguous here. PostgREST answers an expired or unusable JWT with
  * 401 and an RLS refusal with 403, and this app's proxy uses 401 only for
- * "your cookie is not currently usable" — so a 401 always means the fix is
- * available locally (re-present the live token), and a 403 correctly never
- * retries. The retry is not repeated: a second 401 means the account genuinely
- * is signed out, and the caller's existing error path handles that.
+ * "your cookie is not currently usable" — so a 401 always means a fix exists,
+ * and a 403 correctly never retries. The retry is not repeated: a second 401
+ * means the account genuinely is signed out, and the caller's existing error
+ * path handles that.
+ *
+ * Two fixes exist because "not currently usable" has two causes: the session row
+ * is gone (remintCookie presents the browser's live token and mints a new row)
+ * or the stored credential is stale (serverRenew renews it, in place, from the
+ * cookie alone).
+ *
+ * Re-handoff FIRST, and the order is load-bearing while `persistSession` is
+ * true. In that regime the browser owns the GoTrue refresh-token family, and
+ * `remintCookie` goes through auth-js's `getSession()`, which is lock-guarded and
+ * single-flight: it joins or waits behind a refresh already running in this tab
+ * (or another, via navigatorLock) and hands off whatever token is current. If
+ * `serverRenew` ran instead, the edge would POST the stored refresh token to
+ * GoTrue at the same moment auth-js POSTs its own copy of the same token — two
+ * independent refreshers on one family, which is precisely the collision
+ * supabaseClient.ts documents for multi-tab and db/sessions_refresh.sql exists to
+ * absorb once the browser holds nothing. Running the edge renewal second means
+ * GoTrue is only ever reached from the edge when the browser genuinely has no
+ * session to refresh with; after the flip that becomes the common case rather
+ * than the fallback, and this ordering is what makes both regimes safe to share.
  */
 const proxyFetch: typeof fetch = async (input, init) => {
   const res = await fetch(input as RequestInfo, init)
   if (res.status !== 401) return res
+  // Re-handoff first: see the ordering note above. It still works after the flip
+  // (auth-js resolves from its in-memory session), and `serverRenew` behind it
+  // covers the case a handoff cannot — a live session row whose stored
+  // credential has simply gone stale (idle expiry, or a boot with nothing in
+  // localStorage). It is also the only path that will work once the browser
+  // holds no token at all.
   if (await remintCookie()) return fetch(input as RequestInfo, init)
+  if (await serverRenew()) return fetch(input as RequestInfo, init)
   return res
 }
 

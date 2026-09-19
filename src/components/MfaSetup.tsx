@@ -1,9 +1,15 @@
 import React, { useState, useEffect } from 'react'
-import supabaseClient from '../supabaseClient'
 import { Shield, ShieldAlert, Loader2, KeyRound, Copy, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { pickVerifiedTotpFactor } from '@/lib/mfaFactor'
 import { withTimeout } from '@/lib/withTimeout'
+import {
+  listTotpFactors,
+  enrollTotp,
+  challengeFactor,
+  verifyFactor,
+  unenrollFactor,
+} from '@/lib/mfa'
 
 /**
  * Normalize Supabase's `totp.qr_code` to an `<img src>` value.
@@ -42,22 +48,20 @@ export default function MfaSetup({ addToast }: { addToast: (msg: string, type: '
   }, [])
 
   const checkStatus = async () => {
-    if (!supabaseClient) return
     setLoading(true)
     try {
-      const { data, error } = await withTimeout(
-        supabaseClient.auth.mfa.listFactors(),
+      const factors = await withTimeout(
+        listTotpFactors(),
         15_000,
         'Loading your authenticators',
       )
-      if (error) throw error
       
       // An account may carry several TOTP factors (e.g. stale unverified ones
       // from earlier setup attempts). Look for ANY verified factor rather than
       // just the first entry, otherwise a leftover unverified factor masks a
       // real, enabled one and the UI wrongly shows "Disabled".
-      const verifiedFactor = pickVerifiedTotpFactor(data?.totp)
-      console.log('MFA factors check:', { factors: data?.totp, verifiedFactor })
+      const verifiedFactor = pickVerifiedTotpFactor(factors)
+      console.log('MFA factors check:', { factors, verifiedFactor })
       if (verifiedFactor) {
         setIsEnrolled(true)
         setFactorId(verifiedFactor.id)
@@ -75,7 +79,6 @@ export default function MfaSetup({ addToast }: { addToast: (msg: string, type: '
   }
 
   const handleStartSetup = async () => {
-    if (!supabaseClient) return
     setIsSettingUp(true)
     setLoading(true)
     // A challenge from a previous, cancelled attempt belongs to a factor the
@@ -94,42 +97,31 @@ export default function MfaSetup({ addToast }: { addToast: (msg: string, type: '
       // incomplete setup (QR shown but never verified). Otherwise enroll()
       // fails with: A factor with the friendly name "" for this user already
       // exists. Verified factors are left untouched.
-      const { data: existing } = await withTimeout(
-        supabaseClient.auth.mfa.listFactors(),
+      const existing = await withTimeout(
+        listTotpFactors(),
         15_000,
         'Loading your existing authenticators',
       )
-      const staleFactors = (existing?.totp || []).filter((f) => f.status !== 'verified')
+      const staleFactors = existing.filter((f) => f.status !== 'verified')
       for (const stale of staleFactors) {
-        // auth-js resolves with { error } rather than throwing, so a bare
-        // `await` here swallowed every failure and fell straight through to
-        // enroll() — which then failed with the baffling "A factor with the
-        // friendly name ... already exists" (422 mfa_factor_name_conflict)
-        // that this cleanup exists to prevent.
-        const { error: unenrollError } = await withTimeout(
-          supabaseClient.auth.mfa.unenroll({ factorId: stale.id }),
-          15_000,
-          'Removing an incomplete setup',
-        )
-        if (unenrollError) throw unenrollError
+        // The proxy client throws on failure (auth-js resolved with { error }
+        // instead, and a swallowed failure here fell straight through to
+        // enroll() — the baffling "A factor with the friendly name ... already
+        // exists" (422 mfa_factor_name_conflict) this cleanup exists to prevent).
+        await withTimeout(unenrollFactor(stale.id), 15_000, 'Removing an incomplete setup')
       }
 
       // 1. Enroll. The name is a human-readable label for the user's
       // authenticator app; uniqueness is guaranteed by the cleanup above, not
-      // by this string (it is only accurate to the day).
-      const { data: enrollData, error: enrollError } = await withTimeout(
-        supabaseClient.auth.mfa.enroll({
-          factorType: 'totp',
-          friendlyName: `Authenticator (${new Date().toISOString().slice(0, 10)})`,
-          // Human-readable service name shown in the authenticator app. Must
-          // not be a URL — slashes break the otpauth:// URI some apps parse.
-          issuer: 'Threatbase',
-        }),
+      // by this string (it is only accurate to the day). The issuer is fixed by
+      // the proxy (and must not be a URL — slashes break the otpauth:// URI some
+      // apps parse), so a compromised page cannot point the code at another
+      // service.
+      const enrollData = await withTimeout(
+        enrollTotp(`Authenticator (${new Date().toISOString().slice(0, 10)})`),
         20_000,
         'Creating the authenticator',
       )
-
-      if (enrollError) throw enrollError
 
       enrolledFactorId = enrollData.id
       setFactorId(enrollData.id)
@@ -146,12 +138,11 @@ export default function MfaSetup({ addToast }: { addToast: (msg: string, type: '
       // panel and discarded a perfectly good QR, showing the user nothing at
       // all. handleVerifySetup creates one on submit if this did not land.
       try {
-        const { data: challengeData, error: challengeError } = await withTimeout(
-          supabaseClient.auth.mfa.challenge({ factorId: enrollData.id }),
+        const challengeData = await withTimeout(
+          challengeFactor(enrollData.id),
           15_000,
           'Preparing the verification challenge',
         )
-        if (challengeError) throw challengeError
         setChallengeId(challengeData.id)
       } catch (challengeErr: any) {
         console.warn('MFA challenge pre-fetch failed; retrying on submit:', challengeErr)
@@ -170,7 +161,7 @@ export default function MfaSetup({ addToast }: { addToast: (msg: string, type: '
 
   const handleVerifySetup = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!supabaseClient || !factorId) return
+    if (!factorId) return
 
     if (otp.length < 6) {
       setVerifyError('Please enter a 6-digit code')
@@ -185,23 +176,20 @@ export default function MfaSetup({ addToast }: { addToast: (msg: string, type: '
       // already on screen. Mint one here instead of leaving Verify dead.
       let activeChallengeId = challengeId
       if (!activeChallengeId) {
-        const { data, error } = await withTimeout(
-          supabaseClient.auth.mfa.challenge({ factorId }),
+        const data = await withTimeout(
+          challengeFactor(factorId),
           15_000,
           'Preparing the verification challenge',
         )
-        if (error) throw error
         activeChallengeId = data.id
         setChallengeId(activeChallengeId)
       }
 
-      const { error } = await withTimeout(
-        supabaseClient.auth.mfa.verify({ factorId, challengeId: activeChallengeId, code: otp }),
+      await withTimeout(
+        verifyFactor(factorId, activeChallengeId, otp),
         20_000,
         'Verifying the code',
       )
-
-      if (error) throw error
 
       addToast('Two-Factor Authentication successfully enabled!', 'success')
       setIsEnrolled(true)
@@ -219,16 +207,15 @@ export default function MfaSetup({ addToast }: { addToast: (msg: string, type: '
   }
 
   const handleUnenroll = async () => {
-    if (!supabaseClient || !factorId) return
+    if (!factorId) return
 
     setUnenrolling(true)
     try {
-      const { error } = await withTimeout(
-        supabaseClient.auth.mfa.unenroll({ factorId }),
+      await withTimeout(
+        unenrollFactor(factorId),
         15_000,
         'Disabling two-factor authentication',
       )
-      if (error) throw error
 
       addToast('Two-Factor Authentication disabled.', 'success')
       setIsEnrolled(false)

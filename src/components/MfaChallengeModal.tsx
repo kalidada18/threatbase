@@ -2,9 +2,9 @@ import React, { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Loader2, AlertCircle, LogOut, ShieldCheck, ArrowRight } from 'lucide-react'
 import { useAuth } from '../AuthContext'
-import supabaseClient from '../supabaseClient'
 import { pickVerifiedTotpFactor } from '../lib/mfaFactor'
 import { withTimeout } from '../lib/withTimeout'
+import { listTotpFactors, challengeFactor, verifyFactor } from '../lib/mfa'
 
 const CODE_LEN = 6
 
@@ -63,33 +63,30 @@ export default function MfaChallengeModal() {
   }, [requiresMfa])
 
   const initiateChallenge = async () => {
-    if (!supabaseClient) return
     setLoading(true)
     setError(null)
     try {
-      const { data: factors, error: factorsError } = await withTimeout(
-        supabaseClient.auth.mfa.listFactors(),
+      const factors = await withTimeout(
+        listTotpFactors(),
         15_000,
         'Loading your two-factor methods',
       )
-      if (factorsError) throw factorsError
 
       // The verified factor, not totp[0]: an abandoned setup leaves an
       // unverified row behind, and challenging that one fails every code the
       // user types — a permanent lockout from 2FA-protected sign-in.
-      const totpFactor = pickVerifiedTotpFactor(factors?.totp)
+      const totpFactor = pickVerifiedTotpFactor(factors)
       if (!totpFactor) {
         throw new Error('No verified two-factor method found on this account.')
       }
 
       setFactorId(totpFactor.id)
 
-      const { data: challenge, error: challengeError } = await withTimeout(
-        supabaseClient.auth.mfa.challenge({ factorId: totpFactor.id }),
+      const challenge = await withTimeout(
+        challengeFactor(totpFactor.id),
         15_000,
         'Preparing the verification challenge',
       )
-      if (challengeError) throw challengeError
 
       setChallengeId(challenge.id)
     } catch (err: any) {
@@ -101,7 +98,7 @@ export default function MfaChallengeModal() {
   }
 
   const runVerify = async (code: string) => {
-    if (!supabaseClient || !factorId || !challengeId || loading) return
+    if (!factorId || !challengeId || loading) return
     if (code.replace(/\D/g, '').length < CODE_LEN) {
       setError('Enter all six digits of your code.')
       return
@@ -111,12 +108,11 @@ export default function MfaChallengeModal() {
     setError(null)
 
     try {
-      const { error } = await withTimeout(
-        supabaseClient.auth.mfa.verify({ factorId, challengeId, code }),
+      await withTimeout(
+        verifyFactor(factorId, challengeId, code),
         20_000,
         'Verifying the code',
       )
-      if (error) throw error
 
       // Successfully verified
       mfaVerified()

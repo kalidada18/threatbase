@@ -8,7 +8,9 @@ import supabaseClient from './supabaseClient'
 import db from './lib/dbClient'
 import { ensureTurnstileLogin } from './lib/turnstile-gate'
 import { withTimeout } from './lib/withTimeout'
-import { establishSession, endSession } from './lib/session'
+import { establishSession, endSession, whoAmI } from './lib/session'
+import { listTotpFactors } from './lib/mfa'
+import { pickVerifiedTotpFactor } from './lib/mfaFactor'
 import MfaChallengeModal from './components/MfaChallengeModal'
 
 
@@ -52,31 +54,39 @@ export function AuthProvider({
   const handoffToken = React.useRef<string | null>(null)
 
   const checkMfaLevel = async () => {
-    if (!supabaseClient) return
     try {
-      // Bound: like the other MFA methods this takes no signal argument, and
-      // it runs inside onAuthStateChange BEFORE setLoading(false) — a stall
-      // here hangs the whole app on the boot loader, not just one panel. On
-      // timeout the gate stays as-is: an aal1 session already passed login,
-      // and the server-side AAL claim still applies.
-      const { data, error } = await withTimeout(
-        supabaseClient.auth.mfa.getAuthenticatorAssuranceLevel(),
+      // Server-sourced since Phase 3b: the session's own AAL comes from /api/me
+      // and the factor list from the MFA proxy, both authenticated by the cookie.
+      // This replaces auth-js's getAuthenticatorAssuranceLevel(), which read the
+      // AAL claim out of the browser's JWT and could not survive the browser
+      // stopping holding one. Bounded because it runs inside onAuthStateChange
+      // before setLoading(false): whoAmI() has its own timeout and listTotpFactors
+      // is wrapped below, so neither can hang the boot loader.
+      const me = await whoAmI()
+      if (!me) {
+        // No verified server identity — the handoff is still in flight or the edge
+        // is unreachable. Leave the gate exactly as it is. Clearing it here would
+        // show a 2FA-required account as fully signed in; the caller awaits the
+        // handoff so this is the rare transient-failure path, not the normal boot.
+        return
+      }
+      if (me.aal === 'aal2') {
+        setRequiresMfa(false)
+        return
+      }
+      // At aal1. Prompt only when a *verified* factor exists to challenge — an
+      // abandoned (unverified) setup must not lock the user behind a modal that
+      // can never succeed. This mirrors auth-js's nextLevel === 'aal2' &&
+      // currentLevel === 'aal1', computed from honest server state now.
+      const factors = await withTimeout(
+        listTotpFactors(),
         15_000,
         'Checking your two-factor status',
       )
-      if (error) {
-        console.error('Error fetching MFA level:', error)
-        return
-      }
-      if (data.nextLevel === 'aal2' && data.currentLevel === 'aal1') {
-        setRequiresMfa(true)
-      } else {
-        setRequiresMfa(false)
-      }
+      setRequiresMfa(!!pickVerifiedTotpFactor(factors))
     } catch (err) {
-      // withTimeout rejects rather than resolving with { error }; same
-      // handling — never let this throw into the onAuthStateChange callback,
-      // or setLoading(false) there is unreachable.
+      // Never throw into the onAuthStateChange callback, or setLoading(false)
+      // there becomes unreachable and the app hangs on the boot loader.
       console.error('Error fetching MFA level:', err)
     }
   }
@@ -203,26 +213,32 @@ export function AuthProvider({
         // either call starts. Ordering is preserved: setLoading(false) still runs
         // only after both settle.
         setTimeout(() => {
-          // The server-side session mirror, deliberately OUTSIDE the Promise.all
-          // below. It is a detached, best-effort POST: boot must not wait on it,
-          // and a failure must not clear the user's session — the app worked
-          // before this cookie existed and still works if minting is down.
-          //
-          // It also must not be *awaited* anywhere in this callback for the
-          // Web-Lock reason documented above; a plain fetch is not lock-guarded,
-          // but keeping it unawaited means it can never reintroduce that bug.
+          // The server-side session mirror. It stays a best-effort POST whose
+          // failure must never clear the user's session — the app worked before
+          // this cookie existed. But Phase 3b moved checkMfaLevel off auth-js and
+          // onto the cookie (whoAmI + the MFA proxy), so unlike the old
+          // getAuthenticatorAssuranceLevel() it cannot answer until the handoff
+          // has set tb_session. The promise is therefore kept and awaited below.
+          // That is safe here: this runs inside the deferred setTimeout, off the
+          // auth-js callback, and establishSession is an ordinary fetch, not one
+          // of auth-js's lock-guarded methods.
           const accessToken = currentSession?.access_token
+          let handoff: Promise<boolean> | null = null
           if (accessToken && accessToken !== handoffToken.current) {
             handoffToken.current = accessToken
-            void establishSession(accessToken, currentSession?.refresh_token).then((ok) => {
+            handoff = establishSession(accessToken, currentSession?.refresh_token)
+            void handoff.then((ok) => {
               // Reset on failure so the next auth event retries rather than
               // concluding forever that this token was already handed off.
               if (!ok) handoffToken.current = null
             })
           }
-          // Independent round-trips: run them in parallel so boot (and every
-          // TOKEN_REFRESHED) waits on the slower one, not their sum.
-          void Promise.all([checkMfaLevel(), fetchProfile(u.id, u)]).then(
+          // checkMfaLevel waits on the handoff so whoAmI() sees a cookie; the
+          // profile read needs no such ordering because the proxy re-mints on its
+          // own 401 (src/lib/dbClient.ts). On a TOKEN_REFRESHED with nothing new
+          // to hand off, the assurance check and the profile read still overlap.
+          const mfaReady = handoff ? handoff.then(() => checkMfaLevel()) : checkMfaLevel()
+          void Promise.all([mfaReady, fetchProfile(u.id, u)]).then(
             ([, p]) => {
               setProfile(p)
               setLoading(false)
