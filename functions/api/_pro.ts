@@ -41,23 +41,37 @@ export async function proStatus(request: Request, env: any): Promise<ProState> {
     if (!admin) return 'no-config'
     const user = await bearerUser(admin, request)
     if (!user) return 'no-auth'
-    const { data: prof } = await admin.from('profiles').select('role').eq('id', user.id).maybeSingle()
-    if (prof?.role === 'superadmin') return 'pro'
-    // limit(1), not maybeSingle(): api_keys_inherit_pro makes every new key of
-    // a Pro user is_pro=true, so a rotate-and-revoke moment can leave 2 active
-    // pro rows — maybeSingle would then error and fail the check closed.
-    const { data: rows, error: rowError } = await admin
-      .from('api_keys')
-      .select('is_pro')
-      .eq('user_id', user.id)
-      .eq('is_pro', true)
-      .eq('is_active', true)
-      .limit(1)
-    if (rowError) throw rowError
-    return rows?.length ? 'pro' : 'not-pro'
+    return await proStatusForUser(admin, user.id)
   } catch (e) {
     console.error('proStatus failed:', e)
     return 'no-config'
   }
+}
+
+/**
+ * The same entitlement question for a caller who already holds a trusted user id
+ * — i.e. a session cookie, whose identity authenticate_session verified, so
+ * re-reading the profile would otherwise cost a second auth round-trip.
+ *
+ * `userId` MUST come from something the server verified (a Bearer JWT checked
+ * with getUser, or a resolved session row). Never pass it from request input:
+ * this function deliberately has no auth of its own, which is what lets
+ * /api/me and /api/me/pro share one implementation instead of two that can drift.
+ */
+export async function proStatusForUser(admin: any, userId: string): Promise<ProState> {
+  const { data: prof } = await admin.from('profiles').select('role').eq('id', userId).maybeSingle()
+  if (prof?.role === 'superadmin') return 'pro'
+  // limit(1), not maybeSingle(): api_keys_inherit_pro makes every new key of
+  // a Pro user is_pro=true, so a rotate-and-revoke moment can leave 2 active
+  // pro rows — maybeSingle would then error and fail the check closed.
+  const { data: rows, error: rowError } = await admin
+    .from('api_keys')
+    .select('is_pro')
+    .eq('user_id', userId)
+    .eq('is_pro', true)
+    .eq('is_active', true)
+    .limit(1)
+  if (rowError) throw rowError
+  return rows?.length ? 'pro' : 'not-pro'
 }
 

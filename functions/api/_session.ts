@@ -201,7 +201,7 @@ export function readSessionId(request: Request): string | null {
 export function isTrustedOrigin(request: Request): boolean {
   const raw = request.headers.get('Origin') || request.headers.get('Referer') || ''
   if (!raw) return false
-  let host = ''
+  let host: string
   try {
     host = new URL(raw).hostname
   } catch {
@@ -450,6 +450,39 @@ export async function revokeSession(admin: any, sessionId: string): Promise<bool
     .eq('id', sessionId)
     .is('revoked_at', null)
   return !error
+}
+
+/**
+ * Revoke one of the caller's own sessions.
+ *
+ * The ownership check is explicit and not inherited from RLS: every write here
+ * runs with the service role, which bypasses row policies entirely, so a
+ * `.eq('id', ...)` alone would let any signed-in user revoke any other user's
+ * session by uuid. The id is a uuid rather than the credential, so it is not a
+ * secret and enumeration is not the risk — cross-tenant revocation is.
+ *
+ * 'not-owned' and 'not-found' collapse to the same answer on purpose: confirming
+ * which session ids exist under other accounts is an oracle we do not need to
+ * give a stranger.
+ */
+export async function revokeOwnedSession(
+  admin: any,
+  sessionId: string,
+  userId: string,
+): Promise<'revoked' | 'not-owned'> {
+  const { data, error } = await admin
+    .from('sessions')
+    .select('id')
+    .eq('id', sessionId)
+    .eq('user_id', userId)
+    .maybeSingle()
+  if (error) {
+    console.error('session ownership check failed:', error.message)
+    return 'not-owned'
+  }
+  if (!data) return 'not-owned'
+  const ok = await revokeSession(admin, sessionId)
+  return ok ? 'revoked' : 'not-owned'
 }
 
 export async function revokeAllForUser(admin: any, userId: string): Promise<boolean> {

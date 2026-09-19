@@ -3,6 +3,7 @@ import { User, Session } from '@supabase/supabase-js'
 import supabaseClient from './supabaseClient'
 import { ensureTurnstileLogin } from './lib/turnstile-gate'
 import { withTimeout } from './lib/withTimeout'
+import { establishSession, endSession } from './lib/session'
 import MfaChallengeModal from './components/MfaChallengeModal'
 
 
@@ -38,6 +39,12 @@ export function AuthProvider({
   const [profile, setProfile] = useState<any | null>(null)
   const [loading, setLoading] = useState(true)
   const [requiresMfa, setRequiresMfa] = useState(false)
+
+  // The access token the tb_session cookie was last minted from. TOKEN_REFRESHED
+  // fires on every tab focus and hands us a NEW access_token each time, so
+  // without this the mirror would POST (and rotate the server session) on every
+  // focus. Comparing the token means exactly one mint per real credential change.
+  const handoffToken = React.useRef<string | null>(null)
 
   const checkMfaLevel = async () => {
     if (!supabaseClient) return
@@ -163,6 +170,7 @@ export function AuthProvider({
         if (!u) {
           setProfile(null)
           setRequiresMfa(false)
+          handoffToken.current = null
           setLoading(false)
           return
         }
@@ -190,6 +198,23 @@ export function AuthProvider({
         // either call starts. Ordering is preserved: setLoading(false) still runs
         // only after both settle.
         setTimeout(() => {
+          // The server-side session mirror, deliberately OUTSIDE the Promise.all
+          // below. It is a detached, best-effort POST: boot must not wait on it,
+          // and a failure must not clear the user's session — the app worked
+          // before this cookie existed and still works if minting is down.
+          //
+          // It also must not be *awaited* anywhere in this callback for the
+          // Web-Lock reason documented above; a plain fetch is not lock-guarded,
+          // but keeping it unawaited means it can never reintroduce that bug.
+          const accessToken = currentSession?.access_token
+          if (accessToken && accessToken !== handoffToken.current) {
+            handoffToken.current = accessToken
+            void establishSession(accessToken, currentSession?.refresh_token).then((ok) => {
+              // Reset on failure so the next auth event retries rather than
+              // concluding forever that this token was already handed off.
+              if (!ok) handoffToken.current = null
+            })
+          }
           // Independent round-trips: run them in parallel so boot (and every
           // TOKEN_REFRESHED) waits on the slower one, not their sum.
           void Promise.all([checkMfaLevel(), fetchProfile(u.id, u)]).then(
@@ -264,6 +289,22 @@ export function AuthProvider({
   const signOut = async (opts?: { scope: 'global' | 'local' }) => {
     if (!supabaseClient) return
     signOutIntent.current = true
+    // Fire the mirrored revocation first and detached. It needs only the HttpOnly
+    // cookie (not the JWT auth-js is about to destroy), and it must never be able
+    // to block or fail the sign-out the visitor actually asked for. 'global' maps
+    // to revoking every device, which is what "sign me out everywhere" means now
+    // that a revocable session exists; 'local' (the MFA-dismiss path) maps to
+    // this device only, preserving the behaviour that fixed the logout loop.
+    //
+    // Before, not after the await, on purpose: a detached fetch queued after a
+    // successful sign-out can be cancelled by the navigation or reload the caller
+    // performs next, which would leave a live session row behind a logged-out UI.
+    // The failure mode of choosing this way round is milder — if auth.signOut()
+    // then fails, other devices were revoked while this one stays signed in, and
+    // the next auth event re-mints it. A credential that outlives a logout is the
+    // one that must not happen.
+    handoffToken.current = null
+    void endSession((opts?.scope ?? 'global') === 'local' ? undefined : 'all')
     const { error } = await supabaseClient.auth.signOut(opts ?? { scope: 'global' })
     if (error) {
       // The sign-out failed, so the session is still live. Leaving the intent
