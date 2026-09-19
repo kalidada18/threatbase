@@ -117,10 +117,21 @@ describe('encryptSecret / decryptSecret', () => {
     // GCM authentication is what makes a rewritten row fail closed. If this
     // resolved, an attacker with write access to one column could substitute a
     // token of their choosing.
+    //
+    // Flip the FIRST character, not the last. The envelope is base64url of
+    // (plaintext + 16-byte tag); when that length is not a multiple of 3 the
+    // final character carries unused low bits, so flipping it can decode to the
+    // exact same bytes — a "tamper" that changes nothing and therefore (correctly)
+    // still decrypts. The first character always encodes the top 6 bits of byte 0.
     const bundle = await encryptSecret('secret token', VALID_KEY_B64)
     const [version, iv, ct] = bundle.split(':')
-    const flipped = ct.slice(0, -1) + (ct.endsWith('A') ? 'B' : 'A')
+    const flipped = (ct[0] === 'A' ? 'B' : 'A') + ct.slice(1)
+    expect(flipped).not.toBe(ct)
     await expect(decryptSecret(`${version}:${iv}:${flipped}`, VALID_KEY_B64)).rejects.toThrow()
+
+    // And the untouched envelope still opens, so the assertion above is failing
+    // because of the edit and not because the fixture is broken.
+    await expect(decryptSecret(bundle, VALID_KEY_B64)).resolves.toBe('secret token')
   })
 
   it('refuses the wrong key', async () => {

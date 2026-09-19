@@ -1,6 +1,6 @@
 import { classifyIndicator } from '../scanner'
 import { isStrictIpv6 } from './ipValidation'
-import supabaseClient from '../supabaseClient'
+import db from '../lib/dbClient'
 import {
   cleanVerdict,
   intelBase,
@@ -69,8 +69,8 @@ export type BulkQuota = {
  * quota row — including `denied: true` when the day's allowance is spent.
  */
 export async function beginBulkScan(): Promise<BulkQuota | null> {
-  if (!supabaseClient) return null
-  const { data, error } = await supabaseClient.rpc('begin_bulk_scan')
+  if (!db) return null
+  const { data, error } = await db.rpc('begin_bulk_scan')
   if (error) throw error
   const row: any = Array.isArray(data) ? data[0] : data
   if (!row) throw new Error('begin_bulk_scan returned no row')
@@ -90,8 +90,8 @@ export async function beginBulkScan(): Promise<BulkQuota | null> {
  * call on mount because it never mints a scan_id or spends an allowance.
  */
 export async function fetchBulkQuota(): Promise<Omit<BulkQuota, 'scanId' | 'denied'> | null> {
-  if (!supabaseClient) return null
-  const { data, error } = await supabaseClient.rpc('bulk_quota_status')
+  if (!db) return null
+  const { data, error } = await db.rpc('bulk_quota_status')
   if (error) throw error
   const row: any = Array.isArray(data) ? data[0] : data
   if (!row) return null
@@ -267,14 +267,14 @@ export async function runBulkScan(
 ): Promise<BulkRow[]> {
   const results: BulkRow[] = []
 
-  if (!supabaseClient) {
+  if (!db) {
     // Mirrors an unreachable scan engine: report every row as an error rather
     // than letting unverifiable indicators render as clean.
     for (const value of rows) results.push(errorRow(value, 'Scan engine unavailable'))
     onProgress?.(rows.length, rows.length)
     return results
   }
-  const sb = supabaseClient
+  const sb = db
 
   for (let start = 0; start < rows.length; start += BATCH_CHUNK) {
     if (shouldAbort?.()) break

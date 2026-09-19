@@ -7,7 +7,7 @@ import {
   CHUNKED_FEEDS,
   feedPath,
 } from './utils'
-import supabaseClient from './supabaseClient'
+import db from './lib/dbClient'
 import { IPV4_RE, ipv4ToLong, isStrictIpv6 } from './lib/ipValidation'
 
 type CompareFn = (query: string, line: string) => number
@@ -528,11 +528,11 @@ export async function scanIndicatorLogic(
         tags = [...tags, 'Related Infrastructure']
       }
 
-      if (supabaseClient && !opts?.skipDisputeCheck) {
+      if (db && !opts?.skipDisputeCheck) {
         try {
           // 10 s ceiling: the dispute tally is an enrichment, not a gate — a
           // hanging request must not keep "Hunting…" spinning forever.
-          const { count } = await supabaseClient
+          const { count } = await db
             .from('disputes')
             .select('*', { count: 'exact', head: true })
             .eq('ip', ip)

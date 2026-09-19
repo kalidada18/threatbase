@@ -15,12 +15,35 @@
  *     event handler that must not fail because a mirrored credential failed to
  *     sync; it resolves false and the app keeps working exactly as it did before
  *     this feature existed.
+ *
+ * Rule 2 protects the visitor, and it initially cost the operator everything:
+ * with no logging, a 503 from a missing SESSION_ENC_KEY was indistinguishable
+ * from "nobody is signed in", which is how a misconfigured deploy ships looking
+ * idle. describeFailure() is the compromise — still silent for the user, one
+ * console line for whoever has DevTools open.
  */
 
 const SESSION_PATH = '/api/auth/session'
 const LOGOUT_PATH = '/api/auth/logout'
 const LIST_PATH = '/api/auth/sessions'
 const ME_PATH = '/api/me'
+
+/** One-shot, module-level: every auth event in a broken deploy hits the same
+ *  wall, and a console line per tab focus would bury the message that explains
+ *  it. The first failure is the informative one. */
+let reported = false
+function describeFailure(what: string, res: Response | null): false {
+  if (reported) return false
+  reported = true
+  const why = res ? `HTTP ${res.status}` : 'network error or timeout'
+  console.warn(
+    `[session] ${what} failed: ${why}. ` +
+      `503 => SESSION_ENC_KEY or SUPABASE_SERVICE_ROLE_KEY missing from the Pages deployment ` +
+      `(a secret added after a deploy needs a new deploy to take effect). ` +
+      `401 => the handed-off token was already expired.`,
+  )
+  return false
+}
 
 /** Handoff is best-effort and must never outlive the auth event that triggered
  *  it: a wedged connection would otherwise sit on a promise nobody awaits. */
@@ -68,18 +91,40 @@ async function postJson(path: string, body: unknown, timeoutMs: number): Promise
  * Returns true only on a 200, which the mint route guarantees means a row
  * exists and the cookie is set. false covers 4xx/5xx and transport failure
  * alike: the caller's job is to stop, not to distinguish.
+ *
+ * Concurrent calls with the same token share one request. This is not a
+ * nicety: AuthContext fires the boot handoff and fetchProfile in the same tick,
+ * and since Phase 2 fetchProfile goes through the proxy — which needs the cookie
+ * that handoff is still setting. So the proxy's 401 retry mints again, and
+ * without this dedupe the two POSTs race each other while the mint route rotates
+ * the session on each, leaving an orphan row and letting whichever Set-Cookie
+ * lands last decide the browser's session. `handoffToken.current` in
+ * AuthContext stops repeat *events*; this stops overlapping *requests*.
  */
+let inFlight: { token: string; promise: Promise<boolean> } | null = null
+
 export async function establishSession(
   accessToken: string,
   refreshToken?: string,
 ): Promise<boolean> {
   if (!accessToken) return false
-  const res = await postJson(
-    SESSION_PATH,
-    { mode: 'exchange', access_token: accessToken, ...(refreshToken ? { refresh_token: refreshToken } : {}) },
-    HANDOFF_TIMEOUT_MS,
-  )
-  return !!res && res.ok
+  if (inFlight && inFlight.token === accessToken) return inFlight.promise
+
+  const promise = (async () => {
+    const res = await postJson(
+      SESSION_PATH,
+      { mode: 'exchange', access_token: accessToken, ...(refreshToken ? { refresh_token: refreshToken } : {}) },
+      HANDOFF_TIMEOUT_MS,
+    )
+    if (!res || !res.ok) return describeFailure('handoff', res)
+    reported = false
+    return true
+  })().finally(() => {
+    // Clear only our own entry: a later call may already have replaced it.
+    if (inFlight?.promise === promise) inFlight = null
+  })
+  inFlight = { token: accessToken, promise }
+  return promise
 }
 
 /**

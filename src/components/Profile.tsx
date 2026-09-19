@@ -3,6 +3,14 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Globe, Copy, Check, ArrowLeft, Loader2, Key, Trash2, AlertTriangle, Crown, ShieldCheck } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../AuthContext'
+import db from '../lib/dbClient'
+// Two clients on purpose. `db` reads and writes rows through the /api/db proxy
+// using only the tb_session cookie. `supabaseClient` is still required for
+// anything under .auth, which owns the browser session. db.auth must not be
+// used: it is configured persistSession:false and therefore has no session to
+// present, so auth-js throws locally before sending any request. Phase 3 moves
+// auth into dedicated server routes under /api/auth/*, not onto this proxy —
+// which is why the proxy allowlists rest/v1 only.
 import supabaseClient from '../supabaseClient'
 import { Button } from '@/components/ui/button'
 import { fmt } from '../utils'
@@ -352,13 +360,13 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
       // Non-forbidden ⇒ own profile; use the canonical own alias (not the URL
       // param, which may differ only by case).
       const targetUsername = authProfile?.username || user?.user_metadata?.user_name || user?.user_metadata?.preferred_username || user?.email?.split('@')[0]
-      if (!supabaseClient || !targetUsername || loadingProfile) {
+      if (!db || !targetUsername || loadingProfile) {
         if (!loadingProfile) setLoadingCount(false)
         return
       }
       setLoadingCount(true)
       try {
-        const { count, error } = await supabaseClient
+        const { count, error } = await db
           .from('reported_ips')
           .select('id', { count: 'exact', head: true })
           .eq('reporter_alias', targetUsername)
@@ -392,12 +400,12 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
   // Only fetch the first 3 accounts ever created — avoids leaking every user ID.
   useEffect(() => {
     async function loadJoinOrder() {
-      if (!supabaseClient || !viewedProfile?.id) return
+      if (!db || !viewedProfile?.id) return
       try {
         // Join-order badge needs only the first 3 account ids. profiles is
         // owner-only readable, so go through a security-definer RPC that returns
         // just those ids (no PII, no full-table read).
-        const { data, error } = await supabaseClient
+        const { data, error } = await db
           .rpc('first_user_ids')
         if (error) throw error
         if (data) {
@@ -415,10 +423,10 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
   // Fetch API Keys
   useEffect(() => {
     async function loadApiKeys() {
-      if (!isOwnProfile || !user || !supabaseClient) return
+      if (!isOwnProfile || !user || !db) return
       setLoadingApiKeys(true)
       try {
-        const { data, error } = await supabaseClient
+        const { data, error } = await db
           .from('api_keys')
           .select('*')
           .eq('is_active', true)
@@ -436,7 +444,7 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
       }
     }
     loadApiKeys()
-  }, [isOwnProfile, user, supabaseClient])
+  }, [isOwnProfile, user, db])
 
   // Check MFA enrollment status
   useEffect(() => {
@@ -454,7 +462,7 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
   }, [isOwnProfile, user, supabaseClient])
 
   const handleGenerateApiKey = async () => {
-    if (!supabaseClient || !user) return
+    if (!db || !user) return
     setGeneratingKey(true)
     try {
       // 1. Generate Plain Text Key
@@ -473,7 +481,7 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
       // 3. Mint via the SECURITY DEFINER RPC — the active-key cap and the MFA
       //    check are enforced server-side in the same transaction as the
       //    INSERT. The direct client INSERT policy was dropped (db/mint_api_key_rpc.sql).
-      const { data: newKeyData, error } = await supabaseClient
+      const { data: newKeyData, error } = await db
         .rpc('mint_api_key', { p_key_hash: hashHex, p_prefix: plainKey.substring(0, 15) })
         .abortSignal(AbortSignal.timeout(15_000))
         .single()
@@ -500,10 +508,10 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
   }
 
   const handleRevokeApiKey = async (id: string) => {
-    if (!supabaseClient || !user) return
+    if (!db || !user) return
     try {
       // Scope revocation to the current user's keys to prevent IDOR attacks
-      const { error } = await supabaseClient
+      const { error } = await db
         .from('api_keys')
         .update({ is_active: false })
         .eq('id', id)
@@ -520,7 +528,7 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!supabaseClient || !user) return
+    if (!db || !user) return
 
     if (editUsername.trim().length < 3) {
       setProfileErrors({ username: 'Username alias must be at least 3 characters long' })
@@ -541,7 +549,7 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
     try {
       // Rely on the DB UNIQUE constraint on username to prevent duplicates.
       // This eliminates the TOCTOU race condition of a separate check-then-insert.
-      const { error } = await supabaseClient
+      const { error } = await db
         .from('profiles')
         .upsert({
           id: user.id,
@@ -573,7 +581,7 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
       const oldUsername = authProfile?.username || user.email?.split('@')[0] || '';
       const newUsername = editUsername.trim();
       if (oldUsername && oldUsername !== newUsername) {
-        const { error: migrateError } = await supabaseClient.rpc('migrate_reporter_alias', {
+        const { error: migrateError } = await db.rpc('migrate_reporter_alias', {
           p_old_alias: oldUsername,
           p_new_alias: newUsername,
         })
@@ -605,13 +613,13 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
   }
 
   const handleDeleteAccount = async () => {
-    if (deleteInput !== 'delete my account' || !supabaseClient || !user) return
+    if (deleteInput !== 'delete my account' || !db || !user) return
     setDeleting(true)
     try {
       // SECURITY: The delete_user RPC should handle reassigning reports to
       // 'deletedaccount' internally. We no longer do this client-side because
       // a malicious client could reassign any user's reports via the anon key.
-      const { error } = await supabaseClient.rpc('delete_user')
+      const { error } = await db.rpc('delete_user')
         // A ceiling here is a trade, not a free win: if the RPC lands but the
         // response is slow past 20 s we report a failure for a delete that
         // happened. The alternative — no bound — leaves "Deleting..." up

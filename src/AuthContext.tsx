@@ -1,6 +1,11 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import supabaseClient from './supabaseClient'
+// Profile rows are read and written through the /api/db proxy on the tb_session
+// cookie (src/lib/dbClient.ts). Everything under .auth stays on supabaseClient:
+// it owns the browser session and the refresh lock, and db is deliberately
+// configured with persistSession:false, so db.auth has nothing to present.
+import db from './lib/dbClient'
 import { ensureTurnstileLogin } from './lib/turnstile-gate'
 import { withTimeout } from './lib/withTimeout'
 import { establishSession, endSession } from './lib/session'
@@ -82,7 +87,7 @@ export function AuthProvider({
   }
 
   const fetchProfile = async (userId: string, userObj?: User) => {
-    if (!supabaseClient) return null
+    if (!db) return null
     try {
       // Bounded: the outer catch below handles a *rejection*, but a stalled read
       // neither rejects nor resolves, so this function never returned and the
@@ -90,7 +95,7 @@ export function AuthProvider({
       // Navbar auth skeleton and Profile's full-screen "Loading Profile" until
       // a full reload. Must precede .single(), which finalises to a builder
       // that no longer carries abortSignal.
-      const { data, error } = await supabaseClient
+      const { data, error } = await db
         .from('profiles')
         .select('*')
         .eq('id', userId)
@@ -111,7 +116,7 @@ export function AuthProvider({
                 avatar_url: userObj.user_metadata?.avatar_url || null,
               }
               
-              const { data: inserted, error: insertError } = await supabaseClient
+              const { data: inserted, error: insertError } = await db
                 .from('profiles')
                 .insert([newProfile])
                 .select()
@@ -121,7 +126,7 @@ export function AuthProvider({
               if (!insertError && inserted) return inserted
               
               if (insertError?.code === '23505') { // unique violation
-                const { data: inserted2, error: insertError2 } = await supabaseClient
+                const { data: inserted2, error: insertError2 } = await db
                   .from('profiles')
                   .insert([{ ...newProfile, username: `${baseUsername}_${Math.floor(Math.random()*1000)}` }])
                   .select()

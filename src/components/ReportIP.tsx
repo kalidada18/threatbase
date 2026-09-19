@@ -6,6 +6,10 @@ import {
 import { Link } from 'react-router-dom'
 import { AuthComponent } from '@/components/ui/sign-up'
 import supabaseClient from '../supabaseClient'
+// Row reads and writes go through the /api/db proxy on the tb_session cookie
+// (src/lib/dbClient.ts); `supabaseClient` is kept only for .auth.getSession(),
+// which needs the browser session until Phase 3.
+import db from '../lib/dbClient'
 import { fmt, timeAgo, categoryTier, TIER_CHIP } from '../utils'
 import { useAuth } from '../AuthContext'
 import { useSEO } from '@/useSEO'
@@ -178,7 +182,7 @@ export default function ReportIP({ addToast }: any) {
   }, [ipValue])
 
   const loadReportedIPs = useCallback(async (pg = 0) => {
-    if (!supabaseClient) return
+    if (!db) return
     const p = Math.max(0, pg)
     setPage(p)
     setLoading(true)
@@ -189,7 +193,7 @@ export default function ReportIP({ addToast }: any) {
     const to = from + REPORT_PAGE_SIZE - 1
 
     try {
-      const { data, error, count } = await supabaseClient
+      const { data, error, count } = await db
         // View = reported_ips + profiles.avatar_url (definer join; profiles
         // is owner-only-RLS, so anon cannot embed it client-side).
         .from('reported_ips_feed')
@@ -319,7 +323,7 @@ export default function ReportIP({ addToast }: any) {
   }
 
   const handleSaveEdit = async (id: number) => {
-    if (!supabaseClient) return addToast('Supabase connection unavailable', 'error')
+    if (!db) return addToast('Supabase connection unavailable', 'error')
     if (!alias) return addToast('Cannot edit without a reporter alias', 'error')
     if (!editComment.trim()) return addToast('Comment cannot be empty', 'error')
     if (editComment.trim().length > 1000) return addToast('Comment is too long (max 1000 characters)', 'error')
@@ -330,7 +334,7 @@ export default function ReportIP({ addToast }: any) {
       // SECURITY: Scope the update to both the row ID AND the current user's
       // reporter_alias. This prevents editing another user's report by
       // sending a crafted row ID directly to Supabase.
-      const { data, error } = await supabaseClient
+      const { data, error } = await db
         .from('reported_ips')
         .update({ comment: safeComment })
         .eq('id', id)

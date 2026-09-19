@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence, useReducedMotion, useMotionValue, useTransform, animate } from 'framer-motion'
 import { Bug, ShieldCheck, AlertTriangle, Check, ShieldAlert, Copy, Globe, Link2, Ban, Flag } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import supabaseClient from '../supabaseClient'
+import db from '../lib/dbClient'
 import { timeAgo, categoryTier, TIER_CHIP, TIER_ACCENT, countryFlag } from '../utils'
 import { useAuth } from '../AuthContext'
 import { getMalwareDescription } from '../malwareDictionary'
@@ -233,7 +233,7 @@ function CommentsSection({ ip, addToast }: { ip: string; addToast: (msg: string,
 
   useEffect(() => {
     let cancelled = false
-    if (!ip || !supabaseClient) {
+    if (!ip || !db) {
       setStatus('error')
       return
     }
@@ -241,7 +241,7 @@ function CommentsSection({ ip, addToast }: { ip: string; addToast: (msg: string,
     // Promise.resolve: the Supabase builder is only *thenable* (see reports fetch above).
     // abortSignal: without it a hanging request leaves the skeleton up
     // forever — PostgREST only errors on refusal, never on slowness.
-    void Promise.resolve(supabaseClient
+    void Promise.resolve(db
       .from('comments')
       .select('id, body, username, user_id, created_at')
       .eq('indicator', ip)
@@ -264,11 +264,11 @@ function CommentsSection({ ip, addToast }: { ip: string; addToast: (msg: string,
     const text = body.trim()
     if (!text) return addToast('Please write a comment first.', 'error')
     if (text.length > 1000) return addToast('Comment must be under 1000 characters.', 'error')
-    if (!supabaseClient) return addToast('Database connection unavailable.', 'error')
+    if (!db) return addToast('Database connection unavailable.', 'error')
 
     setPosting(true)
     try {
-      const { data, error } = await supabaseClient.from('comments').insert([{
+      const { data, error } = await db.from('comments').insert([{
         indicator: ip,
         body: text,
         user_id: user.id,
@@ -295,10 +295,10 @@ function CommentsSection({ ip, addToast }: { ip: string; addToast: (msg: string,
   }
 
   const handleDelete = async (id: string) => {
-    if (!user || !supabaseClient) return
+    if (!user || !db) return
     const prev = comments
     setComments(prev.filter(c => c.id !== id))
-    void Promise.resolve(supabaseClient
+    void Promise.resolve(db
       .from('comments')
       .delete()
       .eq('id', id)
@@ -533,10 +533,10 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
       setIpInfo(null)
       setLoadingReports(true)
 
-      if (supabaseClient) {
+      if (db) {
         // Promise.resolve: the Supabase builder is only *thenable*, so a
         // trailing .catch is not on its type without a real Promise.
-        void Promise.resolve(supabaseClient
+        void Promise.resolve(db
           .from('reported_ips')
           // Only the rendered columns — row.id/user_id/etc never reach the UI.
           .select('ip, category, comment, created_at, reporter_alias')
@@ -618,7 +618,7 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
 
   const handleDispute = async () => {
     if (!user) return addToast('Please sign in to report a false positive.', 'error')
-    if (!supabaseClient) return addToast('Database connection unavailable.', 'error')
+    if (!db) return addToast('Database connection unavailable.', 'error')
     if (!disputeReason.trim()) return addToast('Please provide a reason.', 'error')
     if (disputeReason.length > 500) return addToast('Reason must be under 500 characters.', 'error')
 
@@ -629,7 +629,7 @@ export default function ReportScanner({ scanResult, isScanning, showReport, scan
       // rare — it must not sit in the main bundle every visitor downloads.
       const { default: DOMPurify } = await import('dompurify')
       const safeReason = DOMPurify.sanitize(disputeReason.trim())
-      const { error } = await supabaseClient.from('disputes').insert([{
+      const { error } = await db.from('disputes').insert([{
         ip,
         reporter_alias: alias,
         reason: safeReason

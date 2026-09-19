@@ -1,7 +1,7 @@
 import { useState, useEffect, type ReactNode } from 'react'
 import { motion, type Variants } from 'framer-motion'
 import { Crown } from 'lucide-react'
-import supabaseClient from '../supabaseClient'
+import db from '../lib/dbClient'
 import { fmt } from '../utils'
 import { useCountUp } from '../lib/useCountUp'
 import { splitLeaderboard } from '../lib/leaderboardRanking'
@@ -268,14 +268,14 @@ export default function Leaderboard() {
 
   useEffect(() => {
     async function loadLeaders() {
-      if (!supabaseClient) {
+      if (!db) {
         setLoading(false)
         return
       }
       setLoading(true)
       try {
         // We assume a view 'top_contributors' exists in Supabase
-        const { data, error: queryError } = await supabaseClient
+        const { data, error: queryError } = await db
           .from('top_contributors')
           .select('*')
           .order('reports_count', { ascending: false })

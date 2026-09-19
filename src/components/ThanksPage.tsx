@@ -3,7 +3,7 @@ import { motion, useReducedMotion } from 'framer-motion'
 import { Trophy, ArrowRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useSEO } from '@/useSEO'
-import supabaseClient from '@/supabaseClient'
+import db from '@/lib/dbClient'
 
 export default function ThanksPage() {
   const [topReporter, setTopReporter] = useState<string | null>(null)
@@ -11,9 +11,9 @@ export default function ThanksPage() {
 
   useEffect(() => {
     async function fetchTopReporter() {
-      if (!supabaseClient) return
+      if (!db) return
       try {
-        const { data, error } = await supabaseClient
+        const { data, error } = await db
           .from('top_contributors')
           .select('reporter_alias')
           .order('reports_count', { ascending: false })

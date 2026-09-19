@@ -87,7 +87,16 @@ skills-lock.json
 # NOTE: the 18 files committed by 2c70114 / e81d633 / 19dbfec are still
 # readable in this repo's history on GitHub; ignoring them only stops FUTURE
 # commits. Purging them needs a history rewrite + force-push.
-db/
+#
+# ANCHORED ON PURPOSE. `db/` with no leading slash matches a directory named db
+# at ANY depth, which silently swallowed the Phase 2 data-proxy route at
+# functions/api/db/[[path]].ts. Pages builds Functions from the git checkout, so
+# an ignored route is a route that 404s in production while looking finished
+# locally. src/lib/session.ts's proxy and the /api/db mount both depend on that
+# file shipping; do not de-anchor this line. The guard test in
+# functions/api/_ignoreGuard.test.ts fails CI if any file under src/ or
+# functions/ is ignored.
+/db/
 
 # MCPs
 .mcp.json
