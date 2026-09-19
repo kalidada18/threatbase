@@ -69,7 +69,7 @@ export const onRequestGet = async (context: any) => {
       if (cur && parseInt(cur, 10) >= LOOKUP_DAILY_LIMIT) {
         return json({ error: 'Daily lookup limit reached for your network. Try again tomorrow.' }, 429, request)
       }
-      rlCount = parseInt(cur as string | null, 10) || 0
+      rlCount = cur ? parseInt(cur, 10) || 0 : 0
     } catch {
       /* fail open: losing the limiter beats failing hunts */
     }

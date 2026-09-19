@@ -22,9 +22,48 @@
  */
 import { createClient } from '@supabase/supabase-js'
 import { json, corsHeaders } from './_common'
-import { SUPABASE_URL } from '../../src/lib/supabaseConfig'
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from '../../src/lib/supabaseConfig'
 
 export const SESSION_COOKIE = 'tb_session'
+
+/**
+ * The Pages Function bindings this subsystem reads. Declared on purpose rather
+ * than left as `any`: there are six keys, they all come from wrangler.jsonc or
+ * the dashboard, and the failure mode of a wrong name is silent — `env?.X` on a
+ * typo yields undefined, which makes `peekKv` return 0 and turns a rate limiter
+ * into a no-op that looks like it is working.
+ *
+ * All optional: a binding can genuinely be absent (that is what the 503 paths
+ * exist for), so absence must stay representable.
+ */
+export interface SessionEnv {
+  SUPABASE_URL?: string
+  SUPABASE_SERVICE_ROLE_KEY?: string
+  /** AES-256-GCM key for the stored token pair. See encKey(). */
+  SESSION_ENC_KEY?: string
+  /** Day-scoped counters for the auth rate limiters. */
+  IOC_CACHE?: KvStringStore
+}
+
+/** The subset of a Workers KV namespace the auth counters actually use. */
+export interface KvStringStore {
+  get(key: string): Promise<string | null>
+  put(key: string, value: string, options?: { expirationTtl?: number }): Promise<unknown>
+}
+
+/**
+ * Left loose deliberately, and the reason is worth recording so nobody re-tries
+ * this: supabase-js v2 resolves `.rpc()` against the client's Database generic,
+ * and without a generated one every function's Args collapses to `never` and its
+ * Returns to `never` — so `ReturnType<typeof createClient>` turned the nine
+ * `admin.rpc(...)` calls in this file into compile errors instead of checked
+ * calls. Named anyway so the fix is one edit in one place: run
+ * `supabase gen types typescript`, then make this
+ * `SupabaseClient<Database>` and the `any` at every call site resolves itself.
+ * A hand-written narrow interface was rejected: it would encode our guesses
+ * about PostgREST rather than the actual schema, which is worse than `any`.
+ */
+export type AdminClient = any
 
 /** Liveness dials. `ABSOLUTE` is the ceiling a session may never be refreshed
  *  past; `IDLE` is how long one survives without requests; `TOUCH` throttles how
@@ -41,6 +80,12 @@ export const MAX_ACTIVE_SESSIONS = 10
  *  any honest reload pattern. */
 export const AUTH_FAIL_DAILY_LIMIT = 20
 export const AUTH_MINT_DAILY_LIMIT = 60
+
+// Counts only *rejected* refreshes (see functions/api/auth/refresh.ts), so an
+// honest client refreshing once an hour per tab never increments it. The number
+// is a ceiling on what a stolen cookie can spend GoTrue on, not a throttle on
+// legitimate use.
+export const AUTH_REFRESH_DAILY_LIMIT = 60
 
 const PROD_HOST_SUFFIX = 'threatbase.qzz.io'
 const PROD_COOKIE_DOMAIN = '.threatbase.qzz.io'
@@ -128,7 +173,10 @@ export async function decryptSecret(bundle: string, keyB64: string): Promise<str
 /** Null, not a default key: a missing encryption key means we cannot write the
  *  credential the session stands for, so minting would produce a session that
  *  Phase 2 cannot proxy with. Fail closed and let the route 503. */
-export function encKey(env: any): string | null {
+// `| undefined` is load-bearing, not ceremony: every reader here uses `env?.`,
+// and the guard has to hold when a deploy arrives with no env binding at all.
+// A stricter signature would only make the fail-closed path unrepresentable.
+export function encKey(env: SessionEnv | undefined): string | null {
   const k = env?.SESSION_ENC_KEY
   return typeof k === 'string' && k.length >= 43 ? k : null
 }
@@ -260,8 +308,8 @@ const STATUS_TO_STATE: Record<string, SessionState> = {
  */
 export async function resolveSession(
   request: Request,
-  env: any,
-  admin: any,
+  env: SessionEnv,
+  admin: AdminClient,
 ): Promise<ResolvedSession> {
   const sessionId = readSessionId(request)
   if (!sessionId) return { state: 'anonymous' }
@@ -332,8 +380,8 @@ export async function requireSession(
   context: any,
   opts?: { allowAnonymous?: boolean },
 ): Promise<
-  | { session: ResolvedSession; admin: any; response?: undefined }
-  | { session?: undefined; admin: any; response: Response }
+  | { session: ResolvedSession; admin: AdminClient; response?: undefined }
+  | { session?: undefined; admin: AdminClient; response: Response }
 > {
   const { request, env } = context
   const admin = adminFor(env)
@@ -353,7 +401,7 @@ export async function requireSession(
 /** Service-role client, required to touch the sessions table at all (RLS has no
  *  policies). Null when the key is missing — callers fail closed rather than
  *  falling back to anon, which would read as "nobody is signed in". */
-export function adminFor(env: any) {
+export function adminFor(env: SessionEnv | undefined) {
   const serviceKey = env?.SUPABASE_SERVICE_ROLE_KEY
   if (!serviceKey) {
     console.error('SUPABASE_SERVICE_ROLE_KEY missing — sessions unavailable.')
@@ -387,7 +435,7 @@ export interface Minted {
  * is a person with a phone, a laptop and a work machine, and the alternative to
  * pruning is locking them out of the account they just authenticated to.
  */
-export async function mintSession(admin: any, env: any, input: MintInput): Promise<Minted | null> {
+export async function mintSession(admin: AdminClient, env: SessionEnv, input: MintInput): Promise<Minted | null> {
   const key = encKey(env)
   if (!key) {
     console.error('SESSION_ENC_KEY missing — refusing to mint.')
@@ -435,8 +483,8 @@ export async function mintSession(admin: any, env: any, input: MintInput): Promi
  * survive it.
  */
 export async function rotateSession(
-  admin: any,
-  env: any,
+  admin: AdminClient,
+  env: SessionEnv,
   current: ResolvedSession,
   input: Omit<MintInput, 'userId' | 'familyId'> & { userId: string },
 ): Promise<Minted | null> {
@@ -481,8 +529,8 @@ export async function rotateSession(
  * correct and merely racy.
  */
 export async function refreshSessionCredentials(
-  admin: any,
-  env: any,
+  admin: AdminClient,
+  env: SessionEnv,
   current: ResolvedSession,
   input: { accessToken?: string; refreshToken?: string; aal: MintInput['aal'] },
 ): Promise<{ expiresAt: number } | null> {
@@ -516,7 +564,171 @@ export async function refreshSessionCredentials(
   return { expiresAt }
 }
 
-export async function revokeSession(admin: any, sessionId: string): Promise<boolean> {
+/** How long a refresh worker holds the lease. Must exceed the GoTrue timeout
+ *  (10s) so a slow-but-successful refresh is not double-run, and stay short
+ *  enough that a crashed worker unlocks the session in seconds. */
+export const REFRESH_LEASE_SECONDS = 20
+
+export interface RefreshOutcome {
+  status:
+    | 'refreshed'
+    | 'busy'
+    | 'dead'
+    | 'invalid'
+    | 'invalid-grant'
+    | 'upstream'
+    | 'unavailable'
+  accessToken?: string
+  refreshToken?: string
+  expiresIn?: number
+}
+
+/**
+ * Renew the stored GoTrue pair under the refresh lease (db/sessions_refresh.sql).
+ *
+ * Why a lease rather than just doing it: with the cookie in every tab, two tabs
+ * can notice the same expiring access token in the same second. If both call
+ * GoTrue, the second replays a refresh token GoTrue has already rotated, reuse
+ * detection fires, and the whole token family is revoked — every tab logged out.
+ * `claim_session_refresh` makes the refresh exactly-once per session by making
+ * one caller hold the credentials and the right to swap them.
+ *
+ * The owner uuid is the second half of the protection: `release` refuses a write
+ * from anyone but the current holder, so a worker that stalls past its lease and
+ * finishes late cannot overwrite a newer token with its stale one.
+ *
+ * Nothing here mutates the session row's expiry or id — the cookie stays valid,
+ * only the credentials behind it change.
+ */
+export async function refreshSessionWithLease(
+  admin: AdminClient,
+  env: SessionEnv,
+  current: ResolvedSession,
+): Promise<RefreshOutcome> {
+  const key = encKey(env)
+  if (!key || !current.id || current.state !== 'ok') return { status: 'unavailable' }
+  const sessionId = current.id
+  const now = () => Math.floor(Date.now() / 1000)
+
+  const { data: claimRow, error: claimError } = await admin.rpc('claim_session_refresh', {
+    p_session_id: sessionId,
+    p_now: now(),
+    p_lease_seconds: REFRESH_LEASE_SECONDS,
+  })
+  if (claimError) {
+    console.error('claim_session_refresh failed:', claimError.message)
+    return { status: 'unavailable' }
+  }
+  const lease = (Array.isArray(claimRow) ? claimRow[0] : null) as {
+    status?: string
+    lease_owner?: string | null
+    access_token_enc?: string | null
+    refresh_token_enc?: string | null
+  } | null
+  if (!lease?.status) return { status: 'unavailable' }
+  if (lease.status === 'busy') return { status: 'busy' }
+  if (lease.status === 'gone') return { status: 'dead' }
+  if (lease.status !== 'claimed' || !lease.lease_owner) return { status: 'invalid' }
+
+  const owner = lease.lease_owner
+
+  // Hand the lease back without writing credentials. Every exit that is not a
+  // committed refresh takes this path, so a failure unlocks immediately instead
+  // of making the next request wait out the lease.
+  const abandon = async () => {
+    const { error } = await admin.rpc('release_session_refresh', {
+      p_session_id: sessionId,
+      p_lease_owner: owner,
+      p_now: now(),
+      p_access_token_enc: null,
+      p_refresh_token_enc: null,
+    })
+    if (error) console.error('could not release refresh lease:', error.message)
+  }
+
+  if (!lease.refresh_token_enc) {
+    await abandon()
+    return { status: 'dead' }
+  }
+
+  let staleRefreshToken: string
+  try {
+    staleRefreshToken = await decryptSecret(lease.refresh_token_enc, key)
+  } catch {
+    // Undecryptable: wrong SESSION_ENC_KEY or a corrupted row. Neither is the
+    // user's fault and neither is retryable, so keep the session and 503.
+    await abandon()
+    return { status: 'unavailable' }
+  }
+
+  let grant: Response
+  try {
+    grant = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: SUPABASE_ANON_KEY },
+      body: JSON.stringify({ refresh_token: staleRefreshToken }),
+      signal: AbortSignal.timeout(10_000),
+    })
+  } catch {
+    // Timeout / DNS: the token may or may not have rotated upstream. Abandoning
+    // is the safe move — if GoTrue did rotate, the row now holds a spent token
+    // and the next attempt reads the family state from GoTrue, not from us.
+    await abandon()
+    return { status: 'upstream' }
+  }
+
+  if (!grant.ok) {
+    await abandon()
+    return { status: grant.status === 400 || grant.status === 403 ? 'invalid-grant' : 'upstream' }
+  }
+
+  const tokens = (await grant.json().catch(() => null)) as {
+    access_token?: string
+    refresh_token?: string
+    expires_in?: number
+  } | null
+  if (!tokens?.access_token) {
+    await abandon()
+    return { status: 'upstream' }
+  }
+
+  const nextAccess = await encryptSecret(tokens.access_token, key)
+  // GoTrue omits refresh_token when it is not rotating. Keep the stored
+  // ciphertext rather than writing NULL, which would disarm the session.
+  const nextRefresh = tokens.refresh_token
+    ? await encryptSecret(tokens.refresh_token, key)
+    : lease.refresh_token_enc
+
+  const { data: releasedRow, error: releaseError } = await admin.rpc('release_session_refresh', {
+    p_session_id: sessionId,
+    p_lease_owner: owner,
+    p_now: now(),
+    p_access_token_enc: nextAccess,
+    p_refresh_token_enc: nextRefresh,
+  })
+  if (releaseError) {
+    console.error('release_session_refresh failed:', releaseError.message)
+    return { status: 'unavailable' }
+  }
+  const released = (Array.isArray(releasedRow) ? releasedRow[0] : null) as {
+    status?: string
+  } | null
+  if (released?.status !== 'committed') {
+    // This worker outlived its lease. Discard its tokens — a later holder already
+    // committed, and writing now is the exact stale-token overwrite that the
+    // owner check exists to prevent.
+    return { status: 'busy' }
+  }
+
+  return {
+    status: 'refreshed',
+    accessToken: tokens.access_token,
+    refreshToken: tokens.refresh_token,
+    expiresIn: tokens.expires_in,
+  }
+}
+
+export async function revokeSession(admin: AdminClient, sessionId: string): Promise<boolean> {
   const { error } = await admin
     .from('sessions')
     .update({ revoked_at: new Date().toISOString() })
@@ -539,7 +751,7 @@ export async function revokeSession(admin: any, sessionId: string): Promise<bool
  * give a stranger.
  */
 export async function revokeOwnedSession(
-  admin: any,
+  admin: AdminClient,
   sessionId: string,
   userId: string,
 ): Promise<'revoked' | 'not-owned'> {
@@ -558,7 +770,7 @@ export async function revokeOwnedSession(
   return ok ? 'revoked' : 'not-owned'
 }
 
-export async function revokeAllForUser(admin: any, userId: string): Promise<boolean> {
+export async function revokeAllForUser(admin: AdminClient, userId: string): Promise<boolean> {
   const { error } = await admin
     .from('sessions')
     .update({ revoked_at: new Date().toISOString() })
@@ -575,7 +787,7 @@ export interface SessionSummary {
   lastSeenIp: string | null
 }
 
-export async function listSessions(admin: any, userId: string): Promise<SessionSummary[]> {
+export async function listSessions(admin: AdminClient, userId: string): Promise<SessionSummary[]> {
   const { data, error } = await admin
     .from('sessions')
     .select('id, created_at, touched_at, user_agent, last_seen_ip')
@@ -596,7 +808,7 @@ export async function listSessions(admin: any, userId: string): Promise<SessionS
   }))
 }
 
-async function pruneToActiveCap(admin: any, userId: string): Promise<void> {
+async function pruneToActiveCap(admin: AdminClient, userId: string): Promise<void> {
   const { data, error } = await admin
     .from('sessions')
     .select('id')
@@ -659,7 +871,7 @@ export async function readJson(request: Request, maxBytes = 8192): Promise<Recor
  *  atomicity, same as every other limiter here: a fast flood overshoots a limit
  *  by a handful, not by a thousand. Returns null when KV is unavailable, which
  *  callers treat as "no gate", never as "block". */
-export async function bumpKv(kv: any, key: string): Promise<number | null> {
+export async function bumpKv(kv: KvStringStore | undefined, key: string): Promise<number | null> {
   if (!kv) return null
   try {
     const cur = await kv.get(key)
@@ -672,7 +884,7 @@ export async function bumpKv(kv: any, key: string): Promise<number | null> {
   }
 }
 
-export async function peekKv(kv: any, key: string): Promise<number> {
+export async function peekKv(kv: KvStringStore | undefined, key: string): Promise<number> {
   if (!kv) return 0
   try {
     const cur = await kv.get(key)

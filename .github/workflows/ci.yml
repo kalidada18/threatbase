@@ -25,13 +25,25 @@ jobs:
         run: npm ci
 
       # Non-blocking for now: the project was never run through `tsc --noEmit`
-      # (Vite/esbuild skips type-checking), so there is a pre-existing backlog of
+      # (Vite/esbuild skips type-checking), so there was a pre-existing backlog of
       # type errors (framer-motion variants, recharts props, implicit-any in some
-      # components). This surfaces them in CI without blocking; remove
-      # `continue-on-error` once the backlog is burned down.
+      # components). As of 2026-09-19 `npm run typecheck` reports zero errors
+      # locally, so this flag is probably stale — kept only because a clean
+      # `npm ci` can hoist dependency types differently than a mutated
+      # node_modules, and a red pipeline over a cosmetic prop type is not worth
+      # the surprise. Remove `continue-on-error` once it has been seen green from
+      # a fresh install.
       - name: Typecheck
         run: npm run typecheck
         continue-on-error: true
+
+      # Blocking, unlike the step above. This is the only gate that covers
+      # functions/ — the session, cookie, CSRF-origin, lease and rate-limit code
+      # — and `tsconfig.functions.json` already existed while nothing in CI ran
+      # it, so it had quietly accumulated five errors. Strict, and green as of
+      # 2026-09-19.
+      - name: Typecheck (functions)
+        run: npm run typecheck:functions
 
       - name: Lint
         run: npm run lint

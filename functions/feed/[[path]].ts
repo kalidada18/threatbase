@@ -97,7 +97,7 @@ export const onRequestGet = async (context: any) => {
   if (kv) {
     try {
       const cur = await kv.get(flKey)
-      flCount = parseInt(cur as string | null, 10) || 0
+      flCount = cur ? parseInt(cur, 10) || 0 : 0
       if (flCount >= 100) return err('Too many failed feed authentications from this network today.', 429)
     } catch { /* fail open — the RPC still gates access */ }
   }
@@ -173,7 +173,11 @@ export const onRequestGet = async (context: any) => {
   // Filterable files always buffer (worst case ~36 MB, well under the 128 MB
   // Worker ceiling) so an allowlisted IP can never leak via the stream path.
   const buf = await upstream.arrayBuffer()
-  let body: ArrayBuffer | Uint8Array = buf
+  // Uint8Array<ArrayBuffer>, not ArrayBuffer or bare Uint8Array: a
+  // TextEncoder-filtered body is Uint8Array<ArrayBuffer>, and BufferSource is
+  // defined over ArrayBuffer specifically — so the explicit parameter is what
+  // keeps both branches assignable to BodyInit without a cast.
+  let body: Uint8Array<ArrayBuffer> = new Uint8Array(buf)
   if (filterable) {
     const { data: allowed } = await admin.rpc('feed_allowlist_ips', { client_hash: hashHex })
     if (allowed && (allowed as string[]).length) {
@@ -183,7 +187,9 @@ export const onRequestGet = async (context: any) => {
     }
   }
 
-  let hd = headers(upstream.headers.get('Content-Type'))
+  // Record<string, string> because the KV-store branch adds X-KV-Cache; the
+  // inferred literal return of headers() has no such key.
+  let hd: Record<string, string> = headers(upstream.headers.get('Content-Type'))
   if (kv && body.byteLength <= KV_MAX) {
     context.waitUntil(kv.put(cacheKey, body, { expirationTtl: PRO_TTL }).catch(() => {}))
     hd = { ...hd, 'X-KV-Cache': 'MISS-STORED' }

@@ -153,7 +153,10 @@ describe('encKey', () => {
     expect(encKey({})).toBeNull()
     expect(encKey({ SESSION_ENC_KEY: '' })).toBeNull()
     expect(encKey({ SESSION_ENC_KEY: 'too-short' })).toBeNull()
-    expect(encKey({ SESSION_ENC_KEY: 42 })).toBeNull()
+    // The cast is the point: env arrives from the platform untyped, so a
+    // non-string binding is a real runtime case even though SessionEnv
+    // disallows it. encKey must still fail closed rather than trust it.
+    expect(encKey({ SESSION_ENC_KEY: 42 as unknown as string })).toBeNull()
   })
 
   it('returns a 43-char base64 key', () => {

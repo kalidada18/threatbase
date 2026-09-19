@@ -80,7 +80,9 @@ export const onRequestGet = async (context: any) => {
   }
 
   const buf = await upstream.arrayBuffer()
-  let headers = bh(upstream.headers.get('Content-Type'))
+  // Record<string, string> because the KV-store branch adds X-KV-Cache; bh()
+  // returns an inferred literal that has no such key.
+  let headers: Record<string, string> = bh(upstream.headers.get('Content-Type'))
   if (buf.byteLength <= KV_MAX) {
     context.waitUntil(kv.put(key, buf, {
       expirationTtl: META_KEYS.includes(rel) ? META_TTL : KV_TTL,
