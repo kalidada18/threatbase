@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button'
 import { fmt } from '../utils'
 import { useSEO } from '../useSEO'
 import MfaSetup from './MfaSetup'
+import SessionsPanel from './SessionsPanel'
 import NotFound from './ui/not-found'
 
 /**
@@ -924,11 +925,14 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
           >
             <div className="flex flex-col gap-1 pt-2 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
               <h2 className="text-lg font-bold tracking-tight text-white">Security &amp; access</h2>
-              <p className="text-xs text-slate-500">Two-factor authentication and API credentials for this account.</p>
+              <p className="text-xs text-slate-500">Two-factor authentication, active sessions and API credentials for this account.</p>
             </div>
 
             {/* MFA Setup */}
             <MfaSetup addToast={addToast} />
+
+            {/* Sign-in activity: active sessions across devices */}
+            <SessionsPanel addToast={addToast} />
 
             {/* API Keys Setup */}
             <div className="glass-card p-6 md:p-8">
