@@ -327,14 +327,40 @@ export function tokenNeedsRenewal(token: string | undefined, nowSeconds = Math.f
  * the client can tell "your stored token expired" apart from "your code was
  * wrong"; anything unmappable becomes 502 rather than a fake 4xx.
  */
-export function mapMfaError(status: number, payload: any): { status: number; message: string; retry?: boolean } {
+export function mapMfaError(
+  status: number,
+  payload: any,
+): { status: number; message: string; retry?: boolean; aal_required?: boolean } {
   const code = typeof payload?.error_code === 'string' ? payload.error_code : ''
-  const message =
-    typeof payload?.message === 'string' && payload.message.length <= 200 ? payload.message : ''
+  // GoTrue's error bodies carry the human text under `msg`, not `message`
+  // (`{"code":422,"error_code":"insufficient_aal","msg":"AAL2 required to
+  // unenroll verified factor"}`). auth-js and the JSON-API error shape use
+  // `message`/`error_description`. Reading only `message` meant EVERY upstream
+  // failure — a wrong code, an expired challenge, a duplicate name, insufficient
+  // AAL — collapsed to the generic fallback and the user saw the same opaque
+  // "could not validate the request" no matter what actually happened. Accept
+  // whichever field is present, bounded, and never the whole object.
+  const raw =
+    [payload?.message, payload?.msg, payload?.error_description].find(
+      (v): v is string => typeof v === 'string',
+    ) ?? ''
+  const message = raw.length <= 200 ? raw : ''
 
   if (status === 401) return { status: 401, message: message || 'session expired', retry: true }
   if (status === 403) return { status: 403, message: message || 'not allowed' }
   if (status === 404) return { status: 404, message: message || 'factor or challenge not found' }
+  // GoTrue refuses to unenroll a user's last verified factor from a password-only
+  // (aal1) session with a 422 `insufficient_aal`. That is not a fixable-by-typing
+  // error — it needs a second-factor challenge first — so it maps to 403 with
+  // `aal_required` rather than the generic 422 below, letting the client prompt
+  // for a code instead of showing a dead-end message.
+  if (status === 422 && code === 'insufficient_aal') {
+    return {
+      status: 403,
+      message: 'Verify your two-factor code to change this setting.',
+      aal_required: true,
+    }
+  }
   if (status === 422) {
     // GoTrue's MFA validation failures (bad code, expired challenge, duplicate
     // friendly name) are all "fixable by the user", and the components surface

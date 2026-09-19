@@ -243,4 +243,23 @@ describe('mapMfaError — our status, not a raw upstream relay', () => {
     expect(e.message.length).toBeLessThanOrEqual(200)
     expect(JSON.stringify(e)).not.toMatch(/leak/)
   })
+
+  it('honours GoTrue\'s real error body, which carries the text under `msg`', () => {
+    // GoTrue does not use `message` — it returns { code, error_code, msg }.
+    // Reading only `message` is what collapsed every upstream MFA failure to the
+    // generic fallback, so a wrong code and an expired challenge looked identical.
+    const e = mapMfaError(422, { code: 422, error_code: 'mfa_verification_failed', msg: 'code does not match' })
+    expect(e.status).toBe(422)
+    expect(e.message).toBe('code does not match')
+  })
+
+  it('maps insufficient_aal to an honest aal_required 403, not the 422 dead-end', () => {
+    // Disabling 2FA from a password-only session: GoTrue refuses to unenroll the
+    // last verified factor below aal2. This must read as "verify your code", not
+    // "could not validate the request", so the client can prompt rather than stall.
+    const e = mapMfaError(422, { code: 422, error_code: 'insufficient_aal', msg: 'AAL2 required to unenroll verified factor' })
+    expect(e.status).toBe(403)
+    expect(e.aal_required).toBe(true)
+    expect(e.message).toMatch(/two-factor code/)
+  })
 })

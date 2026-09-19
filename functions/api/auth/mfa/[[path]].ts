@@ -100,20 +100,13 @@ const onRequestAny = async (context: any) => {
   const session = resolved.session
   const admin = resolved.admin
 
-  // Removing a factor is not a read. GoTrue refuses to unenroll a user's last
-  // verified factor unless the presenting session has itself cleared a second
-  // factor (aal2), so a password-only session cannot strip 2FA — the exact
-  // privilege-escalation guard that makes MFA worth having. Enforce the same rule
-  // at the edge and answer honestly rather than relaying GoTrue's opaque 422
-  // ("could not validate the request"): `aal_required` lets the client prompt for
-  // a code and retry from an aal2 session instead of showing a dead-end error.
-  if (route.op === 'unenroll' && session.aal !== 'aal2') {
-    return json(
-      { error: 'Verify your two-factor code to change this setting.', aal_required: true },
-      403,
-      request,
-    )
-  }
+  // Removing a factor is not a read, but we do NOT pre-empt it with an aal check
+  // here. GoTrue's rule is narrower than "aal1 can't unenroll": only the last
+  // VERIFIED factor requires aal2, while unverified / abandoned setups are always
+  // removable. A blanket edge gate would strand a user trying to clean up a
+  // half-finished enrollment. Instead we forward the DELETE and let mapMfaError
+  // translate GoTrue's 422 `insufficient_aal` into an honest 403 `aal_required`
+  // ("Verify your two-factor code...") rather than the opaque body it returns.
 
   // A live session with no stored credential cannot act as the user. 401 (not
   // 403) so the client's existing retry hook re-handoffs rather than showing a
@@ -194,7 +187,15 @@ const onRequestAny = async (context: any) => {
   const payload = await upstream.json().catch(() => null)
   if (!upstream.ok) {
     const mapped = mapMfaError(upstream.status, payload)
-    return json({ error: mapped.message, retry: mapped.retry || undefined }, mapped.status, request)
+    return json(
+      {
+        error: mapped.message,
+        retry: mapped.retry || undefined,
+        aal_required: mapped.aal_required || undefined,
+      },
+      mapped.status,
+      request,
+    )
   }
 
   // The one operation that produced a brand-new credential set. Persist it
