@@ -69,14 +69,18 @@ const onRequestAny = async (context: any) => {
     return json({ error: 'cross-origin request rejected' }, 403, request)
   }
 
-  const resolved = await requireSession(context)
+  const resolved = await requireSession(context, { allowAnonymous: true })
   if (resolved.response) return resolved.response
   const { session } = resolved
 
-  const accessToken = session.accessToken
-  if (!accessToken) {
-    // A live session with no credential: the client can fix this by handing off
-    // again, so it gets 401 (its retry hook) rather than 503 (a server fault).
+  // 'anonymous' means no cookie arrived, so there is no stored credential and the
+  // upstream call goes out as the anon role (see forwardRequestHeaders). That is
+  // the state a logged-out visitor of a public page is in, and RLS decides the
+  // rest. 'ok' with no credential is a different thing: the session is live, the
+  // client can fix it by handing off again, so it gets 401 (its retry hook)
+  // rather than silently losing the user's identity to the anon role.
+  const accessToken = session.state === 'ok' ? session.accessToken : undefined
+  if (session.state === 'ok' && !accessToken) {
     return json({ error: NO_CREDENTIAL_ERROR }, 401, request)
   }
 

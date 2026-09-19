@@ -202,6 +202,28 @@ describe('forwardRequestHeaders — what reaches PostgREST', () => {
     expect(out(clientRequest()).get('Authorization')).toBe(`Bearer ${USER_TOKEN}`)
   })
 
+  it('falls back to the anon role when there is no session', () => {
+    // Regression: the contributors leaderboard is a public page and db/
+    // 00_bootstrap.sql grants SELECT on top_contributors and reported_ips_feed to
+    // anon. Once data access moved behind this proxy, a logged-out visitor sent
+    // no cookie, the route 401'd, and the page broke in production while passing
+    // every signed-in check. An undefined token must become the anon JWT — the
+    // same credential supabase-js used to send from the browser.
+    // Called directly rather than via `out`, which pins USER_TOKEN.
+    const headers = forwardRequestHeaders(clientRequest(), undefined)
+    expect(headers.get('Authorization')).toBe(`Bearer ${SUPABASE_ANON_KEY}`)
+    expect(headers.get('Authorization')).not.toContain('undefined')
+  })
+
+  it('never escalates the anon fallback past the anon role', () => {
+    // The fallback is a downgrade by construction: it presents the key that is
+    // already public in the bundle, so a session-less request cannot reach a row
+    // RLS would have denied the logged-out browser.
+    const headers = forwardRequestHeaders(clientRequest(), undefined)
+    expect(headers.get('Authorization')).not.toContain('service_role')
+    expect(headers.get('apikey')).toBe(SUPABASE_ANON_KEY)
+  })
+
   it('drops the visitor cookie entirely', () => {
     // tb_session must terminate at the edge. If it were forwarded it would be
     // useless upstream and would sit in Kong/PostgREST logs forever.

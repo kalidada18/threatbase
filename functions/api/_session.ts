@@ -317,9 +317,20 @@ export async function resolveSession(
  *
  * `reused` is reported as 401, not 403: from the browser's point of view the
  * answer to "my session was revoked because it leaked" is still "sign in".
+ *
+ * `allowAnonymous` is opt-in and exists for the data proxy only. "No cookie" is
+ * not a failed sign-in there — it is PostgREST's `anon` role, and RLS decides
+ * what that role may read (db/00_bootstrap.sql grants SELECT on two views to
+ * anon). Without the opt-in, every logged-out visitor's public page became a
+ * 401 the moment data access moved behind this proxy: the contributors
+ * leaderboard broke in production while working perfectly for any signed-in
+ * tester. A cookie that IS present but invalid, expired, reused or revoked still
+ * gets 401 — only the genuine absence of one downgrades, and downgrading is
+ * strictly less privilege, never more.
  */
 export async function requireSession(
   context: any,
+  opts?: { allowAnonymous?: boolean },
 ): Promise<
   | { session: ResolvedSession; admin: any; response?: undefined }
   | { session?: undefined; admin: any; response: Response }
@@ -328,6 +339,7 @@ export async function requireSession(
   const admin = adminFor(env)
   const session = await resolveSession(request, env, admin)
   if (session.state === 'ok') return { session, admin }
+  if (session.state === 'anonymous' && opts?.allowAnonymous) return { session, admin }
   if (session.state === 'unavailable') {
     return { admin, response: json({ error: 'session backend unavailable' }, 503, request) }
   }

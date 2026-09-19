@@ -190,7 +190,7 @@ function containsDotSegment(segment: string): boolean {
  */
 export function forwardRequestHeaders(
   request: Request,
-  accessToken: string,
+  accessToken: string | undefined,
 ): Headers {
   const headers = new Headers()
   request.headers.forEach((value, key) => {
@@ -198,7 +198,13 @@ export function forwardRequestHeaders(
     headers.set(key, value)
   })
   headers.set('apikey', SUPABASE_ANON_KEY)
-  headers.set('Authorization', `Bearer ${accessToken}`)
+  // When no session backs the request, the bearer is the anon key itself — a JWT
+  // whose `role` claim is `anon`. That is precisely what supabase-js used to send
+  // from the browser for a logged-out visitor, so PostgREST evaluates RLS with
+  // auth.uid() = null and the two views granted TO anon (db/00_bootstrap.sql:263)
+  // keep working. Omitting Authorization entirely would lean on the gateway's
+  // keyless default instead of on a claim we can read.
+  headers.set('Authorization', `Bearer ${accessToken ?? SUPABASE_ANON_KEY}`)
   // Cache-busting for the edge: a stale PostgREST read behind a cached response
   // would look like a write that silently failed.
   headers.set('Cache-Control', 'no-store')
