@@ -43,6 +43,19 @@ export default function MfaSetup({ addToast }: { addToast: (msg: string, type: '
   const [verifyError, setVerifyError] = useState<string | null>(null)
   const [confirmDisable, setConfirmDisable] = useState(false)
 
+  // Disabling 2FA needs an aal2 session: GoTrue refuses to unenroll the last
+  // verified factor from a password/OAuth-only (aal1) login and answers
+  // `insufficient_aal`. When the first attempt comes back `aal_required` we
+  // challenge the existing factor and ask for a current code inline; verifying
+  // rotates the cookie session up to aal2 (the /verify endpoint re-mints the
+  // server session row), and the retry then succeeds. Without this the button
+  // dead-ends on "verify your two-factor code" with no way to actually verify.
+  const [disableNeedsCode, setDisableNeedsCode] = useState(false)
+  const [disableOtp, setDisableOtp] = useState('')
+  const [disableChallengeId, setDisableChallengeId] = useState<string | null>(null)
+  const [disableError, setDisableError] = useState<string | null>(null)
+  const [disableVerifying, setDisableVerifying] = useState(false)
+
   useEffect(() => {
     checkStatus()
   }, [])
@@ -206,6 +219,34 @@ export default function MfaSetup({ addToast }: { addToast: (msg: string, type: '
     }
   }
 
+  const resetDisableVerify = () => {
+    setDisableNeedsCode(false)
+    setDisableOtp('')
+    setDisableChallengeId(null)
+    setDisableError(null)
+  }
+
+  // Mint a challenge for the already-verified factor so the user can authorize
+  // the disable with a current code (mirrors the login MFA gate's challenge).
+  const startDisableChallenge = async () => {
+    if (!factorId) return
+    setDisableNeedsCode(true)
+    setDisableOtp('')
+    setDisableError(null)
+    setDisableChallengeId(null)
+    try {
+      const challenge = await withTimeout(
+        challengeFactor(factorId),
+        15_000,
+        'Preparing the verification challenge',
+      )
+      setDisableChallengeId(challenge.id)
+    } catch (err: any) {
+      console.error('MFA disable challenge error:', err)
+      setDisableError(err.message || 'Could not start verification. Try again.')
+    }
+  }
+
   const handleUnenroll = async () => {
     if (!factorId) return
 
@@ -221,11 +262,69 @@ export default function MfaSetup({ addToast }: { addToast: (msg: string, type: '
       setIsEnrolled(false)
       setFactorId(null)
       setConfirmDisable(false)
+      resetDisableVerify()
     } catch (err: any) {
       console.error('MFA Unenroll error:', err)
-      addToast(err.message || 'Failed to disable MFA.', 'error')
+      if (err?.aal_required) {
+        // Session is aal1. Ask for a code to clear a second factor, then the
+        // retry in handleConfirmDisableWithCode passes GoTrue's AAL2 gate.
+        await startDisableChallenge()
+      } else {
+        addToast(err.message || 'Failed to disable MFA.', 'error')
+      }
     } finally {
       setUnenrolling(false)
+    }
+  }
+
+  const handleConfirmDisableWithCode = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!factorId) return
+    if (disableOtp.length < 6) {
+      setDisableError('Enter the 6-digit code from your app.')
+      return
+    }
+
+    setDisableVerifying(true)
+    setDisableError(null)
+    try {
+      // Re-mint if the earlier challenge failed or aged out.
+      let activeChallengeId = disableChallengeId
+      if (!activeChallengeId) {
+        const data = await withTimeout(
+          challengeFactor(factorId),
+          15_000,
+          'Preparing the verification challenge',
+        )
+        activeChallengeId = data.id
+        setDisableChallengeId(activeChallengeId)
+      }
+
+      // Verify rotates the server session to aal2 (fresh Set-Cookie), which is
+      // what unblocks the unenroll below.
+      await withTimeout(
+        verifyFactor(factorId, activeChallengeId, disableOtp),
+        20_000,
+        'Verifying the code',
+      )
+
+      await withTimeout(
+        unenrollFactor(factorId),
+        15_000,
+        'Disabling two-factor authentication',
+      )
+
+      addToast('Two-Factor Authentication disabled.', 'success')
+      setIsEnrolled(false)
+      setFactorId(null)
+      setConfirmDisable(false)
+      resetDisableVerify()
+    } catch (err: any) {
+      console.error('MFA disable-with-code error:', err)
+      setDisableError(err.message || 'Invalid code.')
+      setDisableOtp('')
+    } finally {
+      setDisableVerifying(false)
     }
   }
 
@@ -255,6 +354,47 @@ export default function MfaSetup({ addToast }: { addToast: (msg: string, type: '
             <span className="hidden text-xs">MFA Enrolled State: {isEnrolled ? 'ENABLED' : 'DISABLED'}</span>
             {isEnrolled ? (
               confirmDisable ? (
+                disableNeedsCode ? (
+                  <form onSubmit={handleConfirmDisableWithCode} className="flex flex-col items-end gap-2">
+                    <span className="text-xs text-slate-300">Enter your current 2FA code to confirm disabling</span>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        maxLength={6}
+                        inputMode="numeric"
+                        autoComplete="one-time-code"
+                        value={disableOtp}
+                        onChange={(e) => { setDisableOtp(e.target.value.replace(/[^0-9]/g, '')); setDisableError(null) }}
+                        placeholder="000000"
+                        aria-label="6-digit code to authorize disabling two-factor authentication"
+                        aria-invalid={!!disableError}
+                        className="h-9 w-32 rounded-lg border border-white/10 bg-black/50 px-3 text-center text-base tracking-[0.3em] text-white placeholder:text-slate-500 focus:outline-none focus:border-red-500/50 transition-colors font-mono"
+                        disabled={disableVerifying}
+                      />
+                      <Button
+                        type="submit"
+                        size="sm"
+                        disabled={disableVerifying || disableOtp.length < 6}
+                        className="bg-red-600 hover:bg-red-500 text-white text-xs rounded"
+                      >
+                        {disableVerifying ? 'Verifying...' : 'Confirm'}
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => { setConfirmDisable(false); resetDisableVerify() }}
+                        disabled={disableVerifying}
+                        className="text-xs text-slate-400 hover:text-white"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                    {disableError && (
+                      <span className="text-[11px] font-medium text-red-400">{disableError}</span>
+                    )}
+                  </form>
+                ) : (
                 <div className="flex items-center gap-3">
                   <span className="text-xs text-slate-300">Disable 2FA? Your account will be less secure.</span>
                   <Button
@@ -268,20 +408,21 @@ export default function MfaSetup({ addToast }: { addToast: (msg: string, type: '
                   <Button
                     size="sm"
                     variant="ghost"
-                    onClick={() => setConfirmDisable(false)}
+                    onClick={() => { setConfirmDisable(false); resetDisableVerify() }}
                     disabled={unenrolling}
                     className="text-xs text-slate-400 hover:text-white"
                   >
                     Cancel
                   </Button>
                 </div>
+                )
               ) : (
                 <div className="flex items-center gap-4">
                   <span className="flex items-center gap-1.5 text-xs font-bold text-primary bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
                     <Shield size={14} /> Enabled
                   </span>
                   <Button
-                    onClick={() => setConfirmDisable(true)}
+                    onClick={() => { resetDisableVerify(); setConfirmDisable(true) }}
                     variant="outline"
                     className="border-destructive/20 text-destructive hover:bg-destructive/10 hover:text-red-300 rounded text-xs px-4"
                     disabled={unenrolling}

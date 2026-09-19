@@ -65,7 +65,15 @@ async function request(
     // The proxy maps every upstream failure onto a short, safe `error` string
     // (see mapMfaError); anything unmappable becomes a generic 502 message.
     const msg = typeof data?.error === 'string' && data.error ? data.error : 'MFA request failed.'
-    throw new Error(msg)
+    // Carry the proxy's structured signals on the thrown error so callers can
+    // branch on them instead of pattern-matching the human string. `aal_required`
+    // means the action needs a second-factor verification first (GoTrue refuses
+    // to unenroll the last verified factor from an aal1 session); `retry` means
+    // it was transient and the caller may safely re-attempt.
+    const err: Error & { aal_required?: boolean; retry?: boolean } = new Error(msg)
+    if (data?.aal_required === true) err.aal_required = true
+    if (data?.retry === true) err.retry = true
+    throw err
   }
   return data
 }
