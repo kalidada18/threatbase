@@ -14,7 +14,7 @@ const FAQS: { q: string; a: string }[] = [
   },
   {
     q: 'Is Threatbase free?',
-    a: 'Yes. All public blocklists are MIT-licensed, with no authentication and no rate limits. An optional Threatbase Pro tier ($25/month, launching soon) adds 15-minute refresh, per-category lists, first-party honeypot telemetry, deploy-ready firewall formats and a false-positive suppression guarantee.',
+    a: 'Yes. All public blocklists are commercially licensed, with no authentication and no rate limits. An optional Threatbase Pro tier ($25/month, launching soon) adds 15-minute refresh, per-category lists, first-party honeypot telemetry, deploy-ready firewall formats and a false-positive suppression guarantee.',
   },
   {
     q: 'Where does the data come from?',
@@ -55,7 +55,7 @@ const faqJsonLd = JSON.stringify({
 export default function FaqPage() {
   useSEO({
     title: 'FAQ | Threatbase',
-    description: 'Answers about Threatbase: free MIT-licensed IOC blocklists, daily feed updates from 55 OSINT sources, supported indicator types, and how community reporting works.',
+    description: 'Answers about Threatbase: commercially licensed IOC blocklists, daily feed updates from 55 OSINT sources, supported indicator types, and how community reporting works.',
     path: '/faq',
     keywords: 'threat intelligence FAQ, IOC feed questions, blocklist update frequency, free threat intel, how to use threat feeds',
   })

@@ -126,7 +126,7 @@ const FAQS: { q: string; a: string }[] = [
   },
   {
     q: 'Is the free corpus going away?',
-    a: 'No. Everything open today stays open — MIT licensed, no auth, no rate limits on browsing. Pro adds precision, privacy and convenience on top, not a paywall around what is already free.',
+    a: 'No. Everything open today stays open — commercially licensed, no auth, no rate limits on browsing. Pro adds precision, privacy and convenience on top, not a paywall around what is already free.',
   },
   {
     q: 'What are the bulk-hunt limits?',

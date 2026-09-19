@@ -14,7 +14,7 @@
     <img src="https://img.shields.io/badge/active_feeds-54-f59e0b?style=flat-square" alt="54 active feeds">
     <img src="https://img.shields.io/badge/IOC_types-6-8b5cf6?style=flat-square" alt="6 indicator types">
     <img src="https://img.shields.io/badge/update-run-manual-blue?style=flat-square" alt="Pipeline run">
-    <img src="https://img.shields.io/badge/MIT-open-22c55e?style=flat-square" alt="MIT license">
+    <img src="https://img.shields.io/badge/License-Commercial_Paid-red?style=flat-square" alt="Paid Commercial License">
   </p>
 
   <p>
@@ -820,7 +820,7 @@ it first.
 |:--|:--:|:--:|
 | Blocklists for all six IOC types | yes | yes |
 | Hunt console, verdict cards, community reports | yes | yes |
-| MIT-licensed, no auth, no per-request rate limit | yes | yes |
+| Paid Commercial License, no auth, no per-request rate limit | yes | yes |
 | 15-minute refresh | — | yes |
 | First-party sensor telemetry (Threatbase-run honeypots) | — | yes |
 | Per-category IP lists (C2, botnet, brute-force, spam, Tor, …) | — | yes |
@@ -1015,8 +1015,8 @@ condition.
 
 ## Licence and Attribution
 
-Threatbase's code, pipeline and generated feeds are licensed under the
-**[MIT Licence](LICENSE)**.
+Threatbase's code, pipeline and generated feeds are licensed under a
+**[Paid Commercial Licence](LICENSE)**.
 
 Upstream feed data remains subject to each provider's terms of service; publication here is
 redistribution of openly published indicators, and the
@@ -1027,7 +1027,7 @@ be used for.
 <div align="center">
   <br/>
   <sub>
-    MIT Licence &nbsp;·&nbsp; Upstream data subject to each provider's terms &nbsp;·&nbsp;
+    Paid Commercial Licence &nbsp;·&nbsp; Upstream data subject to each provider's terms &nbsp;·&nbsp;
     <a href="https://threatbase.qzz.io">threatbase.qzz.io</a> &nbsp;·&nbsp; Built in Nepal
   </sub>
   <br/><br/>
