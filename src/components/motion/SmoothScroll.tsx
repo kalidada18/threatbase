@@ -21,7 +21,10 @@ export function SmoothScroll({ children }: { children: React.ReactNode }) {
     import('lenis').then(({ default: Lenis }) => {
       if (disposed) return
       lenis = new Lenis({
-        duration: 1.1,
+        // 1.1s felt like input lag — the page trailed the wheel for over a
+        // second. 0.7 keeps the weighted, inertial character while staying
+        // responsive enough that scroll reads as instant.
+        duration: 0.7,
         easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
         smoothWheel: true,
         anchors: true,

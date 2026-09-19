@@ -540,11 +540,19 @@ export async function refreshSessionCredentials(
   // branch: a session with no row id or no known expiry cannot be kept in place.
   const expiresAt = current.state === 'ok' ? current.expiresAt : undefined
   if (!key || !current.id || expiresAt === undefined) return null
-  // An assurance change IS an authentication event: it has to rotate so the id
-  // that only reached aal1 cannot survive into an aal2 session.
-  if (current.aal !== input.aal) return null
+  // An assurance change only has to rotate when it moves UP. aal1 -> aal2 is an
+  // authentication event: the id that only reached aal1 cannot survive into an
+  // aal2 session (anti-fixation). aal2 -> aal1 is a privilege REDUCTION — the
+  // browser re-authenticated with a password-only credential against a session
+  // that had completed its second factor — and the honest response is to write it
+  // down in place. Keeping the same id is what avoids the token-reuse family
+  // revocation that rotating here would reopen (see the header), while still
+  // recording that the presented credential is aal1 so the MFA gate re-prompts.
+  const upgrading = current.aal !== 'aal2' && input.aal === 'aal2'
+  if (upgrading) return null
 
   const patch: Record<string, unknown> = {}
+  if (current.aal !== input.aal) patch.aal = input.aal === 'aal2' ? 'aal2' : 'aal1'
   if (input.accessToken) patch.access_token_enc = await encryptSecret(input.accessToken, key)
   if (input.refreshToken) patch.refresh_token_enc = await encryptSecret(input.refreshToken, key)
   if (!Object.keys(patch).length) return { expiresAt }

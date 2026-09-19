@@ -15,7 +15,16 @@ export function PageTransition({ children, className }: { children: ReactNode; c
       className={className}
       initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 10 }}
       animate={reduceMotion ? { opacity: 1 } : { opacity: 1, y: 0 }}
-      exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -6 }}
+      // Exit gets its OWN short tween, not the spring below. <AnimatePresence
+      // mode="wait"> (App.tsx) mounts the next lazy route only after this
+      // resolves, so a spring exit — which has no fixed settle time — stretched
+      // every navigation by ~0.4s of blank screen before the new chunk could
+      // even appear. A bounded 0.16s fade caps that dead window.
+      exit={
+        reduceMotion
+          ? { opacity: 0, transition: { duration: 0.1 } }
+          : { opacity: 0, y: -6, transition: { duration: 0.16, ease: 'easeOut' } }
+      }
       transition={
         reduceMotion
           ? { duration: 0.2 }

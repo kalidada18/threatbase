@@ -89,8 +89,10 @@
   html {
     -webkit-text-size-adjust: 100%;
     scrollbar-gutter: stable;
-    /* Liquid anchor jumps — compositor-driven, no cost on scroll frames. */
-    scroll-behavior: smooth;
+    /* No `scroll-behavior: smooth` here on purpose: Lenis owns window scroll and
+     * a native smooth on the same axis double-eases anchor jumps (the mush that
+     * reads as lag). The reduced-motion / unloaded-chunk fallback already passes
+     * behavior:'smooth' explicitly in App.tsx smoothScrollTo, so nothing is lost. */
   }
 
   body {

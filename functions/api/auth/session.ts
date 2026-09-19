@@ -238,29 +238,18 @@ export const onRequestPost = async (context: any) => {
   // refreshSessionCredentials.
   const sameAccount = existing.state === 'ok' && existing.userId === userId
 
-  // A stale tab must not be able to un-verify MFA. An aal1 token re-presented to
-  // a session that has reached aal2 fails the in-place path further below (an
-  // assurance change is an authentication event, so
-  // `refreshSessionCredentials` refuses to write it) and used to fall straight
-  // through to `rotateSession` — which would
-  // mint a fresh cookie and rewrite the row to aal1, silently dropping a session
-  // that had completed its second factor. Old tab wins, assurance level goes
-  // down, and nothing anywhere says so. Rotating *upwards* is required; rotating
-  // *downwards* is a bug, so an aal1 handoff against an aal2 session is accepted
-  // as a no-op: the row keeps the stronger credential it already holds.
-  const downgrade =
-    sameAccount && existing.aal === 'aal2' && aal !== 'aal2' && existing.expiresAt !== undefined
-  if (downgrade) {
-    await bumpKv(kv, `sl_m_${clientIp}_${today}`)
-    // No Set-Cookie, no write: the browser already holds the id that reached
-    // aal2, and its hash is the only thing the edge can see anyway.
-    return jsonResponse(
-      { ok: true, expires_at: existing.expiresAt, aal: 'aal2', mfa_required: false },
-      200,
-      request,
-      [],
-    )
-  }
+  // A re-handoff that presents a password-only (aal1) credential to a session
+  // that had reached aal2 is a fresh sign-in, not a stale tab: auth-js keeps one
+  // shared browser session, so the only way an aal1 token reaches an aal2 row is
+  // that the browser re-authenticated. It must NOT be honored as aal2 — doing so
+  // let a surviving tb_session cookie (logout's endSession is best-effort, and the
+  // HttpOnly cookie outlives the browser session auth-js clears) skip the
+  // second-factor prompt on the next login, and left the row holding a stale
+  // credential that diverged from the browser's. Nor may it rotate: rotating the
+  // id is what reopened the token-reuse family revocation. So it falls through to
+  // the same-account in-place path below, which now writes the row DOWN to aal1
+  // with the fresh credential and keeps the cookie id. whoAmI then reports aal1
+  // and checkMfaLevel re-prompts.
 
   if (sameAccount) {
     const kept = await refreshSessionCredentials(admin, env, existing, {
