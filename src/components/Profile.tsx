@@ -629,7 +629,10 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
 
       addToast('Your account and profile have been permanently deleted.', 'success')
       await signOut()
-      navigate('/')
+      // Land on the signed-out screen like a deliberate logout. Signing in with
+      // the same provider afterwards mints a brand-new account: the delete
+      // cascaded auth.identities, so there is nothing left to link back to.
+      navigate('/signed-out', { replace: true })
     } catch (err: any) {
       console.error('Failed to delete account:', err)
       addToast('Failed to delete account: ' + (err.message || 'Unknown error'), 'error')
@@ -1045,7 +1048,7 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
                   Delete Account
                 </h3>
                 <p className="text-xs text-slate-400 max-w-md">
-                  Permanently remove your profile and detach your alias from all logs.
+                  Permanently delete your profile, your reports, and every trace of your account.
                 </p>
               </div>
               
@@ -1088,7 +1091,7 @@ export default function Profile({ addToast }: { addToast: (msg: string, type?: s
                 <div>
                   <h4 id="delete-account-title" className="text-lg font-semibold text-white">Delete Account</h4>
                   <p className="text-sm text-slate-400 mt-2 leading-relaxed">
-                    This action is permanent. Any reports associated with <span className="text-white font-mono">@{usernameDisplay}</span> will be detached.
+                    This action is permanent. Your profile, disputes, comments, API keys and every report by <span className="text-white font-mono">@{usernameDisplay}</span> will be deleted from our servers. Signing in again later creates a brand-new account.
                   </p>
                 </div>
                 

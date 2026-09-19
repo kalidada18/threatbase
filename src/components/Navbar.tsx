@@ -76,7 +76,9 @@ export default function Navbar() {
             setMenuState(false)
             // replace: signing out is not a place you navigate back to, and a
             // push here leaves a dead signed-in entry in the history stack.
-            navigate('/', { replace: true })
+            // Land on the signed-out screen (real-SSO style goodbye + "sign in
+            // again") rather than the logged-in home page.
+            navigate('/signed-out', { replace: true })
         } catch (e) {
             console.error('Sign out failed:', e)
         }

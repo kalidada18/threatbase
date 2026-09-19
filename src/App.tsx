@@ -17,6 +17,8 @@ const ThanksPage = lazy(() => import('./components/ThanksPage'))
 const NotFound = lazy(() => import('./components/ui/not-found'))
 const FaqPage = lazy(() => import('./components/FaqPage'))
 const Profile = lazy(() => import('./components/Profile'))
+// Post-sign-out landing state — lazy so it never touches the main bundle.
+const SignedOutScreen = lazy(() => import('./components/SignedOutScreen'))
 const TermsPage = lazy(() => import('./components/TermsPage'))
 const PrivacyPage = lazy(() => import('./components/PrivacyPage'))
 const PolicyPage = lazy(() => import('./components/PolicyPage'))
@@ -367,6 +369,9 @@ export default function App() {
             username-bearing URL (/u/:username, /profile/:username) is gone so the
             GUI never advertises a browsable profile path. */}
         <Route path="/profile" element={page(<Profile addToast={addToast} />)} />
+        {/* Signed-out landing state. Public by nature (there is no session); the
+            "Sign in again" buttons start a fresh OAuth redirect. */}
+        <Route path="/signed-out" element={page(<SignedOutScreen />)} />
         <Route path="/thanks" element={page(<ThanksPage />)} />
         <Route path="/faq" element={page(<FaqPage />)} />
         <Route path="*" element={page(<><NotFoundSeo /><NotFound /></>)} />
