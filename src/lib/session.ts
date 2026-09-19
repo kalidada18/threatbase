@@ -107,6 +107,7 @@ let inFlight: { token: string; promise: Promise<boolean> } | null = null
 export async function establishSession(
   accessToken: string,
   refreshToken?: string,
+  opts?: { signIn?: boolean },
 ): Promise<boolean> {
   if (!accessToken) return false
   if (inFlight && inFlight.token === accessToken) return inFlight.promise
@@ -114,7 +115,15 @@ export async function establishSession(
   const promise = (async () => {
     const res = await postJson(
       SESSION_PATH,
-      { mode: 'exchange', access_token: accessToken, ...(refreshToken ? { refresh_token: refreshToken } : {}) },
+      {
+        mode: 'exchange',
+        access_token: accessToken,
+        ...(refreshToken ? { refresh_token: refreshToken } : {}),
+        // Tells the mint route this is a real credential exchange, not a token
+        // refresh, so an aal1 handoff over a surviving aal2 row reconciles down and
+        // re-prompts instead of being mistaken for the browser catching up.
+        ...(opts?.signIn ? { sign_in: true } : {}),
+      },
       HANDOFF_TIMEOUT_MS,
     )
     if (!res || !res.ok) return describeFailure('handoff', res)

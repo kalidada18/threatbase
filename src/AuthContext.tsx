@@ -226,7 +226,14 @@ export function AuthProvider({
           let handoff: Promise<boolean> | null = null
           if (accessToken && accessToken !== handoffToken.current) {
             handoffToken.current = accessToken
-            handoff = establishSession(accessToken, currentSession?.refresh_token)
+            // SIGNED_IN is the only event that represents a fresh credential
+            // exchange; TOKEN_REFRESHED and INITIAL_SESSION are the same session
+            // carrying on. The distinction lets the server reconcile a genuine
+            // re-login down to aal1 (re-prompt) without re-prompting a factor the
+            // user already cleared via the MFA proxy.
+            handoff = establishSession(accessToken, currentSession?.refresh_token, {
+              signIn: event === 'SIGNED_IN',
+            })
             void handoff.then((ok) => {
               // Reset on failure so the next auth event retries rather than
               // concluding forever that this token was already handed off.

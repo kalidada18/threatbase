@@ -95,6 +95,13 @@ export const onRequestPost = async (context: any) => {
   if (!body) return badRequest(request, 'expected a small JSON object')
 
   const mode = body.mode === 'password' ? 'password' : 'exchange'
+  // The client sets `sign_in` only on the SIGNED_IN auth event — a real credential
+  // exchange — and never on TOKEN_REFRESHED. A password grant is always a sign-in.
+  // It disambiguates an aal1 credential presented to an aal2 row: re-authentication
+  // (reconcile down, re-prompt) versus the browser catching up to a proxy verify
+  // (honor aal2, don't re-prompt). It can only ever force MORE authentication, so
+  // a forged value cannot skip MFA.
+  const signIn = mode === 'password' || body.sign_in === true
   const clientIp = request.headers.get('CF-Connecting-IP') || 'unknown'
   const kv = env?.IOC_CACHE
   const today = dayStamp()
@@ -238,18 +245,38 @@ export const onRequestPost = async (context: any) => {
   // refreshSessionCredentials.
   const sameAccount = existing.state === 'ok' && existing.userId === userId
 
-  // A re-handoff that presents a password-only (aal1) credential to a session
-  // that had reached aal2 is a fresh sign-in, not a stale tab: auth-js keeps one
-  // shared browser session, so the only way an aal1 token reaches an aal2 row is
-  // that the browser re-authenticated. It must NOT be honored as aal2 — doing so
-  // let a surviving tb_session cookie (logout's endSession is best-effort, and the
-  // HttpOnly cookie outlives the browser session auth-js clears) skip the
-  // second-factor prompt on the next login, and left the row holding a stale
-  // credential that diverged from the browser's. Nor may it rotate: rotating the
-  // id is what reopened the token-reuse family revocation. So it falls through to
-  // the same-account in-place path below, which now writes the row DOWN to aal1
-  // with the fresh credential and keeps the cookie id. whoAmI then reports aal1
-  // and checkMfaLevel re-prompts.
+  // A re-handoff that presents a password-only (aal1) credential to a session the
+  // server still holds at aal2 is ambiguous, and the two readings want opposite
+  // answers. `signIn` (above) tells them apart:
+  //
+  //  - Genuine sign-in: the aal2 row is a survivor from a previous login whose
+  //    HttpOnly tb_session cookie outlived it (logout's endSession is best-effort,
+  //    and auth-js clears only its own localStorage session, never this cookie).
+  //    The credential now in hand is password-only, so the honest state is aal1.
+  //    Fall through to the in-place path below, which writes the row DOWN to aal1
+  //    and refreshes its stored credential — so whoAmI reports aal1 and the
+  //    second-factor prompt fires, and the row stops holding the stale token whose
+  //    divergence surfaced as an opaque 422 on profile MFA mutations.
+  //
+  //  - Token refresh of the same session: the MFA proxy verifies and rotates the
+  //    ROW to aal2, but auth-js still owns its aal1 session, so an aal1 token here
+  //    is the browser catching up, not a new login. Honor aal2 and write nothing —
+  //    downgrading would re-prompt a factor the user already cleared this session.
+  if (
+    sameAccount &&
+    existing.aal === 'aal2' &&
+    aal !== 'aal2' &&
+    !signIn &&
+    existing.expiresAt !== undefined
+  ) {
+    await bumpKv(kv, `sl_m_${clientIp}_${today}`)
+    return jsonResponse(
+      { ok: true, expires_at: existing.expiresAt, aal: 'aal2', mfa_required: false },
+      200,
+      request,
+      [],
+    )
+  }
 
   if (sameAccount) {
     const kept = await refreshSessionCredentials(admin, env, existing, {
